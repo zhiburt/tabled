@@ -49,17 +49,17 @@ impl ANSIBuf {
 }
 
 impl ANSIFmt for ANSIBuf {
-    fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(&self.prefix)
     }
 
-    fn fmt_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(&self.suffix)
     }
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<&str> for ANSIBuf<'static> {
+impl std::convert::TryFrom<&str> for ANSIBuf {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -68,7 +68,7 @@ impl std::convert::TryFrom<&str> for ANSIBuf<'static> {
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<String> for ANSIBuf<'static> {
+impl std::convert::TryFrom<String> for ANSIBuf {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -77,7 +77,7 @@ impl std::convert::TryFrom<String> for ANSIBuf<'static> {
 }
 
 #[cfg(feature = "color")]
-fn parse_ansi_color(s: &str) -> Option<ANSIBuf<'static>> {
+fn parse_ansi_color(s: &str) -> Option<ANSIBuf> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;
     let style = block.style();
@@ -85,7 +85,7 @@ fn parse_ansi_color(s: &str) -> Option<ANSIBuf<'static>> {
     let start = style.start().to_string();
     let end = style.end().to_string();
 
-    Some(ANSIBuf::new(start.into(), end.into()))
+    Some(ANSIBuf::new(start, end))
 }
 
 impl From<ANSIStr<'_>> for ANSIBuf {

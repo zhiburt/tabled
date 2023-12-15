@@ -1603,7 +1603,9 @@ mod print {
         buf
     }
 
-    fn convert_border_colors(pad_color: Sides<ANSIStr<'static>>) -> Sides<Option<ANSIStr<'static>>> {
+    fn convert_border_colors(
+        pad_color: Sides<ANSIStr<'static>>,
+    ) -> Sides<Option<ANSIStr<'static>>> {
         Sides::new(
             (!pad_color.left.is_empty()).then(|| pad_color.left),
             (!pad_color.right.is_empty()).then(|| pad_color.right),

@@ -8,7 +8,7 @@ mod offset;
 
 use std::collections::HashMap;
 
-use crate::ansi::{ANSIStr, ANSIBuf};
+use crate::ansi::{ANSIBuf, ANSIStr};
 use crate::config::compact::CompactConfig;
 use crate::config::Formatting;
 use crate::config::{
@@ -753,11 +753,7 @@ impl SpannedConfig {
     }
 
     /// Gets a color of a cell vertical.
-    pub fn get_intersection_color(
-        &self,
-        pos: Position,
-        shape: (usize, usize),
-    ) -> Option<&ANSIBuf> {
+    pub fn get_intersection_color(&self, pos: Position, shape: (usize, usize)) -> Option<&ANSIBuf> {
         self.borders_colors.get_intersection(pos, shape)
     }
 

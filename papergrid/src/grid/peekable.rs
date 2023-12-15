@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    ansi::{ANSIFmt, ANSIBuf},
+    ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
         spanned::{Offset, SpannedConfig},
@@ -675,7 +675,7 @@ mod grid_not_spanned {
         }
 
         if let Some(clr) = used_color.take() {
-            clr.fmt_suffix(f)?;
+            clr.fmt_ansi_suffix(f)?;
         }
 
         Ok(())
@@ -725,19 +725,19 @@ mod grid_not_spanned {
             Some(clr) => match used_color.as_mut() {
                 Some(used_clr) => {
                     if **used_clr != *clr {
-                        used_clr.fmt_suffix(f)?;
-                        clr.fmt_prefix(f)?;
+                        used_clr.fmt_ansi_suffix(f)?;
+                        clr.fmt_ansi_prefix(f)?;
                         *used_clr = clr;
                     }
                 }
                 None => {
-                    clr.fmt_prefix(f)?;
+                    clr.fmt_ansi_prefix(f)?;
                     *used_color = Some(clr);
                 }
             },
             None => {
                 if let Some(clr) = used_color.take() {
-                    clr.fmt_suffix(f)?
+                    clr.fmt_ansi_suffix(f)?
                 }
             }
         }
@@ -771,9 +771,9 @@ mod grid_not_spanned {
 
         match color {
             Some(clr) => {
-                clr.fmt_prefix(f)?;
+                clr.fmt_ansi_prefix(f)?;
                 f.write_char(symbol)?;
-                clr.fmt_suffix(f)?;
+                clr.fmt_ansi_suffix(f)?;
             }
             None => f.write_char(symbol)?,
         }
@@ -801,16 +801,16 @@ mod grid_not_spanned {
             match cfg.lookup_horizontal_color(pos, i, width) {
                 Some(color) => match used_color {
                     Some(clr) => {
-                        clr.fmt_suffix(f)?;
-                        color.fmt_prefix(f)?;
+                        clr.fmt_ansi_suffix(f)?;
+                        color.fmt_ansi_prefix(f)?;
                         f.write_char(c)?;
-                        color.fmt_suffix(f)?;
-                        clr.fmt_prefix(f)?;
+                        color.fmt_ansi_suffix(f)?;
+                        clr.fmt_ansi_prefix(f)?;
                     }
                     None => {
-                        color.fmt_prefix(f)?;
+                        color.fmt_ansi_prefix(f)?;
                         f.write_char(c)?;
-                        color.fmt_suffix(f)?;
+                        color.fmt_ansi_suffix(f)?;
                     }
                 },
                 _ => f.write_char(c)?,
@@ -968,9 +968,9 @@ mod grid_not_spanned {
     {
         match text.color {
             Some(color) => {
-                color.fmt_prefix(f)?;
+                color.fmt_ansi_prefix(f)?;
                 f.write_str(text.data)?;
-                color.fmt_suffix(f)
+                color.fmt_ansi_suffix(f)
             }
             None => f.write_str(text.data),
         }
@@ -1212,9 +1212,9 @@ mod grid_not_spanned {
 
         match color {
             Some(color) => {
-                color.fmt_prefix(f)?;
+                color.fmt_ansi_prefix(f)?;
                 repeat_char(f, c, n)?;
-                color.fmt_suffix(f)
+                color.fmt_ansi_suffix(f)
             }
             None => repeat_char(f, c, n),
         }
@@ -1231,9 +1231,9 @@ mod grid_not_spanned {
 
         match &c.color {
             Some(color) => {
-                color.fmt_prefix(f)?;
+                color.fmt_ansi_prefix(f)?;
                 repeat_char(f, c.data, n)?;
-                color.fmt_suffix(f)
+                color.fmt_ansi_suffix(f)
             }
             None => repeat_char(f, c.data, n),
         }
@@ -1499,7 +1499,7 @@ mod grid_spanned {
         }
 
         if let Some(clr) = used_color {
-            clr.fmt_suffix(f)?;
+            clr.fmt_ansi_suffix(f)?;
         }
 
         Ok(())
@@ -1531,9 +1531,9 @@ mod grid_spanned {
 
         match color {
             Some(clr) => {
-                clr.fmt_prefix(f)?;
+                clr.fmt_ansi_prefix(f)?;
                 f.write_char(symbol)?;
-                clr.fmt_suffix(f)?;
+                clr.fmt_ansi_suffix(f)?;
             }
             None => f.write_char(symbol)?,
         }
@@ -1585,19 +1585,19 @@ mod grid_spanned {
             Some(clr) => match used_color.as_mut() {
                 Some(used_clr) => {
                     if **used_clr != *clr {
-                        used_clr.fmt_suffix(f)?;
-                        clr.fmt_prefix(f)?;
+                        used_clr.fmt_ansi_suffix(f)?;
+                        clr.fmt_ansi_prefix(f)?;
                         *used_clr = clr;
                     }
                 }
                 None => {
-                    clr.fmt_prefix(f)?;
+                    clr.fmt_ansi_prefix(f)?;
                     *used_color = Some(clr);
                 }
             },
             None => {
                 if let Some(clr) = used_color.take() {
-                    clr.fmt_suffix(f)?
+                    clr.fmt_ansi_suffix(f)?
                 }
             }
         }
@@ -1641,7 +1641,7 @@ mod grid_spanned {
         }
 
         if let Some(clr) = used_color.take() {
-            clr.fmt_suffix(f)?;
+            clr.fmt_ansi_suffix(f)?;
         }
 
         Ok(())
@@ -1667,16 +1667,16 @@ mod grid_spanned {
             match cfg.lookup_horizontal_color(pos, i, width) {
                 Some(color) => match used_color {
                     Some(clr) => {
-                        clr.fmt_suffix(f)?;
-                        color.fmt_prefix(f)?;
+                        clr.fmt_ansi_suffix(f)?;
+                        color.fmt_ansi_prefix(f)?;
                         f.write_char(c)?;
-                        color.fmt_suffix(f)?;
-                        clr.fmt_prefix(f)?;
+                        color.fmt_ansi_suffix(f)?;
+                        clr.fmt_ansi_prefix(f)?;
                     }
                     None => {
-                        color.fmt_prefix(f)?;
+                        color.fmt_ansi_prefix(f)?;
                         f.write_char(c)?;
-                        color.fmt_suffix(f)?;
+                        color.fmt_ansi_suffix(f)?;
                     }
                 },
                 _ => f.write_char(c)?,
@@ -1833,9 +1833,9 @@ mod grid_spanned {
     {
         match clr {
             Some(color) => {
-                color.fmt_prefix(f)?;
+                color.fmt_ansi_prefix(f)?;
                 f.write_str(text)?;
-                color.fmt_suffix(f)
+                color.fmt_ansi_suffix(f)
             }
             None => f.write_str(text),
         }
@@ -2077,9 +2077,9 @@ mod grid_spanned {
 
         match color {
             Some(color) => {
-                color.fmt_prefix(f)?;
+                color.fmt_ansi_prefix(f)?;
                 repeat_char(f, c, n)?;
-                color.fmt_suffix(f)
+                color.fmt_ansi_suffix(f)
             }
             None => repeat_char(f, c, n),
         }

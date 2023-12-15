@@ -99,15 +99,11 @@ impl Colors for NoColors {
 pub struct EmptyColor;
 
 impl ANSIFmt for EmptyColor {
-    fn fmt_prefix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
+    fn fmt_ansi_prefix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
         Ok(())
     }
 
-    fn colorize<W: core::fmt::Write>(&self, _: &mut W, _: &str) -> core::fmt::Result {
-        Ok(())
-    }
-
-    fn fmt_suffix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
+    fn fmt_ansi_suffix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
         Ok(())
     }
 }
