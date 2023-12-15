@@ -11,6 +11,11 @@ keywords = ["table", "print", "pretty-table", "format", "html"]
 categories = ["text-processing", "visualization"]
 license = "MIT"
 
+[features]
+ansi = ["tabled/ansi"]
+derive = ["tabled/derive"]
+macros = ["tabled/macros"]
+
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
 

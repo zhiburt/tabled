@@ -24,10 +24,10 @@ jobs:
             "ansi",
             "derive",
             "macros",
-            "color,derive",
-            "color,macros",
+            "ansi,derive",
+            "ansi,macros",
             "macros,derive",
-            "color,derive,macros",
+            "ansi,derive,macros",
           ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -44,7 +44,7 @@ jobs:
       matrix:
         rust: [stable]
         os: [ubuntu-latest]
-        features: ["", "std", "ansi", "std,color"]
+        features: ["", "std", "ansi", "std,ansi"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
