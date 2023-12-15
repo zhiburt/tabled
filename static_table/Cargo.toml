@@ -16,6 +16,8 @@ proc-macro = true
 
 [features]
 ansi = ["tabled/ansi"]
+derive = ["tabled/derive"]
+macros = ["tabled/macros"]
 
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }

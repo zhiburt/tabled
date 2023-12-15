@@ -7,7 +7,7 @@ mod ansi_str;
 #[cfg(feature = "std")]
 pub use ansi_buf::ANSIBuf;
 
-pub use ansi_str::ANSIStr;
+pub use self::ansi_str::ANSIStr;
 
 use core::fmt::{self, Write};
 
