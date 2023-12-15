@@ -78,7 +78,7 @@
 //! );
 //! ```
 
-pub mod color;
+pub mod ansi;
 pub mod colors;
 pub mod config;
 pub mod dimension;

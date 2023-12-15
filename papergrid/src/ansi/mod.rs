@@ -1,13 +1,13 @@
 //! A module which contains [`Color`] trait and its implementation [`AnsiColor`].
 
 #[cfg(feature = "std")]
-mod ansi_color;
-mod static_color;
+mod ansi_buf;
+mod ansi_str;
 
 #[cfg(feature = "std")]
-pub use ansi_color::ColorBuf;
+pub use ansi_buf::ANSIBuf;
 
-pub use static_color::Color;
+pub use ansi_str::ANSIStr;
 
 use core::fmt::{self, Write};
 

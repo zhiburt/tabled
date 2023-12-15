@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crate::{
     grid::{
-        color::ColorBuf,
+        ansi::ANSIBuf,
         config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
         records::{ExactRecords, Records},
     },
@@ -100,9 +100,9 @@ pub struct Highlight<O> {
 enum HighlightInner {
     Border(GridBorder<char>),
     // #[cfg(feature = "color")]
-    Color(GridBorder<ColorBuf>),
+    Color(GridBorder<ANSIBuf>),
     // #[cfg(feature = "color")]
-    ColoredBorder(GridBorder<char>, GridBorder<ColorBuf>),
+    ColoredBorder(GridBorder<char>, GridBorder<ANSIBuf>),
 }
 
 // todo: Docs testss
@@ -210,7 +210,7 @@ where
 fn set_border_color(
     cfg: &mut SpannedConfig,
     sector: &HashSet<(usize, usize)>,
-    border: &GridBorder<ColorBuf>,
+    border: &GridBorder<ANSIBuf>,
 ) {
     if sector.is_empty() {
         return;

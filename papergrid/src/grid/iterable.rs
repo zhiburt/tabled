@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    color::{ANSIFmt, ColorBuf},
+    ansi::{ANSIFmt, ANSIBuf},
     colors::Colors,
     config::spanned::{Offset, SpannedConfig},
     config::{AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides},
@@ -571,7 +571,7 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     cfg: &'a SpannedConfig,
     pos: Position,
     shape: (usize, usize),
-    used_color: &mut Option<&'a ColorBuf>,
+    used_color: &mut Option<&'a ANSIBuf>,
 ) -> fmt::Result {
     if !cfg.has_vertical(pos.1, shape.1) {
         return Ok(());
@@ -727,7 +727,7 @@ fn print_horizontal_border<F: Write>(
     pos: Position,
     width: usize,
     c: char,
-    used_color: &Option<&ColorBuf>,
+    used_color: &Option<&ANSIBuf>,
 ) -> fmt::Result {
     if !cfg.is_overridden_horizontal(pos) {
         return repeat_char(f, c, width);
@@ -765,9 +765,9 @@ struct Cell<T, C> {
     alignh: AlignmentHorizontal,
     fmt: Formatting,
     pad: Sides<Indent>,
-    pad_color: Sides<Option<ColorBuf>>,
+    pad_color: Sides<Option<ANSIBuf>>,
     color: Option<C>,
-    justification: (char, Option<ColorBuf>),
+    justification: (char, Option<ANSIBuf>),
 }
 
 impl<T, C> Cell<T, C>
@@ -929,8 +929,8 @@ fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl ANSIFmt>) -> fmt
 
 fn prepare_coloring<'a, F: Write>(
     f: &mut F,
-    clr: Option<&'a ColorBuf>,
-    used_color: &mut Option<&'a ColorBuf>,
+    clr: Option<&'a ANSIBuf>,
+    used_color: &mut Option<&'a ANSIBuf>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {
@@ -1080,7 +1080,7 @@ fn print_margin_vertical<F: Write>(
     f: &mut F,
     indent: Indent,
     offset: Offset,
-    color: Option<&ColorBuf>,
+    color: Option<&ANSIBuf>,
     line: usize,
     height: Option<usize>,
 ) -> fmt::Result {
@@ -1123,7 +1123,7 @@ fn print_indent_lines<F: Write>(
     f: &mut F,
     indent: &Indent,
     offset: &Offset,
-    color: Option<&ColorBuf>,
+    color: Option<&ANSIBuf>,
     width: usize,
 ) -> fmt::Result {
     if indent.size == 0 {
@@ -1160,20 +1160,20 @@ fn print_indent_lines<F: Write>(
     Ok(())
 }
 
-fn print_padding<F: Write>(f: &mut F, pad: &Indent, color: Option<&ColorBuf>) -> fmt::Result {
+fn print_padding<F: Write>(f: &mut F, pad: &Indent, color: Option<&ANSIBuf>) -> fmt::Result {
     print_indent(f, pad.fill, pad.size, color)
 }
 
 fn print_padding_n<F: Write>(
     f: &mut F,
     pad: &Indent,
-    color: Option<&ColorBuf>,
+    color: Option<&ANSIBuf>,
     n: usize,
 ) -> fmt::Result {
     print_indent(f, pad.fill, n, color)
 }
 
-fn print_indent<F: Write>(f: &mut F, c: char, n: usize, color: Option<&ColorBuf>) -> fmt::Result {
+fn print_indent<F: Write>(f: &mut F, c: char, n: usize, color: Option<&ANSIBuf>) -> fmt::Result {
     if n == 0 {
         return Ok(());
     }

@@ -1,6 +1,6 @@
 use crate::{
     grid::{
-        color::ColorBuf,
+        ansi::ANSIBuf,
         config::{ColoredConfig, Entity},
     },
     settings::{CellOption, Color, TableOption},
@@ -85,7 +85,7 @@ use crate::{
 #[derive(Debug, Default, Clone)]
 pub struct Justification {
     c: Option<char>,
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
 }
 
 impl Justification {

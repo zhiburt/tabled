@@ -4,12 +4,12 @@ use super::ANSIFmt;
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash)]
-pub struct Color<'a> {
+pub struct ANSIStr<'a> {
     prefix: &'a str,
     suffix: &'a str,
 }
 
-impl<'a> Color<'a> {
+impl<'a> ANSIStr<'a> {
     /// Constructs a new instance with suffix and prefix.
     ///
     /// They are not checked so you should make sure you provide correct ANSI.
@@ -36,7 +36,7 @@ impl<'a> Color<'a> {
     }
 }
 
-impl ANSIFmt for Color<'_> {
+impl ANSIFmt for ANSIStr<'_> {
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(self.prefix)
     }

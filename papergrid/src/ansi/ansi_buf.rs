@@ -1,15 +1,15 @@
 use std::fmt::{self, Write};
 
-use super::{ANSIFmt, Color};
+use super::{ANSIFmt, ANSIStr};
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ColorBuf {
+pub struct ANSIBuf {
     prefix: String,
     suffix: String,
 }
 
-impl ColorBuf {
+impl ANSIBuf {
     /// Constructs a new instance with suffix and prefix.
     ///
     /// They are not checked so you should make sure you provide correct ANSI.
@@ -43,12 +43,12 @@ impl ColorBuf {
     }
 
     /// Gets a reference as a color.
-    pub fn as_ref(&self) -> Color<'_> {
-        Color::new(&self.prefix, &self.suffix)
+    pub fn as_ref(&self) -> ANSIStr<'_> {
+        ANSIStr::new(&self.prefix, &self.suffix)
     }
 }
 
-impl ANSIFmt for ColorBuf {
+impl ANSIFmt for ANSIBuf {
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(&self.prefix)
     }
@@ -59,7 +59,7 @@ impl ANSIFmt for ColorBuf {
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<&str> for ColorBuf<'static> {
+impl std::convert::TryFrom<&str> for ANSIBuf<'static> {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -68,7 +68,7 @@ impl std::convert::TryFrom<&str> for ColorBuf<'static> {
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<String> for ColorBuf<'static> {
+impl std::convert::TryFrom<String> for ANSIBuf<'static> {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -77,7 +77,7 @@ impl std::convert::TryFrom<String> for ColorBuf<'static> {
 }
 
 #[cfg(feature = "color")]
-fn parse_ansi_color(s: &str) -> Option<ColorBuf<'static>> {
+fn parse_ansi_color(s: &str) -> Option<ANSIBuf<'static>> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;
     let style = block.style();
@@ -85,11 +85,11 @@ fn parse_ansi_color(s: &str) -> Option<ColorBuf<'static>> {
     let start = style.start().to_string();
     let end = style.end().to_string();
 
-    Some(ColorBuf::new(start.into(), end.into()))
+    Some(ANSIBuf::new(start.into(), end.into()))
 }
 
-impl From<Color<'_>> for ColorBuf {
-    fn from(value: Color<'_>) -> Self {
+impl From<ANSIStr<'_>> for ANSIBuf {
+    fn from(value: ANSIStr<'_>) -> Self {
         Self::new(value.get_prefix(), value.get_suffix())
     }
 }

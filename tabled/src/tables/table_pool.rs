@@ -243,7 +243,7 @@ mod print {
     use crate::{
         builder::Builder,
         grid::{
-            color::Color,
+            ansi::ANSIStr,
             config::{
                 AlignmentHorizontal, AlignmentVertical, Border, Borders, ColoredConfig,
                 CompactMultilineConfig, Indent, Offset, Sides,
@@ -729,7 +729,7 @@ mod print {
         buf
     }
 
-    fn print_chars(buf: &mut String, c: char, color: Option<Color<'static>>, width: usize) {
+    fn print_chars(buf: &mut String, c: char, color: Option<ANSIStr<'static>>, width: usize) {
         match color {
             Some(color) => {
                 buf.push_str(color.get_prefix());
@@ -740,7 +740,7 @@ mod print {
         }
     }
 
-    fn print_char(buf: &mut String, c: char, color: Option<Color<'static>>) {
+    fn print_char(buf: &mut String, c: char, color: Option<ANSIStr<'static>>) {
         match color {
             Some(color) => {
                 buf.push_str(color.get_prefix());
@@ -754,8 +754,8 @@ mod print {
     fn print_line(
         buf: &mut String,
         border: Border<char>,
-        border_color: Border<Color<'static>>,
-        color: Option<Color<'static>>,
+        border_color: Border<ANSIStr<'static>>,
+        color: Option<ANSIStr<'static>>,
         c: char,
         width: usize,
     ) {
@@ -777,7 +777,7 @@ mod print {
     fn print_top_line(
         buf: &mut String,
         border: Border<char>,
-        color: Border<Color<'static>>,
+        color: Border<ANSIStr<'static>>,
         splits: &[usize],
         split_char: char,
         width: usize,
@@ -786,7 +786,7 @@ mod print {
             return;
         }
 
-        let mut used_color: Option<Color<'static>> = None;
+        let mut used_color: Option<ANSIStr<'static>> = None;
 
         if border.has_left() {
             if let Some(color) = color.left_top_corner {
@@ -858,14 +858,14 @@ mod print {
     fn print_bottom_line(
         buf: &mut String,
         border: Border<char>,
-        color: Border<Color<'static>>,
+        color: Border<ANSIStr<'static>>,
         width: usize,
     ) {
         if !border.has_bottom() {
             return;
         }
 
-        let mut used_color: Option<Color<'static>> = None;
+        let mut used_color: Option<ANSIStr<'static>> = None;
 
         if border.has_left() {
             if let Some(color) = color.left_bottom_corner {
@@ -1565,7 +1565,7 @@ mod print {
     fn set_margin(
         table: &str,
         margin: Sides<Indent>,
-        color: Sides<Option<Color<'static>>>,
+        color: Sides<Option<ANSIStr<'static>>>,
     ) -> String {
         if table.is_empty() {
             return String::new();
@@ -1603,7 +1603,7 @@ mod print {
         buf
     }
 
-    fn convert_border_colors(pad_color: Sides<Color<'static>>) -> Sides<Option<Color<'static>>> {
+    fn convert_border_colors(pad_color: Sides<ANSIStr<'static>>) -> Sides<Option<ANSIStr<'static>>> {
         Sides::new(
             (!pad_color.left.is_empty()).then(|| pad_color.left),
             (!pad_color.right.is_empty()).then(|| pad_color.right),

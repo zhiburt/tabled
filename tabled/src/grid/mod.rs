@@ -12,7 +12,7 @@ mod compact_multiline_config;
 pub mod dimension;
 pub mod records;
 
-pub use papergrid::color;
+pub use papergrid::ansi;
 pub use papergrid::colors;
 pub use papergrid::util;
 
