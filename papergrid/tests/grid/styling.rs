@@ -5,7 +5,7 @@ use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Si
 use crate::util::grid;
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, papergrid::ansi::ANSIBuf, std::convert::TryFrom};
 
 test_table!(
@@ -277,7 +277,7 @@ test_table!(
     "1-0*1-1"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     grid_2x2_ansi_border_test,
     grid(2, 2)
@@ -304,7 +304,7 @@ test_table!(
     "\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[43m^\u{1b}[49m"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     grid_2x2_ansi_global_set_test,
     grid(2, 2)
@@ -320,7 +320,7 @@ test_table!(
     "\u{1b}[1m\u{1b}[31m\u{1b}[44m+---+---+\u{1b}[22m\u{1b}[39m\u{1b}[49m"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
     assert!(ANSIBuf::try_from("12").is_ok());

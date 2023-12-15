@@ -10,7 +10,7 @@ license = "MIT"
 [features]
 default = ["std"]
 std = []
-color = ["ansi-str", "ansitok"]
+ansi = ["ansi-str", "ansitok"]
 
 [dependencies]
 unicode-width = "0.1"
@@ -21,11 +21,11 @@ ansitok = { version = "0.2", optional = true  }
 
 [dev-dependencies]
 owo-colors = "3.4.0"
-testing_table = { path = "../testing_table", features = ["color"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }
 
 [[example]]
 name = "papergrid_color"
-required-features = ["std", "color"]
+required-features = ["std", "ansi"]
 
 [[example]]
 name = "color_map"

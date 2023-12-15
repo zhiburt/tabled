@@ -5,7 +5,7 @@ pub fn is_lines_equal(s: &str, width: usize) -> bool {
 }
 
 fn string_width_multiline(text: &str) -> usize {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         text.lines()
             .map(unicode_width::UnicodeWidthStr::width)
@@ -13,7 +13,7 @@ fn string_width_multiline(text: &str) -> usize {
             .unwrap_or(0)
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         text.lines().map(string_width).max().unwrap_or(0)
     }
@@ -21,12 +21,12 @@ fn string_width_multiline(text: &str) -> usize {
 
 #[allow(dead_code)]
 fn string_width(text: &str) -> usize {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         unicode_width::UnicodeWidthStr::width(text)
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         // we need to strip ansi because of terminal links
         // and they're can't be stripped by ansi_str.

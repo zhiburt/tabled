@@ -749,7 +749,7 @@ mod derived {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn multiline_table_test2() {
     use testing_table::assert_table;

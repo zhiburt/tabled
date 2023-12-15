@@ -9,7 +9,7 @@ use tabled::{
 use crate::matrix::Matrix;
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use tabled::grid::ansi::ANSIStr;
 
 test_table!(
@@ -309,7 +309,7 @@ test_table!(
     "+------+------+------+"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     pool_table_padding_2,
     PoolTable::new(Matrix::with_no_frame(3, 3).to_vec())

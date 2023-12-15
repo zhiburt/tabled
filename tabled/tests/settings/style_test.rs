@@ -20,7 +20,7 @@ use tabled::{
 use crate::matrix::Matrix;
 use testing_table::{static_table, test_table};
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, std::convert::TryFrom};
 
 test_table!(
@@ -347,7 +347,7 @@ test_table!(
     "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     border_text_colored,
     Matrix::table(2, 2)
@@ -2067,7 +2067,7 @@ fn test_default_border_usage() {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn border_colored_test() {
     let table = Matrix::table(2, 2)
@@ -2137,7 +2137,7 @@ fn border_colored_test() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn style_with_color_test() {
     let mut style = Theme::from_style(Style::ascii());

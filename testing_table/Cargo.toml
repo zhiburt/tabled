@@ -5,7 +5,7 @@ edition = "2018"
 publish = false
 
 [features]
-color = ["ansitok"]
+ansi = ["ansitok"]
 
 [dependencies]
 ansitok = { version = "0.2", optional = true }

@@ -45,7 +45,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     multiline: bool,
     _priority: PhantomData<P>,
 }
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct TruncateSuffix<'a> {
     text: Cow<'a, str>,
@@ -53,7 +53,7 @@ struct TruncateSuffix<'a> {
     try_color: bool,
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct TruncateSuffix<'a> {
     text: Cow<'a, str>,
@@ -65,7 +65,7 @@ impl Default for TruncateSuffix<'_> {
         Self {
             text: Cow::default(),
             limit: SuffixLimit::Cut,
-            #[cfg(feature = "color")]
+            #[cfg(feature = "ansi")]
             try_color: false,
         }
     }
@@ -141,7 +141,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
         }
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     /// Sets a optional logic to try to colorize a suffix.
     pub fn suffix_try_color(self, color: bool) -> Truncate<'a, W, P> {
         let mut suff = self.suffix.unwrap_or_default();
@@ -271,11 +271,11 @@ fn make_text_truncated<'a>(
 }
 
 fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         false
     }
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         _suffix.as_ref().map_or(false, |s| s.try_color)
     }
@@ -327,7 +327,7 @@ where
         let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
             text: Cow::Borrowed(&s.text),
             limit: s.limit,
-            #[cfg(feature = "color")]
+            #[cfg(feature = "ansi")]
             try_color: s.try_color,
         });
 
@@ -388,7 +388,7 @@ fn truncate_text<'a>(
         return content;
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         if _suffix_color {
             if let Some(block) = ansi_str::get_blocks(text).last() {
@@ -418,7 +418,7 @@ fn truncate_text<'a>(
         }
     }
 
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         let mut content = content.into_owned();
         content.push_str(suffix);

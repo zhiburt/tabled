@@ -21,7 +21,7 @@ jobs:
           [
             "",
             "std",
-            "color",
+            "ansi",
             "derive",
             "macros",
             "color,derive",
@@ -44,7 +44,7 @@ jobs:
       matrix:
         rust: [stable]
         os: [ubuntu-latest]
-        features: ["", "std", "color", "std,color"]
+        features: ["", "std", "ansi", "std,color"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
       matrix:
         rust: [stable]
         os: [ubuntu-latest]
-        features: ["", "color"]
+        features: ["", "ansi"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -76,7 +76,7 @@ jobs:
       matrix:
         rust: [stable]
         os: [ubuntu-latest]
-        features: ["", "color"]
+        features: ["", "ansi"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -139,7 +139,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
-        features: ["", "std", "color"]
+        features: ["", "std", "ansi"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
@@ -164,7 +164,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
-        features: ["", "color"]
+        features: ["", "ansi"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable

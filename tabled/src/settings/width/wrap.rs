@@ -194,7 +194,7 @@ where
     widths
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         return String::new();
@@ -207,7 +207,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     use super::util::strip_osc;
 
@@ -225,7 +225,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
     match url {
         Some(url) => {
@@ -239,7 +239,7 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
     }
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 fn chunks(s: &str, width: usize) -> Vec<String> {
     if width == 0 {
         return Vec::new();
@@ -275,7 +275,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     list
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
     use std::fmt::Write;
 
@@ -360,7 +360,7 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
     list
 }
 
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
@@ -439,7 +439,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     lines.join(sep)
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
     if text.is_empty() || width == 0 {
         return String::new();
@@ -480,7 +480,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
     buf.into_string()
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 mod parsing {
     use ansi_str::{AnsiBlock, AnsiBlockIter, Style};
     use std::fmt::Write;
@@ -875,10 +875,10 @@ mod tests {
 
     #[test]
     fn split_test() {
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         let split = |text, width| chunks(text, width).join("\n");
 
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         let split = |text, width| chunks(text, width, "", "").join("\n");
 
         assert_eq!(split("123456", 0), "");
@@ -902,10 +902,10 @@ mod tests {
     #[test]
     fn chunks_test() {
         #[allow(clippy::redundant_closure)]
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         let chunks = |text, width| chunks(text, width);
 
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         let chunks = |text, width| chunks(text, width, "", "");
 
         assert_eq!(chunks("123456", 0), [""; 0]);
@@ -919,7 +919,7 @@ mod tests {
         assert_eq!(chunks("😳😳😳😳😳", 3), ["😳�", "😳�", "😳"]);
     }
 
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_by_line_keeping_words_test() {
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
@@ -933,10 +933,10 @@ mod tests {
         assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_test() {
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
 
         assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
@@ -948,13 +948,13 @@ mod tests {
         assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_test() {
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
@@ -963,15 +963,15 @@ mod tests {
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_2_test() {
         use ansi_str::AnsiStr;
 
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
@@ -1113,7 +1113,7 @@ mod tests {
         )
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_3_test() {
         let split = |text, width| split_keeping_words(text, width, "", "");
@@ -1142,7 +1142,7 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_keeping_words_4_test() {
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
@@ -1151,19 +1151,19 @@ mod tests {
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_keeping_words_4_test() {
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_test_with_prefix_and_suffix() {
         assert_eq!(chunks("123456", 0, "^", "$"), ["^$"; 0]);
@@ -1189,7 +1189,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_test_with_prefix_and_suffix() {
         assert_eq!(
@@ -1211,7 +1211,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_2_test_with_prefix_and_suffix() {
         use ansi_str::AnsiStr;
@@ -1355,7 +1355,7 @@ mod tests {
         )
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_wrap_2() {
         let text = "\u{1b}[30mDebian\u{1b}[0m\u{1b}[31mDebian\u{1b}[0m\u{1b}[32mDebian\u{1b}[0m\u{1b}[33mDebian\u{1b}[0m\u{1b}[34mDebian\u{1b}[0m\u{1b}[35mDebian\u{1b}[0m\u{1b}[36mDebian\u{1b}[0m\u{1b}[37mDebian\u{1b}[0m\u{1b}[40mDebian\u{1b}[0m\u{1b}[41mDebian\u{1b}[0m\u{1b}[42mDebian\u{1b}[0m\u{1b}[43mDebian\u{1b}[0m\u{1b}[44mDebian\u{1b}[0m";
@@ -1369,7 +1369,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_wrap_3() {
         let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
@@ -1383,7 +1383,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_wrap_3_keeping_words() {
         let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
@@ -1394,7 +1394,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_wrap_4() {
         let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
@@ -1415,7 +1415,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn chunks_wrap_4_keeping_words() {
         let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";

@@ -1573,7 +1573,7 @@ The library doesn't bind you in usage of any color library but to be able to wor
 because of embedded ansi sequences, you should add the `color` feature of `tabled` to your `Cargo.toml`:
 
 ```toml
-tabled = { version = "*", features = ["color"] } 
+tabled = { version = "*", features = ["ansi"] } 
 ```
 
 Then you can use colored strings as values and table dimension will be properly estimated.
@@ -1961,7 +1961,7 @@ By default such things as hyperlinks, blinking and others things which can be ac
 To enable this support, add the `color` feature to your `Cargo.toml`
 
 ```toml
-tabled = { version = "*", features = ["color"] }
+tabled = { version = "*", features = ["ansi"] }
 ```
 
 ### Emoji

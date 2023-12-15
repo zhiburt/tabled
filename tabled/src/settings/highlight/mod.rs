@@ -99,9 +99,9 @@ pub struct Highlight<O> {
 #[derive(Debug)]
 enum HighlightInner {
     Border(GridBorder<char>),
-    // #[cfg(feature = "color")]
+    // #[cfg(feature = "ansi")]
     Color(GridBorder<ANSIBuf>),
-    // #[cfg(feature = "color")]
+    // #[cfg(feature = "ansi")]
     ColoredBorder(GridBorder<char>, GridBorder<ANSIBuf>),
 }
 
@@ -126,7 +126,7 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    // #[cfg(feature = "color")]
+    // #[cfg(feature = "ansi")]
     pub fn color<T, B, L, R>(target: O, border: BorderColor<T, B, L, R>) -> Self {
         let color = border.into_inner();
         let color = color.convert();
@@ -154,7 +154,7 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    // #[cfg(feature = "color")]
+    // #[cfg(feature = "ansi")]
     pub fn colored_border<T, B, L, R>(
         target: O,
         border: Border<T, B, L, R>,

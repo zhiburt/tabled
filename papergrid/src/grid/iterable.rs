@@ -1245,12 +1245,12 @@ fn convert_count_rows(row: usize, is_last: bool) -> usize {
 
 /// Trims a string.
 fn string_trim(text: &str) -> Cow<'_, str> {
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         ansi_str::AnsiStr::ansi_trim(text)
     }
 
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         text.trim().into()
     }
@@ -1336,7 +1336,7 @@ mod tests {
     //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
     //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
 
-    //     #[cfg(feature = "color")]
+    //     #[cfg(feature = "ansi")]
     //     {
     //         use owo_colors::OwoColorize;
     //         let text = "Colored Text".red().to_string();

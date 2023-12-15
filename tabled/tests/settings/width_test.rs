@@ -14,10 +14,10 @@ use tabled::{
 use crate::matrix::Matrix;
 use testing_table::{is_lines_equal, static_table, test_table};
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use ::{ansi_str::AnsiStr, owo_colors::OwoColorize, tabled::settings::style::HorizontalLine};
 
-#[cfg(all(feature = "derive", feature = "color"))]
+#[cfg(all(feature = "derive", feature = "ansi"))]
 use ::owo_colors::AnsiColors;
 
 test_table!(
@@ -143,7 +143,7 @@ test_table!(
     "| sentence          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_3,
     {
@@ -164,7 +164,7 @@ test_table!(
     "|  sentence         |"
 );
 
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 test_table!(
     max_width_wrapped_keep_words_3,
     {
@@ -202,7 +202,7 @@ test_table!(
     "| this |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_0,
     {
@@ -220,7 +220,7 @@ test_table!(
     "| sentence          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_0_1,
     Matrix::iter(vec!["this is a long sentence".on_black().green().to_string()])
@@ -233,7 +233,7 @@ test_table!(
         "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_1,
     {
@@ -251,7 +251,7 @@ test_table!(
     "| sentence          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_1_1,
     Matrix::iter(vec!["this is a long  sentence".on_black().green().to_string()])
@@ -264,7 +264,7 @@ test_table!(
     "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_2,
     {
@@ -282,7 +282,7 @@ test_table!(
     "| sentence          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_2_1,
     Matrix::iter(vec!["this is a long   sentence".on_black().green().to_string()])
@@ -295,7 +295,7 @@ test_table!(
     "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_3,
     {
@@ -313,7 +313,7 @@ test_table!(
     "|  sentence         |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_3_1,
     Matrix::iter(vec!["this is a long    sentence".on_black().green().to_string()])
@@ -326,7 +326,7 @@ test_table!(
     "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_4,
     {
@@ -342,7 +342,7 @@ test_table!(
     "|  this  |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_4_1,
     Matrix::iter(vec!["this".on_black().green().to_string()])
@@ -366,7 +366,7 @@ test_table!(
     "| tence             |"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn max_width_wrapped_keep_words_long_word_color() {
     let data = vec!["this is a long sentencesentencesentence"
@@ -402,7 +402,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn max_width_keep_words_1() {
     let table = Matrix::iter(["asdf"])
@@ -469,7 +469,7 @@ fn max_width_keep_words_1() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn max_width_wrapped_collored() {
     let data = &[
@@ -529,7 +529,7 @@ fn max_width_with_emoji() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn color_chars_are_stripped() {
     let data = &[
@@ -795,7 +795,7 @@ fn min_with_max_width_truncate_suffix_limit_ignore() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn min_with_max_width_truncate_suffix_try_color() {
     let data = &[
@@ -821,7 +821,7 @@ fn min_with_max_width_truncate_suffix_try_color() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn min_width_color() {
     let data = &[
@@ -852,7 +852,7 @@ fn min_width_color() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn min_width_color_with_smaller_then_width() {
     let data = &[
@@ -1140,7 +1140,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 14));
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn total_width_wrapping() {
     let table = Matrix::new(3, 3)
@@ -2510,7 +2510,7 @@ mod derived {
         assert!(is_lines_equal(&table, 57));
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn wrapping_as_total_multiline_color() {
         #[derive(Tabled)]
@@ -2595,7 +2595,7 @@ mod derived {
         assert_eq!(string_width_multiline(&table), 57);
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn truncating_as_total_multiline_color() {
         #[derive(Tabled)]
@@ -2657,7 +2657,7 @@ mod derived {
         assert_eq!(string_width_multiline(&table), 57);
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     fn format_osc8_hyperlink(url: &str, text: &str) -> String {
         format!(
             "{osc}8;;{url}{st}{text}{osc}8;;{st}",
@@ -2668,7 +2668,7 @@ mod derived {
         )
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn hyperlinks() {
         #[derive(Tabled)]
@@ -2748,7 +2748,7 @@ mod derived {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn hyperlinks_with_color() {
         use owo_colors::OwoColorize;

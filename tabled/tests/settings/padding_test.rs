@@ -8,7 +8,7 @@ use tabled::settings::{
 use crate::matrix::Matrix;
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, std::convert::TryFrom, tabled::settings::Color};
 
 test_table!(
@@ -99,7 +99,7 @@ test_table!(
     "   |          |          |          "
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     padding_color,
     {
