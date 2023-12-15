@@ -37,11 +37,11 @@ impl<'a> ANSIStr<'a> {
 }
 
 impl ANSIFmt for ANSIStr<'_> {
-    fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(self.prefix)
     }
 
-    fn fmt_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(self.suffix)
     }
 }

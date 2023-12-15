@@ -402,7 +402,9 @@ fn create_horizontal_top_colors(b: &Borders<ANSIStr<'static>>) -> HorizontalLine
     HorizontalLine::new(b.top, b.top_intersection, b.top_left, b.top_right)
 }
 
-fn create_horizontal_bottom_colors(b: &Borders<ANSIStr<'static>>) -> HorizontalLine<ANSIStr<'static>> {
+fn create_horizontal_bottom_colors(
+    b: &Borders<ANSIStr<'static>>,
+) -> HorizontalLine<ANSIStr<'static>> {
     HorizontalLine::new(
         b.bottom,
         b.bottom_intersection,
@@ -637,7 +639,7 @@ where
         f.write_char(c)?;
     }
 
-    used_color.fmt_suffix(f)?;
+    used_color.fmt_ansi_suffix(f)?;
 
     Ok(())
 }
@@ -688,9 +690,9 @@ where
 {
     match color {
         Some(color) => {
-            color.fmt_prefix(f)?;
+            color.fmt_ansi_prefix(f)?;
             f.write_str(text)?;
-            color.fmt_suffix(f)?;
+            color.fmt_ansi_suffix(f)?;
         }
         None => {
             f.write_str(text)?;
@@ -700,13 +702,17 @@ where
     Ok(())
 }
 
-fn prepare_coloring<F>(f: &mut F, clr: &ANSIStr<'static>, used: &mut ANSIStr<'static>) -> fmt::Result
+fn prepare_coloring<F>(
+    f: &mut F,
+    clr: &ANSIStr<'static>,
+    used: &mut ANSIStr<'static>,
+) -> fmt::Result
 where
     F: Write,
 {
     if *used != *clr {
-        used.fmt_suffix(f)?;
-        clr.fmt_prefix(f)?;
+        used.fmt_ansi_suffix(f)?;
+        clr.fmt_ansi_prefix(f)?;
         *used = *clr;
     }
 
@@ -748,9 +754,9 @@ where
 {
     match color {
         Some(color) => {
-            color.fmt_prefix(f)?;
+            color.fmt_ansi_prefix(f)?;
             f.write_char(c)?;
-            color.fmt_suffix(f)
+            color.fmt_ansi_suffix(f)
         }
         None => f.write_char(c),
     }
@@ -777,9 +783,9 @@ where
 {
     match indent.color {
         Some(color) => {
-            color.fmt_prefix(f)?;
+            color.fmt_ansi_prefix(f)?;
             repeat_char(f, indent.space.fill, indent.space.size)?;
-            color.fmt_suffix(f)?;
+            color.fmt_ansi_suffix(f)?;
         }
         None => {
             repeat_char(f, indent.space.fill, indent.space.size)?;

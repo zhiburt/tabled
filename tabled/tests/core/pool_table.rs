@@ -316,10 +316,10 @@ test_table!(
         .with(Padding::new(1, 2, 3, 4)
             .fill('!', '@', '#', '$')
             .colorize(
-                StaticColor::new("\u{1b}[34m", "\u{1b}[39m"),
-                StaticColor::new("\u{1b}[34m", "\u{1b}[39m"),
-                StaticColor::new("\u{1b}[34m", "\u{1b}[39m"),
-                StaticColor::new("\u{1b}[34m", "\u{1b}[39m"),
+                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
             )
         ),
     "+------+------+------+"

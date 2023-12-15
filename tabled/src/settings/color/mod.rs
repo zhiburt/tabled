@@ -7,7 +7,7 @@ use std::{fmt, ops::BitOr};
 
 use crate::{
     grid::{
-        ansi::{ANSIFmt, ANSIStr as StaticColor, ANSIBuf},
+        ansi::{ANSIBuf, ANSIFmt, ANSIStr as StaticColor},
         config::{ColoredConfig, Entity},
     },
     settings::{CellOption, TableOption},
@@ -274,7 +274,11 @@ impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        ANSIBuf::try_from(value).map(Color)
+        let buf = ANSIBuf::try_from(value)?;
+
+        Ok(Color {
+            inner: ColorInner::Allocated(buf),
+        })
     }
 }
 
@@ -283,7 +287,11 @@ impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        ANSIBuf::try_from(value).map(Color)
+        let buf = ANSIBuf::try_from(value)?;
+
+        Ok(Color {
+            inner: ColorInner::Allocated(buf),
+        })
     }
 }
 
@@ -321,24 +329,17 @@ impl<R> CellOption<R, ColoredConfig> for &Color {
 }
 
 impl ANSIFmt for Color {
-    fn fmt_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match &self.inner {
-            ColorInner::Static(color) => color.fmt_prefix(f),
-            ColorInner::Allocated(color) => color.fmt_prefix(f),
+            ColorInner::Static(color) => color.fmt_ansi_prefix(f),
+            ColorInner::Allocated(color) => color.fmt_ansi_prefix(f),
         }
     }
 
-    fn fmt_suffix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+    fn fmt_ansi_suffix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match &self.inner {
-            ColorInner::Static(color) => color.fmt_suffix(f),
-            ColorInner::Allocated(color) => color.fmt_suffix(f),
-        }
-    }
-
-    fn colorize<W: fmt::Write>(&self, f: &mut W, text: &str) -> fmt::Result {
-        match &self.inner {
-            ColorInner::Static(color) => color.colorize(f, text),
-            ColorInner::Allocated(color) => color.colorize(f, text),
+            ColorInner::Static(color) => color.fmt_ansi_suffix(f),
+            ColorInner::Allocated(color) => color.fmt_ansi_suffix(f),
         }
     }
 }

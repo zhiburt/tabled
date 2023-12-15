@@ -70,17 +70,16 @@ fn generate_table_config() -> SpannedConfig {
 struct Style(OStyle);
 
 impl ANSIFmt for Style {
-    fn fmt_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
-        let buf = OStylePrefix(&self.0).to_string();
-        f.write_str(&buf)
-    }
-}
+    fn fmt_ansi_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+        struct Prefix<'a>(&'a OStyle);
 
-struct OStylePrefix<'a>(&'a OStyle);
+        impl Display for Prefix<'_> {
+            fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+                self.0.fmt_prefix(f)
+            }
+        }
 
-impl Display for OStylePrefix<'_> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.0.fmt_prefix(f)
+        f.write_fmt(format_args!("{}", Prefix(&self.0)))
     }
 }
 

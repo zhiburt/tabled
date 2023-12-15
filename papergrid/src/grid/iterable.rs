@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    ansi::{ANSIFmt, ANSIBuf},
+    ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::spanned::{Offset, SpannedConfig},
     config::{AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides},
@@ -414,7 +414,7 @@ fn print_split_line<F: Write, D: Dimension>(
     }
 
     if let Some(clr) = used_color.take() {
-        clr.fmt_suffix(f)?;
+        clr.fmt_ansi_suffix(f)?;
     }
 
     Ok(())
@@ -560,7 +560,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
     }
 
     if let Some(clr) = used_color.take() {
-        clr.fmt_suffix(f)?;
+        clr.fmt_ansi_suffix(f)?;
     }
 
     Ok(())
@@ -738,16 +738,16 @@ fn print_horizontal_border<F: Write>(
         match cfg.lookup_horizontal_color(pos, i, width) {
             Some(color) => match used_color {
                 Some(clr) => {
-                    clr.fmt_suffix(f)?;
-                    color.fmt_prefix(f)?;
+                    clr.fmt_ansi_suffix(f)?;
+                    color.fmt_ansi_prefix(f)?;
                     f.write_char(c)?;
-                    color.fmt_suffix(f)?;
-                    clr.fmt_prefix(f)?;
+                    color.fmt_ansi_suffix(f)?;
+                    clr.fmt_ansi_prefix(f)?;
                 }
                 None => {
-                    color.fmt_prefix(f)?;
+                    color.fmt_ansi_prefix(f)?;
                     f.write_char(c)?;
-                    color.fmt_suffix(f)?;
+                    color.fmt_ansi_suffix(f)?;
                 }
             },
             _ => f.write_char(c)?,
@@ -919,9 +919,9 @@ impl<C> LinesIter<C> {
 fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl ANSIFmt>) -> fmt::Result {
     match clr {
         Some(color) => {
-            color.fmt_prefix(f)?;
+            color.fmt_ansi_prefix(f)?;
             f.write_str(text)?;
-            color.fmt_suffix(f)
+            color.fmt_ansi_suffix(f)
         }
         None => f.write_str(text),
     }
@@ -936,19 +936,19 @@ fn prepare_coloring<'a, F: Write>(
         Some(clr) => match used_color.as_mut() {
             Some(used_clr) => {
                 if **used_clr != *clr {
-                    used_clr.fmt_suffix(f)?;
-                    clr.fmt_prefix(f)?;
+                    used_clr.fmt_ansi_suffix(f)?;
+                    clr.fmt_ansi_prefix(f)?;
                     *used_clr = clr;
                 }
             }
             None => {
-                clr.fmt_prefix(f)?;
+                clr.fmt_ansi_prefix(f)?;
                 *used_color = Some(clr);
             }
         },
         None => {
             if let Some(clr) = used_color.take() {
-                clr.fmt_suffix(f)?
+                clr.fmt_ansi_suffix(f)?
             }
         }
     }
@@ -1024,9 +1024,9 @@ fn print_vertical_char<F: Write>(
 
     match color {
         Some(clr) => {
-            clr.fmt_prefix(f)?;
+            clr.fmt_ansi_prefix(f)?;
             f.write_char(symbol)?;
-            clr.fmt_suffix(f)?;
+            clr.fmt_ansi_suffix(f)?;
         }
         None => f.write_char(symbol)?,
     }
@@ -1180,9 +1180,9 @@ fn print_indent<F: Write>(f: &mut F, c: char, n: usize, color: Option<&ANSIBuf>)
 
     match color {
         Some(color) => {
-            color.fmt_prefix(f)?;
+            color.fmt_ansi_prefix(f)?;
             repeat_char(f, c, n)?;
-            color.fmt_suffix(f)
+            color.fmt_ansi_suffix(f)
         }
         None => repeat_char(f, c, n),
     }
