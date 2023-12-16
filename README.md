@@ -57,7 +57,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
   - [Width](#width)
     - [Truncate](#truncate)
     - [Wrapping](#wrapping)
-    - [Increaase width](#increaase-width)
+    - [Increase width](#increase-width)
     - [Justify](#justify)
     - [Priority](#priority)
     - [Percent](#percent)
@@ -861,7 +861,7 @@ table.with(Width::wrap(22));
 
 It can be used in combination with `MinWidth` to set an exact table size.
 
-#### Increaase width
+#### Increase width
 
 `MinWidth` sets a minimal width of an object.
 
