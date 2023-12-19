@@ -1957,91 +1957,38 @@ Utilities for dynamic `Table` displays.
 
 #### Col and Row
 
+`col!` creates a single column table, with a given set of cells.
+`row!` creates a single row table, with a given set of cells.
+
 Combine `col!` and `row!` to create flexible table visualizations.
 
 ```rust
-row![table1, table2];
+use tabled::{col, row, settings::Style};
+
+let mut table = row![
+    col!["table 0", "0", "1", "2"],
+    col!["table 1", "world"],
+    col!["table 2"],
+];
+table.with(Style::modern_rounded());
+
+println!("{table}");
 ```
+
+The output you're goint to see running it.
 
 ```text
-+-------------------------------------------+---------------------------------------------+
-| .---------------------------------------. | ┌────────────────────┬─────┬──────────────┐ |
-| | name             | age | is_validated | | │ name               │ age │ is_validated │ |
-| | Jon Doe          | 255 | false        | | ├────────────────────┼─────┼──────────────┤ |
-| | Mark Nelson      | 13  | true         | | │ Jack Black         │ 51  │ false        │ |
-| | Terminal Monitor | 0   | false        | | ├────────────────────┼─────┼──────────────┤ |
-| | Adam Blend       | 17  | true         | | │ Michelle Goldstein │ 44  │ true         │ |
-| '---------------------------------------' | └────────────────────┴─────┴──────────────┘ |
-+-------------------------------------------+---------------------------------------------+
-```
-
-```rust
-col![table1, table2];
-```
-
-```text
-+---------------------------------------------+
-| .---------------------------------------.   |
-| | name             | age | is_validated |   |
-| | Jon Doe          | 255 | false        |   |
-| | Mark Nelson      | 13  | true         |   |
-| | Terminal Monitor | 0   | false        |   |
-| | Adam Blend       | 17  | true         |   |
-| '---------------------------------------'   |
-+---------------------------------------------+
-| ┌────────────────────┬─────┬──────────────┐ |
-| │ name               │ age │ is_validated │ |
-| ├────────────────────┼─────┼──────────────┤ |
-| │ Jack Black         │ 51  │ false        │ |
-| ├────────────────────┼─────┼──────────────┤ |
-| │ Michelle Goldstein │ 44  │ true         │ |
-| └────────────────────┴─────┴──────────────┘ |
-+---------------------------------------------+
-```
-
-```rust
-row![table1; 3];
-```
-
-```text
-+-------------------------------------------+-------------------------------------------+-------------------------------------------+
-| .---------------------------------------. | .---------------------------------------. | .---------------------------------------. |
-| | name             | age | is_validated | | | name             | age | is_validated | | | name             | age | is_validated | |
-| | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | |
-| | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | |
-| | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | |
-| | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | |
-| '---------------------------------------' | '---------------------------------------' | '---------------------------------------' |
-+-------------------------------------------+-------------------------------------------+-------------------------------------------+
-```
-
-```rust
-col![
-    row![table_a, table_b], 
-    table_c
-]
-```
-
-```text
-+----------------------------------------------------------------------------------+
-| +--------------------------------+---------------------------------------------+ |
-| | +-------+-----+--------------+ | ┌────────────────────┬─────┬──────────────┐ | |
-| | | name  | age | is_validated | | │ name               │ age │ is_validated │ | |
-| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
-| | | Sam   | 31  | true         | | │ Jack Black         │ 51  │ false        │ | |
-| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
-| | | Sarah | 26  | true         | | │ Michelle Goldstein │ 44  │ true         │ | |
-| | +-------+-----+--------------+ | └────────────────────┴─────┴──────────────┘ | |
-| +--------------------------------+---------------------------------------------+ |
-+----------------------------------------------------------------------------------+
-| .---------------------------------------.                                        |
-| | name             | age | is_validated |                                        |
-| | Jon Doe          | 255 | false        |                                        |
-| | Mark Nelson      | 13  | true         |                                        |
-| | Terminal Monitor | 0   | false        |                                        |
-| | Adam Blend       | 17  | true         |                                        |
-| '---------------------------------------'                                        |
-+----------------------------------------------------------------------------------+
+╭─────────────┬─────────────┬─────────────╮
+│ +---------+ │ +---------+ │ +---------+ │
+│ | table 0 | │ | table 1 | │ | table 2 | │
+│ +---------+ │ +---------+ │ +---------+ │
+│ | 0       | │ | world   | │             │
+│ +---------+ │ +---------+ │             │
+│ | 1       | │             │             │
+│ +---------+ │             │             │
+│ | 2       | │             │             │
+│ +---------+ │             │             │
+╰─────────────┴─────────────┴─────────────╯
 ```
 
 #### `static_table`
@@ -2079,17 +2026,23 @@ Notice that you can even use it in documentation.
 ```rust
 /// Multiply 2 integers together.
 /// 
-/// ```
 #[doc = static_table::static_table!([
-    ["a", "b", "result"],
-    ["1", '2', '3'],
+    ["x", "y", "result"],
+    ["1", '0', '0'],
+    ["1", '2', '2'],
     ["2", '2', '4']
 ])]
-/// ```
 pub fn mul(left: usize, right: usize) -> usize {
     left + right
 }
 ```
+
+It will be looking as foolows.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/704c285b-f8ab-481b-a5bf-130406aad7d5">
+  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/164a82db-8ce7-4366-b21d-c679bea8d9fe">
+</picture>
 
 ## Features
 
