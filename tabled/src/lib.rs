@@ -4,7 +4,7 @@
 //! You can use [`Tabled`] trait if the data type is known.
 //! Or you can use [`Builder`] to construct the table from scratch.
 //!
-//! ## Usage
+//! ## Derive
 //!
 //! If you want to build a table for your custom type.
 //! A starting point is to a anotate your type with `#[derive(Tabled)]`.
@@ -55,8 +55,11 @@
 //! assert_eq!(table, expected);
 //! ```
 //!
-//! Not all types can derive [`Tabled`] trait though.
+//! BEWARE not all types can derive [`Tabled`] trait.
 //! The example below can't be compiled.
+//!
+//! Because `tabled` must know what we're up to print as a field, so
+//! each field must implement [`std::fmt::Display`].
 //!
 //! ```rust,compile_fail
 //!   # use tabled::Tabled;
@@ -68,8 +71,7 @@
 //!     struct SomeOtherType;
 //! ```
 //!
-//! Because `tabled` must know what we're up to print as a field, so
-//! each (almost) field must implement [`std::fmt::Display`].
+//! You can tweak it by derive options.
 //!
 //! ### Default implementations
 //!
@@ -92,7 +94,7 @@
 //! # assert_eq!(table.to_string(), expected);
 //! ```
 //!
-//! ### Dynamic table
+//! ### Builder
 //!
 //! When you data scheme is not known at compile time.
 //! You most likely will not able to relay on [`Tabled`] trait.
@@ -171,14 +173,21 @@
 //!
 //! You can use many settings which is found in [`tabled::settings`] module.
 //!
+//! # Features
+//!
+//! - `std`     - Used by default. If not its considered `no_std` with a limited set of functionality.
+//! - `derive`  - Used by default. A support for `Tabled` derive macro.
+//! - `ansi`    - A support for ANSI sequences.
+//! - `macros`  - A support for `row!`, `col!` macro.
+//!
 //! # Advanced
 //!
-//! ## Alloc
+//! ## Table types
 //!
 //! [`Table`] keeps data buffered, which sometimes not ideal choise.
 //! For such reason there is [`IterTable`] and [`CompactTable`].
 //!
-//! ### Less allocations
+//! ### [`IterTable`]
 //!
 //! [`IterTable`] stands on a middle ground between [`Table`] and [`CompactTable`].
 //!
@@ -205,9 +214,9 @@
 //! );
 //! ```
 //!
-//! ## Alloc free (`#nostd`)
+//! ### [`CompactTable`]
 //!
-//! [`CompactTable`] can be configured ('1) to not make any allocations.
+//! Alloc free can be configured ('1) to not make any allocations.
 //! But the price is that the set of settings which can be applied to it is limited.  
 //!
 //! It also can be printed directly to [`fmt::Write`] to not have any intermidiaries.
@@ -236,6 +245,10 @@
 //!
 //! table.fmt(StubWriter);
 //! ```
+//!
+//! ## `no_std`
+//!
+//! [`CompactTable`] can be used in `no_std` context.
 //!
 //! ## More information
 //!
@@ -296,12 +309,12 @@ pub mod grid;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use crate::{tabled::Tabled, tables::Table};
 
-/// A derive to implement a [`Tabled`] trait.
+/// A derive macro to implement a [`Tabled`] trait.
 ///
-/// The macros available only when `derive` feature in turned on (and it is by default).
+/// The macro available only when `derive` feature in turned on (and it is by default).
 ///
 /// To be able to use the derive each field must implement `std::fmt::Display`.
-/// The following example will cause a error because of that.
+/// The following example will cause an error because of that.
 ///
 /// ```rust,compile_fail
 /// use tabled::Tabled;
@@ -325,9 +338,9 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// #[derive(Tabled)]
 /// struct Person {
 ///     #[tabled(rename = "Name")]
-///     first_name: &'static str,
+///     first_name: String,
 ///     #[tabled(rename = "Surname")]
-///     last_name: &'static str,
+///     last_name: String,
 /// }
 /// ```
 ///
@@ -344,8 +357,8 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// struct Person {
 ///    id: u8,
 ///    #[tabled(skip)]
-///    number: &'static str,
-///    name: &'static str,
+///    number: String,
+///    name: String,
 /// }
 /// ```
 ///
@@ -360,9 +373,9 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// struct Person {
 ///    id: u8,
 ///    #[tabled(order = 0)]
-///    number: &'static str,
+///    number: String,
 ///    #[tabled(order = 1)]
-///    name: &'static str,
+///    name: String,
 /// }
 /// ```
 ///
@@ -429,10 +442,10 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// #[tabled(rename_all = "CamelCase")]
 /// struct Person {
 ///     id: u8,
-///     number: &'static str,
-///     name: &'static str,
+///     number: String,
+///     name: String,
 ///     #[tabled(rename_all = "snake_case")]
-///     middle_name: &'static str,
+///     middle_name: String,
 /// }
 /// ```
 ///
@@ -447,14 +460,14 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// #[derive(Tabled)]
 /// struct Person {
 ///     id: u8,
-///     name: &'static str,
+///     name: String,
 ///     #[tabled(inline)]
 ///     ed: Education,
 /// }
 ///
 /// #[derive(Tabled)]
 /// struct Education {
-///     uni: &'static str,
+///     uni: String,
 ///     graduated: bool,
 /// }
 /// ```
@@ -468,12 +481,12 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// enum Vehicle {
 ///     #[tabled(inline("Auto::"))]
 ///     Auto {
-///         model: &'static str,
-///         engine: &'static str,
+///         model: String,
+///         engine: String,
 ///     },
 ///     #[tabled(inline)]
 ///     Bikecycle(
-///         &'static str,
+///         String,
 ///         #[tabled(inline)] Bike,
 ///     ),
 /// }

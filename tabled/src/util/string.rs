@@ -51,7 +51,7 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
         let stripped = ansi_str::AnsiStr::ansi_strip(s);
         let (length, cutwidth, csize) = split_at_width(&stripped, width);
         let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
-        if csize == 0 {
+        if csize != 0 {
             let mut b = buf.into_owned();
             let count_unknowns = width - cutwidth;
             b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
