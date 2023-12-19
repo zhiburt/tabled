@@ -1424,6 +1424,20 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
     }
 }
 
+impl<H, V, const HN: usize, const VN: usize> Style<On, On, On, On, H, V, HN, VN> {
+    /// Removes frame.
+    pub const fn remove_frame(self) -> Style<(), (), (), (), H, V, HN, VN>
+    where
+        V: Copy,
+        H: Copy,
+    {
+        self.remove_bottom()
+            .remove_top()
+            .remove_left()
+            .remove_right()
+    }
+}
+
 #[cfg(feature = "std")]
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
     TableOption<Data, ColoredConfig, Dims> for Style<T, B, L, R, H, V, HSIZE, VSIZE>

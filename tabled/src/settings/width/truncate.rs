@@ -18,7 +18,8 @@ use crate::{
     },
 };
 
-use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
+use super::util::{get_table_widths, get_table_widths_with_total};
+use crate::util::string::cut_str;
 
 /// Truncate cut the string to a given width if its length exceeds it.
 /// Otherwise keeps the content of a cell untouched.

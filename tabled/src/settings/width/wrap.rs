@@ -21,7 +21,8 @@ use crate::{
     },
 };
 
-use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
+use super::util::{get_table_widths, get_table_widths_with_total};
+use crate::util::string::split_at_width;
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -209,7 +210,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
 
 #[cfg(feature = "ansi")]
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
-    use super::util::strip_osc;
+    use crate::util::string::strip_osc;
 
     if width == 0 {
         return String::new();
@@ -783,7 +784,8 @@ mod parsing {
 }
 
 fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
-    let (length, count_unknowns, split_char_size) = split_at_pos(text, at);
+    let (length, width, split_char_size) = split_at_width(text, at);
+    let count_unknowns = if split_char_size > 0 { at - width } else { 0 };
     let (lhs, rhs) = text.split_at(length);
 
     (lhs, rhs, (count_unknowns, split_char_size))

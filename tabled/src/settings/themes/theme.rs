@@ -96,6 +96,12 @@ impl Theme {
     }
 }
 
+impl Default for Theme {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 macro_rules! func_set_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Set a border character", " ", "<", $desc, ">", " ", ".")]

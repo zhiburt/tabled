@@ -275,6 +275,8 @@
 )]
 #![allow(clippy::uninlined_format_args)]
 
+mod util;
+
 #[cfg(feature = "std")]
 mod tabled;
 

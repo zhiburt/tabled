@@ -19,6 +19,23 @@ impl<S> VerticalPanel<S> {
     {
         Self { text, col }
     }
+
+    /// Split the set text to a certain width, so it fits within it.
+    pub fn width(self, width: usize) -> VerticalPanel<String>
+    where
+        S: AsRef<str>,
+    {
+        let mut text = String::new();
+
+        if width > 0 {
+            text = split_string_by_width(self.text.as_ref(), width);
+        }
+
+        VerticalPanel {
+            text,
+            col: self.col,
+        }
+    }
 }
 
 impl<S, R, D> TableOption<R, ColoredConfig, D> for VerticalPanel<S>
@@ -79,5 +96,57 @@ fn move_column_spans(cfg: &mut SpannedConfig, target_column: usize) {
 
         cfg.set_row_span((row, col), 1);
         cfg.set_row_span((row, col + 1), span);
+    }
+}
+
+fn split_string_by_width(str: &str, width: usize) -> String {
+    if width == 0 {
+        return String::new();
+    }
+
+    let (lhs, rhs) = crate::util::string::split_str(str, width);
+    if rhs.is_empty() {
+        return lhs.into_owned();
+    }
+
+    let mut buf = lhs.into_owned();
+    let mut next = rhs.into_owned();
+    while !next.is_empty() {
+        let (lhs, rhs) = crate::util::string::split_str(&next, width);
+        buf.push('\n');
+        buf.push_str(&lhs);
+        next = rhs.into_owned();
+    }
+
+    buf
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_split_string_by_width() {
+        assert_eq!(split_string_by_width("123456789", 3), "123\n456\n789");
+        assert_eq!(split_string_by_width("123456789", 2), "12\n34\n56\n78\n9");
+        assert_eq!(
+            split_string_by_width("123456789", 1),
+            "1\n2\n3\n4\n5\n6\n7\n8\n9"
+        );
+        assert_eq!(split_string_by_width("123456789", 0), "");
+
+        assert_eq!(
+            split_string_by_width("\u{1b}[31;100m😳😳🏳️\u{1b}[39m\u{1b}[49m😳🏳️", 3),
+            {
+                #[cfg(feature = "ansi")]
+                {
+                    "\u{1b}[31m\u{1b}[100m😳\u{1b}[39m\u{1b}[49m�\n\u{1b}[31m\u{1b}[100m🏳\u{fe0f}\u{1b}[39m\u{1b}[49m😳\n🏳\u{fe0f}"
+                }
+                #[cfg(not(feature = "ansi"))]
+                {
+                    "\u{1b}[31\n;10\n0m�\n😳🏳\n\u{fe0f}\u{1b}[39\nm\u{1b}[4\n9m�\n🏳\u{fe0f}"
+                }
+            }
+        );
     }
 }
