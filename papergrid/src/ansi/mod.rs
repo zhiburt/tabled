@@ -1,5 +1,5 @@
-//! A module which contains [`Color`] trait and its implementation [`AnsiColor`].
-
+//! A module which contains [`ANSIFmt`] trait and its implementation [`ANSIStr`]
+#[cfg_attr(feature = "std", doc = "and [`ANSIBuf`].")]
 #[cfg(feature = "std")]
 mod ansi_buf;
 mod ansi_str;

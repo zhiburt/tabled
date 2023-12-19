@@ -9,7 +9,7 @@ use crate::{
 
 /// [`Colorization`] sets a color for the whole table data (so it's not include the borders).
 ///
-/// You can colorize borders in a different round using [`BorderColor`] or [`RawStyle`]
+/// You can colorize borders in a different round using [`BorderColor`] or [`Theme`]
 ///
 /// # Examples
 ///
@@ -34,7 +34,7 @@ use crate::{
 /// println!("{table}");
 /// ```
 ///
-/// [`RawStyle`]: crate::settings::style::RawStyle
+/// [`Theme`]: crate::settings::themes::Theme
 /// [`BorderColor`]: crate::settings::style::BorderColor
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Colorization {

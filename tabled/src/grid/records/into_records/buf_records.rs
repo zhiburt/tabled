@@ -1,14 +1,9 @@
-//! A module contains [`BufRows`] and [`BufColumns`] iterators.
-//!
-//! Almoust always they both can be used interchangeably but [`BufRows`] is supposed to be lighter cause it
-//! does not reads columns.
+//! A module contains [`BufRecords`] iterator.
 
 use crate::grid::records::IntoRecords;
 
 /// BufRecords inspects [`IntoRecords`] iterator and keeps read data buffered.
 /// So it can be checking before hand.
-///
-/// In contrast to [`BufRows`] it keeps records by columns.
 #[derive(Debug)]
 pub struct BufRecords<I, T> {
     iter: I,
@@ -16,7 +11,7 @@ pub struct BufRecords<I, T> {
 }
 
 impl BufRecords<(), ()> {
-    /// Creates new [`BufColumns`] structure, filling the buffer.
+    /// Creates new [`BufRecords`] structure, filling the buffer.
     pub fn new<I>(
         records: I,
         sniff: usize,
@@ -60,7 +55,7 @@ where
     }
 }
 
-/// A row iterator for [`BufColumns`]
+/// A row iterator for [`BufRecords`]
 #[derive(Debug)]
 pub struct BufRecordsIter<I, T> {
     iter: I,

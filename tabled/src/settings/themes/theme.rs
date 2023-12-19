@@ -96,9 +96,15 @@ impl Theme {
     }
 }
 
+impl Default for Theme {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 macro_rules! func_set_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Set a border character", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Set a border character", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self, c: char) {
             self.border.chars.$arg = Some(c);
         }
@@ -107,7 +113,7 @@ macro_rules! func_set_chars {
 
 macro_rules! func_remove_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Remove a border character", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Remove a border character", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self) {
             self.border.chars.$arg = None;
         }
@@ -116,7 +122,7 @@ macro_rules! func_remove_chars {
 
 macro_rules! func_get_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Get a border character", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Get a border character", " ", "", $desc, "", " ", ".")]
         pub const fn $name(&self) -> Option<char> {
             self.border.chars.$arg
         }
@@ -125,7 +131,7 @@ macro_rules! func_get_chars {
 
 macro_rules! func_set_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Set a border color", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Set a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self, color: Color) {
             self.border.colors.$arg = Some(color);
         }
@@ -134,7 +140,7 @@ macro_rules! func_set_colors {
 
 macro_rules! func_remove_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Remove a border color", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Remove a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self) {
             self.border.colors.$arg = None;
         }
@@ -143,7 +149,7 @@ macro_rules! func_remove_colors {
 
 macro_rules! func_get_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Set a border color", " ", "<", $desc, ">", " ", ".")]
+        #[doc = concat!("Get a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&self) -> Option<&Color> {
             self.border.colors.$arg.as_ref()
         }

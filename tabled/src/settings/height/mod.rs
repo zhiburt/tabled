@@ -119,8 +119,8 @@ impl Height {
     ///      +---------------------+------+------------+",
     /// )
     /// ```
-    pub fn increase<W: Measurement<Height>>(width: W) -> CellHeightIncrease<W> {
-        CellHeightIncrease::new(width)
+    pub fn increase<W: Measurement<Height>>(height: W) -> CellHeightIncrease<W> {
+        CellHeightIncrease::new(height)
     }
 
     /// Create [`CellHeightLimit`] to set a table/cell height.
@@ -189,8 +189,8 @@ impl Height {
     ///      +--+--+--+",
     /// );
     /// ```
-    pub fn limit<W: Measurement<Height>>(width: W) -> CellHeightLimit<W> {
-        CellHeightLimit::new(width)
+    pub fn limit<W: Measurement<Height>>(height: W) -> CellHeightLimit<W> {
+        CellHeightLimit::new(height)
     }
 
     /// Create [`HeightList`] to set a table height to a constant list of row heights.

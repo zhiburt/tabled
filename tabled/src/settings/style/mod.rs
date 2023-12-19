@@ -85,16 +85,16 @@
 //! )
 //! ```
 //!
-//! ## [`RawStyle`]
+//! ## [`Theme`]
 //!
-//! A different representation of [`Style`].
+//! A different representation of [`Theme`].
 //! With no checks in place.
 //!
 //! It also contains a list of types to support colors.
 //!
 //! [`Table`]: crate::Table
 //! [`BorderText`]: crate::settings::style::BorderText
-//! [`RawStyle`]: crate::settings::style::RawStyle
+//! [`Theme`]: crate::settings::themes::Theme
 
 mod border;
 mod builder;

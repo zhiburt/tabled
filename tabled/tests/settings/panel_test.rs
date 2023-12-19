@@ -345,3 +345,27 @@ test_table!(
     "     | 1 |   1-0    |  1-1  |   1-2    |     "
     "     | 2 |   2-0    |  2-1  |   2-2    |     "
 );
+
+test_table!(
+    panel_vertical_split,
+    Matrix::new(3, 3).with(Style::psql()).with(Panel::vertical(0, "Linux Distributions").width(1)),
+    " L | N | column 0 | column 1 | column 2 "
+    " i |   |          |          |          "
+    " n |   |          |          |          "
+    " u |   |          |          |          "
+    " x |   |          |          |          "
+    "   |   |          |          |          "
+    " D +---+----------+----------+----------"
+    " i | 0 |   0-0    |   0-1    |   0-2    "
+    " s |   |          |          |          "
+    " t |   |          |          |          "
+    " r |   |          |          |          "
+    " i | 1 |   1-0    |   1-1    |   1-2    "
+    " b |   |          |          |          "
+    " u |   |          |          |          "
+    " t |   |          |          |          "
+    " i | 2 |   2-0    |   2-1    |   2-2    "
+    " o |   |          |          |          "
+    " n |   |          |          |          "
+    " s |   |          |          |          "
+);

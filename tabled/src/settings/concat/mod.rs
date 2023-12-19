@@ -27,6 +27,9 @@ use crate::{
 /// [`Concat`] in horizontal mode has similar behaviour to tuples `(a, b)`.
 /// But it behaves on tables rather than on an actual data.
 ///
+/// [`Concat`] DOES NOT handle style merge and other configuration of 2nd table,
+/// it just uses 1st one as a bases.
+///
 /// # Example
 ///
 ///

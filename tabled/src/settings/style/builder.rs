@@ -51,7 +51,7 @@ use crate::grid::config::ColoredConfig;
 /// It tries to limit an controlling a valid state of it.
 /// For example, it won't allow to call method [`Style::corner_top_left`] unless [`Style::left`] and [`Style::top`] is set.
 ///
-/// You can turn [`Style`] into [`RawStyle`] to have more control using [`Into`] implementation.
+/// You can turn [`Style`] into [`Theme`] to have a precise control using [`Into`] implementation.
 ///
 /// # Example
 ///
@@ -69,7 +69,7 @@ use crate::grid::config::ColoredConfig;
 /// ```
 ///
 /// [`Table`]: crate::Table
-/// [`RawStyle`]: crate::settings::Style::RawStyle
+/// [`Theme`]: crate::settings::themes::Theme
 /// [`Style::corner_top_left`]: Style::corner_top_left
 /// [`Style::left`]: Style.left
 /// [`Style::top`]: Style.function.top
@@ -1421,6 +1421,20 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
         let horizontals = self.horizontals;
 
         Style::new(self.borders, horizontals, self.verticals)
+    }
+}
+
+impl<H, V, const HN: usize, const VN: usize> Style<On, On, On, On, H, V, HN, VN> {
+    /// Removes frame.
+    pub const fn remove_frame(self) -> Style<(), (), (), (), H, V, HN, VN>
+    where
+        V: Copy,
+        H: Copy,
+    {
+        self.remove_bottom()
+            .remove_top()
+            .remove_left()
+            .remove_right()
     }
 }
 

@@ -197,6 +197,11 @@ impl Color {
         Self { inner }
     }
 
+    /// Creates a new empty [`Color`]`.
+    pub fn empty() -> Self {
+        Self::new_static("", "")
+    }
+
     const fn new_static(prefix: &'static str, suffix: &'static str) -> Self {
         let color = StaticColor::new(prefix, suffix);
         let inner = ColorInner::Static(color);
