@@ -111,8 +111,13 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 
 ## Usage
 
-To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive it with a `#[derive(Tabled)]` macro.
-Most of the default types implement the trait out of the box.
+To print a list of structs or enums as a table,
+There is 2 ways you can build a table.
+
+* Using a builder method, to build table step by step
+* Implement a `Tabled` trait for your type (or anotate your type with a derive macro `#[derive(Tabled)]`) and use a iterator of this type.
+
+The example below is demontrates a derive method.
 
 ```rust
 use tabled::{Tabled, Table};
@@ -159,6 +164,8 @@ assert_eq!(table, expected);
 
 Sometimes you can't say what type of data you are going to deal with (like parsing `csv`).
 In such cases it may be handy to build table dynamically (step by step).
+
+The next example shows a builder example.
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
@@ -1469,6 +1476,8 @@ struct SomeOtherType;
 
 The `Tabled` macro available when `derive` feature in turned on.
 And it is by default.
+
+Most of the default types implement the corresponding traits too.
 
 ### Override a column name
 
