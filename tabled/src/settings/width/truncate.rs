@@ -6,7 +6,7 @@ use std::{borrow::Cow, iter, marker::PhantomData};
 
 use crate::{
     grid::{
-        config::{ColoredConfig, SpannedConfig},
+        config::{ColoredConfig, Entity, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{string_width, string_width_multiline},
@@ -46,6 +46,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     multiline: bool,
     _priority: PhantomData<P>,
 }
+
 #[cfg(feature = "ansi")]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct TruncateSuffix<'a> {
