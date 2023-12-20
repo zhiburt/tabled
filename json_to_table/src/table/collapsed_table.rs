@@ -7,7 +7,6 @@ use std::{
 use serde_json::Map;
 use tabled::{
     builder::Builder,
-    col,
     grid::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset},
         dimension::{Dimension, Estimate},
@@ -315,7 +314,7 @@ fn generate_vertical_object(
 
         let key = config_string(key, &cfg.cfg, max_key_width, entry_height);
 
-        let mut key = col![key];
+        let mut key = tabled::builder::Builder::from(vec![vec![key]]).build();
         key.with(cfg.cfg.clone());
         key.with(NoRightBorders);
 
@@ -514,7 +513,7 @@ fn generate_horizontal_object(
 fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData {
     let value = config_string(value, &cfg.cfg, ctx.size.width, ctx.size.height);
 
-    let mut table = col![value];
+    let mut table = tabled::builder::Builder::from(vec![vec![value]]).build();
     table.with(cfg.cfg.clone());
 
     if !ctx.is_last_row || ctx.no_bottom {
