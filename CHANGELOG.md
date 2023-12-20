@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.15.0] - 2023-12-20
+
+### Added
+
+- Added `Table::modify` as an option to `Modify` usage, which make cleaner code.
+- Added more features to `themes::Theme`.
+- Added a new setting `Reverse` to reverse the table.
+- Added vertical support for `LineText`.
+- Added `ByContet` locator.
+- Added `ByCondition` locator.
+- Added `Locator` factory for `Location`s.
+- Added tabled features to all subprojects to be able to reduce binary size.
+
+# Changed
+
+- Move `Style` to const implementation (it invloved changes to `Border`/`BorderColor` and more related subjects).
+- Added a basic implementation for a render.
+- Added a new `Style` (by [@Brijeshkrishna](https://github.com/Brijeshkrishna)).
+- Refactored a `Builder` methods (by [@CouldBeFree](https://github.com/CouldBeFree))
+- Changed `ColumnNames` interface.
+- Changed `LineText` interface.
+- Changed `IntoRecords` interface.
+- Reordered `TableOption` interface.
+- Renamed `BorderText` to `LineText`.
+- Renamed `BorderChar` to `LineChar`.
+- Renamed `RawStyle` to `themes::Theme`.
+- Renamed `Locator` to `Location`.
+- Renamed `papergrid::Color` trait to `ANSIFmt`.
+- Renamed `papergrid::StaticColor` trait to `ANSIStr`.
+- Renamed `papergrid::ColorBuf` trait to `ANSIBuf`.
+- Renamed `color` feature to `ansi`.
+
+# Fixed
+
+- Fix `IndexBuilder::is_empty` function (by @[pjhades](https://github.com/pjhades)).
+- Fix a clippy warning in `tabled_derive`.
+- Fix spelling mistakes (by [@oliashish](https://github.com/oliashish)).
+- Fix spelling mistakes (by [@Kobzol](https://github.com/Kobzol)).
+
+## [0.13.0] - 2023-07-24
+
+### Added
+
+- Added `settings::Dup` to toplicate content.
+- Added `settings::themes::ColumnNames` to set text on border (adjusted to cells).
+- Added `Xor` implementation for `Color`.
+- Added `Colorization` to set colors of table by a pattern.
+
 ## [0.14.0] - 2023-08-04
 
 ### Added

@@ -102,7 +102,7 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(papergrid::util::string::string_width_multiline(&table), 50);
+    assert_eq!(tabled::grid::util::string::string_width_multiline(&table), 50);
     assert_eq!(
         table,
         static_table!(

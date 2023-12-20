@@ -190,7 +190,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: papergrid::config::Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let available = self.width.measure(&*records, cfg);
 
         let mut width = available;
