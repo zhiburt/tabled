@@ -112,7 +112,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 ## Usage
 
 To print a list of structs or enums as a table,
-There is 2 ways you can build a table.
+there is 2 ways you can build a table.
 
 * Using a builder method, to build table step by step
 * Implement a `Tabled` trait for your type (or anotate your type with a derive macro `#[derive(Tabled)]`) and use a iterator of this type.
