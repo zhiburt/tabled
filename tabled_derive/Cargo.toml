@@ -1,6 +1,6 @@
 [package]
 name = "tabled_derive"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Derive macros which is used by tabled crate"

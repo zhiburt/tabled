@@ -1,6 +1,6 @@
 [package]
 name = "ron_to_table"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 repository = "https://github.com/zhiburt/tabled"
@@ -19,7 +19,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 ron = "0.8"
-tabled = { path = "../tabled", features = ["std"], default-features = false }
+tabled = { version = "0.15", features = ["std"], default-features = false }
 
 [dev-dependencies]
 testing_table = { path = "../testing_table", features = ["ansi"] }

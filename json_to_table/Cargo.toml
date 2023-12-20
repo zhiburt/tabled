@@ -19,7 +19,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 serde_json = "1"
-tabled = { path = "../tabled", features = ["macros"], default-features = false }
+tabled = { version = "0.15", features = ["std"], default-features = false }
 
 [dev-dependencies]
 testing_table = { path = "../testing_table", features = ["ansi"] }

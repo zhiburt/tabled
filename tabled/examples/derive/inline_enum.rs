@@ -9,9 +9,9 @@
 //! must implement the [`Display`] trait as they will be represented in
 //! a single column with the value of their [`ToString`] output.
 
-use tabled::Table;
+use tabled::{Table, Tabled};
 
-#[derive(tabled::Tabled)]
+#[derive(Tabled)]
 enum Contact<'a> {
     #[tabled(inline("telegram::"))]
     Telegram {
