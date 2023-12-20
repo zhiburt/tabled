@@ -166,7 +166,7 @@ impl<L, I> HorizontalLine<L, On, I> {
     }
 
     /// Remove a horizontal right character.
-    pub const fn remove_right(mut self) -> HorizontalLine<I, (), I> {
+    pub const fn remove_right(mut self) -> HorizontalLine<L, (), I> {
         self.line.right = None;
         HorizontalLine::update(self.line)
     }
