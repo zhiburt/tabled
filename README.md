@@ -111,12 +111,15 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 
 ## Usage
 
-To print a list of structs or enums as a table,
-there is 2 ways you can build a table.
+To print a list of structs or enums as a table, there is 2 ways.
 
 * Using a builder method, to build table step by step
-* Implement a `Tabled` trait for your type (or anotate your type with a derive macro `#[derive(Tabled)]`) and use a iterator of this type.
+* Implement a `Tabled` trait for your type (or anotate your type with a derive macro) and use a iterator of this type.
 
+A builder method gets handy, when a data schema is unknown,\
+while a typped struct in cases where we know the data structure beforehand.
+
+Bellow are shown both of these methods.\
 The example below is demontrates a derive method.
 
 ```rust
@@ -161,9 +164,6 @@ let expected = "+------+----------------+---------------+\n\
 
 assert_eq!(table, expected);
 ```
-
-Sometimes you can't say what type of data you are going to deal with (like parsing `csv`).
-In such cases it may be handy to build table dynamically (step by step).
 
 The next example shows a builder example.
 
@@ -835,11 +835,10 @@ An output could look like the following.
 
 Using the following structures you can configure a width of a table and a single cell.
 
-But be aware that it often DOES NOT consider `Padding` when adjusting the width.
+BEWARE that `Width` controls only content, so it can't make things smaller then a certain minimum.
+BEWARE that it DOES NOT consider `Padding` when adjusting the width.
 
 The functions preserves `ansi` color sequences (when `ansi` feature is on).
-
-Beware that we `Width` controls only content, so it can't make things smaller then a certain minimum.
 
 Bellow is an example of setting an exact table width.
 
@@ -852,7 +851,7 @@ use tabled::{
     Table,
 };
 
-fn generate_table(string_size: usize, width: usize) -> String {
+fn gen_table(string_size: usize, width: usize) -> String {
     let data = vec![(string_size.to_string(), "x".repeat(string_size))];
 
     let mut table = Table::new(data);
@@ -864,10 +863,10 @@ fn generate_table(string_size: usize, width: usize) -> String {
     table.to_string()
 }
 
-let table = generate_table(50, 40);
+let table = gen_table(50, 40);
 println!("{table}");
 
-let table = generate_table(20, 40);
+let table = gen_table(20, 40);
 println!("{table}");
 ```
 
@@ -1004,16 +1003,12 @@ Bellow is an example of setting an exact table height and width.
 
 ```rust
 use std::iter::FromIterator;
-
 use tabled::{
-    settings::{
-        peaker::{PriorityMax, PriorityMin},
-        Height, Settings, Width,
-    },
+    settings::{Height, Settings, Width},
     Table,
 };
 
-fn generate_data(width: usize, height: usize) -> Vec<Vec<String>> {
+fn gen_data(width: usize, height: usize) -> Vec<Vec<String>> {
     let dims = format!("{}x{}", width, height);
     let string = vec!["x".repeat(width); height].join("\n");
 
@@ -1023,25 +1018,22 @@ fn generate_data(width: usize, height: usize) -> Vec<Vec<String>> {
     ]
 }
 
-fn generate_table(data: Vec<Vec<String>>, width: usize, height: usize) -> String {
+fn gen_table(data: Vec<Vec<String>>, width: usize, height: usize) -> String {
     let mut table = Table::from_iter(data);
 
     table.with(
         Settings::empty()
-            .with(Width::truncate(width).priority::<PriorityMax>())
-            .with(Width::increase(width).priority::<PriorityMin>())
+            .with(Width::truncate(width))
+            .with(Width::increase(width))
             .with(Height::increase(height))
-            .with(Height::limit(height).priority::<PriorityMax>()),
+            .with(Height::limit(height)),
     );
 
     table.to_string()
 }
 
-let table = generate_table(generate_data(40, 10), 30, 8);
-println!("{table}");
-
-let table = generate_table(generate_data(40, 4), 80, 12);
-println!("{table}");
+println!("{}", gen_table(gen_data(40, 10), 30, 8));
+println!("{}", gen_table(gen_data(40, 4), 80, 12));
 ```
 
 ```text
@@ -1691,26 +1683,23 @@ use tabled::{
     tables::PoolTable,
 };
 
-fn main() {
-    let characters = [
-        "Naruto Uzumaki",
-        "Kakashi Hatake",
-        "Minato Namikaze",
-        "Jiraiya",
-        "Orochimaru",
-        "Itachi Uchiha",
-    ];
+let characters = [
+    "Naruto Uzumaki",
+    "Kakashi Hatake",
+    "Minato Namikaze",
+    "Jiraiya",
+    "Orochimaru",
+    "Itachi Uchiha",
+];
 
-    let data = characters.chunks(2);
+let data = characters.chunks(2);
 
-    let table = PoolTable::new(data)
-        .with(Style::dots())
-        .with(Alignment::center())
-        .to_string();
+let table = PoolTable::new(data)
+    .with(Style::dots())
+    .with(Alignment::center())
+    .to_string();
 
-    println!("{table}");
-}
-
+println!("{table}");
 ```
 
 The output would look like the following.
@@ -2106,7 +2095,7 @@ or call `tabled::settings::formatting::Charset::clean` and `tabled::settings::fo
 By default `tabled` doesn't handle [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code).
 By default such things as hyperlinks, blinking and others things which can be achieved via ANSI codes might not work correctly.
 
-To enable this support, add the `color` feature to your `Cargo.toml`
+To enable this support, add the `ansi` feature to your `Cargo.toml`
 
 ```toml
 tabled = { version = "*", features = ["ansi"] }
@@ -2114,8 +2103,8 @@ tabled = { version = "*", features = ["ansi"] }
 
 ### Emoji
 
-The library support emojies out of the box (include `color` feature)
-but be aware that some of the terminals and editors may not render them as you would expect.
+The library support emojies out of the box (but sometimes `ansi` feature is required).
+Be aware that some of the terminals and editors may not render them as you would expect.
 
 Let's add emojies to an example from a [Usage](#Usage) section.
 
@@ -2156,7 +2145,7 @@ As you can see Github tricks a bit a return table, but `GNOME terminal` and `Ala
 
 ### Terminal size
 
-It's a friquent case where it's nessary to align a table to a terminal width or height.
+It's a frequent case where it's nessary to align a table to a terminal width or height.
 You can achieve that by using `Width` and `Height`.
 You can peak a strategy by which a column/row truncation/widening will be done by using `Priority`.
 
@@ -2170,16 +2159,6 @@ use tabled::{
 };
 use terminal_size::{terminal_size, Height as TerminalHeight, Width as TerminalWidth};
 
-fn build_table() -> Table {
-    let data = [
-        ["0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"],
-        ["0.2.0", "2021-06-19", "false", "API changes"],
-        ["0.1.4", "2021-06-07", "false", "display_with attribute"],
-    ];
-
-    Builder::from_iter(data).build()
-}
-
 fn get_terminal_size() -> (usize, usize) {
     let (TerminalWidth(width), TerminalHeight(height)) =
         terminal_size().expect("failed to obtain a terminal size");
@@ -2187,20 +2166,24 @@ fn get_terminal_size() -> (usize, usize) {
     (width as usize, height as usize)
 }
 
-fn main() {
-    let (width, height) = get_terminal_size();
+let (width, height) = get_terminal_size();
 
-    let term_size_settings = Settings::default()
-        .with(Width::wrap(width).priority::<PriorityMax>())
-        .with(Width::increase(width))
-        .with(Height::limit(height))
-        .with(Height::increase(height));
+let data = [
+    ["0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"],
+    ["0.2.0", "2021-06-19", "false", "API changes"],
+    ["0.1.4", "2021-06-07", "false", "display_with attribute"],
+];
 
-    let mut table = build_table();
-    table.with(term_size_settings);
+let table_settings = Settings::default()
+    .with(Width::wrap(width).priority::<PriorityMax>())
+    .with(Width::increase(width))
+    .with(Height::limit(height))
+    .with(Height::increase(height));
 
-    println!("{table}");
-}
+let mut table = Table::from_iter(data);
+table.with(table_settings);
+
+println!("{table}");
 ```
 
 ### Semver
