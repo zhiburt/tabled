@@ -1887,7 +1887,7 @@ Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and 
 Also you can target a column via its name using `ByColumnName`.
 
 ```rust
-use tabled::{locator::ByColumnName, Alignment, Modify};
+use tabled::{location::ByColumnName, Alignment, Modify};
 
 table.with(Modify::new(ByColumnName::new("name")).with(Alignment::center()));
 ```
