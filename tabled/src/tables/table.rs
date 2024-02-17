@@ -188,7 +188,7 @@ impl Table {
         self
     }
 
-    /// It's a generic function which applies options to a particalar cells on the [`Table`].
+    /// It's a generic function which applies options to particular cells on the [`Table`].
     /// Target cells using [`Object`]s such as [`Cell`], [`Rows`], [`Location`] and more.
     ///
     /// It applies settings immediately.
