@@ -355,7 +355,7 @@ mod print {
     }
 
     fn generate_table_column(
-        list: &Vec<TableValue>,
+        list: &[TableValue],
         cfg: &CompactMultilineConfig,
         dims: &Dimensions,
         priority: PoolTableDimension,
@@ -444,7 +444,7 @@ mod print {
     }
 
     fn generate_table_row(
-        list: &Vec<TableValue>,
+        list: &[TableValue],
         cfg: &CompactMultilineConfig,
         dims: &Dimensions,
         priority: PoolTableDimension,

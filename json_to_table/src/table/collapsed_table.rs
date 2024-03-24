@@ -108,7 +108,7 @@ fn _collapsed_table(val: &Value, cfg: &Config, dims: &Dimensions, ctx: PrintCont
 }
 
 fn generate_vertical_array(
-    list: &Vec<Value>,
+    list: &[Value],
     cfg: &Config,
     dims: &Dimensions,
     ctx: PrintContext,
@@ -178,7 +178,7 @@ fn generate_vertical_array(
 }
 
 fn generate_horizontal_array(
-    list: &Vec<Value>,
+    list: &[Value],
     cfg: &Config,
     dims: &Dimensions,
     ctx: PrintContext,

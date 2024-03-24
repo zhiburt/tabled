@@ -26,7 +26,7 @@ impl<T> VecRecords<T> {
     ///
     /// It assumes that data vector has all rows has the same length().
     pub fn new(data: Vec<Vec<T>>) -> Self {
-        let count_columns = data.get(0).map_or(0, |row| row.len());
+        let count_columns = data.first().map_or(0, |row| row.len());
         let count_rows = data.len();
         let shape = (count_rows, count_columns);
 
