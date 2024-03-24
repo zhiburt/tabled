@@ -390,6 +390,30 @@ fn info_from_variant(
         };
 
         quote! { ::std::borrow::Cow::from(format!("{}", #result)) }
+    } else if let Some(custom_format) = &attr.format {
+        let args = match &attr.format_with_args {
+            None => None,
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
+        };
+
+        match args {
+            Some(args) => {
+                quote!(vec![::std::borrow::Cow::Owned(
+                    format!(#custom_format, #args)
+                )])
+            }
+            None => {
+                quote!(vec![::std::borrow::Cow::Owned(
+                    format!(#custom_format, #variant)
+                )])
+            }
+        }
     } else {
         let default_value = "+";
         quote! { ::std::borrow::Cow::Borrowed(#default_value) }
@@ -446,6 +470,30 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
         };
 
         return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
+    } else if let Some(custom_format) = &attr.format {
+        let args = match &attr.format_with_args {
+            None => None,
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
+        };
+
+        let _ = match args {
+            Some(args) => {
+                return quote!(vec![::std::borrow::Cow::Owned(
+                    format!(#custom_format, #args)
+                )])
+            }
+            None => {
+                return quote!(vec![::std::borrow::Cow::Owned(
+                    format!(#custom_format, #field)
+                )])
+            }
+        };
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
@@ -621,6 +669,10 @@ fn merge_attributes(attr: &mut Attributes, global_attr: &StructAttributes) {
 fn fnarg_tokens(arg: &FuncArg) -> TokenStream {
     match arg {
         FuncArg::SelfRef => quote! { &self },
+        FuncArg::SelfRefProperty(val) => {
+            let property_name = syn::Ident::new(val, proc_macro2::Span::call_site());
+            quote! { &self.#property_name }
+        }
         FuncArg::Byte(val) => quote! { #val },
         FuncArg::Char(val) => quote! { #val },
         FuncArg::Bool(val) => quote! { #val },

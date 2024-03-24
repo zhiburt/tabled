@@ -661,6 +661,25 @@ mod enum_ {
     test_enum!(order_15, t: { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 2)] V3(u8) }, headers: ["V1", "V2", "V3"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],);
 
     test_enum!(order_0_inlined, t: #[tabled(inline)] { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) }, headers: ["TestType"], tests: V1(0) => ["V1"], V2(0) => ["V2"], V3(0) => ["V3"],);
+
+    // todo
+    // test_enum!(
+    //     format,
+    //     t: {
+    //         #[tabled(format("display1"))]
+    //         AbsdEgh { a: u8, b: i32 }
+    //         #[tabled(format("display1"))]
+    //         B(String)
+    //         #[tabled(format("display1"))]
+    //         K
+    //     },
+    //     headers: ["AbsdEgh", "B", "K"],
+    //     tests:
+    //         AbsdEgh { a: 0, b: 0 }  => ["1 2", "", ""],
+    //         B(String::new()) => ["", "asd 200 Hello World", ""],
+    //         K => ["", "", "100 200"],
+    // );
+
 }
 
 mod unit {
@@ -872,6 +891,28 @@ mod structure {
         t: { #[tabled(rename_all = "lowercase", rename = "Hello")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr }
         init: { f1: 0, f2: "v2" }
         expected: ["Hello", "F2"], ["0", "v2"]
+    );
+
+    test_struct!(
+        format,
+        t: {
+            #[tabled(format = "{} cc")]
+            f1: u8,
+            f2: u8,
+        }
+        init: { f1: 0, f2: 0 }
+        expected: ["f1", "f2"], ["0 cc", "0"]
+    );
+
+    test_struct!(
+        format_with_args,
+        t: {
+            #[tabled(format("{}/{} cc/kg", self.f1, self.f2))]
+            f1: u8,
+            f2: u8,
+        }
+        init: { f1: 1, f2: 2 }
+        expected: ["f1", "f2"], ["1/2 cc/kg", "2"]
     );
 
     // #[test]

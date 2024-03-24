@@ -12,6 +12,8 @@ pub struct Attributes {
     pub display_with: Option<String>,
     pub display_with_args: Option<Vec<FuncArg>>,
     pub order: Option<usize>,
+    pub format: Option<String>,
+    pub format_with_args: Option<Vec<FuncArg>>,
 }
 
 impl Attributes {
@@ -64,6 +66,16 @@ impl Attributes {
                 }
             }
             parse::TabledAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
+            parse::TabledAttrKind::FormatWith(format, comma, args) => {
+                self.format = Some(format.value());
+                if comma.is_some() {
+                    let args = args
+                        .into_iter()
+                        .map(|lit| parse_func_arg(&lit))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    self.format_with_args = Some(args);
+                }
+            }
         }
 
         Ok(())
@@ -104,6 +116,7 @@ fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
 #[derive(Debug)]
 pub enum FuncArg {
     SelfRef,
+    SelfRefProperty(String),
     Byte(u8),
     Char(char),
     Bool(bool),
@@ -141,6 +154,12 @@ fn parse_func_arg(expr: &syn::Expr) -> syn::Result<FuncArg> {
             } else {
                 Err(syn::Error::new(path.span(), "unsuported argument"))
             }
+        }
+        syn::Expr::Field(field) => {
+            if let syn::Member::Named(ident) = &field.member {
+                return Ok(FuncArg::SelfRefProperty(ident.to_string()));
+            }
+            Err(syn::Error::new(field.base.span(), "unsupported argument"))
         }
         expr => Err(syn::Error::new(expr.span(), "unsuported argument")),
     }
