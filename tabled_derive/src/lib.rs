@@ -35,12 +35,7 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         .map_err(error::abort)
         .unwrap();
 
-    let crate_name = attrs
-        .crate_name
-        .clone()
-        .unwrap_or_else(|| String::from("::tabled"));
-    let crate_name = parse_crate_name(&crate_name).map_err(error::abort).unwrap();
-    let tabled_trait_path = create_tabled_trait_path(crate_name);
+    let tabled_trait_path = get_crate_name_expr(&attrs).map_err(error::abort).unwrap();
 
     let length = get_tabled_length(ast, &attrs, &tabled_trait_path)
         .map_err(error::abort)
@@ -704,6 +699,15 @@ fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {
     }
 
     Ok(orderedvariants)
+}
+
+fn get_crate_name_expr(attrs: &TypeAttributes) -> Result<ExprPath, Error> {
+    let crate_name = attrs
+        .crate_name
+        .clone()
+        .unwrap_or_else(|| String::from("::tabled"));
+    let crate_name = parse_crate_name(&crate_name)?;
+    Ok(create_tabled_trait_path(crate_name))
 }
 
 fn parse_crate_name(name: &str) -> Result<ExprPath, Error> {

@@ -5,7 +5,7 @@
 //! warnings. This can be addressed with compiler overrides like `#[allow(dead_code)]`.
 
 pub mod unknown_crate {
-    pub use ::tabled::{self, Table, Tabled};
+    pub use ::tabled::{Table, Tabled};
 }
 
 #[allow(non_camel_case_types, dead_code)]
