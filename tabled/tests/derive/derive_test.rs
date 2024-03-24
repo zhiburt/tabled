@@ -1081,6 +1081,15 @@ fn test_skip_enum_0() {
     assert_eq!(Letters::Digit.fields(), vec!["", ""]);
 }
 
+#[test]
+fn test_display_with_2() {
+    #[derive(tabled::Tabled)]
+    struct Struct<'a> {
+        #[tabled(display_with("std::path::Path::display"))]
+        path: &'a std::path::Path,
+    }
+}
+
 mod __ {
     #[test]
     fn dont_import_the_trait() {
