@@ -70,7 +70,7 @@ fn html_element_visitor() {
 
 #[test]
 fn html_element_visitor_mut() {
-    struct Visitor(usize);
+    struct Visitor;
 
     impl HtmlVisitorMut for Visitor {
         fn visit_element_mut(&mut self, e: &mut HtmlElement) -> bool {
@@ -108,7 +108,7 @@ fn html_element_visitor_mut() {
         )])),
     );
 
-    let mut visitor = Visitor(0);
+    let mut visitor = Visitor;
     table.visit_mut(&mut visitor);
 
     assert_table!(

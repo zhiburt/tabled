@@ -94,7 +94,7 @@ where
     }
 
     fn push_row(&mut self) {
-        let count_columns = self.get(0).map(|l| l.len()).unwrap_or(0);
+        let count_columns = self.first().map(|l| l.len()).unwrap_or(0);
         self.push(vec![T::default(); count_columns]);
     }
 
@@ -115,7 +115,7 @@ where
     }
 
     fn insert_row(&mut self, row: usize) {
-        let count_columns = self.get(0).map(|l| l.len()).unwrap_or(0);
+        let count_columns = self.first().map(|l| l.len()).unwrap_or(0);
         self.insert(row, vec![T::default(); count_columns]);
     }
 
@@ -157,7 +157,7 @@ where
         let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
-        let count_columns = data.get(0).map(|l| l.len()).unwrap_or(0);
+        let count_columns = data.first().map(|l| l.len()).unwrap_or(0);
         data.push(vec![T::default(); count_columns]);
 
         *self = VecRecords::new(data);
@@ -198,7 +198,7 @@ where
         let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
-        let count_columns = data.get(0).map(|l| l.len()).unwrap_or(0);
+        let count_columns = data.first().map(|l| l.len()).unwrap_or(0);
         data.insert(row, vec![T::default(); count_columns]);
 
         *self = VecRecords::new(data);
