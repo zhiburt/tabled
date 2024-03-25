@@ -116,7 +116,7 @@ fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
 #[derive(Debug)]
 pub enum FuncArg {
     SelfRef,
-    SelfRefProperty(String),
+    SelfProperty(String),
     Byte(u8),
     Char(char),
     Bool(bool),
@@ -155,12 +155,10 @@ fn parse_func_arg(expr: &syn::Expr) -> syn::Result<FuncArg> {
                 Err(syn::Error::new(path.span(), "unsuported argument"))
             }
         }
-        syn::Expr::Field(field) => {
-            if let syn::Member::Named(ident) = &field.member {
-                return Ok(FuncArg::SelfRefProperty(ident.to_string()));
-            }
-            Err(syn::Error::new(field.base.span(), "unsupported argument"))
-        }
+        syn::Expr::Field(field) => match &field.member {
+            syn::Member::Named(ident) => Ok(FuncArg::SelfProperty(ident.to_string())),
+            syn::Member::Unnamed(index) => Ok(FuncArg::SelfProperty(index.index.to_string())),
+        },
         expr => Err(syn::Error::new(expr.span(), "unsuported argument")),
     }
 }

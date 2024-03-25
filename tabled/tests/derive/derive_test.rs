@@ -226,6 +226,28 @@ mod tuple {
         }
     );
 
+    test_tuple!(
+        format,
+        t: { u8 #[tabled(format = "foo")] sstr },
+        init: { 0 "v2" },
+        expected: ["0", "1"], ["0", "foo"],
+    );
+
+    test_tuple!(
+        format_1,
+        t: { u8 #[tabled(format = "foo {}")] sstr },
+        init: { 0 "v2" },
+        expected: ["0", "1"], ["0", "foo v2"],
+    );
+
+    // todo : self is the tuple here. It should be the sstr element instead.
+    // test_tuple!(
+    //     format_2,
+    //     t: { u8 #[tabled(format("foo {} {}", 2, self))] sstr },
+    //     init: { 0 "v2" },
+    //     expected: ["0", "1"], ["0", "foo 2 v2"],
+    // );
+
     // #[test]
     // fn order_compile_fail_when_order_is_bigger_then_count_fields() {
     //     #[derive(Tabled)]
@@ -662,24 +684,29 @@ mod enum_ {
 
     test_enum!(order_0_inlined, t: #[tabled(inline)] { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) }, headers: ["TestType"], tests: V1(0) => ["V1"], V2(0) => ["V2"], V3(0) => ["V3"],);
 
-    // todo
-    // test_enum!(
-    //     format,
-    //     t: {
-    //         #[tabled(format("display1"))]
-    //         AbsdEgh { a: u8, b: i32 }
-    //         #[tabled(format("display1"))]
-    //         B(String)
-    //         #[tabled(format("display1"))]
-    //         K
-    //     },
-    //     headers: ["AbsdEgh", "B", "K"],
-    //     tests:
-    //         AbsdEgh { a: 0, b: 0 }  => ["1 2", "", ""],
-    //         B(String::new()) => ["", "asd 200 Hello World", ""],
-    //         K => ["", "", "100 200"],
-    // );
-
+    test_enum!(
+        format,
+        t: {
+            #[tabled(inline)]
+            AbsdEgh {
+                #[tabled(format("{}-{}", self.a, self.b))]
+                a: u8,
+                b: i32
+            }
+            #[tabled(format("{} s", 4))]
+            B(String)
+            #[tabled(inline)]
+            C(#[tabled(rename = "C", format("{} ss", 4))] String)
+            #[tabled(format = "k.")]
+            K
+        },
+        headers: ["a", "b", "B", "C", "K"],
+        tests:
+            AbsdEgh { a: 0, b: 1 }  => ["0-1", "1", "", "", ""],
+            B(String::new()) => ["",  "", "4 s", "", ""],
+            C(String::new()) => ["", "",  "", "4 ss", ""],
+            K => ["", "", "",  "", "k."],
+    );
 }
 
 mod unit {

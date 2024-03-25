@@ -164,22 +164,23 @@ fn info_from_fields(
 ) -> Result<Impl, Error> {
     let count_fields = fields.len();
 
-    let fields = fields
-        .into_iter()
-        .enumerate()
-        .map(|(i, field)| -> Result<_, Error> {
-            let mut attributes = Attributes::parse(&field.attrs)?;
-            merge_attributes(&mut attributes, attrs);
+    let fields_with_attributes =
+        fields
+            .into_iter()
+            .enumerate()
+            .map(|(i, field)| -> Result<_, Error> {
+                let mut attributes = Attributes::parse(&field.attrs)?;
+                merge_attributes(&mut attributes, attrs);
 
-            Ok((i, field, attributes))
-        });
+                Ok((i, field, attributes))
+            });
 
     let mut headers = Vec::new();
     let mut values = Vec::new();
     let mut reorder = HashMap::new();
 
     let mut skipped = 0;
-    for result in fields {
+    for result in fields_with_attributes {
         let (i, field, attributes) = result?;
         if attributes.is_ignored() {
             skipped += 1;
@@ -199,8 +200,8 @@ fn info_from_fields(
         let header = field_headers(field, i, &attributes, header_prefix);
         headers.push(header);
 
-        let field_name = field_name(i, field);
-        let value = get_field_fields(&field_name, &attributes);
+        let field_name_result = field_name(i, field);
+        let value = get_field_fields(&field_name_result, &attributes, fields, &field_name);
         values.push(value);
     }
 
@@ -378,7 +379,10 @@ fn info_from_variant(
             Some(args) => match args.is_empty() {
                 true => None,
                 false => {
-                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    let args = args
+                        .iter()
+                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, field_var_name))
+                        .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
             },
@@ -396,24 +400,21 @@ fn info_from_variant(
             Some(args) => match args.is_empty() {
                 true => None,
                 false => {
-                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    let args = args
+                        .iter()
+                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, field_var_name))
+                        .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
             },
         };
 
-        match args {
-            Some(args) => {
-                quote!(vec![::std::borrow::Cow::Owned(
-                    format!(#custom_format, #args)
-                )])
-            }
-            None => {
-                quote!(vec![::std::borrow::Cow::Owned(
-                    format!(#custom_format, #variant)
-                )])
-            }
-        }
+        let call = match args {
+            Some(args) => quote!(format!(#custom_format, #args)),
+            None => quote!(format!(#custom_format)),
+        };
+
+        quote! { ::std::borrow::Cow::from(#call) }
     } else {
         let default_value = "+";
         quote! { ::std::borrow::Cow::Borrowed(#default_value) }
@@ -447,7 +448,12 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
     }
 }
 
-fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
+fn get_field_fields(
+    field: &TokenStream,
+    attr: &Attributes,
+    fields: &Fields,
+    field_name: impl Fn(usize, &Field) -> TokenStream,
+) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
     }
@@ -458,7 +464,10 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
             Some(args) => match args.is_empty() {
                 true => None,
                 false => {
-                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    let args = args
+                        .iter()
+                        .map(|arg| fnarg_tokens(arg, fields, &field_name))
+                        .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
             },
@@ -476,24 +485,21 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
             Some(args) => match args.is_empty() {
                 true => None,
                 false => {
-                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    let args = args
+                        .iter()
+                        .map(|arg| fnarg_tokens(arg, fields, &field_name))
+                        .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
             },
         };
 
-        let _ = match args {
-            Some(args) => {
-                return quote!(vec![::std::borrow::Cow::Owned(
-                    format!(#custom_format, #args)
-                )])
-            }
-            None => {
-                return quote!(vec![::std::borrow::Cow::Owned(
-                    format!(#custom_format, #field)
-                )])
-            }
+        let call = match args {
+            Some(args) => use_format(&args, custom_format),
+            None => use_format_no_args(custom_format, field),
         };
+
+        return quote!(vec![::std::borrow::Cow::Owned(#call)]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
@@ -523,6 +529,17 @@ fn use_function_no_args(function: &str) -> TokenStream {
             quote! { #function() }
         }
     }
+}
+
+fn use_format(args: &TokenStream, custom_format: &str) -> TokenStream {
+    quote! { format!(#custom_format, #args) }
+}
+
+fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
+    if custom_format.contains("{}") {
+        return quote! { format!(#custom_format, #field) };
+    }
+    return quote! { format!(#custom_format) };
 }
 
 fn field_var_name(index: usize, field: &Field) -> TokenStream {
@@ -666,11 +683,24 @@ fn merge_attributes(attr: &mut Attributes, global_attr: &StructAttributes) {
     }
 }
 
-fn fnarg_tokens(arg: &FuncArg) -> TokenStream {
+fn fnarg_tokens(
+    arg: &FuncArg,
+    fields: &Fields,
+    field_name: impl Fn(usize, &Field) -> TokenStream,
+) -> TokenStream {
     match arg {
         FuncArg::SelfRef => quote! { &self },
-        FuncArg::SelfRefProperty(val) => {
+        FuncArg::SelfProperty(val) => {
             let property_name = syn::Ident::new(val, proc_macro2::Span::call_site());
+
+            // We find the field in the neighbours instead of taking self, which would be the top object.
+            // This is for nested formatting.
+            for (i, field) in fields.iter().enumerate() {
+                let field_name_result = field_name(i, field);
+                if field_name_result.to_string() == val.to_string() {
+                    return quote! { #field_name_result };
+                }
+            }
             quote! { &self.#property_name }
         }
         FuncArg::Byte(val) => quote! { #val },
