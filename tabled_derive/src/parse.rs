@@ -33,6 +33,7 @@ pub enum TabledAttrKind {
     RenameAll(LitStr),
     DisplayWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
     Order(LitInt),
+    FormatWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
 }
 
 impl Parse for TabledAttr {
@@ -53,6 +54,9 @@ impl Parse for TabledAttr {
                     "rename_all" => return Ok(Self::new(name, RenameAll(lit))),
                     "display_with" => {
                         return Ok(Self::new(name, DisplayWith(lit, None, Punctuated::new())))
+                    }
+                    "format" => {
+                        return Ok(Self::new(name, FormatWith(lit, None, Punctuated::new())))
                     }
                     _ => {}
                 }
@@ -90,7 +94,7 @@ impl Parse for TabledAttr {
                 let lit = nested.parse::<LitStr>()?;
 
                 match name_str.as_str() {
-                    "display_with" => {
+                    "format" | "display_with" => {
                         let mut args = Punctuated::new();
                         let mut comma = None;
                         if nested.peek(Token![,]) {
@@ -105,6 +109,10 @@ impl Parse for TabledAttr {
                                 args.push_punct(punct);
                             }
                         };
+
+                        if name_str.as_str() == "format" {
+                            return Ok(Self::new(name, FormatWith(lit, comma, args)));
+                        }
 
                         return Ok(Self::new(name, DisplayWith(lit, comma, args)));
                     }
