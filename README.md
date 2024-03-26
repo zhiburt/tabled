@@ -1592,6 +1592,36 @@ impl MyRecord {
 }
 ```
 
+To reduce boilerplate code, one can also achieve this using the `format` attribute within `#[derive(Tabled)]`.
+
+```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+pub struct Motorcycle {
+    weight: usize,
+    #[tabled(format = "{} cc")]
+    cc: usize,
+}
+```
+
+In the above example, the cc field will be formatted using the specified format string "{} cc", where {} is replaced with the value of cc.
+
+Just like with `display_with` attribute, you can pass arguments for more complex formatting scenarios:
+
+```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+pub struct Motorcycle {
+    weight: usize,
+    #[tabled(format = "{}/{} cc/kg", "self.cc", "self.weight")]
+    cc: usize,
+}
+```
+
+In this case, the cc field will be formatted using the format string "{}/{} cc/kg", and {} will be replaced with the values of cc and weight, respectively.
+
 ### Inline
 
 It's possible to inline internal data if it implements the `Tabled` trait using `#[tabled(inline)]`.
