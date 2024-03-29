@@ -1121,6 +1121,15 @@ fn test_reimport_trait_by_crate_attribute() {
     );
 }
 
+#[test]
+fn test_display_with_2() {
+    #[derive(tabled::Tabled)]
+    struct Struct<'a> {
+        #[tabled(display_with("std::path::Path::display"))]
+        path: &'a std::path::Path,
+    }
+}
+
 mod __ {
     #[test]
     fn dont_import_the_trait() {

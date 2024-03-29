@@ -410,12 +410,12 @@ fn info_from_variant(
             },
         };
 
-        let call = match args {
+        let result = match args {
             Some(args) => use_function(&args, func),
             None => use_function_no_args(func),
         };
 
-        quote! { ::std::borrow::Cow::from(#call) }
+        quote! { ::std::borrow::Cow::from(format!("{}", #result)) }
     } else {
         let default_value = "+";
         quote! { ::std::borrow::Cow::Borrowed(#default_value) }
@@ -471,12 +471,12 @@ fn get_field_fields(field: &TokenStream, attr: &FieldAttributes) -> TokenStream 
             },
         };
 
-        let call = match args {
+        let result = match args {
             Some(args) => use_function(&args, func),
             None => use_function_no_args(func),
         };
 
-        return quote!(vec![::std::borrow::Cow::from(#call)]);
+        return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])

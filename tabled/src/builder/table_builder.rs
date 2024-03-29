@@ -287,6 +287,7 @@ impl Builder {
             }
 
             row.push(text);
+            self.data.push(row);
         }
 
         self.count_columns += 1;

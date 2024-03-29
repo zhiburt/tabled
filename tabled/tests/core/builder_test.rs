@@ -130,6 +130,44 @@ test_table!(
 );
 
 test_table!(
+    push_column_2,
+    {
+        let mut b = Builder::default();
+        b.push_column(["a", "d"]);
+        b.push_column(["b", "e"]);
+        b.push_column(["c", "f"]);
+        b.push_column(["g", "h"]);
+        b.build()
+    },
+    "+---+---+---+---+"
+    "| a | b | c | g |"
+    "+---+---+---+---+"
+    "| d | e | f | h |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    push_column_3,
+    {
+        let mut b = Builder::default();
+        b.push_column(["a", "d"]);
+        b.push_column(["b", "e"]);
+        b.push_column(["c", "f", "f"]);
+        b.push_column(["g", "h"]);
+        let a: [&str; 0] = [];
+        b.push_column(a);
+        b.build()
+    },
+    "+---+---+---+---+--+"
+    "| a | b | c | g |  |"
+    "+---+---+---+---+--+"
+    "| d | e | f | h |  |"
+    "+---+---+---+---+--+"
+    "|   |   | f |   |  |"
+    "+---+---+---+---+--+"
+);
+
+test_table!(
     insert_column_0,
     {
         let mut b = Builder::default();
