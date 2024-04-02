@@ -227,22 +227,22 @@ mod tuple {
     );
 
     test_tuple!(
-        format,
-        t: { u8 #[tabled(format = "foo")] sstr },
-        init: { 0 "v2" },
-        expected: ["0", "1"], ["0", "foo"],
-    );
-
-    test_tuple!(
         format_1,
         t: { u8 #[tabled(format = "foo {}")] sstr },
         init: { 0 "v2" },
         expected: ["0", "1"], ["0", "foo v2"],
     );
 
-    // todo : self is the tuple here. It should be the sstr element instead.
+    test_tuple!(
+        format_2,
+        t: { u8 #[tabled(format = "foo {:?}")] sstr },
+        init: { 0 "v2" },
+        expected: ["0", "1"], ["0", "foo \"v2\""],
+    );
+
+    // todo : self represents the tuple here. It should be the sstr element instead.
     // test_tuple!(
-    //     format_2,
+    //     format_3,
     //     t: { u8 #[tabled(format("foo {} {}", 2, self))] sstr },
     //     init: { 0 "v2" },
     //     expected: ["0", "1"], ["0", "foo 2 v2"],
