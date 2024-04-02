@@ -798,6 +798,21 @@ mod structure {
         expected: ["f1", "f2"], ["0", "1 2 3"]
     );
     test_struct!(
+        display_with_args_using_self,
+        t: {
+            f1: u8,
+            #[tabled(display_with("display_option", self.f1, 2, 3))]
+            f2: Option<sstr>,
+        }
+        pre: {
+            fn display_option(v1: &u8, v2: usize, v3: usize) -> String {
+                format!("{v1} {v2} {v3}")
+            }
+        }
+        init: { f1: 0, f2: Some("v2") }
+        expected: ["f1", "f2"], ["0", "0 2 3"]
+    );
+    test_struct!(
         display_with_self_static_method,
         t: {
             f1: u8,
