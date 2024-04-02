@@ -536,10 +536,7 @@ fn use_format(args: &TokenStream, custom_format: &str) -> TokenStream {
 }
 
 fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
-    if custom_format.contains("{}") {
-        return quote! { format!(#custom_format, #field) };
-    }
-    return quote! { format!(#custom_format) };
+    return quote! { format!(#custom_format, #field) };
 }
 
 fn field_var_name(index: usize, field: &Field) -> TokenStream {
@@ -693,14 +690,15 @@ fn fnarg_tokens(
         FuncArg::SelfProperty(val) => {
             let property_name = syn::Ident::new(val, proc_macro2::Span::call_site());
 
-            // We find the field in the neighbours instead of taking self, which would be the top object.
-            // This is for nested formatting.
+            // We find the corresponding field in the local object fields instead of using self,
+            // which would be a higher level object. This is for nested structures.
             for (i, field) in fields.iter().enumerate() {
                 let field_name_result = field_name(i, field);
                 if field_name_result.to_string() == val.to_string() {
                     return quote! { #field_name_result };
                 }
             }
+
             quote! { &self.#property_name }
         }
         FuncArg::Byte(val) => quote! { #val },
