@@ -4,29 +4,29 @@ use syn::{
     Token,
 };
 
-pub fn parse_attributes(
+pub fn parse_field_attributes(
     attributes: &[Attribute],
-) -> impl Iterator<Item = syn::Result<impl Iterator<Item = TabledAttr>>> + '_ {
+) -> impl Iterator<Item = syn::Result<impl Iterator<Item = FieldAttr>>> + '_ {
     attributes
         .iter()
         .filter(|attr| attr.path.is_ident("tabled"))
-        .map(|attr| attr.parse_args_with(Punctuated::<TabledAttr, Token![,]>::parse_terminated))
+        .map(|attr| attr.parse_args_with(Punctuated::<FieldAttr, Token![,]>::parse_terminated))
         .map(|result| result.map(IntoIterator::into_iter))
 }
 
-pub struct TabledAttr {
+pub struct FieldAttr {
     pub ident: Ident,
-    pub kind: TabledAttrKind,
+    pub kind: FieldAttrKind,
 }
 
-impl TabledAttr {
-    pub fn new(ident: Ident, kind: TabledAttrKind) -> Self {
+impl FieldAttr {
+    pub fn new(ident: Ident, kind: FieldAttrKind) -> Self {
         Self { ident, kind }
     }
 }
 
 #[derive(Clone)]
-pub enum TabledAttrKind {
+pub enum FieldAttrKind {
     Skip(LitBool),
     Inline(LitBool, Option<LitStr>),
     Rename(LitStr),
@@ -36,9 +36,9 @@ pub enum TabledAttrKind {
     FormatWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
 }
 
-impl Parse for TabledAttr {
+impl Parse for FieldAttr {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        use TabledAttrKind::*;
+        use FieldAttrKind::*;
 
         let name: Ident = input.parse()?;
         let name_str = name.to_string();

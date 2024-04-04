@@ -1,9 +1,16 @@
 use syn::{Attribute, Lit, LitInt};
 
-use crate::{casing_style::CasingStyle, error::Error, parse};
+use crate::{
+    casing_style::CasingStyle,
+    error::Error,
+    parse::{
+        field_attr::{parse_field_attributes, FieldAttr, FieldAttrKind},
+        type_attr::{parse_type_attributes, TypeAttr, TypeAttrKind},
+    },
+};
 
 #[derive(Debug, Default)]
-pub struct Attributes {
+pub struct FieldAttributes {
     pub is_ignored: bool,
     pub inline: bool,
     pub inline_prefix: Option<String>,
@@ -16,7 +23,7 @@ pub struct Attributes {
     pub format_with_args: Option<Vec<FuncArg>>,
 }
 
-impl Attributes {
+impl FieldAttributes {
     pub fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
         let mut attributes = Self::default();
         attributes.fill_attributes(attrs)?;
@@ -25,7 +32,7 @@ impl Attributes {
     }
 
     fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), Error> {
-        for attrs in parse::parse_attributes(attrs) {
+        for attrs in parse_field_attributes(attrs) {
             let attrs = attrs?;
             for attr in attrs {
                 self.insert_attribute(attr)?;
@@ -35,14 +42,14 @@ impl Attributes {
         Ok(())
     }
 
-    fn insert_attribute(&mut self, attr: parse::TabledAttr) -> Result<(), Error> {
+    fn insert_attribute(&mut self, attr: FieldAttr) -> Result<(), Error> {
         match attr.kind {
-            parse::TabledAttrKind::Skip(b) => {
+            FieldAttrKind::Skip(b) => {
                 if b.value {
                     self.is_ignored = true;
                 }
             }
-            parse::TabledAttrKind::Inline(b, prefix) => {
+            FieldAttrKind::Inline(b, prefix) => {
                 if b.value {
                     self.inline = true;
                 }
@@ -51,11 +58,11 @@ impl Attributes {
                     self.inline_prefix = Some(prefix.value());
                 }
             }
-            parse::TabledAttrKind::Rename(value) => self.rename = Some(value.value()),
-            parse::TabledAttrKind::RenameAll(lit) => {
+            FieldAttrKind::Rename(value) => self.rename = Some(value.value()),
+            FieldAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
             }
-            parse::TabledAttrKind::DisplayWith(path, comma, args) => {
+            FieldAttrKind::DisplayWith(path, comma, args) => {
                 self.display_with = Some(path.value());
                 if comma.is_some() {
                     let args = args
@@ -65,8 +72,7 @@ impl Attributes {
                     self.display_with_args = Some(args);
                 }
             }
-            parse::TabledAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
-            parse::TabledAttrKind::FormatWith(format, comma, args) => {
+            FieldAttrKind::FormatWith(format, comma, args) => {
                 self.format = Some(format.value());
                 if comma.is_some() {
                     let args = args
@@ -76,30 +82,63 @@ impl Attributes {
                     self.format_with_args = Some(args);
                 }
             }
+            FieldAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct TypeAttributes {
+    pub rename_all: Option<CasingStyle>,
+    pub inline: bool,
+    pub inline_value: Option<String>,
+    pub crate_name: Option<String>,
+}
+
+impl TypeAttributes {
+    pub fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
+        let mut attributes = Self::default();
+        attributes.fill_attributes(attrs)?;
+
+        Ok(attributes)
+    }
+
+    fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), Error> {
+        for attrs in parse_type_attributes(attrs) {
+            let attrs = attrs?;
+            for attr in attrs {
+                self.insert_attribute(attr)?;
+            }
         }
 
         Ok(())
     }
 
-    pub fn is_ignored(&self) -> bool {
-        self.is_ignored
-    }
-}
+    fn insert_attribute(&mut self, attr: TypeAttr) -> Result<(), Error> {
+        match attr.kind {
+            TypeAttrKind::Crate(crate_name) => {
+                let name = crate_name.value();
+                if !name.is_empty() {
+                    self.crate_name = Some(name);
+                }
+            }
+            TypeAttrKind::Inline(b, prefix) => {
+                if b.value {
+                    self.inline = true;
+                }
 
-pub struct StructAttributes {
-    pub rename_all: Option<CasingStyle>,
-    pub inline: bool,
-    pub inline_value: Option<String>,
-}
+                if let Some(prefix) = prefix {
+                    self.inline_value = Some(prefix.value());
+                }
+            }
+            TypeAttrKind::RenameAll(lit) => {
+                self.rename_all = Some(CasingStyle::from_lit(&lit)?);
+            }
+        }
 
-impl StructAttributes {
-    pub fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
-        let attrs = Attributes::parse(attrs)?;
-        Ok(Self {
-            rename_all: attrs.rename_all,
-            inline: attrs.inline,
-            inline_value: attrs.inline_prefix,
-        })
+        Ok(())
     }
 }
 

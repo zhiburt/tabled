@@ -15,11 +15,11 @@ use proc_macro_error::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
 use syn::{
-    parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, Ident, Index,
-    Type, Variant,
+    parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, ExprPath, Field, Fields,
+    Ident, Index, PathSegment, Type, Variant,
 };
 
-use attributes::{Attributes, FuncArg, StructAttributes};
+use attributes::{FieldAttributes, FuncArg, TypeAttributes};
 use error::Error;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
@@ -31,21 +31,26 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attrs = StructAttributes::parse(&ast.attrs)
+    let attrs = TypeAttributes::parse(&ast.attrs)
         .map_err(error::abort)
         .unwrap();
 
-    let length = get_tabled_length(ast, &attrs)
+    let tabled_trait_path = get_crate_name_expr(&attrs).map_err(error::abort).unwrap();
+
+    let length = get_tabled_length(ast, &attrs, &tabled_trait_path)
         .map_err(error::abort)
         .unwrap();
-    let info = collect_info(ast, &attrs).map_err(error::abort).unwrap();
+    let info = collect_info(ast, &attrs, &tabled_trait_path)
+        .map_err(error::abort)
+        .unwrap();
     let fields = info.values;
     let headers = info.headers;
 
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
     let expanded = quote! {
-        impl #impl_generics ::tabled::Tabled for #name #ty_generics #where_clause {
+        impl #impl_generics #tabled_trait_path for #name #ty_generics #where_clause {
             const LENGTH: usize = #length;
 
             fn fields(&self) -> Vec<::std::borrow::Cow<'_, str>> {
@@ -61,34 +66,38 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     expanded
 }
 
-fn get_tabled_length(ast: &DeriveInput, attrs: &StructAttributes) -> Result<TokenStream, Error> {
+fn get_tabled_length(
+    ast: &DeriveInput,
+    attrs: &TypeAttributes,
+    trait_path: &ExprPath,
+) -> Result<TokenStream, Error> {
     match &ast.data {
-        Data::Struct(data) => get_fields_length(&data.fields),
+        Data::Struct(data) => get_fields_length(&data.fields, trait_path),
         Data::Enum(data) => {
             if attrs.inline {
                 Ok(quote! { 1 })
             } else {
-                get_enum_length(data)
+                get_enum_length(data, trait_path)
             }
         }
         Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
+fn get_fields_length(fields: &Fields, tabled_trait: &ExprPath) -> Result<TokenStream, Error> {
     let size_components = fields
         .iter()
         .map(|field| {
-            let attributes = Attributes::parse(&field.attrs)?;
+            let attributes = FieldAttributes::parse(&field.attrs)?;
             Ok((field, attributes))
         })
         .collect::<Result<Vec<_>, Error>>()?
         .into_iter()
-        .filter(|(_, attr)| !attr.is_ignored())
+        .filter(|(_, attr)| !attr.is_ignored)
         .map(|(field, attr)| {
             if attr.inline {
                 let field_type = &field.ty;
-                quote!({<#field_type as tabled::Tabled>::LENGTH})
+                quote!({<#field_type as #tabled_trait>::LENGTH})
             } else {
                 quote!({ 1 })
             }
@@ -102,8 +111,8 @@ fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
     Ok(stream)
 }
 
-fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, Error> {
-    let variant_sizes = get_enum_variant_length(enum_ast);
+fn get_enum_length(enum_ast: &DataEnum, trait_path: &ExprPath) -> Result<TokenStream, Error> {
+    let variant_sizes = get_enum_variant_length(enum_ast, trait_path);
 
     let mut stream = TokenStream::new();
     for (i, size) in variant_sizes.enumerate() {
@@ -119,38 +128,47 @@ fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, Error> {
     Ok(stream)
 }
 
-fn get_enum_variant_length(
-    enum_ast: &DataEnum,
-) -> impl Iterator<Item = Result<TokenStream, Error>> + '_ {
+fn get_enum_variant_length<'a>(
+    enum_ast: &'a DataEnum,
+    trait_path: &'a ExprPath,
+) -> impl Iterator<Item = Result<TokenStream, Error>> + 'a {
     enum_ast
         .variants
         .iter()
         .map(|variant| -> Result<_, Error> {
-            let attributes = Attributes::parse(&variant.attrs)?;
+            let attributes = FieldAttributes::parse(&variant.attrs)?;
             Ok((variant, attributes))
         })
-        .filter(|result| result.is_err() || matches!(result, Ok((_, attr)) if !attr.is_ignored()))
-        .map(|result| {
+        .filter(|result| result.is_err() || matches!(result, Ok((_, attr)) if !attr.is_ignored))
+        .map(move |result| {
             let (variant, attr) = result?;
 
             if attr.inline {
-                get_fields_length(&variant.fields)
+                get_fields_length(&variant.fields, trait_path)
             } else {
                 Ok(quote!(1))
             }
         })
 }
 
-fn collect_info(ast: &DeriveInput, attrs: &StructAttributes) -> Result<Impl, Error> {
+fn collect_info(
+    ast: &DeriveInput,
+    attrs: &TypeAttributes,
+    trait_path: &ExprPath,
+) -> Result<Impl, Error> {
     match &ast.data {
-        Data::Struct(data) => collect_info_struct(data, attrs),
-        Data::Enum(data) => collect_info_enum(data, attrs, &ast.ident),
+        Data::Struct(data) => collect_info_struct(data, attrs, trait_path),
+        Data::Enum(data) => collect_info_enum(data, attrs, &ast.ident, trait_path),
         Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn collect_info_struct(ast: &DataStruct, attrs: &StructAttributes) -> Result<Impl, Error> {
-    info_from_fields(&ast.fields, attrs, field_var_name, "")
+fn collect_info_struct(
+    ast: &DataStruct,
+    attrs: &TypeAttributes,
+    trait_path: &ExprPath,
+) -> Result<Impl, Error> {
+    info_from_fields(&ast.fields, attrs, field_var_name, "", trait_path)
 }
 
 // todo: refactoring. instead of using a lambda + prefix
@@ -158,31 +176,31 @@ fn collect_info_struct(ast: &DataStruct, attrs: &StructAttributes) -> Result<Imp
 // So the called would prefix it on its own
 fn info_from_fields(
     fields: &Fields,
-    attrs: &StructAttributes,
+    attrs: &TypeAttributes,
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
+    trait_path: &ExprPath,
 ) -> Result<Impl, Error> {
     let count_fields = fields.len();
 
-    let fields_with_attributes =
-        fields
-            .into_iter()
-            .enumerate()
-            .map(|(i, field)| -> Result<_, Error> {
-                let mut attributes = Attributes::parse(&field.attrs)?;
-                merge_attributes(&mut attributes, attrs);
+    let attributes = fields
+        .into_iter()
+        .enumerate()
+        .map(|(i, field)| -> Result<_, Error> {
+            let mut attributes = FieldAttributes::parse(&field.attrs)?;
+            merge_attributes(&mut attributes, attrs);
 
-                Ok((i, field, attributes))
-            });
+            Ok((i, field, attributes))
+        });
 
     let mut headers = Vec::new();
     let mut values = Vec::new();
     let mut reorder = HashMap::new();
 
     let mut skipped = 0;
-    for result in fields_with_attributes {
+    for result in attributes {
         let (i, field, attributes) = result?;
-        if attributes.is_ignored() {
+        if attributes.is_ignored {
             skipped += 1;
             continue;
         }
@@ -197,7 +215,7 @@ fn info_from_fields(
             reorder.insert(order, i - skipped);
         }
 
-        let header = field_headers(field, i, &attributes, header_prefix);
+        let header = field_headers(field, i, &attributes, header_prefix, trait_path);
         headers.push(header);
 
         let field_name_result = field_name(i, field);
@@ -256,15 +274,16 @@ fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: &[T]) -> Ve
 fn field_headers(
     field: &Field,
     index: usize,
-    attributes: &Attributes,
+    attributes: &FieldAttributes,
     prefix: &str,
+    trait_path: &ExprPath,
 ) -> TokenStream {
     if attributes.inline {
         let prefix = attributes
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
-        return get_type_headers(&field.ty, prefix, "");
+        return get_type_headers(&field.ty, prefix, "", trait_path);
     }
 
     let header_name = field_header_name(field, attributes, index);
@@ -278,8 +297,9 @@ fn field_headers(
 
 fn collect_info_enum(
     ast: &DataEnum,
-    attrs: &StructAttributes,
+    attrs: &TypeAttributes,
     name: &Ident,
+    trait_path: &ExprPath,
 ) -> Result<Impl, Error> {
     match &attrs.inline {
         true => {
@@ -290,32 +310,36 @@ fn collect_info_enum(
 
             collect_info_enum_inlined(ast, attrs, enum_name)
         }
-        false => _collect_info_enum(ast, attrs),
+        false => _collect_info_enum(ast, attrs, trait_path),
     }
 }
 
-fn _collect_info_enum(ast: &DataEnum, attrs: &StructAttributes) -> Result<Impl, Error> {
+fn _collect_info_enum(
+    ast: &DataEnum,
+    attrs: &TypeAttributes,
+    trait_path: &ExprPath,
+) -> Result<Impl, Error> {
     // reorder variants according to order (if set)
     let orderedvariants = reodered_variants(ast)?;
 
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for v in orderedvariants {
-        let mut attributes = Attributes::parse(&v.attrs)?;
+        let mut attributes = FieldAttributes::parse(&v.attrs)?;
         merge_attributes(&mut attributes, attrs);
-        if attributes.is_ignored() {
+        if attributes.is_ignored {
             continue;
         }
 
-        let info = info_from_variant(v, &attributes, attrs)?;
+        let info = info_from_variant(v, &attributes, attrs, trait_path)?;
         variants.push((v, info.values));
         headers_list.push(info.headers);
     }
 
-    let variant_sizes = get_enum_variant_length(ast)
+    let variant_sizes = get_enum_variant_length(ast, trait_path)
         .collect::<Result<Vec<_>, Error>>()?
         .into_iter();
-    let values = values_for_enum(variant_sizes, &variants);
+    let values = values_for_enum(variant_sizes, &variants, trait_path);
 
     let headers = quote! {
         [
@@ -329,7 +353,7 @@ fn _collect_info_enum(ast: &DataEnum, attrs: &StructAttributes) -> Result<Impl, 
 
 fn collect_info_enum_inlined(
     ast: &DataEnum,
-    attrs: &StructAttributes,
+    attrs: &TypeAttributes,
     enum_name: String,
 ) -> Result<Impl, Error> {
     let orderedvariants = reodered_variants(ast)?;
@@ -337,10 +361,10 @@ fn collect_info_enum_inlined(
     let mut variants = Vec::new();
     let mut names = Vec::new();
     for variant in orderedvariants {
-        let mut attributes = Attributes::parse(&variant.attrs)?;
+        let mut attributes = FieldAttributes::parse(&variant.attrs)?;
         merge_attributes(&mut attributes, attrs);
         let mut name = String::new();
-        if !attributes.is_ignored() {
+        if !attributes.is_ignored {
             name = variant_name(variant, &attributes);
         }
 
@@ -361,15 +385,16 @@ fn collect_info_enum_inlined(
 
 fn info_from_variant(
     variant: &Variant,
-    attr: &Attributes,
-    attrs: &StructAttributes,
+    attr: &FieldAttributes,
+    attrs: &TypeAttributes,
+    trait_path: &ExprPath,
 ) -> Result<Impl, Error> {
     if attr.inline {
         let prefix = attr
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
-        return info_from_fields(&variant.fields, attrs, variant_var_name, prefix);
+        return info_from_fields(&variant.fields, attrs, variant_var_name, prefix, trait_path);
     }
 
     let variant_name = variant_name(variant, attr);
@@ -433,12 +458,17 @@ struct Impl {
     values: TokenStream,
 }
 
-fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> TokenStream {
+fn get_type_headers(
+    field_type: &Type,
+    inline_prefix: &str,
+    prefix: &str,
+    tabled_trait: &ExprPath,
+) -> TokenStream {
     if prefix.is_empty() && inline_prefix.is_empty() {
-        quote! { <#field_type as tabled::Tabled>::headers() }
+        quote! { <#field_type as #tabled_trait>::headers() }
     } else {
         quote! {
-            <#field_type as tabled::Tabled>::headers().into_iter()
+            <#field_type as #tabled_trait>::headers().into_iter()
                 .map(|header| {
                     let header = format!("{}{}{}", #prefix, #inline_prefix, header);
                     ::std::borrow::Cow::Owned(header)
@@ -450,7 +480,7 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
 
 fn get_field_fields(
     field: &TokenStream,
-    attr: &Attributes,
+    attr: &FieldAttributes,
     fields: &Fields,
     field_name: impl Fn(usize, &Field) -> TokenStream,
 ) -> TokenStream {
@@ -536,7 +566,7 @@ fn use_format(args: &TokenStream, custom_format: &str) -> TokenStream {
 }
 
 fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
-    return quote! { format!(#custom_format, #field) };
+    quote! { format!(#custom_format, #field) }
 }
 
 fn field_var_name(index: usize, field: &Field) -> TokenStream {
@@ -561,6 +591,7 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
 fn values_for_enum(
     variant_sizes: impl Iterator<Item = TokenStream>,
     variants: &[(&Variant, TokenStream)],
+    tabled_trait: &ExprPath,
 ) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
 
@@ -598,7 +629,7 @@ fn values_for_enum(
             offsets[i] += offsets[i-1]
         }
 
-        let size = <Self as tabled::Tabled>::LENGTH;
+        let size = <Self as #tabled_trait>::LENGTH;
         let mut out_vec = vec![::std::borrow::Cow::Borrowed(""); size];
 
         #[allow(unused_variables)]
@@ -644,7 +675,7 @@ fn match_variant(v: &Variant) -> TokenStream {
     token
 }
 
-fn variant_name(variant: &Variant, attributes: &Attributes) -> String {
+fn variant_name(variant: &Variant, attributes: &FieldAttributes) -> String {
     attributes
         .rename
         .clone()
@@ -657,7 +688,7 @@ fn variant_name(variant: &Variant, attributes: &Attributes) -> String {
         .unwrap_or_else(|| variant.ident.to_string())
 }
 
-fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
+fn field_header_name(f: &Field, attr: &FieldAttributes, index: usize) -> String {
     if let Some(name) = &attr.rename {
         return name.to_string();
     }
@@ -674,7 +705,7 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     }
 }
 
-fn merge_attributes(attr: &mut Attributes, global_attr: &StructAttributes) {
+fn merge_attributes(attr: &mut FieldAttributes, global_attr: &TypeAttributes) {
     if attr.rename_all.is_none() {
         attr.rename_all = global_attr.rename_all;
     }
@@ -694,7 +725,7 @@ fn fnarg_tokens(
             // which would be a higher level object. This is for nested structures.
             for (i, field) in fields.iter().enumerate() {
                 let field_name_result = field_name(i, field);
-                if field_name_result.to_string() == val.to_string() {
+                if field_name_result.to_string() == *val {
                     return quote! { #field_name_result };
                 }
             }
@@ -722,7 +753,7 @@ fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {
     for (i, attr) in ast
         .variants
         .iter()
-        .map(|v| Attributes::parse(&v.attrs).unwrap_or_default())
+        .map(|v| FieldAttributes::parse(&v.attrs).unwrap_or_default())
         .enumerate()
     {
         if attr.is_ignored {
@@ -747,4 +778,25 @@ fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {
     }
 
     Ok(orderedvariants)
+}
+
+fn get_crate_name_expr(attrs: &TypeAttributes) -> Result<ExprPath, Error> {
+    let crate_name = attrs
+        .crate_name
+        .clone()
+        .unwrap_or_else(|| String::from("::tabled"));
+    let crate_name = parse_crate_name(&crate_name)?;
+    Ok(create_tabled_trait_path(crate_name))
+}
+
+fn parse_crate_name(name: &str) -> Result<ExprPath, Error> {
+    syn::parse_str(name).map_err(|_| Error::message("unexpected crate attribute type"))
+}
+
+fn create_tabled_trait_path(mut p: ExprPath) -> ExprPath {
+    p.path.segments.push(PathSegment {
+        ident: Ident::new("Tabled", proc_macro2::Span::call_site()),
+        arguments: syn::PathArguments::None,
+    });
+    p
 }

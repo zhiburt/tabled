@@ -1165,6 +1165,46 @@ fn test_skip_enum_0() {
 }
 
 #[test]
+fn test_reimport_trait_by_crate_attribute() {
+    pub mod new_module {
+        pub trait Tabled {
+            const LENGTH: usize;
+
+            fn fields(&self) -> Vec<std::borrow::Cow<'_, str>>;
+            fn headers() -> Vec<std::borrow::Cow<'static, str>>;
+        }
+    }
+
+    mod tabled {}
+
+    #[allow(dead_code)]
+    #[derive(Tabled)]
+    #[tabled(crate = "new_module")]
+    enum Letters {
+        Vowels {
+            character: char,
+            lang: u8,
+        },
+        Consonant(char),
+        #[tabled(skip)]
+        Digit,
+    }
+
+    assert_eq!(
+        <Letters as new_module::Tabled>::headers(),
+        vec!["Vowels", "Consonant"]
+    );
+    assert_eq!(
+        <Letters as new_module::Tabled>::fields(&Letters::Consonant('c')),
+        vec!["", "+"]
+    );
+    assert_eq!(
+        <Letters as new_module::Tabled>::fields(&Letters::Digit),
+        vec!["", ""]
+    );
+}
+
+#[test]
 fn test_display_with_2() {
     #[derive(tabled::Tabled)]
     struct Struct<'a> {

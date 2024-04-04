@@ -70,6 +70,11 @@ path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
+name = "crate_override"
+path = "examples/derive/crate_override.rs"
+required-features = ["derive"]
+
+[[example]]
 name = "table"
 path = "examples/table.rs"
 required-features = ["derive"]
