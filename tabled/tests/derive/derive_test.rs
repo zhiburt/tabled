@@ -241,12 +241,16 @@ mod tuple {
     );
 
     // todo : self represents the tuple here. It should be the sstr element instead.
-    // test_tuple!(
-    //     format_3,
-    //     t: { u8 #[tabled(format("foo {} {}", 2, self))] sstr },
-    //     init: { 0 "v2" },
-    //     expected: ["0", "1"], ["0", "foo 2 v2"],
-    // );
+    #[test]
+    fn format3() {
+        #[derive(Debug, Tabled)]
+        struct StructName(u8, #[tabled(format("foo {} {:?}", 2, self))] String);
+
+        let value = StructName(0, String::from("string"));
+
+        assert_eq!(value.fields(), vec!["0", "foo 2 StructName(0, \"string\")"]);
+        assert_eq!(StructName::headers(), vec!["0", "1"]);
+    }
 
     // #[test]
     // fn order_compile_fail_when_order_is_bigger_then_count_fields() {

@@ -119,6 +119,9 @@ To print a list of structs or enums as a table, there is 2 ways.
 A builder method gets handy, when a data schema is unknown,\
 while a typped struct in cases where we know the data structure beforehand.
 
+Notice that there are a lot of [*mods*](#settings) available for your tables.
+As well as the helpers such as [*derive macros*](#derive) and [*proc macros*](#macros).
+
 Bellow are shown both of these methods.\
 The example below is demontrates a derive method.
 
