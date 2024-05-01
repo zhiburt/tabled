@@ -117,7 +117,7 @@ To print a list of structs or enums as a table, there is 2 ways.
 * Implement a `Tabled` trait for your type (or anotate your type with a derive macro) and use a iterator of this type.
 
 A builder method gets handy, when a data schema is unknown,\
-while a typped struct in cases where we know the data structure beforehand.
+while a typed struct in cases where we know the data structure beforehand.
 
 Notice that there are a lot of [*mods*](#settings) available for your tables.
 As well as the helpers such as [*derive macros*](#derive) and [*proc macros*](#macros).
@@ -411,7 +411,7 @@ The style will look like the following for the first example.
 Also you can build your own one from scratch, and doing so not always possible at compile time,
 so you may use `Theme` object to do that.
 
-Notice that the `Theme` is quite powerfull on itself, you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
+Notice that the `Theme` is quite powerful on itself, you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
 
 ```rust
 use tabled::grid::config::{Border, HorizontalLine};
@@ -1406,7 +1406,7 @@ println!("{}", table);
 ### Split
 
 You can `Split` a table on a row or column to redistribute the cells beyond that point 
-into a new shape with the provided point acting as the new, upper boundry in the direction selected.
+into a new shape with the provided point acting as the new, upper boundary in the direction selected.
 
 Adding this to a first example will result in the next table.
 
@@ -1676,7 +1676,7 @@ struct Bike {
 
 ## Table types
 
-`tabled` has a few representations of tables some differs from it's view some from it's implememtation details.
+`tabled` has a few representations of tables some differs from it's view some from it's implementation details.
 
 There are situations when you might better use one but not another.
 But sometimes some can be used interchangable.
@@ -1690,17 +1690,17 @@ It's implemenentation requires that all data be stored on heap.
 
 ### `IterTable`
 
-It's simmilar to main `Table`, it's only difference is that it does not require a the whole buffer.
+It's similar to main `Table`, it's only difference is that it does not require a the whole buffer.
 It only requires a buffer for 1 row at a time.
 
-It might be usefull when you can't fit all your data in memory.
+It might be useful when you can't fit all your data in memory.
 
 ### `CompactTable`
 
-Simmular to `IterTable` but it might not require any buffer.
+Similar to `IterTable` but it might not require any buffer.
 It also has capability for a sniffing logic, where we estimate data dimension on a small selection of data.
 
-It might be usefull in a very constrain environments.
+It might be useful in a very constrain environments.
 It is the only table which supports `no-std`.
 
 ### `PoolTable`
@@ -1927,7 +1927,7 @@ table.with(Modify::new(ByColumnName::new("name")).with(Alignment::center()));
 
 ### Builder
 
-`Builder` is a powerfull tool you shall be aware of.
+`Builder` is a powerful tool you shall be aware of.
 
 For example you can use `Builder::index` to make a particular column an index,
 which will stay on the left.
@@ -2178,7 +2178,7 @@ As you can see Github tricks a bit a return table, but `GNOME terminal` and `Ala
 
 ### Terminal size
 
-It's a frequent case where it's nessary to align a table to a terminal width or height.
+It's a frequent case where it's necessary to align a table to a terminal width or height.
 You can achieve that by using `Width` and `Height`.
 You can peak a strategy by which a column/row truncation/widening will be done by using `Priority`.
 
