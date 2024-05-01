@@ -86,7 +86,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
   - [`CompactTable`](#compacttable)
   - [`PoolTable`](#pooltable)
   - [`ExtendedTable`](#extendedtable)
-- [Tips & Tricks](#tips-&-tricks)
+- [Tips and Tricks](#tips-and-tricks)
   - [`std::fmt::*` options](#std::fmt::*-options)
   - [Tuple combination](#tuple-combination)
   - [Object](#object)
@@ -1803,7 +1803,7 @@ is_active | true
 is_cool   | true
 ```
 
-## Tips & Tricks
+## Tips and Tricks
 
 ### `std::fmt::*` options
 
