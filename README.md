@@ -85,7 +85,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
   - [`IterTable`](#itertable)
   - [`CompactTable`](#compacttable)
   - [`PoolTable`](#pooltable)
-  - [`ExpandedDisplay`](#expanded-display)
+  - [`ExtendedTable`](#extendedtable)
 - [Tips & Tricks](#tips-&-tricks)
   - [`std::fmt::*` options](#std::fmt::*-options)
   - [Tuple combination](#tuple-combination)
@@ -1747,14 +1747,14 @@ The output would look like the following.
 :...............:.................:
 ```
 
-### `ExpandedDisplay`
+### `ExtendedTable`
 
-You can use `ExpandedDisplay` if your data structure has a lot of fields.
+You can use `ExtendedTable` if your data structure has a lot of fields.
 
 Here's an example.
 
 ```rust
-use tabled::{display::ExpandedDisplay, Tabled};
+use tabled::{tables::ExtendedTable, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -1781,7 +1781,7 @@ let data = [
     },
 ];
 
-let table = ExpandedDisplay::new(&data);
+let table = ExtendedTable::new(&data);
 
 println!("{}", table);
 ```
