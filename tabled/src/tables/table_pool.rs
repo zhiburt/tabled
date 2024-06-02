@@ -984,6 +984,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct ConfigCell(PrintContext);
 
     impl<R, D> TableOption<R, ColoredConfig, D> for ConfigCell {
@@ -1097,6 +1098,7 @@ mod print {
         borders.vertical = None;
     }
 
+    #[allow(dead_code)]
     fn cfg_set_top_chars(cfg: &mut ColoredConfig, list: &[usize], c: char) {
         for &split in list {
             let offset = split;
@@ -1104,12 +1106,14 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     fn cfg_set_left_chars(cfg: &mut ColoredConfig, list: &[usize], c: char) {
         for &offset in list {
             cfg.set_vertical_char((0, 0), c, Offset::Begin(offset));
         }
     }
 
+    #[allow(dead_code)]
     struct NoTopBorders;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for NoTopBorders {
@@ -1124,6 +1128,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct NoBottomBorders;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for NoBottomBorders {
@@ -1138,6 +1143,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct NoRightBorders;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for NoRightBorders {
@@ -1152,6 +1158,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct NoLeftBorders;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for NoLeftBorders {
@@ -1166,6 +1173,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct TopLeftChangeTopIntersection;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for TopLeftChangeTopIntersection {
@@ -1177,6 +1185,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct TopLeftChangeIntersection;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for TopLeftChangeIntersection {
@@ -1188,6 +1197,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct TopLeftChangeToLeft;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for TopLeftChangeToLeft {
@@ -1199,6 +1209,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct TopRightChangeToRight;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for TopRightChangeToRight {
@@ -1210,6 +1221,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct BottomLeftChangeSplit;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplit {
@@ -1221,6 +1233,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct BottomLeftChangeSplitToIntersection;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplitToIntersection {
@@ -1232,6 +1245,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct BottomRightChangeToRight;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for BottomRightChangeToRight {
@@ -1243,6 +1257,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct BottomLeftChangeToBottomIntersection;
 
     impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeToBottomIntersection {
@@ -1254,6 +1269,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct SetBottomChars<'a>(&'a [usize], char);
 
     impl<R, D> TableOption<R, ColoredConfig, D> for SetBottomChars<'_>
@@ -1285,6 +1301,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct SetTopChars<'a>(&'a [usize], char);
 
     impl<R, D> TableOption<R, ColoredConfig, D> for SetTopChars<'_> {
@@ -1296,6 +1313,7 @@ mod print {
         }
     }
 
+    #[allow(dead_code)]
     struct SetLeftChars<'a>(&'a [usize], char);
 
     impl<R, D> TableOption<R, ColoredConfig, D> for SetLeftChars<'_> {
@@ -1614,6 +1632,7 @@ mod print {
         )
     }
 
+    #[allow(dead_code)]
     fn cfg_clear_borders(cfg: &mut ColoredConfig) {
         cfg.remove_borders();
         cfg.remove_borders_colors();

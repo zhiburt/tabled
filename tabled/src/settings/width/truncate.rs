@@ -371,7 +371,7 @@ where
 
     for ((row, col), width) in points {
         let mut truncate = Truncate::new(width);
-        truncate.suffix = suffix.clone();
+        truncate.suffix.clone_from(&suffix);
         truncate.multiline = multiline;
         CellOption::change(truncate, records, cfg, (row, col).into());
     }
