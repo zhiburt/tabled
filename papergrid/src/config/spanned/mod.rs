@@ -686,12 +686,12 @@ impl SpannedConfig {
     }
 
     /// Verifies if there's any custom alignment vertical set.
-    pub fn has_alignemnt_vertical(&self) -> bool {
+    pub fn has_alignment_vertical(&self) -> bool {
         !self.alignment_v.is_empty()
     }
 
     /// Verifies if there's any custom alignment horizontal set.
-    pub fn has_alignemnt_horizontal(&self) -> bool {
+    pub fn has_alignment_horizontal(&self) -> bool {
         !self.alignment_h.is_empty()
     }
 

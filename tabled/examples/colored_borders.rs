@@ -3,7 +3,7 @@
 //!
 //! * 🚩 This example requires the `color` feature.
 //!
-//! * Note how [`Color`] containts several helpful, const values covering
+//! * Note how [`Color`] contains several helpful, const values covering
 //! a basic selection of foreground and background colors. [`Color`] also
 //! supports custom colors with [`Color::new()`].
 

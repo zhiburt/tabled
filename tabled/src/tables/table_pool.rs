@@ -560,11 +560,11 @@ mod print {
         let valignment = cfg.get_alignment_vertical();
         let pad = cfg.get_padding();
         let pad_color = convert_border_colors(*cfg.get_padding_color());
-        let lines_alignemnt = cfg.get_formatting().allow_lines_alignment;
+        let lines_alignment = cfg.get_formatting().allow_lines_alignment;
 
         let mut borders = *cfg.get_borders();
 
-        let bottom_intesection = cfg.get_borders().bottom_intersection.unwrap_or(' ');
+        let bottom_intersection = cfg.get_borders().bottom_intersection.unwrap_or(' ');
         let mut horizontal_splits = short_splits(&mut ctx.intersections_horizontal, ctx.size.width);
         squash_splits(&mut horizontal_splits);
 
@@ -593,7 +593,7 @@ mod print {
             border,
             border_color,
             &horizontal_splits,
-            bottom_intesection,
+            bottom_intersection,
             ctx.size.width,
         );
 
@@ -629,7 +629,7 @@ mod print {
             line_index += 1;
         }
 
-        if lines_alignemnt {
+        if lines_alignment {
             for line in get_lines(text) {
                 let line_width = string_width(&line);
                 let (left, right) = indent_horizontal(halignment, width, line_width);

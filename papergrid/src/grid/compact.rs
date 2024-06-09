@@ -329,7 +329,7 @@ fn print_grid_row<F, I, T, C, D>(
     margin: &Sides<ColoredIndent>,
     padding: &Sides<ColoredIndent>,
     borders: &HorizontalLine<ColoredIndent>,
-    alignemnt: AlignmentHorizontal,
+    alignment: AlignmentHorizontal,
     row: usize,
 ) -> fmt::Result
 where
@@ -348,7 +348,7 @@ where
     }
 
     print_indent(f, margin.left)?;
-    print_row_columns_one_line(f, data, dims, colors, borders, padding, alignemnt, row)?;
+    print_row_columns_one_line(f, data, dims, colors, borders, padding, alignment, row)?;
     print_indent(f, margin.right)?;
 
     for _ in 0..padding.top.space.size {
@@ -448,7 +448,7 @@ fn print_row_columns_one_line<F, I, T, D, C>(
     colors: &C,
     borders: &HorizontalLine<ColoredIndent>,
     padding: &Sides<ColoredIndent>,
-    alignement: AlignmentHorizontal,
+    alignment: AlignmentHorizontal,
     row: usize,
 ) -> fmt::Result
 where
@@ -464,13 +464,13 @@ where
 
     let text = data
         .next()
-        .expect("we check in the beggining that size must be at least 1 column");
+        .expect("we check in the beginning that size must be at least 1 column");
     let width = dims.get_width(0);
     let color = colors.get_color((row, 0));
 
     let text = text.as_ref();
     let text = text.lines().next().unwrap_or("");
-    print_cell(f, text, color, padding, alignement, width)?;
+    print_cell(f, text, color, padding, alignment, width)?;
 
     match borders.intersection {
         Some(indent) => {
@@ -483,7 +483,7 @@ where
                 let text = text.lines().next().unwrap_or("");
 
                 print_char(f, indent.space.fill, indent.color)?;
-                print_cell(f, text, color, padding, alignement, width)?;
+                print_cell(f, text, color, padding, alignment, width)?;
             }
         }
         None => {
@@ -495,7 +495,7 @@ where
                 let text = text.as_ref();
                 let text = text.lines().next().unwrap_or("");
 
-                print_cell(f, text, color, padding, alignement, width)?;
+                print_cell(f, text, color, padding, alignment, width)?;
             }
         }
     }

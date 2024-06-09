@@ -239,17 +239,17 @@ impl TableOption<VecRecords<CellInfo<String>>, ColoredConfig, CompleteDimensionV
             return;
         }
 
-        let alignemnt_horizontal = convert_alignment_value(self.alignments.clone());
-        let alignemnt_vertical = convert_alignment_value(self.alignments.clone());
+        let alignment_horizontal = convert_alignment_value(self.alignments.clone());
+        let alignment_vertical = convert_alignment_value(self.alignments.clone());
 
-        if let Some(alignment) = alignemnt_horizontal {
+        if let Some(alignment) = alignment_horizontal {
             let names = get_column_names(records, self.names);
             let names = vec_set_size(names, records.count_columns());
             set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
             return;
         }
 
-        if let Some(alignment) = alignemnt_vertical {
+        if let Some(alignment) = alignment_vertical {
             let names = get_column_names(records, self.names);
             let names = vec_set_size(names, records.count_rows());
             set_row_text(names, self.line, alignment, self.colors, records, dims, cfg);

@@ -401,7 +401,7 @@ test_table!(
 #[should_panic]
 #[ignore = "span zero not yet decided"]
 fn span_column_exceeds_boundaries_test() {
-    // todo: determine if it's the right behaiviour
+    // todo: determine if it's the right behaviour
 
     Matrix::new(3, 3)
         .with(Modify::new(Columns::single(0)).with(Span::column(100)))
@@ -411,9 +411,9 @@ fn span_column_exceeds_boundaries_test() {
 #[test]
 #[ignore = "span zero not yet decided"]
 fn span_cell_exceeds_boundaries_test() {
-    // these tests shows that exiding boundaries causes invalid behaiviour
+    // these tests shows that exiding boundaries causes invalid behaviour
     //
-    // todo: determine if it's the right behaiviour
+    // todo: determine if it's the right behaviour
 
     let table = Matrix::new(3, 3)
         .with(Style::psql())

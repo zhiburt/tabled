@@ -533,7 +533,7 @@ test_table!(
 );
 
 test_table!(
-    many_splits_bettween_map_entries_test,
+    many_splits_between_map_entries_test,
     json_to_table(&json!(
         {
             "menu": { "heade1": { "heade2": { "heade3": "SVG Viewer" } } },
@@ -556,7 +556,7 @@ test_table!(
 );
 
 test_table!(
-    aray_split_test_0,
+    array_split_test_0,
     json_to_table(&json!(
         {
             "menu2": [ { "heade1": { "heade3": "SVG Viewe1" } }, { "heade5": { "heade7": "SVG Viewe9" } } ],
@@ -577,7 +577,7 @@ test_table!(
 );
 
 test_table!(
-    aray_split_test_1,
+    array_split_test_1,
     json_to_table(&json!(
         {
             "menu2": [
@@ -596,7 +596,7 @@ test_table!(
 );
 
 test_table!(
-    aray_split_test_2,
+    array_split_test_2,
     json_to_table(&json!(
         {
             "menu2": [ { "header": { "header": "SVG Viewer" } }, { "header": { "header": "SVG Viewer" } } ],
@@ -617,7 +617,7 @@ test_table!(
 );
 
 test_table!(
-    aray_split_test_3,
+    array_split_test_3,
     json_to_table(&json!(
         {
             "host": { "long_os_version": "", "uptime": 0.0 },
@@ -636,7 +636,7 @@ test_table!(
 );
 
 test_table!(
-    aray_split_test_4,
+    array_split_test_4,
     json_to_table(&json!(
         {
             "key1": [

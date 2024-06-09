@@ -184,20 +184,20 @@ fn parse_func_arg(expr: &syn::Expr) -> syn::Result<FuncArg> {
                     val.base10_parse::<usize>().map(FuncArg::Uint)
                 }
             }
-            Lit::Verbatim(val) => Err(syn::Error::new(val.span(), "unsuported argument")),
+            Lit::Verbatim(val) => Err(syn::Error::new(val.span(), "unsupported argument")),
         },
         syn::Expr::Path(path) => {
             let indent = path.path.get_ident().map(|indent| indent.to_string());
             if matches!(indent.as_deref(), Some("self" | "Self")) {
                 Ok(FuncArg::SelfRef)
             } else {
-                Err(syn::Error::new(path.span(), "unsuported argument"))
+                Err(syn::Error::new(path.span(), "unsupported argument"))
             }
         }
         syn::Expr::Field(field) => match &field.member {
             syn::Member::Named(ident) => Ok(FuncArg::SelfProperty(ident.to_string())),
             syn::Member::Unnamed(index) => Ok(FuncArg::SelfProperty(index.index.to_string())),
         },
-        expr => Err(syn::Error::new(expr.span(), "unsuported argument")),
+        expr => Err(syn::Error::new(expr.span(), "unsupported argument")),
     }
 }

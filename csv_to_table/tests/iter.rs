@@ -160,7 +160,7 @@ test_table!(
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
     "| 2021 | Level 1                     | All industries       | Rubble             | H08           | Total expenditure                 | Financial performance | 654,404 |"
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
-    "| 2021 | Level 1                     | Machinary            | Dollars            | H09           | Interest and donations            | Financial performance | 26,138  |"
+    "| 2021 | Level 1                     | Machinery            | Dollars            | H09           | Interest and donations            | Financial performance | 26,138  |"
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
 );
 
@@ -178,7 +178,7 @@ test_table!(
     "+------+-----------------------------+----------------------+-------+---------------+---------------+-------------------+-------+"
     "| 2021 | Level 1                     | All industries       | Rubbl | H08           | Total expendi | Financial perform | 654,4 |"
     "+------+-----------------------------+----------------------+-------+---------------+---------------+-------------------+-------+"
-    "| 2021 | Level 1                     | Machinary            | Dolla | H09           | Interest and  | Financial perform | 26,13 |"
+    "| 2021 | Level 1                     | Machinery            | Dolla | H09           | Interest and  | Financial perform | 26,13 |"
     "+------+-----------------------------+----------------------+-------+---------------+---------------+-------------------+-------+"
 );
 
@@ -228,7 +228,7 @@ Year,Industry_aggregation_NZSIOC,Industry_name_NZSIOC,Units,Variable_code,Variab
 2021,Level 1,All industries,Dollars,H05,"Interest, dividends and donations",Financial performance,"49,593"
 2021,Level 4,All industries,Yean,H07,Non-operating income,Financial performance,"33,020"
 2021,Level 1,All industries,Rubble,H08,Total expenditure,Financial performance,"654,404"
-2021,Level 1,Machinary,Dollars,H09,Interest and donations,Financial performance,"26,138"
+2021,Level 1,Machinery,Dollars,H09,Interest and donations,Financial performance,"26,138"
 "#;
 
     DATA.trim().as_bytes()

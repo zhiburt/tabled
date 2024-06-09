@@ -27,7 +27,7 @@ pub trait CellOption<R, C> {
     /// By default it's considered to be a grand change.
     ///
     /// This methods primarily is used as an optimization,
-    /// to not make unnessary calculations if they're not needed, after using the [`TableOption`].
+    /// to not make unnecessary calculations if they're not needed, after using the [`TableOption`].
     ///
     /// [`TableOption`]: crate::settings::TableOption
     fn hint_change(&self) -> Option<Entity> {

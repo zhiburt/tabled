@@ -1,14 +1,14 @@
 //! The library creates a pretty table out of a [`toml::Value`].
 //!
 //! The are 2 types of tables you can create.
-//!     1. Embeded (default)
+//!     1. Embedded (default)
 //!     2. Collapsed
 //!
 //! You can configure table using [`TomlTable`].
 //!
 //! # Examples
 //!
-//! ## Embeded table.
+//! ## Embedded table.
 //!
 //! ```
 //! let data = r#"
@@ -120,7 +120,7 @@
 //! );
 //! ```
 //!
-//! ## [`TomlTable`] style configuration (embeded)
+//! ## [`TomlTable`] style configuration (embedded)
 //!
 //! ```
 //! use toml_to_table::TomlTable;
@@ -266,7 +266,7 @@ pub use table::{Orientation, TomlTable};
 mod table;
 
 /// The function converts a given [`Value`] to a pretty table,
-/// recursively creating new tables if nessary.
+/// recursively creating new tables if necessary.
 ///
 /// ```
 /// let file = r#"
@@ -322,7 +322,7 @@ pub fn to_string(value: &Value) -> String {
 }
 
 /// The function converts a given [`Value`] to a pretty table,
-/// recursively creating new tables if nessary.
+/// recursively creating new tables if necessary.
 ///
 /// ```
 /// let file = r#"

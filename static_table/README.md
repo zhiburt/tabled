@@ -2,9 +2,9 @@
 
 The library provides a macros to build a pretty tables at compile time.
 
-There's 2 types of tables you can buid.
+There's 2 types of tables you can build.
 
-1. Standart adjusted tables (`static_table::static_table`).
+1. Standard adjusted tables (`static_table::static_table`).
 2. Not adjusted, floating tables (`static_table::pool_table`).
 
 To find a more features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).

@@ -20,7 +20,7 @@ pub trait TableOption<R, C, D> {
     /// By default it's considered to be a grand change.
     ///
     /// This methods primarily is used as an optimization,
-    /// to not make unnessary calculations if they're not needed, after using the [`TableOption`].
+    /// to not make unnecessary calculations if they're not needed, after using the [`TableOption`].
     fn hint_change(&self) -> Option<Entity> {
         Some(Entity::Global)
     }
@@ -41,7 +41,7 @@ pub trait TableOption<R, C, D> {
 // /// By default it's considered to be a grand change.
 // ///
 // /// This methods primarily is used as an optimization,
-// /// to not make unnessary calculations if they're not needed, after using the [`TableOption`].
+// /// to not make unnecessary calculations if they're not needed, after using the [`TableOption`].
 // fn hint_target(&self, records: &R) -> Option<Vec<Entity>> {
 //     let _ = records;
 //     Some(vec![Entity::Global])

@@ -1,7 +1,7 @@
 //! This example demonstrates using the [`Merge`] [`TableOption`] to clarify
 //! redundancies in a [`Table`] display.
 //!
-//! * Note how repetative entries must be consecutive, in their specified direction,
+//! * Note how repetitive entries must be consecutive, in their specified direction,
 //! to be merged together.
 //!
 //! * Note how [`BorderSpanCorrection`] is used to resolve display issues incurred

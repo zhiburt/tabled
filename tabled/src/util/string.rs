@@ -88,7 +88,7 @@ pub(crate) fn cut_str2(text: &str, width: usize) -> Cow<'_, str> {
 
 /// The function splits a string in the position and
 /// returns a exact number of bytes before the position and in case of a split in an unicode grapheme
-/// a width of a character which was tried to be splited in.
+/// a width of a character which was tried to be split in.
 pub(crate) fn split_at_width(s: &str, at_width: usize) -> (usize, usize, usize) {
     let mut length = 0;
     let mut width = 0;
