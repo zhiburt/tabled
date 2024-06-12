@@ -282,7 +282,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn is_overridden_horizontal(&self, pos: Position) -> bool {
-        self.horizontal_chars.get(&pos).is_some()
+        self.horizontal_chars.contains_key(&pos)
     }
 
     /// Removes a list of overridden chars in a horizontal border.
@@ -336,7 +336,7 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn is_overridden_vertical(&self, pos: Position) -> bool {
-        self.vertical_chars.get(&pos).is_some()
+        self.vertical_chars.contains_key(&pos)
     }
 
     /// Removes a list of overridden chars in a horizontal border.

@@ -585,6 +585,7 @@ fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData
     CellData::new(table, vec![ctx.size.width], vec![ctx.size.height])
 }
 
+#[allow(dead_code)]
 struct NoTopBorders;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for NoTopBorders {
@@ -627,6 +628,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for NoRightBorders {
     }
 }
 
+#[allow(dead_code)]
 struct NoLeftBorders;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for NoLeftBorders {
@@ -685,6 +687,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for TopRightChangeToRight {
     }
 }
 
+#[allow(dead_code)]
 struct BottomLeftChangeSplit;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplit {
@@ -696,6 +699,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplit {
     }
 }
 
+#[allow(dead_code)]
 struct BottomLeftChangeSplitToIntersection;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplitToIntersection {
@@ -707,6 +711,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplitToIntersect
     }
 }
 
+#[allow(dead_code)]
 struct BottomRightChangeToRight;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for BottomRightChangeToRight {
@@ -729,6 +734,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeToBottomIntersec
     }
 }
 
+#[allow(dead_code)]
 struct SetBottomChars<'a>(&'a [usize], char);
 
 impl<R, D> TableOption<R, ColoredConfig, D> for SetBottomChars<'_>
