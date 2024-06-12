@@ -17,7 +17,7 @@ use crate::{
 /// ```
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Cell(usize, usize);
 
 impl Cell {

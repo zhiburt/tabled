@@ -10,4 +10,5 @@
 /// │ 1 │ 2 │
 /// └───┴───┘
 /// ```
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub type Position = (usize, usize);
