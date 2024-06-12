@@ -154,14 +154,14 @@ where
             return;
         }
 
-        let nessary_width = self.width.measure(&*records, cfg);
+        let necessary_width = self.width.measure(&*records, cfg);
 
         let (widths, total_width) = get_table_widths_with_total(&*records, cfg);
-        if total_width >= nessary_width {
+        if total_width >= necessary_width {
             return;
         }
 
-        let widths = get_increase_list(widths, nessary_width, total_width, P::create());
+        let widths = get_increase_list(widths, necessary_width, total_width, P::create());
         dims.set_widths(widths);
     }
 

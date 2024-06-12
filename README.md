@@ -114,7 +114,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 To print a list of structs or enums as a table, there is 2 ways.
 
 * Using a builder method, to build table step by step
-* Implement a `Tabled` trait for your type (or anotate your type with a derive macro) and use a iterator of this type.
+* Implement a `Tabled` trait for your type (or annotate your type with a derive macro) and use a iterator of this type.
 
 A builder method gets handy, when a data schema is unknown,\
 while a typed struct in cases where we know the data structure beforehand.
@@ -927,7 +927,7 @@ use tabled::settings::{Width, object::Rows};
 // in a first row.
 table.modify(Rows::first().with(Width::wrap(10)));
 
-// Use a strategy where we try to keep words not splited (where possible).
+// Use a strategy where we try not to keep words split (where possible).
 table.modify(Rows::new(1..).with(Width::wrap(10).keep_words()));
 ```
 
@@ -1098,7 +1098,7 @@ Imagine you have a table already which output may look like this.
 
 ```text
 ┌────┬──────────────┬───────────────────────────┐
-│ id │ destribution │ link                      │
+│ id │ distribution │ link                      │
 ├────┼──────────────┼───────────────────────────┤
 │ 0  │ Fedora       │ https://getfedora.org/    │
 ├────┼──────────────┼───────────────────────────┤
@@ -1120,7 +1120,7 @@ table.with(Rotate::Left);
 ┌──────────────┬────────────────────────┬───────────────────────────┬──────────────────────────┐
 │ link         │ https://getfedora.org/ │ https://www.opensuse.org/ │ https://endeavouros.com/ │
 ├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
-│ destribution │ Fedora                 │ OpenSUSE                  │ Endeavouros              │
+│ distribution │ Fedora                 │ OpenSUSE                  │ Endeavouros              │
 ├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
 │ id           │ 0                      │ 2                         │ 3                        │
 └──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
@@ -1679,7 +1679,7 @@ struct Bike {
 `tabled` has a few representations of tables some differs from it's view some from it's implementation details.
 
 There are situations when you might better use one but not another.
-But sometimes some can be used interchangable.
+But sometimes some can be used interchangeable.
 
 Bellow you'll find a short list of existing ones. You can find a descriptive information about each at the documentation. 
 
@@ -2006,7 +2006,7 @@ table.with(Style::modern_rounded());
 println!("{table}");
 ```
 
-The output you're goint to see running it.
+The output you're going to see running it.
 
 ```text
 ╭─────────────┬─────────────┬─────────────╮

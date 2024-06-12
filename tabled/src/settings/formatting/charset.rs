@@ -9,7 +9,7 @@ use crate::{
 pub struct Charset;
 
 impl Charset {
-    /// Returns [`CleanCharset`] which removes all `\t` and `\r` occurences.
+    /// Returns [`CleanCharset`] which removes all `\t` and `\r` occurrences.
     ///
     /// Notice that tab is just removed rather then being replaced with spaces.
     /// You might be better call [`TabSize`] first if you not expect such behavior.
@@ -40,7 +40,7 @@ impl Charset {
     }
 }
 
-/// [`CleanCharset`] removes all `\t` and `\r` occurences.
+/// [`CleanCharset`] removes all `\t` and `\r` occurrences.
 ///
 /// # Example
 ///

@@ -15,7 +15,7 @@
 //!
 //! ## [`PoolTable`]
 //!
-//! A table with a greather controll of a layout.
+//! A table with a greater control of a layout.
 
 mod compact;
 mod util;
@@ -50,7 +50,7 @@ pub use compact::CompactTable;
 // todo: Create a PoolTable backend in papergrid with generics so it coulb be used differently
 //       rather then with our own impl of dimension
 //
-// todo: Replace all usage of conrete configs to a AsRef<Config> generics, so some could be used interchangably
+// todo: Replace all usage of concrete configs to a AsRef<Config> generics, so some could be used interchangeably
 //
 // todo: Think about all the Config hierachly; we probably shall have something like a Decorator approach there.
 //       config(borders) -> config(borders+colors) -> config(borders+colors+spans)

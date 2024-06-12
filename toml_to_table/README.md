@@ -4,7 +4,7 @@ It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 
 ## Get started
 
-The library supports 2 modes for a table embeded and collapsed.
+The library supports 2 modes for a table embedded and collapsed.
 It also provides with a list of options to modify the table, such as style, alignment, padding and more.
 
 You can change an orientation of a `table` and `array` via `Orientation`.
@@ -22,7 +22,7 @@ toml_to_table = "0.1.0"
 
 <table>
 <tr>
-<th> Example (embeded) </th>
+<th> Example (embedded) </th>
 <th> Result </th>
 </tr>
 <tr>

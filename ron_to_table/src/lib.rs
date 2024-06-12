@@ -1,12 +1,12 @@
 //! The library creates pretty table out of a [`ron`] object.
 //!
 //! The are 2 types of tables you can create.
-//!     1. Embeded (default)
+//!     1. Embedded (default)
 //!     2. Collapsed
 //!
 //! # Examples
 //!
-//! Embeded table.
+//! Embedded table.
 //!
 //! ```
 //! let data = r#"GameConfig(

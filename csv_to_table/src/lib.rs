@@ -31,7 +31,7 @@
 //! ```
 //!
 //! You can also use [`iter`] to build an table from [`Iterator`].
-//! It is usefull when you have a huge csv and don't want to load it all along into memory.
+//! It is useful when you have a huge csv and don't want to load it all along into memory.
 //! But it's interface might be a little bit less feature full cause of its limitations.
 //!
 //! ```

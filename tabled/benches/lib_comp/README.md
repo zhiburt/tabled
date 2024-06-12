@@ -3,7 +3,7 @@
 We profile only actuall table construction.
 
 **Be WARE** that it's being run agains a specific (but general) use case.
-Some libraries **might** perform better in certain senarios or certain use cases.
+Some libraries **might** perform better in certain scenarios or certain use cases.
 
 ## Result
 

@@ -1,5 +1,5 @@
 //! This module contains [`RawStyle`] structure, which is analogues to [`Style`] but not generic,
-//! so sometimes it can be used more conviently.
+//! so sometimes it can be used more conveniently.
 
 // todo: StyleFromTable()
 //       table.with(&mut StyleFromTable);

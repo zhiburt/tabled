@@ -30,7 +30,7 @@ pub trait Records {
     fn hint_count_rows(&self) -> Option<usize>;
 }
 
-// todo: Provide a convinient way to iter over columns
+// todo: Provide a convenient way to iter over columns
 //
 // probably fn iter_columns(self) -> Option<Self::Iter2>
 //

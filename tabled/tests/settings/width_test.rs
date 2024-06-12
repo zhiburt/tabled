@@ -48,7 +48,7 @@ test_table!(
 );
 
 test_table!(
-    max_width_doesnt_icrease_width_if_it_is_smaller,
+    max_width_doesnt_increase_width_if_it_is_smaller,
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50))),

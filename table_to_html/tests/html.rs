@@ -12,14 +12,14 @@ test_table!(
             Some(HtmlValue::Elements(vec![HtmlElement::new(
                 "td",
                 vec![],
-                Some(HtmlValue::Content(String::from("Hello Wolrd"))),
+                Some(HtmlValue::Content(String::from("Hello World"))),
             )])),
         )])),
     ),
     "<table>"
     "    <tr id=\"tr1\">"
     "        <td>"
-    "            Hello Wolrd"
+    "            Hello World"
     "        </td>"
     "    </tr>"
     "</table>"
@@ -46,7 +46,7 @@ fn html_element_visitor() {
                 HtmlElement::new(
                     "td",
                     vec![],
-                    Some(HtmlValue::Content(String::from("Hello Wolrd"))),
+                    Some(HtmlValue::Content(String::from("Hello World"))),
                 ),
                 HtmlElement::new(
                     "td",
@@ -56,7 +56,7 @@ fn html_element_visitor() {
                 HtmlElement::new(
                     "td",
                     vec![],
-                    Some(HtmlValue::Content(String::from("Wolrd"))),
+                    Some(HtmlValue::Content(String::from("World"))),
                 ),
             ])),
         )])),
@@ -102,7 +102,7 @@ fn html_element_visitor_mut() {
                 HtmlElement::new(
                     "td",
                     vec![],
-                    Some(HtmlValue::Content(String::from("Wolrd"))),
+                    Some(HtmlValue::Content(String::from("World"))),
                 ),
             ])),
         )])),

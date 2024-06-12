@@ -91,7 +91,7 @@ test_table!(
 );
 
 test_table!(
-    split_colum_index_beyond_size_test,
+    split_column_index_beyond_size_test,
     Table::from_iter(['a'..='z'])
         .with(Split::column(10000)),
     "+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+"

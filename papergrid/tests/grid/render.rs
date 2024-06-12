@@ -238,7 +238,7 @@ test_table!(
 );
 
 // #[test]
-// #[ignore = "I am not sure what is the right behaiviour here"]
+// #[ignore = "I am not sure what is the right behaviour here"]
 // fn hieroglyph_handling() {
 //     let grid = util::grid_from([["哈哈", "哈"]]);
 

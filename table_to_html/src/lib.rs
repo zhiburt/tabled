@@ -251,13 +251,13 @@
 //! )
 //! ```
 //!
-//! The default table might look not very represenative.
+//! The default table might look not very representative.
 //! But it's considered that you might improve it by suplying your own CSS.
 //!
 //! In a mean time there's some regular style options.
 //!
 //! Also notice that table elements does not have any special `id`, `class` attributes.
-//! It's supposed that you might add them if nessary your self, by using [`HtmlTable::visit_mut`]
+//! It's supposed that you might add them if necessary your self, by using [`HtmlTable::visit_mut`]
 //!
 //! ## Adding custom ids example.
 //!
@@ -548,7 +548,7 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
                     }
                 }
             } else {
-                // loking for a column
+                // looking for a column
 
                 if e.tag() == "td" || e.tag() == "th" {
                     if self.cursor == self.pos {

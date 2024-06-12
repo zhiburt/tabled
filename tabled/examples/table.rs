@@ -1,4 +1,4 @@
-//! This example demonstrates the fundemental qualities of the [crate](https://crates.io/crates/tabled) [`tabled`].
+//! This example demonstrates the fundamental qualities of the [crate](https://crates.io/crates/tabled) [`tabled`].
 //!
 //! * [`tabled`] is powered by convenient [procedural macros](https://doc.rust-lang.org/reference/procedural-macros.html#procedural-macros)
 //! like [`Tabled`]; a deriveable trait that allows your custom

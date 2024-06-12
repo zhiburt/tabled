@@ -1,5 +1,5 @@
 //! This example demonstrates using the [`Padding::colorize()`] function in several ways
-//! to give a [`Table`] display a vibrant asthetic.
+//! to give a [`Table`] display a vibrant aesthetic.
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

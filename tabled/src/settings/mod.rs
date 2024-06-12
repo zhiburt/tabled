@@ -7,7 +7,7 @@
 //!
 //! [`CellOption`] works on behave of [`Modify`] which is actually a [`TableOption`].
 //!
-//! Notice that it's possble to combine settings together by the help of [`Settings`].
+//! Notice that it's possible to combine settings together by the help of [`Settings`].
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]

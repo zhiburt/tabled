@@ -7,7 +7,7 @@
 //! ## Derive
 //!
 //! If you want to build a table for your custom type.
-//! A starting point is to a anotate your type with `#[derive(Tabled)]`.
+//! A starting point is to a annotate your type with `#[derive(Tabled)]`.
 //!
 //! Then to provide your collection to [`Table::new`] and you will be set to render table.
 //!
@@ -184,7 +184,7 @@
 //!
 //! ## Table types
 //!
-//! [`Table`] keeps data buffered, which sometimes not ideal choise.
+//! [`Table`] keeps data buffered, which sometimes not ideal choice.
 //! For such reason there is [`IterTable`] and [`CompactTable`].
 //!
 //! ### [`IterTable`]
@@ -192,7 +192,7 @@
 //! [`IterTable`] stands on a middle ground between [`Table`] and [`CompactTable`].
 //!
 //! It does allocate memory but in a much smaller chunks that a [`Table`] does.
-//! The benefit is that it can be used interchangebly with [`Table`].
+//! The benefit is that it can be used interchangeably with [`Table`].
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]

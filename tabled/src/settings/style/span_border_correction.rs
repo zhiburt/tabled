@@ -160,7 +160,7 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
         }
     }
 
-    let cells = iter_totaly_spanned_cells(cfg, shape).collect::<Vec<_>>();
+    let cells = iter_totally_spanned_cells(cfg, shape).collect::<Vec<_>>();
     for (row, col) in cells {
         if row == 0 {
             continue;
@@ -202,7 +202,7 @@ fn has_top(cfg: &SpannedConfig, pos: Position, shape: (usize, usize)) -> bool {
     border.top.is_some() || border.left_top_corner.is_some() || border.right_top_corner.is_some()
 }
 
-fn iter_totaly_spanned_cells(
+fn iter_totally_spanned_cells(
     cfg: &SpannedConfig,
     shape: (usize, usize),
 ) -> impl Iterator<Item = Position> + '_ {

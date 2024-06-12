@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changed
 
-- Move `Style` to const implementation (it invloved changes to `Border`/`BorderColor` and more related subjects).
+- Move `Style` to const implementation (it involved changes to `Border`/`BorderColor` and more related subjects).
 - Added a basic implementation for a render.
 - Added a new `Style` (by [@Brijeshkrishna](https://github.com/Brijeshkrishna)).
 - Refactored a `Builder` methods (by [@CouldBeFree](https://github.com/CouldBeFree))
@@ -113,7 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Created `static_table` a macro to build tables at compile time.
-- Created `ron_to_table` format convertion library.
+- Created `ron_to_table` format conversion library.
 - Added `IterTable` a table with a different backend logic.
 - Added `CompactTable` a table with a different backend logic.
 - Added `PoolTable` a table with a different backend logic.
@@ -131,7 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made a list of changes to `tabled` interface.
 - Made a list of changes to `papergrid` interface.
 - Made a list of changes to `json_to_table` interface.
-- Comparision benchmarks were moved to the `master` branch.
+- Comparison benchmarks were moved to the `master` branch.
 
 ### Fixed
 

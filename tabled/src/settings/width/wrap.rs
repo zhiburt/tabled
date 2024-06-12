@@ -1431,7 +1431,7 @@ mod tests {
                 "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m \n",
                 "\u{1b}[37minteger \u{1b}[39m  \n",
                 "\u{1b}[37mless than \u{1b}[39m\n",
-                "\u{1b}[37mor equal \u{1b}[39m \n",
+                "\u{1b}[37more equal \u{1b}[39m \n",
                 "\u{1b}[37mto that \u{1b}[39m  \n",
                 "\u{1b}[37mnumber).\u{1b}[39m  ",
             )
@@ -1446,7 +1446,7 @@ mod tests {
 //  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
 //  \u{1b}[37minteger \u{1b}[39m\n
 //  \u{1b}[37mless than \u{1b}[39m\n
-//  \u{1b}[37mor equal \u{1b}[39m\n
+//  \u{1b}[37more equal \u{1b}[39m\n
 //  \u{1b}[37mto that \u{1b}[39m\n
 //  \u{1b}[37mnumber).\u{1b}[39m  "
 
@@ -1460,7 +1460,7 @@ mod tests {
 //  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
 //  \u{1b}[37minteger \u{1b}[39m\n
 //  \u{1b}[37mless than \u{1b}[39m\n
-//  \u{1b}[37mor equal \u{1b}[39m\n
+//  \u{1b}[37more equal \u{1b}[39m\n
 //  \u{1b}[37mto that \u{1b}[39m\n
 //  \u{1b}[37mnumber).\u{1b}[39m  "
 
@@ -1471,6 +1471,6 @@ mod tests {
 // \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest\u{1b}[37m \u{1b}[39m\n
 // \u{1b}[37minteger\u{1b}[37m \u{1b}[39m\n
 // \u{1b}[37mless\u{1b}[37m than\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mor\u{1b}[37m equal\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37more\u{1b}[37m equal\u{1b}[37m \u{1b}[39m\n
 // \u{1b}[37mto\u{1b}[37m that\u{1b}[37m \u{1b}[39m\n
 // \u{1b}[37mnumber).\u{1b}[39m  "

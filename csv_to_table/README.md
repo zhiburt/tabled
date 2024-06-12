@@ -15,7 +15,7 @@ csv_to_table = "0.3"
 
 There's 2 approaches the library provides.
 
-- In memory apporach; where we load CSV into memory and then construct a table.
+- In memory approach; where we load CSV into memory and then construct a table.
 - Sniffing a csv; so the used memory will be limited.
 - Setting your constrains so no memory will be used. 
 

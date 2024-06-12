@@ -1,5 +1,5 @@
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
-//! [`format`] to beatifuly castomize the resuling values, be used for table constraction.
+//! [`format`] to beatifuly castomize the resulting values, be used for table constraction.
 
 use tabled::{settings::Style, Table, Tabled};
 
