@@ -826,7 +826,7 @@ println!("{}", table);
 An output could look like the following.
 
 ```text
-┌───┬───┬───┐
+┌───┬───┬───┐ 
 │ 0 │ 1 │ 2 │▒
 ├───┼───┼───┤▒
 │ A │ B │ C │▒
