@@ -308,11 +308,11 @@ please open an issue.
 ##### psql
 
 ```text
- name | designed_by    | invented_year
+ name | designed_by    | invented_year 
 ------+----------------+---------------
- C    | Dennis Ritchie | 1972
- Rust | Graydon Hoare  | 2010
- Go   | Rob Pike       | 2009
+ C    | Dennis Ritchie | 1972          
+ Rust | Graydon Hoare  | 2010          
+ Go   | Rob Pike       | 2009          
 ```
 
 ##### markdown
@@ -329,11 +329,11 @@ please open an issue.
 
 ```text
 ====== ================ ===============
- name   designed_by     invented_year
+ name   designed_by     invented_year 
 ====== ================ ===============
- C      Dennis Ritchie   1972
- Rust   Graydon Hoare    2010
- Go     Rob Pike         2009
+ C      Dennis Ritchie   1972          
+ Rust   Graydon Hoare    2010          
+ Go     Rob Pike         2009          
 ====== ================ ===============
 ```
 
@@ -363,19 +363,19 @@ please open an issue.
 ##### blank
 
 ```text
- name   designed_by      invented_year
- C      Dennis Ritchie   1972
- Rust   Graydon Hoare    2010
- Go     Rob Pike         2009
+ name   designed_by      invented_year 
+ C      Dennis Ritchie   1972          
+ Rust   Graydon Hoare    2010          
+ Go     Rob Pike         2009                 
 ```
 
 ##### empty
 
 ```text
 name designed_by    invented_year
-C    Dennis Ritchie 1972
-Rust Graydon Hoare  2010
-Go   Rob Pike       2009
+C    Dennis Ritchie 1972         
+Rust Graydon Hoare  2010         
+Go   Rob Pike       2009         
 ```
 
 #### Style customization
