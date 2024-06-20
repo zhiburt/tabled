@@ -67,7 +67,11 @@ pub fn get_text_width(text: &str) -> usize {
 
 /// Returns a char width.
 pub fn get_char_width(c: char) -> usize {
-    unicode_width::UnicodeWidthChar::width(c).unwrap_or_default()
+    let c_width = if ['\n', '\t', '\r', '\0'].contains(&c) {
+        1
+    } else {
+        unicode_width::UnicodeWidthChar::width(c).unwrap_or_default()
+    }
 }
 
 /// Returns a string width (accouting all characters).
