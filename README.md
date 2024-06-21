@@ -111,19 +111,19 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 
 ## Usage
 
-To print a list of structs or enums as a table, there is 2 ways.
+To print a list of structs or enums as a table, there are 2 ways.
 
-* Using a builder method, to build table step by step
+* Using a builder method, to build a table step by step
 * Implement a `Tabled` trait for your type (or annotate your type with a derive macro) and use a iterator of this type.
 
 A builder method gets handy, when a data schema is unknown,\
-while a typed struct in cases where we know the data structure beforehand.
+while a typed struct is useful in cases where we know the data structure beforehand.
 
-Notice that there are a lot of [*mods*](#settings) available for your tables.
-As well as the helpers such as [*derive macros*](#derive) and [*proc macros*](#macros).
+Notice that there are a lot of [*mods*](#settings) available for your tables,
+as well as helpers such as [*derive macros*](#derive) and [*proc macros*](#macros).
 
-Bellow are shown both of these methods.\
-The example below is demontrates a derive method.
+Below are shown both of these methods.\
+The example below is demonstrates a derive method.
 
 ```rust
 use tabled::{Tabled, Table};
@@ -215,7 +215,7 @@ assert_eq!(table, expected);
 ## Settings
 
 This section lists the set of settings you can apply to your table.
-Most of the settings are laveraged by `Table::with` and `Table::modify`.
+Most of the settings are leveraged by `Table::with` and `Table::modify`.
 
 ### Style
 
@@ -408,10 +408,10 @@ The style will look like the following for the first example.
 └──────┴───────────────────────────────┘
 ```
 
-Also you can build your own one from scratch, and doing so not always possible at compile time,
+Also you can build your own one from scratch, and doing so is not always possible at compile time,
 so you may use `Theme` object to do that.
 
-Notice that the `Theme` is quite powerful on itself, you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
+Notice that the `Theme` is quite powerful by itself, you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
 
 ```rust
 use tabled::grid::config::{Border, HorizontalLine};
@@ -445,7 +445,7 @@ For this purpose you can use `Border`.
 use tabled::{settings::{object::Rows, Border, Style}, Table};
 
 let data = [["123", "456"], ["789", "000"]];
-        
+
 let table = Table::new(data)
     .with(Style::ascii())
     .modify(Rows::first(), Border::new().set_top('x'))
@@ -518,7 +518,7 @@ assert_eq!(
 
 #### Colorize borders
 
-You can set a colors of all borders using `Color`.
+You can set the colors of all borders using `Color`.
 
 ```rust
 use tabled::settings::{style::BorderColor, Color};
@@ -526,7 +526,7 @@ use tabled::settings::{style::BorderColor, Color};
 table.with(BorderColor::new().set_top(Color::FG_GREEN));
 ```
 
-You can also set a color border of intividial cell by using `BorderColored`.
+You can also set a color border of an individual cell by using `BorderColored`.
 
 ```rust
 use tabled::settings::{object::Columns, style::BorderColor, Color};
@@ -538,11 +538,11 @@ table.modify(Columns::single(2), BorderColor::new().set_top(Color::FG_GREEN));
 
 It was considered that having a few atomic settings is better rather then have one but feature full.
 
-But `tabled::settings::themes::*` are a bit diverge from this idea.
+But `tabled::settings::themes::*` diverges a bit from this idea.
 It contains a list of settings which do bigger changes to the table.
 
 The first one is `Theme` itself.
-You can change layout, set style, colorize, config borders and even revers table with it. 
+You can change layout, set style, colorize, config borders and even reverse the table with it.
 
 ```rust
 use tabled::settings::{
@@ -561,7 +561,7 @@ table.modify(Columns::new(1..).not(Columns::last()), Alignment::center());
 table.modify(Columns::last(), Alignment::right());
 ```
 
-You'll must see the following output when run against the first example.
+You'll see the following output when run against the first example.
 
 ```text
 .---------------------------------------------------------------------------.
@@ -679,7 +679,7 @@ The output would be.
 
 ### Format
 
-The `Format` function provides an interface for a modification of cells.
+The `Format` function provides an interface for modification of cells.
 
 ```rust
 use tabled::{
@@ -725,8 +725,8 @@ The result you must get will be.
 
 ### Padding
 
-The `Padding` structure provides an interface for a left, right, top and bottom padding of cells.
-You can set indent size, and color of the padding.
+The `Padding` structure provides an interface for left, right, top and bottom padding of cells.
+You can set indent size and color of the padding.
 
 ```rust
 use tabled::settings::{
@@ -836,14 +836,14 @@ An output could look like the following.
 
 ### Width
 
-Using the following structures you can configure a width of a table and a single cell.
+Using the following structures you can configure the width of a table and a single cell.
 
 BEWARE that `Width` controls only content, so it can't make things smaller then a certain minimum.
 BEWARE that it DOES NOT consider `Padding` when adjusting the width.
 
 The functions preserves `ansi` color sequences (when `ansi` feature is on).
 
-Bellow is an example of setting an exact table width.
+Below is an example of setting an exact table width.
 
 ```rust
 use tabled::{
@@ -997,12 +997,12 @@ table.with(Width::wrap(Percent(75)));
 
 ### Height
 
-You can increase a table or a specific cell height using `Height` modifier.
+You can increase a table or a specific cell height using the `Height` modifier.
 
-Beware that we `Height` controls only content,
+Beware that `Height` controls only content,
 so it can't make things smaller then a certain minimum.
 
-Bellow is an example of setting an exact table height and width.
+Below is an example of setting an exact table height and width.
 
 ```rust
 use std::iter::FromIterator;
@@ -1064,7 +1064,7 @@ println!("{}", gen_table(gen_data(40, 4), 80, 12));
 
 #### Height increase
 
-Increase a of a height of a cell of a whole table could be done by `Height::increase`.
+Increasing the height of a cell of a whole table could be done by `Height::increase`.
 
 ```rust
 use tabled::settings::{Height, object::Rows};
@@ -1078,7 +1078,7 @@ table.modify(Rows::last(), Height::increase(10));
 
 #### Height limit
 
-Truncation a of a height of a cell of a whole table could be done by `Height::limit`.
+Truncation of the height of a cell of a whole table could be done by `Height::limit`.
 
 ```rust
 use tabled::settings::{Height, object::Rows};
@@ -1092,7 +1092,7 @@ table.modify(Rows::last(), Height::limit(10));
 
 ### Rotate
 
-You can rotate table using `tabled::Rotate`.
+You can rotate a table using `tabled::Rotate`.
 
 Imagine you have a table already which output may look like this.
 
@@ -1248,10 +1248,10 @@ println!("{}", table);
 
 ### Concat
 
-You can concatanate 2 tables using `Concat`.
+You can concatenate 2 tables using `Concat`.
 It will stick 2 tables together either vertically or horizontally.
 
-The example below show the result of horizontal concat of primarily table of this file.
+The example below shows the result of horizontal concat of the primary table of this file.
 
 ```rust
 use tabled::settings::Concat;
@@ -1273,7 +1273,7 @@ The result.
 +------+----------------+---------------+------+----------------+---------------+
 ```
 
-The example below show the result of vertical concat of primarily table of this file.
+The example below show the result of vertical concat of the primary table of this file.
 
 ```rust
 use tabled::settings::Concat;
@@ -1343,7 +1343,7 @@ The resulting table would be the following.
 
 ### Span
 
-It's possible to set a horizontal(column) span and vertical(row) span to a cell. For certain look and feel, this might cause visual artifact on  table borders (see #399). This can be fixed by using tabled::settings::style::BorderSpanCorrection.
+It's possible to set a horizontal(column) span and vertical(row) span to a cell. For certain look and feel, this might cause visual artifacts on  table borders (see #399). This can be fixed by using tabled::settings::style::BorderSpanCorrection.
 
 #### Horizontal span
 
@@ -1405,7 +1405,7 @@ println!("{}", table);
 
 ### Split
 
-You can `Split` a table on a row or column to redistribute the cells beyond that point 
+You can `Split` a table on a row or column to redistribute the cells beyond that point
 into a new shape with the provided point acting as the new, upper boundary in the direction selected.
 
 Adding this to a first example will result in the next table.
@@ -1469,7 +1469,7 @@ struct SomeType {
 struct SomeOtherType;
 ```
 
-The `Tabled` macro available when `derive` feature in turned on.
+The `Tabled` macro is available when `derive` feature in turned on.
 And it is by default.
 
 Most of the default types implement the corresponding traits too.
@@ -1511,9 +1511,9 @@ struct Person {
 
 ### Hide a column
 
-You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
+You can mark filds as hidden in which case they will be ignored and not be present on a sheet.
 
-A similar affect could be achieved by the means of a `Disable` setting.
+A similar effect could be achieved by the means of a `Disable` setting.
 
 ```rust
 use tabled::Tabled;
@@ -1584,7 +1584,7 @@ pub struct MyRecord {
     #[tabled(display_with("Self::display_valid", self, 1))]
     pub valid: Option<bool>
 }
-    
+
 impl MyRecord {
     fn display_valid(&self, arg: usize) -> String {
         match self.valid {
@@ -1676,12 +1676,12 @@ struct Bike {
 
 ## Table types
 
-`tabled` has a few representations of tables some differs from it's view some from it's implementation details.
+`tabled` has a few representations of tables. Some differ in view, and some differ in implementation details.
 
 There are situations when you might better use one but not another.
-But sometimes some can be used interchangeable.
+But sometimes some can be used interchangeably.
 
-Bellow you'll find a short list of existing ones. You can find a descriptive information about each at the documentation. 
+Below you'll find a short list of existing ones. You can find descriptive information about each in the documentation.
 
 ### `Table`
 
@@ -1705,8 +1705,8 @@ It is the only table which supports `no-std`.
 
 ### `PoolTable`
 
-Unlike `Table` it does not nessarily requires columns be aligned.
-It provides capabilities for a completely uterly diverse table layout.
+Unlike `Table` it does not nessarily require columns to be aligned.
+It provides capabilities for a completely and utterly diverse table layout.
 
 Example
 
@@ -1807,8 +1807,7 @@ is_cool   | true
 
 ### `std::fmt::*` options
 
-You use formatting(`std::fmt::*`) options.
-To apply certain settings.
+You use formatting(`std::fmt::*`) options to apply certain settings.
 
 ```rust
 use tabled::Table;
@@ -1835,16 +1834,16 @@ The result will be as follows.
 
 ### ANSI
 
-The library doesn't bind you in usage of any color library but to be able to work correctly with colored input (with ANSI sequences), and avoid [miscalculation of string width](https://github.com/zhiburt/tabled/issues/26)
+The library doesn't bind you in the usage of any color library but to be able to work correctly with colored input (with ANSI sequences), and avoid [miscalculation of string width](https://github.com/zhiburt/tabled/issues/26)
 because of embedded ansi sequences, you should add the `ansi` feature to your `Cargo.toml`:
 
 ```toml
-tabled = { version = "*", features = ["ansi"] } 
+tabled = { version = "*", features = ["ansi"] }
 ```
 
 Then you can use colored strings as values and table will be properly rendered.
 
-Tunning our favorite example will result in the following:
+Tuning our favorite example will result in the following:
 
 ```rust
 use tabled::{format::Format, object::Columns, Style, Table};
@@ -1862,7 +1861,7 @@ table
 
 ### Tuple combination
 
-You also can combine objects which implements `Tabled` by means of tuples, you will get a combined columns of them.
+You also can combine objects which implement `Tabled` by means of tuples, you will get a combined columns of them.
 
 ```rust
 use tabled::{
@@ -2056,7 +2055,7 @@ Notice that you can even use it in documentation.
 
 ```rust
 /// Multiply 2 integers together.
-/// 
+///
 #[doc = static_table::static_table!([
     ["x", "y", "result"],
     ["1", '0', '0'],
@@ -2068,7 +2067,7 @@ pub fn mul(left: usize, right: usize) -> usize {
 }
 ```
 
-It will be looking as foolows.
+It will look as follows.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/704c285b-f8ab-481b-a5bf-130406aad7d5">
@@ -2079,14 +2078,14 @@ It will be looking as foolows.
 
 The library has a list of features.
 
-- `std`     - Used by default. If not its considered `no_std` with a limited set of functionality. 
-- `derive`  - Used by default. A support for `Tabled` derive macro.
+- `std`     - Used by default. If not its considered `no_std` with a limited set of functionality.
+- `derive`  - Used by default. Adds support for `Tabled` derive macro.
 - `ansi`    - A support for ANSI sequences.
 - `macros`  - A support for `row!`, `col!` macro.
 
 ## Formats
 
-You can convert some formats to a `Table` using an utility library.
+You can convert some formats to a `Table` using a utility library.
 
 ### `json` format
 
@@ -2162,7 +2161,7 @@ let languages = vec![
 ```
 
 The resultant table will look like the following.
-As you can see Github tricks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
+As you can see Github tricks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handle it correctly.
 
 ```text
 +---------+----------------+---------------+
@@ -2237,10 +2236,10 @@ Breaking MSRV considered to be a breaking change; but see [semver-note](#semver)
 Nowadays there's a few libraries for pretty tables.
 Some may wonder why `tabled` is better or worse than others libraries?
 
-I hope `tabled` does it's job good, but at the end of the day you probably need to decide it yourself.
+I hope `tabled` does it's job well, but at the end of the day you probably need to decide for yourself.
 If you have any ideas for an enhancement or have a question about `tabled` please file an issue.
 
-Bellow you will find a list of crates which do similar things or do something which `tabled` doesn't.
+Below you will find a list of crates which do similar things or do something which `tabled` doesn't.
 
 You can find performance comparison benchmarks [here](https://github.com/zhiburt/tabled/tree/master/tabled/benches/lib_comp).
 
@@ -2252,4 +2251,4 @@ The description is taken from the author's quotes.
 
 * *[`term-table-rs`](https://github.com/RyanBluth/term-table-rs) main focus is on a good set of tools for rendering CLI tables, while allowing users to bring their own tools for things like colors. It has an ability to have different number of columns in each row of the table.*
 
-Please if you feel about some crate being worth menthioned open an issue.
+Please open an issue if you feel another crate is worth mentioning.
