@@ -471,9 +471,8 @@ fn display_with_truncate_colored() {
     );
 }
 
-#[cfg(feature = "i18n")]
 #[test]
-fn i18n_rtl_template() {
+fn record_template() {
     build_tabled_type!(
         TestType,
         3,
@@ -482,17 +481,19 @@ fn i18n_rtl_template() {
     );
     let data: Vec<TestType> = vec![TestType, TestType];
 
-    let table = ExtendedTable::new(&data).locale("he");
+    let description = "ROW";
+    let table = ExtendedTable::new(&data)
+        .template(move |index| format!("{} {index}", description));
     let table = table.to_string();
 
     assert_eq!(
         table,
         static_table!(
-            "-[ רשומה 0 ]-"
+            "-[ ROW 0 ]-"
             "a | 1"
             "b | 2"
             "c | 3"
-            "-[ רשומה 1 ]-"
+            "-[ ROW 1 ]-"
             "a | 1"
             "b | 2"
             "c | 3"

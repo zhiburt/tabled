@@ -48,11 +48,9 @@
 //! assert_eq!(table, expected);
 //! ```
 
-use std::fmt::{self, Display};
-#[cfg(feature = "i18n")]
-use std::str::FromStr;
-#[cfg(feature = "i18n")]
-use num_format::{Locale, ToFormattedString};
+use std::cell::RefCell;
+use std::fmt::{self, Debug, Display};
+use std::rc::Rc;
 use crate::grid::util::string::string_width;
 use crate::Tabled;
 
@@ -80,11 +78,11 @@ use crate::Tabled;
 ///     )
 /// );
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ExtendedTable {
     fields: Vec<String>,
     records: Vec<Vec<String>>,
-    locale: String,
+    template: Rc<RefCell<dyn Fn(usize) -> String>>,
 }
 
 impl ExtendedTable {
@@ -110,7 +108,7 @@ impl ExtendedTable {
         Self {
             records: data,
             fields: header,
-            locale: "en".to_string(),
+            template: Rc::new(RefCell::new(record_template)),
         }
     }
 
@@ -168,10 +166,12 @@ impl ExtendedTable {
         true
     }
 
-    /// Sets a locale for a table.
-    pub fn locale(mut self, locale: &str)-> Self
+    /// Sets the template for a record.
+    pub fn template<F>(mut self, template: F) -> Self
+    where
+        F: Fn(usize) -> String + 'static,
     {
-        self.locale = locale.to_string();
+        self.template = Rc::new(RefCell::new(template));
         self
     }
 }
@@ -182,7 +182,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
             return Self {
                 fields: vec![],
                 records: vec![],
-                locale: "en".to_string(),
+                template: Rc::new(RefCell::new(record_template)),
             };
         }
 
@@ -191,7 +191,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
         Self {
             fields,
             records: data,
-            locale: "en".to_string(),
+            template: Rc::new(RefCell::new(record_template)),
         }
     }
 }
@@ -221,7 +221,7 @@ impl Display for ExtendedTable {
             .unwrap_or_default();
 
         for (i, records) in self.records.iter().enumerate() {
-            write_header_template(f, self.locale.as_str(), i, max_field_width, max_values_length)?;
+            write_header_template(f, &self.template, i, max_field_width, max_values_length)?;
 
             for (value, field) in records.iter().zip(fields.iter()) {
                 writeln!(f)?;
@@ -235,6 +235,15 @@ impl Display for ExtendedTable {
         }
 
         Ok(())
+    }
+}
+
+impl Debug for ExtendedTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExtendedTable")
+            .field("fields", &self.fields)
+            .field("records", &self.records)
+            .finish_non_exhaustive()
     }
 }
 
@@ -252,12 +261,12 @@ fn truncate_fields(records: &mut Vec<String>, max_width: usize, suffix: &str) {
 
 fn write_header_template(
     f: &mut fmt::Formatter<'_>,
-    locale: &str,
+    template: &Rc<RefCell<dyn Fn(usize) -> String>>,
     index: usize,
     max_field_width: usize,
     max_values_length: usize,
 ) -> fmt::Result {
-    let record_template = record_template(index, locale);
+    let record_template = template.borrow()(index);
     let mut template = format!("-[ {record_template} ]-");
     let default_template_length = template.len();
 
@@ -313,14 +322,6 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     }
 }
 
-#[cfg(not(feature = "i18n"))]
-fn record_template(index: usize, _locale: &str) -> String {
+fn record_template(index: usize) -> String {
     format!("RECORD {index}")
-}
-
-#[cfg(feature = "i18n")]
-fn record_template(index: usize, locale: &str) -> String {
-    let num_locale = Locale::from_str(locale).unwrap_or(Locale::en);
-    let record = index.to_formatted_string(&num_locale);
-    t!("record_template", locale = locale, record = record).to_string()
 }

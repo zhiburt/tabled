@@ -2081,7 +2081,6 @@ The library has a list of features.
 - `std`     - Used by default. If not its considered `no_std` with a limited set of functionality.
 - `derive`  - Used by default. Adds support for `Tabled` derive macro.
 - `ansi`    - A support for ANSI sequences.
-- `i18n`    - Add internationalization support for `ExtendedTable`.
 - `macros`  - A support for `row!`, `col!` macro.
 
 ## Formats

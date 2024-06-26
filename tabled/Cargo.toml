@@ -304,7 +304,6 @@ default = ["derive", "macros"]
 std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
 ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
-i18n = ["num-format", "rust-i18n"]
 macros = ["std"]
 
 [dependencies]
@@ -312,8 +311,6 @@ papergrid = { version = "0.11", default-features = false }
 tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }
-num-format = { version = "0.4", optional = true }
-rust-i18n = {  version = "3.0", optional = true }
 unicode-width = "0.1"
 
 [dev-dependencies]

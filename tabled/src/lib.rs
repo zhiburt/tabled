@@ -515,10 +515,3 @@ pub use crate::{tabled::Tabled, tables::Table};
 #[cfg(feature = "derive")]
 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use tabled_derive::Tabled;
-
-#[cfg(feature = "i18n")]
-#[macro_use]
-extern crate rust_i18n;
-
-#[cfg(feature = "i18n")]
-i18n!("locales", fallback = "en");
