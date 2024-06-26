@@ -470,3 +470,32 @@ fn display_with_truncate_colored() {
         )
     );
 }
+
+#[cfg(feature = "i18n")]
+#[test]
+fn i18n_rtl_template() {
+    build_tabled_type!(
+        TestType,
+        3,
+        ["1", "2", "3"],
+        ["a", "b", "c"]
+    );
+    let data: Vec<TestType> = vec![TestType, TestType];
+
+    let table = ExtendedTable::new(&data).locale("he");
+    let table = table.to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "-[ רשומה 0 ]-"
+            "a | 1"
+            "b | 2"
+            "c | 3"
+            "-[ רשומה 1 ]-"
+            "a | 1"
+            "b | 2"
+            "c | 3"
+        )
+    );
+}

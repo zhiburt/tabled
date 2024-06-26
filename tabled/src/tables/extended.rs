@@ -49,7 +49,10 @@
 //! ```
 
 use std::fmt::{self, Display};
-
+#[cfg(feature = "i18n")]
+use std::str::FromStr;
+#[cfg(feature = "i18n")]
+use num_format::{Locale, ToFormattedString};
 use crate::grid::util::string::string_width;
 use crate::Tabled;
 
@@ -81,6 +84,7 @@ use crate::Tabled;
 pub struct ExtendedTable {
     fields: Vec<String>,
     records: Vec<Vec<String>>,
+    locale: String,
 }
 
 impl ExtendedTable {
@@ -106,6 +110,7 @@ impl ExtendedTable {
         Self {
             records: data,
             fields: header,
+            locale: "en".to_string(),
         }
     }
 
@@ -162,6 +167,13 @@ impl ExtendedTable {
 
         true
     }
+
+    /// Sets a locale for a table.
+    pub fn locale(mut self, locale: &str)-> Self
+    {
+        self.locale = locale.to_string();
+        self
+    }
 }
 
 impl From<Vec<Vec<String>>> for ExtendedTable {
@@ -170,6 +182,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
             return Self {
                 fields: vec![],
                 records: vec![],
+                locale: "en".to_string(),
             };
         }
 
@@ -178,6 +191,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
         Self {
             fields,
             records: data,
+            locale: "en".to_string(),
         }
     }
 }
@@ -207,7 +221,7 @@ impl Display for ExtendedTable {
             .unwrap_or_default();
 
         for (i, records) in self.records.iter().enumerate() {
-            write_header_template(f, i, max_field_width, max_values_length)?;
+            write_header_template(f, self.locale.as_str(), i, max_field_width, max_values_length)?;
 
             for (value, field) in records.iter().zip(fields.iter()) {
                 writeln!(f)?;
@@ -238,11 +252,13 @@ fn truncate_fields(records: &mut Vec<String>, max_width: usize, suffix: &str) {
 
 fn write_header_template(
     f: &mut fmt::Formatter<'_>,
+    locale: &str,
     index: usize,
     max_field_width: usize,
     max_values_length: usize,
 ) -> fmt::Result {
-    let mut template = format!("-[ RECORD {index} ]-");
+    let record_template = record_template(index, locale);
+    let mut template = format!("-[ {record_template} ]-");
     let default_template_length = template.len();
 
     // 3 - is responsible for ' | ' formatting
@@ -295,4 +311,16 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     if !suffix.is_empty() && cut_was_done {
         text.push_str(suffix);
     }
+}
+
+#[cfg(not(feature = "i18n"))]
+fn record_template(index: usize, _locale: &str) -> String {
+    format!("RECORD {index}")
+}
+
+#[cfg(feature = "i18n")]
+fn record_template(index: usize, locale: &str) -> String {
+    let num_locale = Locale::from_str(locale).unwrap_or(Locale::en);
+    let record = index.to_formatted_string(&num_locale);
+    t!("record_template", locale = locale, record = record).to_string()
 }
