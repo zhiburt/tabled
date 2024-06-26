@@ -483,17 +483,17 @@ fn record_template() {
 
     let description = "ROW";
     let table = ExtendedTable::new(&data)
-        .template(move |index| format!("{} {index}", description));
+        .template(move |index| format!("< {} {} >", description, index + 1));
     let table = table.to_string();
 
     assert_eq!(
         table,
         static_table!(
-            "-[ ROW 0 ]-"
+            "-< ROW 1 >-"
             "a | 1"
             "b | 2"
             "c | 3"
-            "-[ ROW 1 ]-"
+            "-< ROW 2 >-"
             "a | 1"
             "b | 2"
             "c | 3"

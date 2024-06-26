@@ -267,7 +267,7 @@ fn write_header_template(
     max_values_length: usize,
 ) -> fmt::Result {
     let record_template = template.borrow()(index);
-    let mut template = format!("-[ {record_template} ]-");
+    let mut template = format!("-{record_template}-");
     let default_template_length = template.len();
 
     // 3 - is responsible for ' | ' formatting
@@ -323,5 +323,5 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
 }
 
 fn record_template(index: usize) -> String {
-    format!("RECORD {index}")
+    format!("[ RECORD {index} ]")
 }
