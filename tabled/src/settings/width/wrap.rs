@@ -306,7 +306,7 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         let _ = write!(&mut line, "{}", text_style.start());
 
         while !text_slice.is_empty() {
-            let available_space = width - line_width;
+            let available_space = width.saturating_sub(line_width);
 
             let part_width = unicode_width::UnicodeWidthStr::width(text_slice);
             if part_width <= available_space {
