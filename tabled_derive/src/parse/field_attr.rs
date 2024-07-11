@@ -15,6 +15,7 @@ pub fn parse_field_attributes(
 }
 
 pub struct FieldAttr {
+    #[allow(dead_code)]
     pub ident: Ident,
     pub kind: FieldAttrKind,
 }

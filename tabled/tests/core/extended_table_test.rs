@@ -482,7 +482,7 @@ fn record_template() {
     let data: Vec<TestType> = vec![TestType, TestType];
 
     let description = "ROW";
-    let table = ExtendedTable::new(&data)
+    let table = ExtendedTable::new(data)
         .template(move |index| format!("< {} {} >", description, index + 1));
     let table = table.to_string();
 

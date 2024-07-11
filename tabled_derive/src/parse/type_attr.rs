@@ -14,6 +14,7 @@ pub fn parse_type_attributes(
 }
 
 pub struct TypeAttr {
+    #[allow(dead_code)]
     pub ident: Ident,
     pub kind: TypeAttrKind,
 }
