@@ -430,21 +430,6 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// }
 /// ```
 ///
-/// There's also a probably more sutable way for formatting, if your format is contant.
-/// Using `#[tabled(format = "{}")]` and `#[tabled(format("{}"))]` and proving a general formatting string.
-///
-/// ```
-/// use tabled::Tabled;
-///
-/// #[derive(Tabled)]
-/// struct Record {
-///     #[tabled(skip)]
-///     id: [u8; 4],
-///     #[tabled(format("{}.{}.{}.{}.{}", self.id[0], self.id[1], self.id[2], self.id[3], self.name)]
-///     name: String,
-/// }
-/// ```
-///
 /// ### Format headers
 ///
 /// Beside `#[tabled(rename = "")]` you can change a format of a column name using

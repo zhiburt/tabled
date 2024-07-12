@@ -17,8 +17,9 @@ macro_rules! test_tuple {
             $($($init_block)*)?
 
             #[derive(Tabled)]
-            struct TestType(
-                $( $(#[$attr])* $ty, )*
+            #[allow(dead_code)]
+            pub struct TestType(
+                 $( $(#[$attr]) * $ty, )*
             );
 
             let value = TestType($($init,)*);
@@ -244,7 +245,7 @@ mod tuple {
     #[test]
     fn format3() {
         #[derive(Debug, Tabled)]
-        struct StructName(u8, #[tabled(format("foo {} {:?}", 2, self))] String);
+        struct StructName(u8, #[allow(dead_code)] #[tabled(format("foo {} {:?}", 2, self))] String);
 
         let value = StructName(0, String::from("string"));
 
@@ -1055,7 +1056,7 @@ fn rename_all_variants() {
         ( $name:ident, $case:expr ) => {
             #[derive(Tabled)]
             #[tabled(rename_all = $case)]
-            struct $name {
+            pub struct $name {
                 field: usize,
             }
         };
@@ -1211,7 +1212,7 @@ fn test_reimport_trait_by_crate_attribute() {
 #[test]
 fn test_display_with_2() {
     #[derive(tabled::Tabled)]
-    struct Struct<'a> {
+    pub struct Struct<'a> {
         #[tabled(display_with("std::path::Path::display"))]
         path: &'a std::path::Path,
     }
