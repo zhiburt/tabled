@@ -473,12 +473,7 @@ fn display_with_truncate_colored() {
 
 #[test]
 fn record_template() {
-    build_tabled_type!(
-        TestType,
-        3,
-        ["1", "2", "3"],
-        ["a", "b", "c"]
-    );
+    build_tabled_type!(TestType, 3, ["1", "2", "3"], ["a", "b", "c"]);
     let data: Vec<TestType> = vec![TestType, TestType];
 
     let description = "ROW";
