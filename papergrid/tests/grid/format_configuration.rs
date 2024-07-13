@@ -924,7 +924,7 @@ fn formatting_1x1_test() {
 
 #[test]
 fn tabs_arent_handled() {
-let json = "{
+    let json = "{
 \t\t \"id\": \"1\",
 \t\t \"name\": \"Hello World\",
 \t\t \"list\": [
