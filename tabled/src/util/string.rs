@@ -201,7 +201,7 @@ mod tests {
         assert_eq!(cut_str("🏳️🏳️", 0), "");
         assert_eq!(cut_str("🏳️🏳️", 1), "🏳");
         assert_eq!(cut_str("🏳️🏳️", 2), "🏳\u{fe0f}🏳");
-        assert_eq!(string_width("🏳️🏳️"), string_width("🏳️\u{fe0f}🏳️"));
+        assert_eq!(string_width("🏳️🏳️"), string_width("🏳\u{fe0f}🏳\u{fe0f}"));
 
         assert_eq!(cut_str("🎓", 1), "�");
         assert_eq!(cut_str("🎓", 2), "🎓");
