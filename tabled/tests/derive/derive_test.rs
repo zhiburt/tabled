@@ -245,7 +245,7 @@ mod tuple {
     #[test]
     fn format3() {
         #[derive(Debug, Tabled)]
-        struct StructName(u8, #[allow(dead_code)] #[tabled(format("foo {} {:?}", 2, self))] String);
+        pub struct StructName(u8, #[allow(dead_code)] #[tabled(format("foo {} {:?}", 2, self))] String);
 
         let value = StructName(0, String::from("string"));
 
