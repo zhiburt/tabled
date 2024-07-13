@@ -19,7 +19,7 @@ macro_rules! test_tuple {
             #[derive(Tabled)]
             #[allow(dead_code)]
             pub struct TestType(
-                 $( $(#[$attr]) * $ty, )*
+                $( $(#[$attr]) * $ty, )*
             );
 
             let value = TestType($($init,)*);
