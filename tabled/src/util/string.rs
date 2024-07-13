@@ -258,7 +258,7 @@ mod tests {
         );
         assert_eq!(
             string_width(&emojies),
-            string_width("\u{1b}[31;100m🏳\u{fe0f}🏳\u{1b}[39m\u{1b}[49m")
+            string_width("\u{1b}[31;100m🏳️\u{fe0f}🏳️\u{1b}[39m\u{1b}[49m")
         );
     }
 

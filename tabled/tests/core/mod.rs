@@ -4,4 +4,4 @@ mod extended_table_test;
 mod index_test;
 mod iter_table;
 mod pool_table;
-pub mod table_test;
+mod table_test;

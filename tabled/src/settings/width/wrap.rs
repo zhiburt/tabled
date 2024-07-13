@@ -306,9 +306,17 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         let _ = write!(&mut line, "{}", text_style.start());
 
         while !text_slice.is_empty() {
-            let available_space = width - line_width;
+            let available_space = if width > line_width {
+                width - line_width
+            } else {
+                list.push(line);
+                line = String::with_capacity(width);
+                line_width = 0;
+                continue;
+            };
 
             let part_width = unicode_width::UnicodeWidthStr::width(text_slice);
+
             if part_width <= available_space {
                 line.push_str(text_slice);
                 line_width += part_width;
@@ -1431,7 +1439,7 @@ mod tests {
                 "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m \n",
                 "\u{1b}[37minteger \u{1b}[39m  \n",
                 "\u{1b}[37mless than \u{1b}[39m\n",
-                "\u{1b}[37more equal \u{1b}[39m \n",
+                "\u{1b}[37mor equal \u{1b}[39m \n",
                 "\u{1b}[37mto that \u{1b}[39m  \n",
                 "\u{1b}[37mnumber).\u{1b}[39m  ",
             )
