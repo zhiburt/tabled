@@ -78,7 +78,7 @@ impl<W, P> MinWidth<W, P> {
     /// Set's a fill character which will be used to fill the space
     /// when increasing the length of the string to the set boundary.
     ///
-    /// Used only if chaning cells.
+    /// Used only if changing cells.
     pub fn fill_with(mut self, c: char) -> Self {
         self.fill = c;
         self

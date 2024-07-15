@@ -198,8 +198,8 @@ where
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            let (cutted_suffix, rest_width) = make_suffix(x, width);
-            suffix = cutted_suffix;
+            let (cut_suffix, rest_width) = make_suffix(x, width);
+            suffix = cut_suffix;
             width = rest_width;
         };
 
