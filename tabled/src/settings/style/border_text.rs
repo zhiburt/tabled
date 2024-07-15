@@ -293,7 +293,7 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line), c, config::Offset::Begin(off)); // todo: is this correct? I thik it shall be off + i
+                cfg.set_vertical_char((row, line), c, config::Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
                     cfg.set_vertical_color((row, line), color.clone(), config::Offset::Begin(off));

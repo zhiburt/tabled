@@ -437,7 +437,7 @@ The style will look like the following.
 #### Cell Border
 
 Sometimes `tabled::Style` settings are not enough.
-Sometimes it's nesessary to change a border of a particular cell.
+Sometimes it's necessary to change a border of a particular cell.
 
 For this purpose you can use `Border`.
 
