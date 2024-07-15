@@ -29,7 +29,7 @@ impl<W> CellHeightIncrease<W> {
         Self { height }
     }
 
-    /// The priority makes scence only for table, so the function
+    /// The priority makes sense only for table, so the function
     /// converts it to [`TableHeightIncrease`] with a given priority.
     pub fn priority<P>(self) -> TableHeightIncrease<W, P>
     where
