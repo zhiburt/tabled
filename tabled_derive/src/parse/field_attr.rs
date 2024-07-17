@@ -54,9 +54,7 @@ impl Parse for FieldAttr {
                     "display_with" => {
                         return Ok(Self::new(DisplayWith(lit, None, Punctuated::new())))
                     }
-                    "format" => {
-                        return Ok(Self::new(FormatWith(lit, None, Punctuated::new())))
-                    }
+                    "format" => return Ok(Self::new(FormatWith(lit, None, Punctuated::new()))),
                     _ => {}
                 }
             }
@@ -116,9 +114,10 @@ impl Parse for FieldAttr {
                         return Ok(Self::new(DisplayWith(lit, comma, args)));
                     }
                     "inline" => {
-                        return Ok(Self::new(
-                            Inline(LitBool::new(true, Span::call_site()), Some(lit)),
-                        ))
+                        return Ok(Self::new(Inline(
+                            LitBool::new(true, Span::call_site()),
+                            Some(lit),
+                        )))
                     }
                     _ => {}
                 }
@@ -133,9 +132,10 @@ impl Parse for FieldAttr {
         match name_str.as_str() {
             "skip" => return Ok(Self::new(Skip(LitBool::new(true, Span::call_site())))),
             "inline" => {
-                return Ok(Self::new(
-                    Inline(LitBool::new(true, Span::call_site()), None),
-                ))
+                return Ok(Self::new(Inline(
+                    LitBool::new(true, Span::call_site()),
+                    None,
+                )))
             }
             _ => {}
         }

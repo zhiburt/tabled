@@ -39,9 +39,7 @@ impl Parse for TypeAttr {
             let _ = input.parse::<Token![=]>()?;
             let value = input.parse::<LitStr>()?;
 
-            return Ok(Self::new(
-                Crate(value),
-            ));
+            return Ok(Self::new(Crate(value)));
         }
 
         let name: Ident = input.parse()?;
@@ -80,9 +78,10 @@ impl Parse for TypeAttr {
                 let lit = nested.parse::<LitStr>()?;
 
                 if let "inline" = name_str.as_str() {
-                    return Ok(Self::new(
-                        Inline(LitBool::new(true, Span::call_site()), Some(lit)),
-                    ));
+                    return Ok(Self::new(Inline(
+                        LitBool::new(true, Span::call_site()),
+                        Some(lit),
+                    )));
                 }
             }
 
@@ -93,9 +92,10 @@ impl Parse for TypeAttr {
         }
 
         if let "inline" = name_str.as_str() {
-            return Ok(Self::new(
-                Inline(LitBool::new(true, Span::call_site()), None),
-            ));
+            return Ok(Self::new(Inline(
+                LitBool::new(true, Span::call_site()),
+                None,
+            )));
         }
 
         Err(syn::Error::new(
