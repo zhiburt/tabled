@@ -35,6 +35,7 @@ impl Parse for TypeAttr {
         use TypeAttrKind::*;
 
         if input.peek(syn::token::Crate) {
+            let _: syn::token::Crate = input.parse()?;
             let _ = input.parse::<Token![=]>()?;
             let value = input.parse::<LitStr>()?;
 
