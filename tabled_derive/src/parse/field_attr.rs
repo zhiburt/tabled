@@ -15,14 +15,12 @@ pub fn parse_field_attributes(
 }
 
 pub struct FieldAttr {
-    #[allow(dead_code)]
-    pub ident: Ident,
     pub kind: FieldAttrKind,
 }
 
 impl FieldAttr {
-    pub fn new(ident: Ident, kind: FieldAttrKind) -> Self {
-        Self { ident, kind }
+    pub fn new(kind: FieldAttrKind) -> Self {
+        Self { kind }
     }
 }
 
@@ -51,13 +49,13 @@ impl Parse for FieldAttr {
                 let lit = input.parse::<LitStr>()?;
 
                 match name_str.as_str() {
-                    "rename" => return Ok(Self::new(name, Rename(lit))),
-                    "rename_all" => return Ok(Self::new(name, RenameAll(lit))),
+                    "rename" => return Ok(Self::new(Rename(lit))),
+                    "rename_all" => return Ok(Self::new(RenameAll(lit))),
                     "display_with" => {
-                        return Ok(Self::new(name, DisplayWith(lit, None, Punctuated::new())))
+                        return Ok(Self::new(DisplayWith(lit, None, Punctuated::new())))
                     }
                     "format" => {
-                        return Ok(Self::new(name, FormatWith(lit, None, Punctuated::new())))
+                        return Ok(Self::new(FormatWith(lit, None, Punctuated::new())))
                     }
                     _ => {}
                 }
@@ -67,8 +65,8 @@ impl Parse for FieldAttr {
                 let lit = input.parse::<LitBool>()?;
 
                 match name_str.as_str() {
-                    "skip" => return Ok(Self::new(name, Skip(lit))),
-                    "inline" => return Ok(Self::new(name, Inline(lit, None))),
+                    "skip" => return Ok(Self::new(Skip(lit))),
+                    "inline" => return Ok(Self::new(Inline(lit, None))),
                     _ => {}
                 }
             }
@@ -77,7 +75,7 @@ impl Parse for FieldAttr {
                 let lit = input.parse::<LitInt>()?;
 
                 if let "order" = name_str.as_str() {
-                    return Ok(Self::new(name, Order(lit)));
+                    return Ok(Self::new(Order(lit)));
                 }
             }
 
@@ -112,14 +110,13 @@ impl Parse for FieldAttr {
                         };
 
                         if name_str.as_str() == "format" {
-                            return Ok(Self::new(name, FormatWith(lit, comma, args)));
+                            return Ok(Self::new(FormatWith(lit, comma, args)));
                         }
 
-                        return Ok(Self::new(name, DisplayWith(lit, comma, args)));
+                        return Ok(Self::new(DisplayWith(lit, comma, args)));
                     }
                     "inline" => {
                         return Ok(Self::new(
-                            name,
                             Inline(LitBool::new(true, Span::call_site()), Some(lit)),
                         ))
                     }
@@ -134,10 +131,9 @@ impl Parse for FieldAttr {
         }
 
         match name_str.as_str() {
-            "skip" => return Ok(Self::new(name, Skip(LitBool::new(true, Span::call_site())))),
+            "skip" => return Ok(Self::new(Skip(LitBool::new(true, Span::call_site())))),
             "inline" => {
                 return Ok(Self::new(
-                    name,
                     Inline(LitBool::new(true, Span::call_site()), None),
                 ))
             }

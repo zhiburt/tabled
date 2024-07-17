@@ -311,7 +311,7 @@ papergrid = { version = "0.11", default-features = false }
 tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }
-unicode-width = "0.1"
+unicode-width = "0.1.11"
 
 [dev-dependencies]
 owo-colors = "3.5"
