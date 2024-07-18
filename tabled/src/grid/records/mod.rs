@@ -1,7 +1,7 @@
 //! The module contains [`Records`], [`ExactRecords`], [`RecordsMut`], [`Resizable`] traits
 //! and its implementations.
 //!
-//! Also it provies a list of helpers for a user built [`Records`] via [`into_records`].
+//! Also it provides a list of helpers for a user built [`Records`] via [`into_records`].
 
 mod empty_records;
 mod records_mut;

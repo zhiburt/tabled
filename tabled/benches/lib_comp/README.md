@@ -1,8 +1,8 @@
 # Benchmark's
 
-We profile only actuall table construction.
+We profile only actual table construction.
 
-**Be WARE** that it's being run agains a specific (but general) use case.
+**Be WARE** that it's being run against a specific (but general) use case.
 Some libraries **might** perform better in certain scenarios or certain use cases.
 
 ## Result

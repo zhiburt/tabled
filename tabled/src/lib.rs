@@ -430,7 +430,7 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// }
 /// ```
 ///
-/// There's also a probably more sutable way for formatting, if your format is contant.
+/// There's also a probably more suitable way for formatting, if your format is constant.
 /// Using `#[tabled(format = "{}")]` and `#[tabled(format("{}"))]` and proving a general formatting string.
 ///
 /// ```
