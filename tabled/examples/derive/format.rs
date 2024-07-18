@@ -9,7 +9,7 @@ struct Phone {
     code: String,
     #[tabled(skip)]
     alias: String,
-    #[tabled(format("{}/{}", self.alias, self.number))]
+    #[tabled(format("{}/{}", str::to_lowercase(&self.alias), self.number))]
     number: String,
 }
 
