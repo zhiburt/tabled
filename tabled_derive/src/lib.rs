@@ -10,18 +10,21 @@ mod casing_style;
 mod error;
 mod parse;
 
+use attributes::FormatArg;
 use proc_macro2::TokenStream;
 use proc_macro_error::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
+use syn::visit_mut::VisitMut;
 use syn::{
     parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, ExprPath, Field, Fields,
     Ident, Index, PathSegment, Type, Variant,
 };
 
 use crate::attributes::{FieldAttributes, TypeAttributes};
-use crate::parse::func_arg::FuncArg;
 use crate::error::Error;
+
+type FieldNameFn = fn(usize, &Field) -> TokenStream;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
 #[proc_macro_error]
@@ -169,7 +172,7 @@ fn collect_info_struct(
     attrs: &TypeAttributes,
     trait_path: &ExprPath,
 ) -> Result<Impl, Error> {
-    info_from_fields(&ast.fields, attrs, field_var_name, "", trait_path)
+    info_from_fields(&ast.fields, attrs, struct_field_name, "", trait_path)
 }
 
 // todo: refactoring. instead of using a lambda + prefix
@@ -178,7 +181,7 @@ fn collect_info_struct(
 fn info_from_fields(
     fields: &Fields,
     attrs: &TypeAttributes,
-    field_name: impl Fn(usize, &Field) -> TokenStream,
+    field_name: FieldNameFn,
     header_prefix: &str,
     trait_path: &ExprPath,
 ) -> Result<Impl, Error> {
@@ -220,7 +223,7 @@ fn info_from_fields(
         headers.push(header);
 
         let field_name_result = field_name(i, field);
-        let value = get_field_fields(&field_name_result, &attributes, fields, &field_name);
+        let value = get_field_fields(&field_name_result, &attributes, fields, field_name);
         values.push(value);
     }
 
@@ -395,7 +398,13 @@ fn info_from_variant(
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
-        return info_from_fields(&variant.fields, attrs, variant_var_name, prefix, trait_path);
+        return info_from_fields(
+            &variant.fields,
+            attrs,
+            variant_field_name,
+            prefix,
+            trait_path,
+        );
     }
 
     let variant_name = variant_name(variant, attr);
@@ -407,7 +416,7 @@ fn info_from_variant(
                 false => {
                     let args = args
                         .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, field_var_name))
+                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
                         .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
@@ -428,7 +437,7 @@ fn info_from_variant(
                 false => {
                     let args = args
                         .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, field_var_name))
+                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
                         .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
@@ -483,7 +492,7 @@ fn get_field_fields(
     field: &TokenStream,
     attr: &FieldAttributes,
     fields: &Fields,
-    field_name: impl Fn(usize, &Field) -> TokenStream,
+    field_name: FieldNameFn,
 ) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
@@ -497,7 +506,7 @@ fn get_field_fields(
                 false => {
                     let args = args
                         .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, &field_name))
+                        .map(|arg| fnarg_tokens(arg, fields, field_name))
                         .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
@@ -518,7 +527,7 @@ fn get_field_fields(
                 false => {
                     let args = args
                         .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, &field_name))
+                        .map(|arg| fnarg_tokens(arg, fields, field_name))
                         .collect::<Vec<_>>();
                     Some(quote!( #(#args,)* ))
                 }
@@ -570,7 +579,7 @@ fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
     quote! { format!(#custom_format, #field) }
 }
 
-fn field_var_name(index: usize, field: &Field) -> TokenStream {
+fn struct_field_name(index: usize, field: &Field) -> TokenStream {
     let f = field.ident.as_ref().map_or_else(
         || Index::from(index).to_token_stream(),
         quote::ToTokens::to_token_stream,
@@ -578,7 +587,7 @@ fn field_var_name(index: usize, field: &Field) -> TokenStream {
     quote!(self.#f)
 }
 
-fn variant_var_name(index: usize, field: &Field) -> TokenStream {
+fn variant_field_name(index: usize, field: &Field) -> TokenStream {
     match &field.ident {
         Some(indent) => indent.to_token_stream(),
         None => Ident::new(
@@ -649,7 +658,7 @@ fn variant_idents(v: &Variant) -> Vec<TokenStream> {
         .enumerate()
         // we intentionally not ignore these fields to be able to build a pattern correctly
         // .filter(|(_, field)| !Attr::parse(&field.attrs).is_ignored())
-        .map(|(index, field)| variant_var_name(index, field))
+        .map(|(index, field)| variant_field_name(index, field))
         .collect::<Vec<_>>()
 }
 
@@ -712,39 +721,86 @@ fn merge_attributes(attr: &mut FieldAttributes, global_attr: &TypeAttributes) {
     }
 }
 
-fn fnarg_tokens(
-    arg: &FuncArg,
-    fields: &Fields,
-    field_name: impl Fn(usize, &Field) -> TokenStream,
-) -> TokenStream {
-    match arg {
-        FuncArg::SelfRef => quote! { &self },
-        FuncArg::SelfProperty(val) => {
-            let property_name = syn::Ident::new(val, proc_macro2::Span::call_site());
+// to resolve invocation issues withing a macros calls
+// we need such a workround
+struct ExprSelfReplace<'a>(Option<(&'a Fields, FieldNameFn)>);
 
-            // We find the corresponding field in the local object fields instead of using self,
-            // which would be a higher level object. This is for nested structures.
-            for (i, field) in fields.iter().enumerate() {
-                let field_name_result = field_name(i, field);
-                if field_name_result.to_string() == *val {
-                    return quote! { #field_name_result };
+impl syn::visit_mut::VisitMut for ExprSelfReplace<'_> {
+    fn visit_expr_mut(&mut self, node: &mut syn::Expr) {
+        match &node {
+            syn::Expr::Path(path) => {
+                let indent = path.path.get_ident();
+                if let Some(indent) = indent {
+                    if indent == "self" {
+                        *node = syn::parse_quote! { (&self) };
+                        return;
+                    }
                 }
             }
+            syn::Expr::Field(field) => {
+                // treating a enum variant structs which we can't reference by 'self'
+                if let Some((fields, field_name)) = &self.0 {
+                    // check that it's plain self reference
 
-            quote! { &self.#property_name }
+                    if let syn::Expr::Path(path) = field.base.as_ref() {
+                        let indent = path.path.get_ident();
+                        if let Some(indent) = indent {
+                            if indent != "self" {
+                                return;
+                            }
+                        }
+                    }
+
+                    let used_field = {
+                        match &field.member {
+                            syn::Member::Named(ident) => ident.to_string(),
+                            syn::Member::Unnamed(index) => index.index.to_string(),
+                        }
+                    };
+
+                    // We find the corresponding field in the local object fields instead of using self,
+                    // which would be a higher level object. This is for nested structures.
+
+                    for (i, field) in fields.iter().enumerate() {
+                        let field_name_result = (field_name)(i, field);
+                        let field_name = field.ident.as_ref().map_or_else(|| i.to_string(), |i| i.to_string());
+                        if field_name == used_field {
+                            *node = syn::parse_quote! { #field_name_result };
+                            return;
+                        }
+                    }
+                }
+            }
+            syn::Expr::Macro(_) => {
+                // NOTE: Can we parse inners of Macros?
+                //
+                // A next example will fail on `self.f1` usage
+                // with such error 'expected value, found module `self`'
+                //
+                // ```
+                // some_macro! {
+                //     struct Something {
+                //         #[tabled(display_with("_", format!("", self.f1)))]
+                //         field: Option<sstr>,
+                //         f1: usize,
+                //     }
+                // }
+                // ```
+            }
+            _ => (),
         }
-        FuncArg::Byte(val) => quote! { #val },
-        FuncArg::Char(val) => quote! { #val },
-        FuncArg::Bool(val) => quote! { #val },
-        FuncArg::Uint(val) => quote! { #val },
-        FuncArg::Int(val) => quote! { #val },
-        FuncArg::Float(val) => quote! { #val },
-        FuncArg::String(val) => quote! { #val },
-        FuncArg::Bytes(val) => {
-            let val = syn::LitByteStr::new(val, proc_macro2::Span::call_site());
-            quote! { #val }
-        }
+
+        // Delegate to the default impl to visit nested expressions.
+        syn::visit_mut::visit_expr_mut(self, node);
     }
+}
+
+fn fnarg_tokens(arg: &FormatArg, fields: &Fields, field_name: FieldNameFn) -> TokenStream {
+    let mut exp = arg.expr.clone();
+
+    ExprSelfReplace(Some((fields, field_name))).visit_expr_mut(&mut exp);
+
+    quote!(#exp)
 }
 
 fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {

@@ -79,6 +79,11 @@ path = "examples/derive/format.rs"
 required-features = ["derive"]
 
 [[example]]
+name = "derive_format2"
+path = "examples/derive/format2.rs"
+required-features = ["derive"]
+
+[[example]]
 name = "table"
 path = "examples/table.rs"
 required-features = ["derive"]

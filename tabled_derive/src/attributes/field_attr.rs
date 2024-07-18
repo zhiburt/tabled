@@ -4,10 +4,9 @@ use crate::{
     casing_style::CasingStyle,
     error::Error,
     parse::field_attr::{parse_field_attributes, FieldAttr, FieldAttrKind},
-    parse::func_arg::FuncArg,
 };
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct FieldAttributes {
     pub is_ignored: bool,
     pub inline: bool,
@@ -15,10 +14,20 @@ pub struct FieldAttributes {
     pub rename: Option<String>,
     pub rename_all: Option<CasingStyle>,
     pub display_with: Option<String>,
-    pub display_with_args: Option<Vec<FuncArg>>,
+    pub display_with_args: Option<Vec<FormatArg>>,
     pub order: Option<usize>,
     pub format: Option<String>,
-    pub format_with_args: Option<Vec<FuncArg>>,
+    pub format_with_args: Option<Vec<FormatArg>>,
+}
+
+pub struct FormatArg {
+    pub expr: syn::Expr,
+}
+
+impl FormatArg {
+    pub fn new(expr: syn::Expr) -> Self {
+        Self { expr }
+    }
 }
 
 impl FieldAttributes {
@@ -63,20 +72,14 @@ impl FieldAttributes {
             FieldAttrKind::DisplayWith(path, comma, args) => {
                 self.display_with = Some(path.value());
                 if comma.is_some() {
-                    let args = args
-                        .into_iter()
-                        .map(|lit| FuncArg::parse_expr(&lit))
-                        .collect::<Result<Vec<_>, _>>()?;
+                    let args = args.into_iter().map(FormatArg::new).collect();
                     self.display_with_args = Some(args);
                 }
             }
             FieldAttrKind::FormatWith(format, comma, args) => {
                 self.format = Some(format.value());
                 if comma.is_some() {
-                    let args = args
-                        .into_iter()
-                        .map(|lit| FuncArg::parse_expr(&lit))
-                        .collect::<Result<Vec<_>, _>>()?;
+                    let args = args.into_iter().map(FormatArg::new).collect();
                     self.format_with_args = Some(args);
                 }
             }

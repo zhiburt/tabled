@@ -229,6 +229,18 @@ mod tuple {
         }
     );
 
+    test_tuple!(
+        display_option_self_4,
+        { { u8 #[tabled(display_with("display_option", self.0, self.0))] Option<sstr> } },
+        { 0 Some("v2") },
+        { ["0", "1"], ["0", "some 0.0"] },
+        pre: {
+            fn display_option(o1: u8, o2: u8) -> String {
+                format!("some {o1}.{o2}")
+            }
+        }
+    );
+
     test_tuple!(format_1, { { u8 #[tabled(format = "foo {}")] sstr } },                                         { 0 "v2" },                     { ["0", "1"], ["0", "foo v2"] });
     test_tuple!(format_2, { { u8 #[tabled(format = "foo {:?}")] sstr } },                                       { 0 "v2" },                     { ["0", "1"], ["0", "foo \"v2\""] });
     // todo : self represents the tuple here. It should be the sstr element instead.
@@ -409,6 +421,58 @@ mod enum_ {
         { ["0", "B"] },
         {
             A("") => ["4", ""],
+            B => ["", "+"],
+        }
+    );
+
+    test_enum!(
+        with_display_self_complex_0,
+        {
+            {
+                #[tabled(inline)]
+                A(
+                    #[tabled(display_with("Self::format::<4>", self, self.0))]
+                    sstr
+                )
+                B
+            }
+        },
+        {
+            impl TestType {
+                fn format<const ID: usize>(&self, _: sstr) -> String {
+                    ID.to_string()
+                }
+            }
+        },
+        { ["0", "B"] },
+        {
+            A("") => ["4", ""],
+            B => ["", "+"],
+        }
+    );
+
+    test_enum!(
+        with_display_self_complex_1,
+        {
+            {
+                #[tabled(inline)]
+                A{
+                    #[tabled(display_with("Self::format::<4>", self, self.asd))]
+                    asd: sstr
+                }
+                B
+            }
+        },
+        {
+            impl TestType {
+                fn format<const ID: usize>(&self, _: sstr) -> String {
+                    ID.to_string()
+                }
+            }
+        },
+        { ["0", "B"] },
+        {
+            A { asd: "" } => ["4", ""],
             B => ["", "+"],
         }
     );
@@ -793,6 +857,49 @@ mod enum_ {
             K => ["", "", "",  "", "k."],
         }
     );
+
+    test_enum!(
+        format_complex,
+        {
+            {
+                #[tabled(inline)]
+                AbsdEgh {
+                    #[tabled(format("{}-{}-{}", foo(*self.a as usize), foo(*self.b as usize), self.c[2]))]
+                    a: u8,
+                    b: i32,
+                    #[tabled(skip)]
+                    c: Vec<usize>,
+                }
+                #[tabled(format("{} s", foo(4)))]
+                B(String)
+                #[tabled(inline)]
+                C(
+                    #[tabled(rename = "C", format("{} ss {}", foo(4), self.1[2]))]
+                    String,
+                    #[tabled(skip)]
+                    Vec<usize>,
+                )
+                #[tabled(format = "k.")]
+                K
+            }
+        },
+        {
+            fn foo(a: usize) -> String {
+                if a > 100 {
+                    String::from(">100")
+                } else {
+                    String::from("<100")
+                }
+            }
+        },
+        { ["a", "b", "B", "C", "K"] },
+        {
+            AbsdEgh { a: 0, b: 1, c: vec![1, 2, 3] }  => ["<100-<100-3", "1", "", "", ""],
+            B(String::new()) => ["",  "", "<100 s", "", ""],
+            C(String::new(), vec![1, 2, 3]) => ["", "",  "", "<100 ss 3", ""],
+            K => ["", "", "",  "", "k."],
+        }
+    );
 }
 
 mod unit {
@@ -969,7 +1076,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", self.f1, 2, 3))]
+                #[tabled(display_with("display_option", &self.f1, 2, 3))]
                 f2: Option<sstr>,
             }
         }
@@ -1066,6 +1173,25 @@ mod structure {
         }
         { f1: 0, f2: Some("v2") }
         { ["f1", "f2"], ["0", "some v2"] }
+    );
+    test_struct!(
+        display_with_args_using_self_array_and_func,
+        {
+            {
+                #[tabled(skip)]
+                f1: [u8; 4],
+                #[tabled(display_with("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
+                f2: Option<sstr>,
+                f3: usize,
+            }
+        }
+        {
+            fn display_option(v1: &[u8; 2], v4: String) -> String {
+                format!("{} {} {v4}", v1[0], v1[1])
+            }
+        }
+        { f1: [0, 1, 2, 3], f2: Some("v2"), f3: 100 }
+        { ["f2", "f3"], ["0 1 100", "100"] }
     );
     test_struct!(order_0,  { { #[tabled(order = 0)] f0: u8, f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f1", "f2"], ["0", "1", "2"] });
     test_struct!(order_1,  { { #[tabled(order = 1)] f0: u8, f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f1", "f0", "f2"], ["1", "0", "2"] });

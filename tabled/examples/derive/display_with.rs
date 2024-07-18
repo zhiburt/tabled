@@ -18,6 +18,7 @@ use tabled::{Table, Tabled};
 #[tabled(rename_all = "camelCase")]
 struct Country {
     name: &'static str,
+    #[tabled(display_with("display_capital", format!("CAPITAL {}", self.capital_city)))]
     capital_city: &'static str,
     #[tabled(display_with("display_perimeter", self))]
     surface_area_km2: f32,
@@ -32,6 +33,10 @@ fn display_perimeter(country: &Country) -> Cow<'_, str> {
     } else {
         "Big Land".into()
     }
+}
+
+fn display_capital(country: String) -> Cow<'static, str> {
+    format!("{country}!").into()
 }
 
 impl Country {
