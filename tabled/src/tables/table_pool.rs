@@ -1625,10 +1625,10 @@ mod print {
         pad_color: Sides<ANSIStr<'static>>,
     ) -> Sides<Option<ANSIStr<'static>>> {
         Sides::new(
-            (!pad_color.left.is_empty()).then(|| pad_color.left),
-            (!pad_color.right.is_empty()).then(|| pad_color.right),
-            (!pad_color.top.is_empty()).then(|| pad_color.top),
-            (!pad_color.bottom.is_empty()).then(|| pad_color.bottom),
+            (!pad_color.left.is_empty()).then_some(pad_color.left),
+            (!pad_color.right.is_empty()).then_some(pad_color.right),
+            (!pad_color.top.is_empty()).then_some(pad_color.top),
+            (!pad_color.bottom.is_empty()).then_some(pad_color.bottom),
         )
     }
 
