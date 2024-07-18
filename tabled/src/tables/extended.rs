@@ -48,11 +48,11 @@
 //! assert_eq!(table, expected);
 //! ```
 
+use crate::grid::util::string::string_width;
+use crate::Tabled;
 use std::cell::RefCell;
 use std::fmt::{self, Debug, Display};
 use std::rc::Rc;
-use crate::grid::util::string::string_width;
-use crate::Tabled;
 
 /// `ExtendedTable` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.

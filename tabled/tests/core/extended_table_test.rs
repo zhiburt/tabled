@@ -473,16 +473,11 @@ fn display_with_truncate_colored() {
 
 #[test]
 fn record_template() {
-    build_tabled_type!(
-        TestType,
-        3,
-        ["1", "2", "3"],
-        ["a", "b", "c"]
-    );
+    build_tabled_type!(TestType, 3, ["1", "2", "3"], ["a", "b", "c"]);
     let data: Vec<TestType> = vec![TestType, TestType];
 
     let description = "ROW";
-    let table = ExtendedTable::new(&data)
+    let table = ExtendedTable::new(data)
         .template(move |index| format!("< {} {} >", description, index + 1));
     let table = table.to_string();
 

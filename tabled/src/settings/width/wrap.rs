@@ -1438,39 +1438,3 @@ mod tests {
         );
     }
 }
-
-//  \u{1b}[37mReturns \u{1b}[39m\n
-//  \u{1b}[37mthe floor \u{1b}[39m\n
-//  \u{1b}[37mof a \u{1b}[39m\n
-//  \u{1b}[37mnumber \u{1b}[39m\u{1b}[49m\n
-//  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
-//  \u{1b}[37minteger \u{1b}[39m\n
-//  \u{1b}[37mless than \u{1b}[39m\n
-//  \u{1b}[37mor equal \u{1b}[39m\n
-//  \u{1b}[37mto that \u{1b}[39m\n
-//  \u{1b}[37mnumber).\u{1b}[39m  "
-
-//
-//
-
-//  \u{1b}[37mReturns \u{1b}[39m\n
-//  \u{1b}[37mthe floor \u{1b}[39m\n
-//  \u{1b}[37mof a \u{1b}[39m\n
-//  \u{1b}[37mnumber \u{1b}[39m\u{1b}[49m\n
-//  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
-//  \u{1b}[37minteger \u{1b}[39m\n
-//  \u{1b}[37mless than \u{1b}[39m\n
-//  \u{1b}[37mor equal \u{1b}[39m\n
-//  \u{1b}[37mto that \u{1b}[39m\n
-//  \u{1b}[37mnumber).\u{1b}[39m  "
-
-// "\u{1b}[37mReturns\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mthe\u{1b}[37m floor\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mof\u{1b}[37m a\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mnumber\u{1b}[37m \u{1b}[39m\u{1b}[49m\n
-// \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37minteger\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mless\u{1b}[37m than\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mor\u{1b}[37m equal\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mto\u{1b}[37m that\u{1b}[37m \u{1b}[39m\n
-// \u{1b}[37mnumber).\u{1b}[39m  "

@@ -14,13 +14,12 @@ pub fn parse_type_attributes(
 }
 
 pub struct TypeAttr {
-    pub ident: Ident,
     pub kind: TypeAttrKind,
 }
 
 impl TypeAttr {
-    pub fn new(ident: Ident, kind: TypeAttrKind) -> Self {
-        Self { ident, kind }
+    pub fn new(kind: TypeAttrKind) -> Self {
+        Self { kind }
     }
 }
 
@@ -36,14 +35,11 @@ impl Parse for TypeAttr {
         use TypeAttrKind::*;
 
         if input.peek(syn::token::Crate) {
-            let crate_token: syn::token::Crate = input.parse()?;
+            let _: syn::token::Crate = input.parse()?;
             let _ = input.parse::<Token![=]>()?;
             let value = input.parse::<LitStr>()?;
 
-            return Ok(Self::new(
-                Ident::new("crate", crate_token.span),
-                Crate(value),
-            ));
+            return Ok(Self::new(Crate(value)));
         }
 
         let name: Ident = input.parse()?;
@@ -56,7 +52,7 @@ impl Parse for TypeAttr {
                 let lit = input.parse::<LitStr>()?;
 
                 if let "rename_all" = name_str.as_str() {
-                    return Ok(Self::new(name, RenameAll(lit)));
+                    return Ok(Self::new(RenameAll(lit)));
                 }
             }
 
@@ -64,7 +60,7 @@ impl Parse for TypeAttr {
                 let lit = input.parse::<LitBool>()?;
 
                 if let "inline" = name_str.as_str() {
-                    return Ok(Self::new(name, Inline(lit, None)));
+                    return Ok(Self::new(Inline(lit, None)));
                 }
             }
 
@@ -82,10 +78,10 @@ impl Parse for TypeAttr {
                 let lit = nested.parse::<LitStr>()?;
 
                 if let "inline" = name_str.as_str() {
-                    return Ok(Self::new(
-                        name,
-                        Inline(LitBool::new(true, Span::call_site()), Some(lit)),
-                    ));
+                    return Ok(Self::new(Inline(
+                        LitBool::new(true, Span::call_site()),
+                        Some(lit),
+                    )));
                 }
             }
 
@@ -96,10 +92,10 @@ impl Parse for TypeAttr {
         }
 
         if let "inline" = name_str.as_str() {
-            return Ok(Self::new(
-                name,
-                Inline(LitBool::new(true, Span::call_site()), None),
-            ));
+            return Ok(Self::new(Inline(
+                LitBool::new(true, Span::call_site()),
+                None,
+            )));
         }
 
         Err(syn::Error::new(

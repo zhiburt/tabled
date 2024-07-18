@@ -439,8 +439,8 @@ pub use crate::{tabled::Tabled, tables::Table};
 /// #[derive(Tabled)]
 /// struct Record {
 ///     #[tabled(skip)]
-///     id: [u8; 4],
-///     #[tabled(format("{}.{}.{}.{}.{}", self.id[0], self.id[1], self.id[2], self.id[3], self.name)]
+///     id: u8,
+///     #[tabled(format("{}.{}", self.id, self.name))]
 ///     name: String,
 /// }
 /// ```

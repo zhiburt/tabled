@@ -215,7 +215,7 @@ test_table!(
 test_table!(
     colors_empty,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::default(); 0])),
+        .with(ColumnNames::default().color({ Color::default(); vec![] as std::vec::Vec<tabled::settings::Color> })),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
