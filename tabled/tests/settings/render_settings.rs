@@ -89,16 +89,16 @@ test_table!(
 test_table!(
     tab_isnot_handled_by_default_test,
     Matrix::iter(tab_data1()).with(Style::psql()),
-    "       N        | column 0 | column 1  | column 2 "
-    "----------------+----------+-----------+----------"
-    "       0        |   0-0    |    0-1    |   0-2    "
-    " 123\t123\tasdasd |   1-0    |    1-1    |   1-2    "
-    "       2        |   2-0    | htt\tps:// |   2-2    "
-    "                |          | www       |          "
-    "                |          | .         |          "
-    "                |          | red\that   |          "
-    "                |          | .c\tom     |          "
-    "                |          | /en       |          "
+    "      N       | column 0 | column 1 | column 2 "
+    "--------------+----------+----------+----------"
+    "      0       |   0-0    |   0-1    |   0-2    "
+    " 123\t123\tasdasd |   1-0    |   1-1    |   1-2    "
+    "      2       |   2-0    | htt\tps:// |   2-2    "
+    "              |          | www      |          "
+    "              |          | .        |          "
+    "              |          | red\that   |          "
+    "              |          | .c\tom     |          "
+    "              |          | /en      |          "
 );
 
 test_table!(
