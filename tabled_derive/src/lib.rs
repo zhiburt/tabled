@@ -763,7 +763,10 @@ impl syn::visit_mut::VisitMut for ExprSelfReplace<'_> {
 
                     for (i, field) in fields.iter().enumerate() {
                         let field_name_result = (field_name)(i, field);
-                        let field_name = field.ident.as_ref().map_or_else(|| i.to_string(), |i| i.to_string());
+                        let field_name = field
+                            .ident
+                            .as_ref()
+                            .map_or_else(|| i.to_string(), |i| i.to_string());
                         if field_name == used_field {
                             *node = syn::parse_quote! { #field_name_result };
                             return;
