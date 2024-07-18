@@ -19,8 +19,9 @@ use syn::{
     Ident, Index, PathSegment, Type, Variant,
 };
 
-use attributes::{FieldAttributes, FuncArg, TypeAttributes};
-use error::Error;
+use crate::attributes::{FieldAttributes, TypeAttributes};
+use crate::parse::func_arg::FuncArg;
+use crate::error::Error;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
 #[proc_macro_error]
