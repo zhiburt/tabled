@@ -2,7 +2,7 @@
 
 use tabled::{
     grid::dimension::{DimensionPriority, PoolTableDimension},
-    settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, PaddingColor, Style},
+    settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, Style},
     tables::{PoolTable, TableValue},
 };
 
@@ -10,7 +10,7 @@ use crate::matrix::Matrix;
 use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
-use tabled::grid::ansi::ANSIStr;
+use tabled::{grid::ansi::ANSIStr, settings::PaddingColor};
 
 test_table!(
     pool_table,

@@ -2,14 +2,17 @@
 
 use tabled::settings::{
     object::{Rows, Segment},
-    Alignment, Modify, Padding, PaddingColor, Style,
+    Alignment, Modify, Padding, Style,
 };
 
 use crate::matrix::Matrix;
 use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
-use ::{owo_colors::OwoColorize, tabled::settings::Color};
+use ::{
+    owo_colors::OwoColorize,
+    tabled::settings::{Color, PaddingColor},
+};
 
 test_table!(
     padding,

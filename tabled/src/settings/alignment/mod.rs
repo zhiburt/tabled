@@ -137,6 +137,22 @@ impl Alignment {
         Self::vertical(AlignmentVertical::Center)
     }
 
+    /// Convert alignment to horizontal.
+    pub const fn get_horizontal(self) -> Option<AlignmentHorizontal> {
+        match self.inner {
+            Horizontal(alignment) => Some(alignment),
+            Vertical(_) => None,
+        }
+    }
+
+    /// Convert alignment to vertical.
+    pub const fn get_vertical(self) -> Option<AlignmentVertical> {
+        match self.inner {
+            Horizontal(_) => None,
+            Vertical(alignment) => Some(alignment),
+        }
+    }
+
     /// Returns an alignment with the given horizontal alignment.
     const fn horizontal(alignment: AlignmentHorizontal) -> Self {
         Self::new(Horizontal(alignment))
