@@ -3,8 +3,6 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::marker::PhantomData;
-
 use crate::{
     grid::{
         config::SpannedConfig,
@@ -46,7 +44,7 @@ use crate::util::string::split_at_width;
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
     keep_words: bool,
-    _priority: PhantomData<P>,
+    priority: P,
 }
 
 impl<W> Wrap<W> {
@@ -58,7 +56,7 @@ impl<W> Wrap<W> {
         Wrap {
             width,
             keep_words: false,
-            _priority: PhantomData,
+            priority: PriorityNone::new(),
         }
     }
 }
@@ -76,11 +74,11 @@ impl<W, P> Wrap<W, P> {
     /// [`Padding`]: crate::settings::Padding
     /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
     /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
-    pub fn priority<PP>(self) -> Wrap<W, PP> {
+    pub fn priority<PP: Peaker>(self, priority: PP) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
             keep_words: self.keep_words,
-            _priority: PhantomData,
+            priority,
         }
     }
 
@@ -88,8 +86,8 @@ impl<W, P> Wrap<W, P> {
     ///
     /// If a wrapping point will be in a word, [`Wrap`] will
     /// preserve a word (if possible) and wrap the string before it.
-    pub fn keep_words(mut self) -> Self {
-        self.keep_words = true;
+    pub fn keep_words(mut self, on: bool) -> Self {
+        self.keep_words = on;
         self
     }
 }
@@ -125,7 +123,7 @@ where
             return;
         }
 
-        let priority = P::create();
+        let priority = self.priority;
         let keep_words = self.keep_words;
         let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
 

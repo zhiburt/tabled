@@ -92,7 +92,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long sentence"])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -111,7 +111,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long  sentence"])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -130,7 +130,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long   sentence"])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -150,7 +150,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long    sentence"])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -171,7 +171,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long    sentence"])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -190,7 +190,7 @@ test_table!(
     {
         let table = Matrix::iter(vec!["this"])
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true)))
             .to_string();
 
         assert!(is_lines_equal(&table, 8));
@@ -209,7 +209,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long sentence".on_black().green().to_string()])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         AnsiStr::ansi_strip(&table).to_string()
@@ -226,7 +226,7 @@ test_table!(
     Matrix::iter(vec!["this is a long sentence".on_black().green().to_string()])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
         "| String            |"
         "|-------------------|"
         "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
@@ -240,7 +240,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long  sentence".on_black().green().to_string()])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         AnsiStr::ansi_strip(&table).to_string()
@@ -257,7 +257,7 @@ test_table!(
     Matrix::iter(vec!["this is a long  sentence".on_black().green().to_string()])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
     "| String            |"
     "|-------------------|"
     "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |"
@@ -271,7 +271,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long   sentence".on_black().green().to_string()])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         AnsiStr::ansi_strip(&table).to_string()
@@ -288,7 +288,7 @@ test_table!(
     Matrix::iter(vec!["this is a long   sentence".on_black().green().to_string()])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
     "| String            |"
     "|-------------------|"
     "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
@@ -302,7 +302,7 @@ test_table!(
         let table = Matrix::iter(vec!["this is a long    sentence".on_black().green().to_string()])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
         AnsiStr::ansi_strip(&table).to_string()
@@ -319,7 +319,7 @@ test_table!(
     Matrix::iter(vec!["this is a long    sentence".on_black().green().to_string()])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
     "| String            |"
     "|-------------------|"
     "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
@@ -332,7 +332,7 @@ test_table!(
     {
         let table = Matrix::iter(vec!["this".on_black().green().to_string()])
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true)))
             .to_string();
 
         AnsiStr::ansi_strip(&table).to_string()
@@ -347,7 +347,7 @@ test_table!(
     max_width_wrapped_keep_words_color_4_1,
     Matrix::iter(vec!["this".on_black().green().to_string()])
         .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true))),
     "| String |"
     "|--------|"
     "|  \u{1b}[32;40mthis\u{1b}[0m  |"
@@ -358,7 +358,7 @@ test_table!(
     Matrix::iter(["this is a long sentencesentencesentence"])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words())),
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
     "| &str              |"
     "|-------------------|"
     "| this is a long se |"
@@ -376,7 +376,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
     let table = Matrix::iter(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
         .to_string();
 
     assert_eq!(
@@ -406,7 +406,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 #[test]
 fn max_width_keep_words_1() {
     let table = Matrix::iter(["asdf"])
-        .with(Width::wrap(7).keep_words())
+        .with(Width::wrap(7).keep_words(true))
         .to_string();
 
     assert_eq!(
@@ -423,7 +423,7 @@ fn max_width_keep_words_1() {
     );
 
     let table = Matrix::iter(["qweqw eqwe"])
-        .with(Width::wrap(8).keep_words())
+        .with(Width::wrap(8).keep_words(true))
         .to_string();
 
     assert_eq!(
@@ -449,7 +449,7 @@ fn max_width_keep_words_1() {
             .remove_horizontal()
             .horizontals([(1, HorizontalLine::inherit(Style::modern()))]),
     )
-    .with(Width::wrap(21).keep_words().priority::<PriorityMax>())
+    .with(Width::wrap(21).keep_words(true).priority(PriorityMax))
     .with(Alignment::center())
     .to_string();
 
@@ -1172,7 +1172,7 @@ fn total_width_wrapping() {
         .insert((3, 2), "some loong string")
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
-        .with(Width::wrap(20).keep_words())
+        .with(Width::wrap(20).keep_words(true))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -1822,7 +1822,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority::<PriorityMax>())
+        .with(Width::truncate(35).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -1840,7 +1840,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority::<PriorityMax>())
+        .with(Width::truncate(20).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -1858,7 +1858,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority::<PriorityMax>())
+        .with(Width::truncate(0).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -1880,7 +1880,7 @@ fn max_width_truncate_priority_max_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority::<PriorityMax>())
+        .with(Width::truncate(15).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -1901,7 +1901,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority::<PriorityMax>())
+        .with(Width::wrap(35).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -1923,7 +1923,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority::<PriorityMax>())
+        .with(Width::wrap(20).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -1958,7 +1958,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority::<PriorityMax>())
+        .with(Width::wrap(0).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -1980,7 +1980,7 @@ fn max_width_wrap_priority_max_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority::<PriorityMax>())
+        .with(Width::wrap(15).priority(PriorityMax))
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -2018,7 +2018,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority::<PriorityMin>())
+        .with(Width::truncate(35).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -2036,7 +2036,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority::<PriorityMin>())
+        .with(Width::truncate(20).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -2054,7 +2054,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority::<PriorityMin>())
+        .with(Width::truncate(0).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -2076,7 +2076,7 @@ fn max_width_truncate_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority::<PriorityMin>())
+        .with(Width::truncate(15).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -2095,7 +2095,7 @@ fn max_width_truncate_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(17).priority::<PriorityMin>())
+        .with(Width::truncate(17).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 17));
@@ -2116,7 +2116,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority::<PriorityMin>())
+        .with(Width::wrap(35).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -2135,7 +2135,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority::<PriorityMin>())
+        .with(Width::wrap(20).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -2157,7 +2157,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority::<PriorityMin>())
+        .with(Width::wrap(0).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -2179,7 +2179,7 @@ fn max_width_wrap_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority::<PriorityMin>())
+        .with(Width::wrap(15).priority(PriorityMin))
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -2208,7 +2208,7 @@ fn max_width_wrap_priority_min_with_span() {
 fn min_width_priority_max() {
     let table = Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMax>())
+        .with(MinWidth::new(60).priority(PriorityMax))
         .to_string();
 
     assert_eq!(string_width_multiline(&table), 60);
@@ -2228,7 +2228,7 @@ fn min_width_priority_max() {
 fn min_width_priority_min() {
     let table = Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMin>())
+        .with(MinWidth::new(60).priority(PriorityMin))
         .to_string();
 
     assert_eq!(string_width_multiline(&table), 60);
@@ -2313,7 +2313,7 @@ fn min_width_is_used_after_margin() {
 fn wrap_keeping_words_0() {
     let data = vec![["Hello world"]];
     let table = tabled::Table::new(data)
-        .with(Width::wrap(8).keep_words())
+        .with(Width::wrap(8).keep_words(true))
         .to_string();
 
     assert_eq!(
@@ -2343,7 +2343,7 @@ fn cell_truncate_multiline() {
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..2).not(Rows::single(0)))
-                .with(Width::truncate(1).multiline()),
+                .with(Width::truncate(1).multiline(true)),
         )
         .to_string();
 
@@ -2371,7 +2371,7 @@ fn cell_truncate_multiline_with_suffix() {
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..2).not(Rows::single(0)))
-                .with(Width::truncate(1).multiline().suffix(".")),
+                .with(Width::truncate(1).multiline(true).suffix(".")),
         )
         .to_string();
 
@@ -2397,7 +2397,7 @@ fn table_truncate_multiline() {
         .insert((1, 1), "H\nel\nlo World")
         .insert((3, 2), "multi\nline string\n")
         .with(Style::markdown())
-        .with(Width::truncate(20).multiline())
+        .with(Width::truncate(20).multiline(true))
         .to_string();
 
     assert_eq!(
@@ -2422,7 +2422,7 @@ fn table_truncate_multiline_with_suffix() {
         .insert((1, 1), "H\nel\nlo World")
         .insert((3, 2), "multi\nline string\n")
         .with(Style::markdown())
-        .with(Width::truncate(20).suffix(".").multiline())
+        .with(Width::truncate(20).suffix(".").multiline(true))
         .to_string();
 
     assert_eq!(
@@ -2489,7 +2489,7 @@ mod derived {
         let table = Matrix::iter(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Width::wrap(57).keep_words())
+            .with(Width::wrap(57).keep_words(true))
             .to_string();
 
         assert_eq!(
@@ -2574,7 +2574,7 @@ mod derived {
         let table = Matrix::iter(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Width::wrap(57).keep_words())
+            .with(Width::wrap(57).keep_words(true))
             .to_string();
 
         assert_eq!(
@@ -2685,7 +2685,7 @@ mod derived {
             tabled::Table::new(data)
                 .with(
                     Modify::new(Segment::all())
-                        .with(Width::wrap(5).keep_words())
+                        .with(Width::wrap(5).keep_words(true))
                         .with(Alignment::left()),
                 )
                 .to_string()
@@ -2767,7 +2767,7 @@ mod derived {
             tabled::Table::new(data)
                 .with(
                     Modify::new(Segment::all())
-                        .with(Width::wrap(6).keep_words())
+                        .with(Width::wrap(6).keep_words(true))
                         .with(Alignment::left()),
                 )
                 .to_string()

@@ -34,12 +34,12 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 
     /// Sets a different priority logic.
-    pub fn priority<P>(self) -> TableHeightLimit<W, P>
+    pub fn priority<P>(self, priority: P) -> TableHeightLimit<W, P>
     where
         P: Peaker,
     {
         TableHeightLimit {
-            priority: P::create(),
+            priority,
             height: self.height,
         }
     }

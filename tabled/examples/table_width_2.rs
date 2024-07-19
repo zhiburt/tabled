@@ -15,7 +15,7 @@ fn main() {
     let mut table = Table::new(lines);
     table.with(Style::ascii_rounded()).with(
         Modify::new(Segment::all())
-            .with(Width::wrap(30).keep_words())
+            .with(Width::wrap(30).keep_words(true))
             .with(Alignment::left()),
     );
 

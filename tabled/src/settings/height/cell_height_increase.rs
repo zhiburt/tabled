@@ -31,12 +31,12 @@ impl<W> CellHeightIncrease<W> {
 
     /// The priority makes sense only for table, so the function
     /// converts it to [`TableHeightIncrease`] with a given priority.
-    pub fn priority<P>(self) -> TableHeightIncrease<W, P>
+    pub fn priority<P>(self, priority: P) -> TableHeightIncrease<W, P>
     where
         P: Peaker,
         W: Measurement<Height>,
     {
-        TableHeightIncrease::new(self.height).priority::<P>()
+        TableHeightIncrease::new(self.height).priority(priority)
     }
 }
 
