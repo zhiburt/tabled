@@ -13,19 +13,10 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    grid::{
-        config::{ColoredConfig, Entity},
-        dimension::SpannedGridDimension,
-        records::{
-            vec_records::{Cell, VecRecords},
-            ExactRecords, PeekableRecords, Records,
-        },
-        util::string::string_width_multiline,
-    },
     settings::{
         object::{Columns, Object, Rows, Segment},
-        Alignment, CellOption, Color, Format, Margin, MarginColor, Modify, Padding, PaddingColor,
-        Style,
+        style::BorderColor,
+        Alignment, Color, Format, Margin, MarginColor, Modify, Padding, PaddingColor, Style,
     },
     Table, Tabled,
 };
@@ -73,19 +64,14 @@ fn main() {
             Color::BG_MAGENTA,
             Color::BG_CYAN,
         ))
-        .with(MakeMaxPadding)
+        .with(Alignment::center())
+        .with(Padding::expand(true))
         .with(Format::content(|s| s.on_black().white().to_string()));
 
     let data_settings = Modify::new(Rows::first().inverse())
-        .with(Alignment::left())
-        .with(MakeMaxPadding)
-        .with(Padding::new(1, 1, 0, 0))
-        .with(PaddingColor::new(
-            Color::default(),
-            Color::default(),
-            data_color.clone(),
-            data_color.clone(),
-        ));
+        .with(Alignment::center())
+        .with(Padding::expand(true))
+        .with(PaddingColor::filled(data_color.clone()));
 
     let symbol_settings = Modify::new(Columns::single(1).not(Rows::first()))
         .with(Format::content(|s| s.bold().to_string()));
@@ -97,7 +83,7 @@ fn main() {
         .with(Style::rounded())
         .with(Margin::new(1, 2, 1, 1))
         .with(MarginColor::filled(pane_color))
-        .with(border_color)
+        .with(BorderColor::filled(border_color))
         .with(Modify::new(Segment::all()).with(data_color))
         .with(header_settings)
         .with(data_settings)
@@ -106,38 +92,4 @@ fn main() {
         .to_string();
 
     println!("\n\n{table}\n\n");
-}
-
-#[derive(Debug, Clone)]
-struct MakeMaxPadding;
-
-impl<T> CellOption<VecRecords<T>, ColoredConfig> for MakeMaxPadding
-where
-    T: Cell + AsRef<str>,
-{
-    fn change(self, records: &mut VecRecords<T>, cfg: &mut ColoredConfig, entity: Entity) {
-        let widths = SpannedGridDimension::width(&*records, cfg);
-
-        let count_rows = records.count_rows();
-        let count_cols = records.count_columns();
-
-        for (row, col) in entity.iter(count_rows, count_cols) {
-            let column_width = widths[col];
-            let text = records.get_text((row, col));
-            let width = string_width_multiline(text);
-
-            if width < column_width {
-                let available_width = column_width - width;
-                let left = available_width / 2;
-                let right = available_width - left;
-
-                let pos = (row, col).into();
-                let mut pad = cfg.get_padding(pos);
-                pad.left.size = left;
-                pad.right.size = right;
-
-                cfg.set_padding(pos, pad);
-            }
-        }
-    }
 }

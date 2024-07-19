@@ -27,6 +27,9 @@ use crate::{
     settings::CellOption,
 };
 
+#[cfg(feature = "std")]
+use super::padding_expand::PaddingExpand;
+
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 /// # Example
@@ -101,8 +104,19 @@ impl Padding {
         self.indent.bottom.fill = bottom;
         self
     }
+
+    #[cfg(feature = "std")]
+    /// Construct's an PaddingExpand object.
+    pub const fn expand(horizontal: bool) -> PaddingExpand {
+        if horizontal {
+            PaddingExpand::Horizontal
+        } else {
+            PaddingExpand::Vertical
+        }
+    }
 }
 
+#[cfg(feature = "std")]
 impl<R> CellOption<R, ColoredConfig> for Padding {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let indent = self.indent;
@@ -111,6 +125,7 @@ impl<R> CellOption<R, ColoredConfig> for Padding {
     }
 }
 
+#[cfg(feature = "std")]
 impl<R, D> TableOption<R, ColoredConfig, D> for Padding {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
