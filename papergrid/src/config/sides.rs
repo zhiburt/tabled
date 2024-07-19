@@ -27,11 +27,19 @@ impl<T> Sides<T> {
     where
         T: Copy,
     {
-        Self {
-            top: value,
-            bottom: value,
-            left: value,
-            right: value,
-        }
+        Self::new(value, value, value, value)
+    }
+
+    /// Creates a new object.
+    pub fn convert_into<T1>(self) -> Sides<T1>
+    where
+        T: Into<T1>,
+    {
+        Sides::new(
+            self.left.into(),
+            self.right.into(),
+            self.top.into(),
+            self.bottom.into(),
+        )
     }
 }

@@ -26,12 +26,12 @@ impl<'a> ANSIStr<'a> {
     }
 
     /// Gets a reference to a prefix.
-    pub fn get_prefix(&self) -> &'a str {
+    pub const fn get_prefix(&self) -> &'a str {
         self.prefix
     }
 
     /// Gets a reference to a suffix.
-    pub fn get_suffix(&self) -> &'a str {
+    pub const fn get_suffix(&self) -> &'a str {
         self.suffix
     }
 }

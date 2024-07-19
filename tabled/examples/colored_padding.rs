@@ -24,7 +24,7 @@ use tabled::{
     },
     settings::{
         object::{Columns, Object, Rows, Segment},
-        Alignment, CellOption, Color, Format, Margin, Modify, Padding, Style,
+        Alignment, CellOption, Color, Format, Margin, Modify, Padding, PaddingColor, Style,
     },
     Table, Tabled,
 };
@@ -32,61 +32,32 @@ use tabled::{
 #[derive(Tabled)]
 #[tabled(rename_all = "PascalCase")]
 struct Fundamental {
-    quantity: &'static str,
-    symbol: &'static str,
-    value: &'static str,
-    unit: &'static str,
+    quantity: String,
+    symbol: char,
+    value: String,
+    unit: String,
 }
 
 impl Fundamental {
-    fn new(
-        quantity: &'static str,
-        symbol: &'static str,
-        value: &'static str,
-        unit: &'static str,
-    ) -> Self {
+    fn new(quantity: &str, symbol: char, value: &str, unit: &str) -> Self {
         Self {
-            quantity,
             symbol,
-            value,
-            unit,
+            quantity: quantity.to_string(),
+            value: value.to_string(),
+            unit: unit.to_string(),
         }
     }
 }
 
 fn main() {
     // data source: https://www.britannica.com/science/physical-constant
+    #[rustfmt::skip]
     let data = [
-        Fundamental::new(
-            "constant of gravitation",
-            "G",
-            "6.67384 × 10⁻¹¹",
-            "cubic metre per second squared per kilogram",
-        ),
-        Fundamental::new(
-            "speed of light (in a vacuum)",
-            "c",
-            "2.99792458 × 10⁻⁸",
-            "metres per second",
-        ),
-        Fundamental::new(
-            "Planck's constant",
-            "h",
-            "6.626070040 × 10⁻³⁴",
-            "joule second",
-        ),
-        Fundamental::new(
-            "Boltzmann constant",
-            "k",
-            "1.38064852 × 10⁻²³",
-            "joule per kelvin",
-        ),
-        Fundamental::new(
-            "Faraday constant",
-            "F",
-            "9.648533289 × 10⁴",
-            "coulombs per mole",
-        ),
+        Fundamental::new("constant of gravitation", 'G', "6.67384 × 10⁻¹¹", "cubic metre per second squared per kilogram"),
+        Fundamental::new("speed of light (in a vacuum)", 'c', "2.99792458 × 10⁻⁸", "metres per second"),
+        Fundamental::new("Planck's constant", 'h', "6.626070040 × 10⁻³⁴", "joule second"),
+        Fundamental::new("Boltzmann constant", 'k', "1.38064852 × 10⁻²³", "joule per kelvin"),
+        Fundamental::new("Faraday constant",    'F',    "9.648533289 × 10⁴",    "coulombs per mole"),
     ];
 
     let pane_color = Color::try_from(' '.bg_rgb::<220, 220, 220>().to_string()).unwrap();
@@ -94,7 +65,8 @@ fn main() {
     let data_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().to_string()).unwrap();
 
     let header_settings = Modify::new(Rows::first())
-        .with(Padding::new(1, 1, 2, 2).colorize(
+        .with(Padding::new(1, 1, 2, 2))
+        .with(PaddingColor::new(
             Color::BG_GREEN,
             Color::BG_YELLOW,
             Color::BG_MAGENTA,
@@ -106,7 +78,8 @@ fn main() {
     let data_settings = Modify::new(Rows::first().inverse())
         .with(Alignment::left())
         .with(MakeMaxPadding)
-        .with(Padding::new(1, 1, 0, 0).colorize(
+        .with(Padding::new(1, 1, 0, 0))
+        .with(PaddingColor::new(
             Color::default(),
             Color::default(),
             data_color.clone(),

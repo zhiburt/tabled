@@ -2,7 +2,7 @@
 
 use tabled::{
     grid::dimension::{DimensionPriority, PoolTableDimension},
-    settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, Style},
+    settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, PaddingColor, Style},
     tables::{PoolTable, TableValue},
 };
 
@@ -313,15 +313,13 @@ test_table!(
 test_table!(
     pool_table_padding_2,
     PoolTable::new(Matrix::with_no_frame(3, 3).to_vec())
-        .with(Padding::new(1, 2, 3, 4)
-            .fill('!', '@', '#', '$')
-            .colorize(
-                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
-                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
-                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
-                ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
-            )
-        ),
+        .with(Padding::new(1, 2, 3, 4).fill('!', '@', '#', '$'))
+        .with(PaddingColor::new(
+            ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+            ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+            ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+            ANSIStr::new("\u{1b}[34m", "\u{1b}[39m"),
+        )),
     "+------+------+------+"
     "|\u{1b}[34m######\u{1b}[39m|\u{1b}[34m######\u{1b}[39m|\u{1b}[34m######\u{1b}[39m|"
     "|\u{1b}[34m######\u{1b}[39m|\u{1b}[34m######\u{1b}[39m|\u{1b}[34m######\u{1b}[39m|"
