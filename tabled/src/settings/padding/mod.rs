@@ -24,11 +24,9 @@ use crate::{
 #[cfg(feature = "std")]
 use crate::{
     grid::{config::ColoredConfig, config::Entity},
+    settings::padding_expand::PaddingExpand,
     settings::CellOption,
 };
-
-#[cfg(feature = "std")]
-use super::padding_expand::PaddingExpand;
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///

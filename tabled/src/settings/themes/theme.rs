@@ -20,7 +20,7 @@ use crate::{
         },
         records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     },
-    settings::{style::Style, themes::Colorization, Alignment, Color, Rotate, TableOption},
+    settings::{style::Style, Alignment, Color, Rotate, TableOption},
 };
 
 /// A raw style data, which can be produced safely from [`Style`].
@@ -31,7 +31,6 @@ pub struct Theme {
     border: TableBorders,
     lines: BorderLines,
     layout: Layout,
-    colorization: Option<Colorization>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -77,7 +76,6 @@ impl Theme {
             TableBorders::new(chars, Borders::empty()),
             BorderLines::new(horizontal1, None, None),
             Layout::new(HeadPosition::Top, false, false, false, false),
-            None,
         )
     }
 }
@@ -91,7 +89,6 @@ impl Theme {
             TableBorders::new(Borders::empty(), Borders::empty()),
             BorderLines::new(None, None, None),
             Layout::new(HeadPosition::Top, false, false, false, false),
-            None,
         )
     }
 }
@@ -472,17 +469,11 @@ impl Theme {
 }
 
 impl Theme {
-    const fn _new(
-        border: TableBorders,
-        lines: BorderLines,
-        layout: Layout,
-        colorization: Option<Colorization>,
-    ) -> Self {
+    const fn _new(border: TableBorders, lines: BorderLines, layout: Layout) -> Self {
         Self {
             border,
             lines,
             layout,
-            colorization,
         }
     }
 }
@@ -493,7 +484,6 @@ impl From<Borders<char>> for Theme {
             TableBorders::new(borders, Borders::empty()),
             BorderLines::new(None, None, None),
             Layout::new(HeadPosition::Top, false, false, false, false),
-            None,
         )
     }
 }
@@ -554,7 +544,6 @@ impl From<ColoredConfig> for Theme {
             TableBorders::new(borders, colors),
             BorderLines::new(None, Some(horizontals), Some(verticals)),
             Layout::new(HeadPosition::Top, false, false, false, false),
-            None,
         )
     }
 }
