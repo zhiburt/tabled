@@ -227,7 +227,10 @@ impl Color {
 
     /// Parses the string,
     ///
-    /// PANICS if it's incorrectly built.
+    /// # Panics
+    ///
+    /// PANICS if the input string incorrectly built.
+    /// Use [`TryFrom`] instead if you are not sure about the input.
     #[cfg(feature = "ansi")]
     pub fn parse<S>(text: S) -> Self
     where

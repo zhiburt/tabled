@@ -2,35 +2,13 @@
 //!
 //! # Example
 //!
+//!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Padding, Style, Modify, object::Cell}};
-//!
-//! let table = Table::new("2022".chars())
-//!     .with(Style::modern())
-//!     .with(Modify::new((2, 0)).with(Padding::new(1, 1, 2, 2)))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         "┌──────┐\n",
-//!         "│ char │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "├──────┤\n",
-//!         "│      │\n",
-//!         "│      │\n",
-//!         "│ 0    │\n",
-//!         "│      │\n",
-//!         "│      │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "└──────┘",
-//!     ),
-//! );
+//! # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data)
+//!     .with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 //! ```
 //!
 //! [`Table`]: crate::Table
@@ -51,11 +29,40 @@ use crate::{
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
+/// # Example
+///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
+/// use tabled::{
+///     Table,
+///     settings::{Padding, Style, Modify, object::Cell},
+/// };
+///
+/// let table = Table::new("2022".chars())
+///     .with(Style::modern())
+///     .with(Modify::new((2, 0)).with(Padding::new(1, 1, 2, 2)))
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "┌──────┐\n",
+///         "│ char │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "├──────┤\n",
+///         "│      │\n",
+///         "│      │\n",
+///         "│ 0    │\n",
+///         "│      │\n",
+///         "│      │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "└──────┘",
+///     ),
+/// );
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Padding {

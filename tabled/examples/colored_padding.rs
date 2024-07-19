@@ -24,7 +24,8 @@ use tabled::{
     },
     settings::{
         object::{Columns, Object, Rows, Segment},
-        Alignment, CellOption, Color, Format, Margin, Modify, Padding, PaddingColor, Style,
+        Alignment, CellOption, Color, Format, Margin, MarginColor, Modify, Padding, PaddingColor,
+        Style,
     },
     Table, Tabled,
 };
@@ -94,12 +95,8 @@ fn main() {
 
     let table = Table::new(data)
         .with(Style::rounded())
-        .with(Margin::new(1, 2, 1, 1).colorize(
-            pane_color.clone(),
-            pane_color.clone(),
-            pane_color.clone(),
-            pane_color,
-        ))
+        .with(Margin::new(1, 2, 1, 1))
+        .with(MarginColor::filled(pane_color))
         .with(border_color)
         .with(Modify::new(Segment::all()).with(data_color))
         .with(header_settings)

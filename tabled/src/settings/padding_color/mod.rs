@@ -1,36 +1,15 @@
-//! This module contains a [`Padding`] setting of a cell on a [`Table`].
+//! This module contains a [`PaddingColor`] setting of a cell on a [`Table`].
 //!
 //! # Example
 //!
-#![cfg_attr(feature = "ansi", doc = "```")]
-#![cfg_attr(not(feature = "ansi"), doc = "```ignore")]
-//! use tabled::{
-//!     Table,
-//!     settings::{Padding, PaddingColor, Color, Style},
-//! };
-//!
-//! let table = Table::new("2024".chars())
-//!     .with(Style::modern())
-//!     .modify((2, 0), Padding::new(2, 4, 0, 0))
-//!     .modify((2, 0), PaddingColor::filled(Color::FG_RED))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         "┌───────┐\n",
-//!         "│ char  │\n",
-//!         "├───────┤\n",
-//!         "│ 2     │\n",
-//!         "├───────┤\n",
-//!         "│\u{1b}[31m  \u{1b}[39m0\u{1b}[31m    \u{1b}[39m│\n",
-//!         "├───────┤\n",
-//!         "│ 2     │\n",
-//!         "├───────┤\n",
-//!         "│ 4     │\n",
-//!         "└───────┘",
-//!     ),
-//! );
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
+//! # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data)
+//!     .with(Modify::new(Rows::single(0))
+//!         .with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V'))
+//!     );
 //! ```
 //!
 //! [`Table`]: crate::Table
@@ -49,15 +28,39 @@ use crate::grid::{ansi::ANSIBuf, config::ColoredConfig, config::Entity};
 #[cfg(feature = "std")]
 use crate::settings::CellOption;
 
-use super::Color;
-
 /// PaddingColor is responsible for a left/right/top/bottom inner color of a particular cell.
 ///
-#[cfg_attr(feature = "std", doc = "```")]
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
+/// # Example
+///
+#[cfg_attr(feature = "ansi", doc = "```")]
+#[cfg_attr(not(feature = "ansi"), doc = "```ignore")]
+/// use tabled::{
+///     Table,
+///     settings::{Padding, PaddingColor, Color, Style},
+/// };
+///
+/// let table = Table::new("2024".chars())
+///     .with(Style::modern())
+///     .modify((2, 0), Padding::new(2, 4, 0, 0))
+///     .modify((2, 0), PaddingColor::filled(Color::FG_RED))
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "┌───────┐\n",
+///         "│ char  │\n",
+///         "├───────┤\n",
+///         "│ 2     │\n",
+///         "├───────┤\n",
+///         "│\u{1b}[31m  \u{1b}[39m0\u{1b}[31m    \u{1b}[39m│\n",
+///         "├───────┤\n",
+///         "│ 2     │\n",
+///         "├───────┤\n",
+///         "│ 4     │\n",
+///         "└───────┘",
+///     ),
+/// );
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PaddingColor<C> {
@@ -81,14 +84,14 @@ impl<C> PaddingColor<C> {
     }
 }
 
-impl PaddingColor<Color> {
+impl PaddingColor<ANSIStr<'static>> {
     /// Construct's an Padding object with no color.
-    pub const fn none() -> Self {
+    pub const fn empty() -> Self {
         Self::new(
-            Color::empty(),
-            Color::empty(),
-            Color::empty(),
-            Color::empty(),
+            ANSIStr::empty(),
+            ANSIStr::empty(),
+            ANSIStr::empty(),
+            ANSIStr::empty(),
         )
     }
 }

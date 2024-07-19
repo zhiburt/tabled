@@ -48,6 +48,7 @@ mod table_option;
 mod alignment;
 mod extract;
 mod margin;
+mod margin_color;
 mod padding;
 mod padding_color;
 mod reverse;
@@ -120,8 +121,9 @@ pub use settings_list::{EmptySettings, Settings};
 pub use table_option::TableOption;
 
 pub use self::{
-    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding,
-    padding_color::PaddingColor, reverse::Reverse, rotate::Rotate, style::Border, style::Style,
+    alignment::Alignment, extract::Extract, margin::Margin, margin_color::MarginColor,
+    padding::Padding, padding_color::PaddingColor, reverse::Reverse, rotate::Rotate, style::Border,
+    style::Style,
 };
 
 #[cfg(feature = "std")]
