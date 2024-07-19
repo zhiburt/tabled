@@ -270,13 +270,23 @@ impl Theme {
     }
 
     /// Set borders structure.
-    pub fn set_border(&mut self, borders: Borders<char>) {
+    pub fn set_borders(&mut self, borders: Borders<char>) {
         self.border.chars = borders;
     }
 
     /// Set borders structure.
-    pub fn set_border_color(&mut self, borders: Borders<Color>) {
+    pub fn set_borders_colors(&mut self, borders: Borders<Color>) {
         self.border.colors = borders;
+    }
+
+    /// Set borders structure.
+    pub const fn get_borders(&self) -> Borders<char> {
+        self.border.chars
+    }
+
+    /// Set borders structure.
+    pub fn get_borders_colors(&self) -> Borders<Color> {
+        self.border.colors.clone()
     }
 
     /// Set an outer border.
