@@ -5,7 +5,7 @@ use tabled::{
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
-        peaker::{PriorityMax, PriorityMin},
+        peaker::{PriorityLeft, PriorityMax, PriorityMin, PriorityRight},
         width::{Justify, MinWidth, SuffixLimit, Width},
         Alignment, Margin, Modify, Padding, Panel, Settings, Span, Style,
     },
@@ -2440,6 +2440,49 @@ fn table_truncate_multiline_with_suffix() {
         )
     );
 }
+
+test_table!(
+    test_priority_left,
+    Matrix::new(3, 10)
+        .with(Style::markdown())
+        .with(Width::wrap(60).priority(PriorityLeft::default())),
+    "|  |  |  |  |  |  |  | co | column 7 | column 8 | column 9 |"
+    "|  |  |  |  |  |  |  | lu |          |          |          |"
+    "|  |  |  |  |  |  |  | mn |          |          |          |"
+    "|  |  |  |  |  |  |  |  6 |          |          |          |"
+    "|--|--|--|--|--|--|--|----|----------|----------|----------|"
+    "|  |  |  |  |  |  |  | 0- |   0-7    |   0-8    |   0-9    |"
+    "|  |  |  |  |  |  |  | 6  |          |          |          |"
+    "|  |  |  |  |  |  |  | 1- |   1-7    |   1-8    |   1-9    |"
+    "|  |  |  |  |  |  |  | 6  |          |          |          |"
+    "|  |  |  |  |  |  |  | 2- |   2-7    |   2-8    |   2-9    |"
+    "|  |  |  |  |  |  |  | 6  |          |          |          |"
+);
+
+test_table!(
+    test_priority_right,
+    Matrix::new(3, 10)
+        .with(Style::markdown())
+        .with(Width::wrap(60).priority(PriorityRight::default())),
+    "| N | column 0 | column 1 | column 2 | c |  |  |  |  |  |  |"
+    "|   |          |          |          | o |  |  |  |  |  |  |"
+    "|   |          |          |          | l |  |  |  |  |  |  |"
+    "|   |          |          |          | u |  |  |  |  |  |  |"
+    "|   |          |          |          | m |  |  |  |  |  |  |"
+    "|   |          |          |          | n |  |  |  |  |  |  |"
+    "|   |          |          |          |   |  |  |  |  |  |  |"
+    "|   |          |          |          | 3 |  |  |  |  |  |  |"
+    "|---|----------|----------|----------|---|--|--|--|--|--|--|"
+    "| 0 |   0-0    |   0-1    |   0-2    | 0 |  |  |  |  |  |  |"
+    "|   |          |          |          | - |  |  |  |  |  |  |"
+    "|   |          |          |          | 3 |  |  |  |  |  |  |"
+    "| 1 |   1-0    |   1-1    |   1-2    | 1 |  |  |  |  |  |  |"
+    "|   |          |          |          | - |  |  |  |  |  |  |"
+    "|   |          |          |          | 3 |  |  |  |  |  |  |"
+    "| 2 |   2-0    |   2-1    |   2-2    | 2 |  |  |  |  |  |  |"
+    "|   |          |          |          | - |  |  |  |  |  |  |"
+    "|   |          |          |          | 3 |  |  |  |  |  |  |"
+);
 
 #[cfg(feature = "derive")]
 mod derived {
