@@ -74,6 +74,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 macro_rules! tuple_trait_impl {
     ( $($name:ident)+ ) => {
         impl<R, C, $($name: CellOption<R, C>),+> CellOption<R, C> for ($($name,)+) {
@@ -94,45 +95,27 @@ macro_rules! tuple_trait_impl {
                     )+
                 ];
 
-                hint_change_list(&list)
+                crate::settings::table_option::hint_change_list(&list)
             }
         }
     };
 }
 
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4 T5);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8);
+#[cfg(feature = "std")]
 tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8 T9);
-
-pub(crate) fn hint_change_list(list: &[Option<Entity>]) -> Option<Entity> {
-    let mut entries = vec![];
-    for e in list.iter().flatten() {
-        entries.push(*e);
-    }
-
-    if entries.is_empty() {
-        return None;
-    }
-
-    Some(combine_entity_list(&entries))
-}
-
-pub(crate) fn combine_entity_list(list: &[Entity]) -> Entity {
-    if list.is_empty() {
-        // must never happen
-        return Entity::Global;
-    }
-
-    let mut entity = list[0];
-    for e in &list[1..] {
-        entity = crate::settings::settings_list::combine_entity(entity, *e);
-    }
-
-    entity
-}
