@@ -4,7 +4,10 @@ use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
-    settings::{formatting::Charset, Height, Modify, Padding, Settings, Style, Width},
+    settings::{
+        formatting::Charset, Border, Height, Highlight, Modify, Padding, Settings, Shadow, Style,
+        Width,
+    },
     Table,
 };
 
@@ -859,4 +862,48 @@ test_table!(
     "| Hello World |      0-0      |   0-1    |   0-2    |"
     "|      1      |      1-0      |   1-1    |   1-2    |"
     "|      2      |      2-0      |   2-1    |   2-2    |"
+);
+
+test_table!(
+    table_tuple_settings_list_0_test,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify((1, 0), ("Hello World", "Hello World 2")),
+    "|       N       | column 0 | column 1 | column 2 |"
+    "|---------------|----------|----------|----------|"
+    "| Hello World 2 |   0-0    |   0-1    |   0-2    |"
+    "|       1       |   1-0    |   1-1    |   1-2    |"
+    "|       2       |   2-0    |   2-1    |   2-2    |"
+);
+
+test_table!(
+    table_tuple_settings_list_1_test,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify((1, 0), ("Hello World", Padding::new(2, 2, 1, 1), "1")),
+    "|  N  | column 0 | column 1 | column 2 |"
+    "|-----|----------|----------|----------|"
+    "|     |   0-0    |   0-1    |   0-2    |"
+    "|  1  |          |          |          |"
+    "|     |          |          |          |"
+    "|  1  |   1-0    |   1-1    |   1-2    |"
+    "|  2  |   2-0    |   2-1    |   2-2    |"
+);
+
+test_table!(
+    table_tuple_settings_list_2_test,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .with((Padding::new(2, 2, 0, 0), Highlight::border((0, 0), Border::filled('*')), Shadow::new(5))),
+    "*******                                            "
+    "*  N  *  column 0  |  column 1  |  column 2  |▒▒▒▒▒"
+    "*******------------|------------|------------|▒▒▒▒▒"
+    "|  0  |    0-0     |    0-1     |    0-2     |▒▒▒▒▒"
+    "|  1  |    1-0     |    1-1     |    1-2     |▒▒▒▒▒"
+    "|  2  |    2-0     |    2-1     |    2-2     |▒▒▒▒▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 );
