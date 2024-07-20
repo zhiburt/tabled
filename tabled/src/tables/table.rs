@@ -13,7 +13,7 @@ use crate::{
         },
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate, PeekableDimension},
         records::{
-            vec_records::{CellInfo, VecRecords},
+            vec_records::{Text, VecRecords},
             ExactRecords, Records,
         },
         PeekableGrid,
@@ -57,7 +57,7 @@ use crate::{
 /// [`Style::ascii`]: crate::settings::Style::ascii
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Table {
-    records: VecRecords<CellInfo<String>>,
+    records: VecRecords<Text<String>>,
     config: ColoredConfig,
     dimension: CompleteDimensionVecRecords<'static>,
 }
@@ -75,7 +75,7 @@ impl Table {
         let mut header = Vec::with_capacity(T::LENGTH);
         for text in T::headers() {
             let text = text.into_owned();
-            let cell = CellInfo::new(text);
+            let cell = Text::new(text);
             header.push(cell);
         }
 
@@ -84,7 +84,7 @@ impl Table {
             let mut list = Vec::with_capacity(T::LENGTH);
             for text in row.fields().into_iter() {
                 let text = text.into_owned();
-                let cell = CellInfo::new(text);
+                let cell = Text::new(text);
 
                 list.push(cell);
             }
@@ -171,11 +171,8 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        for<'a> O: TableOption<
-            VecRecords<CellInfo<String>>,
-            ColoredConfig,
-            CompleteDimensionVecRecords<'a>,
-        >,
+        for<'a> O:
+            TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'a>>,
     {
         let reastimation_hint = option.hint_change();
         let mut dims = self.dimension.from_origin();
@@ -198,8 +195,8 @@ impl Table {
     /// [`Location`]: crate::settings::location::Locator
     pub fn modify<T, O>(&mut self, target: T, option: O) -> &mut Self
     where
-        T: Object<VecRecords<CellInfo<String>>>,
-        O: CellOption<VecRecords<CellInfo<String>>, ColoredConfig> + Clone,
+        T: Object<VecRecords<Text<String>>>,
+        O: CellOption<VecRecords<Text<String>>, ColoredConfig> + Clone,
     {
         for entity in target.cells(&self.records) {
             let opt = option.clone();
@@ -274,12 +271,12 @@ impl Table {
     }
 
     /// Returns a used records.
-    pub fn get_records(&self) -> &VecRecords<CellInfo<String>> {
+    pub fn get_records(&self) -> &VecRecords<Text<String>> {
         &self.records
     }
 
     /// Returns a used records.
-    pub fn get_records_mut(&mut self) -> &mut VecRecords<CellInfo<String>> {
+    pub fn get_records_mut(&mut self) -> &mut VecRecords<Text<String>> {
         &mut self.records
     }
 }
@@ -469,7 +466,7 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut SpannedConfig, table: &Tabl
 
 fn print_grid<F: fmt::Write, D: Dimension>(
     f: &mut F,
-    records: &VecRecords<CellInfo<String>>,
+    records: &VecRecords<Text<String>>,
     cfg: &SpannedConfig,
     dims: D,
     colors: &ColorMap,

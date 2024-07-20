@@ -5,7 +5,7 @@ use crate::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
-            vec_records::{CellInfo, VecRecords},
+            vec_records::{Text, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
         },
         util::string::string_width,
@@ -223,12 +223,12 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<CellInfo<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
     for ColumnNames
 {
     fn change(
         self,
-        records: &mut VecRecords<CellInfo<String>>,
+        records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
@@ -268,7 +268,7 @@ fn set_column_text(
     target_line: usize,
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     dims: &mut CompleteDimensionVecRecords<'_>,
     cfg: &mut ColoredConfig,
 ) {
@@ -304,7 +304,7 @@ fn set_row_text(
     target_line: usize,
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     dims: &mut CompleteDimensionVecRecords<'_>,
     cfg: &mut ColoredConfig,
 ) {
@@ -336,7 +336,7 @@ fn set_row_text(
 }
 
 fn get_column_names(
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     opt: Option<Vec<String>>,
 ) -> Vec<String> {
     match opt {
@@ -363,7 +363,7 @@ fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
     data
 }
 
-fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
+fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
     if records.count_rows() == 0 || records.count_columns() == 0 {
         return Vec::new();
     }

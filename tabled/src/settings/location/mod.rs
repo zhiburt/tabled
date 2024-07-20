@@ -219,7 +219,7 @@ fn bounds_to_usize(
 mod tests {
     use crate::{
         grid::config::Entity,
-        grid::records::vec_records::CellInfo,
+        grid::records::vec_records::Text,
         grid::records::vec_records::VecRecords,
         settings::location::{ByColumnName, ByCondition, ByContent},
         settings::object::Object,
@@ -391,16 +391,11 @@ mod tests {
 
     fn cells<O>(o: O, data: &[Vec<usize>]) -> Vec<Entity>
     where
-        O: Object<VecRecords<CellInfo<String>>>,
+        O: Object<VecRecords<Text<String>>>,
     {
         let data = data
             .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|n| n.to_string())
-                    .map(CellInfo::new)
-                    .collect()
-            })
+            .map(|row| row.iter().map(|n| n.to_string()).map(Text::new).collect())
             .collect();
 
         let records = VecRecords::new(data);

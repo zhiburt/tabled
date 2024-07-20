@@ -1,3 +1,4 @@
+use core::fmt::Display;
 use std::{borrow::Cow, cmp::max};
 
 use crate::{
@@ -7,13 +8,13 @@ use crate::{
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CellInfo<S> {
+pub struct Text<S> {
     text: S,
     width: usize,
     lines: Vec<StrWithWidth<'static>>,
 }
 
-impl<S> CellInfo<S> {
+impl<S> Text<S> {
     /// Creates a new instance of the structure.
     pub fn new(text: S) -> Self
     where
@@ -33,7 +34,7 @@ impl<S> CellInfo<S> {
     }
 }
 
-impl<S> AsRef<str> for CellInfo<S>
+impl<S> AsRef<str> for Text<S>
 where
     S: AsRef<str>,
 {
@@ -42,7 +43,16 @@ where
     }
 }
 
-impl<S> Cell for CellInfo<S>
+impl<S> Display for Text<S>
+where
+    S: Display,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.text.fmt(f)
+    }
+}
+
+impl<S> Cell for Text<S>
 where
     S: AsRef<str>,
 {
@@ -75,7 +85,7 @@ where
     }
 }
 
-impl<S> Clone for CellInfo<S>
+impl<S> Clone for Text<S>
 where
     S: Clone + AsRef<str>,
 {
@@ -128,8 +138,8 @@ impl<'a> StrWithWidth<'a> {
     }
 }
 
-fn create_cell_info<S: AsRef<str>>(text: S) -> CellInfo<S> {
-    let mut info = CellInfo {
+fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
+    let mut info = Text {
         text,
         lines: vec![],
         width: 0,

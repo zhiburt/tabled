@@ -1,7 +1,7 @@
 use crate::grid::{
     config::SpannedConfig,
     dimension::{Dimension, Estimate},
-    records::vec_records::{CellInfo, VecRecords},
+    records::vec_records::{Text, VecRecords},
     records::Records,
 };
 
@@ -16,18 +16,12 @@ pub struct PeekableDimension {
 
 impl PeekableDimension {
     /// Calculates height of rows.
-    pub fn height<T: AsRef<str>>(
-        records: &VecRecords<CellInfo<T>>,
-        cfg: &SpannedConfig,
-    ) -> Vec<usize> {
+    pub fn height<T: AsRef<str>>(records: &VecRecords<Text<T>>, cfg: &SpannedConfig) -> Vec<usize> {
         estimation::build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<T: AsRef<str>>(
-        records: &VecRecords<CellInfo<T>>,
-        cfg: &SpannedConfig,
-    ) -> Vec<usize> {
+    pub fn width<T: AsRef<str>>(records: &VecRecords<Text<T>>, cfg: &SpannedConfig) -> Vec<usize> {
         estimation::build_width(records, cfg)
     }
 
@@ -47,11 +41,11 @@ impl Dimension for PeekableDimension {
     }
 }
 
-impl<T> Estimate<&VecRecords<CellInfo<T>>, SpannedConfig> for PeekableDimension
+impl<T> Estimate<&VecRecords<Text<T>>, SpannedConfig> for PeekableDimension
 where
     T: AsRef<str>,
 {
-    fn estimate(&mut self, records: &VecRecords<CellInfo<T>>, cfg: &SpannedConfig) {
+    fn estimate(&mut self, records: &VecRecords<Text<T>>, cfg: &SpannedConfig) {
         let (width, height) = estimation::build_dimensions(records, cfg);
         self.width = width;
         self.height = height;
@@ -67,7 +61,7 @@ mod estimation {
     use super::*;
 
     pub(super) fn build_dimensions<T: AsRef<str>>(
-        records: &VecRecords<CellInfo<T>>,
+        records: &VecRecords<Text<T>>,
         cfg: &SpannedConfig,
     ) -> (Vec<usize>, Vec<usize>) {
         let count_columns = records.count_columns();
@@ -267,7 +261,7 @@ mod estimation {
     }
 
     pub(super) fn build_height<T: AsRef<str>>(
-        records: &VecRecords<CellInfo<T>>,
+        records: &VecRecords<Text<T>>,
         cfg: &SpannedConfig,
     ) -> Vec<usize> {
         let mut heights = vec![];
@@ -299,7 +293,7 @@ mod estimation {
     }
 
     pub(super) fn build_width<T: AsRef<str>>(
-        records: &VecRecords<CellInfo<T>>,
+        records: &VecRecords<Text<T>>,
         cfg: &SpannedConfig,
     ) -> Vec<usize> {
         let count_columns = records.count_columns();
