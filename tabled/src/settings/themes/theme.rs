@@ -25,48 +25,48 @@ use crate::{
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Theme {
-    border: TableBorders,
-    lines: BorderLines,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct TableBorders {
     chars: Borders<char>,
     colors: Borders<Color>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-struct BorderLines {
-    horizontal1: Option<HorizontalLine<char>>,
-    horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
-    verticals: Option<HashMap<usize, VerticalLine<char>>>,
+    lines_horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+    lines_verticals: Option<HashMap<usize, VerticalLine<char>>>,
+    lines_horizontal1: Option<HorizontalLine<char>>,
 }
 
 impl Theme {
+    const fn gen(
+        chars: Borders<char>,
+        colors: Borders<Color>,
+        lines_horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+        lines_verticals: Option<HashMap<usize, VerticalLine<char>>>,
+        lines_horizontal1: Option<HorizontalLine<char>>,
+    ) -> Self {
+        Self {
+            chars,
+            colors,
+            lines_horizontals,
+            lines_verticals,
+            lines_horizontal1,
+        }
+    }
+
     /// Build a theme out of a style builder.
     pub const fn from_style<T, B, L, R, H, V, const HS: usize, const VS: usize>(
         style: Style<T, B, L, R, H, V, HS, VS>,
     ) -> Self {
         let chars = style.get_borders();
-        let horizontals = style.get_horizontals();
-        let horizontal1 = hlines_find(horizontals, 1);
+        let hlines = style.get_horizontals();
+        let hlines1 = hlines_find(hlines, 1);
 
-        Self::_new(
-            TableBorders::new(chars, Borders::empty()),
-            BorderLines::new(horizontal1, None, None),
-        )
+        Self::gen(chars, Borders::empty(), None, None, hlines1)
     }
 }
 
 impl Theme {
     /// Creates a new empty style.
     ///
-    /// It's quite an analog of [`Style::empty`]
+    /// It's an analog of [`Style::empty`]
     pub const fn new() -> Self {
-        Self::_new(
-            TableBorders::new(Borders::empty(), Borders::empty()),
-            BorderLines::new(None, None, None),
-        )
+        Self::gen(Borders::empty(), Borders::empty(), None, None, None)
     }
 }
 
@@ -80,7 +80,7 @@ macro_rules! func_set_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Set a border character", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self, c: char) {
-            self.border.chars.$arg = Some(c);
+            self.chars.$arg = Some(c);
         }
     };
 }
@@ -89,7 +89,7 @@ macro_rules! func_remove_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Remove a border character", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self) {
-            self.border.chars.$arg = None;
+            self.chars.$arg = None;
         }
     };
 }
@@ -98,7 +98,7 @@ macro_rules! func_get_chars {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Get a border character", " ", "", $desc, "", " ", ".")]
         pub const fn $name(&self) -> Option<char> {
-            self.border.chars.$arg
+            self.chars.$arg
         }
     };
 }
@@ -107,7 +107,7 @@ macro_rules! func_set_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Set a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self, color: Color) {
-            self.border.colors.$arg = Some(color);
+            self.colors.$arg = Some(color);
         }
     };
 }
@@ -116,7 +116,7 @@ macro_rules! func_remove_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Remove a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&mut self) {
-            self.border.colors.$arg = None;
+            self.colors.$arg = None;
         }
     };
 }
@@ -125,7 +125,7 @@ macro_rules! func_get_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Get a border color", " ", "", $desc, "", " ", ".")]
         pub fn $name(&self) -> Option<&Color> {
-            self.border.colors.$arg.as_ref()
+            self.colors.$arg.as_ref()
         }
     };
 }
@@ -247,73 +247,73 @@ impl Theme {
 impl Theme {
     /// Returns an outer border of the style.
     pub fn set_border_frame(&mut self, frame: Border<char>) {
-        self.border.chars.top = frame.top;
-        self.border.chars.bottom = frame.bottom;
-        self.border.chars.left = frame.left;
-        self.border.chars.right = frame.right;
-        self.border.chars.top_left = frame.left_top_corner;
-        self.border.chars.top_right = frame.right_top_corner;
-        self.border.chars.bottom_left = frame.left_bottom_corner;
-        self.border.chars.bottom_right = frame.right_bottom_corner;
+        self.chars.top = frame.top;
+        self.chars.bottom = frame.bottom;
+        self.chars.left = frame.left;
+        self.chars.right = frame.right;
+        self.chars.top_left = frame.left_top_corner;
+        self.chars.top_right = frame.right_top_corner;
+        self.chars.bottom_left = frame.left_bottom_corner;
+        self.chars.bottom_right = frame.right_bottom_corner;
     }
 
     /// Returns an outer border of the style.
     pub fn set_border_color_frame(&mut self, frame: Border<Color>) {
-        self.border.colors.top = frame.top;
-        self.border.colors.bottom = frame.bottom;
-        self.border.colors.left = frame.left;
-        self.border.colors.right = frame.right;
-        self.border.colors.top_left = frame.left_top_corner;
-        self.border.colors.top_right = frame.right_top_corner;
-        self.border.colors.bottom_left = frame.left_bottom_corner;
-        self.border.colors.bottom_right = frame.right_bottom_corner;
+        self.colors.top = frame.top;
+        self.colors.bottom = frame.bottom;
+        self.colors.left = frame.left;
+        self.colors.right = frame.right;
+        self.colors.top_left = frame.left_top_corner;
+        self.colors.top_right = frame.right_top_corner;
+        self.colors.bottom_left = frame.left_bottom_corner;
+        self.colors.bottom_right = frame.right_bottom_corner;
     }
 
     /// Set borders structure.
     pub fn set_borders(&mut self, borders: Borders<char>) {
-        self.border.chars = borders;
+        self.chars = borders;
     }
 
     /// Set borders structure.
     pub fn set_borders_colors(&mut self, borders: Borders<Color>) {
-        self.border.colors = borders;
+        self.colors = borders;
     }
 
     /// Set borders structure.
     pub const fn get_borders(&self) -> Borders<char> {
-        self.border.chars
+        self.chars
     }
 
     /// Set borders structure.
     pub fn get_borders_colors(&self) -> Borders<Color> {
-        self.border.colors.clone()
+        self.colors.clone()
     }
 
     /// Set an outer border.
     pub const fn get_border_frame(&self) -> Border<char> {
         Border {
-            top: self.border.chars.top,
-            bottom: self.border.chars.bottom,
-            left: self.border.chars.left,
-            right: self.border.chars.right,
-            left_top_corner: self.border.chars.top_left,
-            right_top_corner: self.border.chars.top_right,
-            left_bottom_corner: self.border.chars.bottom_left,
-            right_bottom_corner: self.border.chars.bottom_right,
+            top: self.chars.top,
+            bottom: self.chars.bottom,
+            left: self.chars.left,
+            right: self.chars.right,
+            left_top_corner: self.chars.top_left,
+            right_top_corner: self.chars.top_right,
+            left_bottom_corner: self.chars.bottom_left,
+            right_bottom_corner: self.chars.bottom_right,
         }
     }
 
     /// Set an outer border.
     pub const fn get_border_color_frame(&self) -> Border<&Color> {
         Border {
-            top: self.border.colors.top.as_ref(),
-            bottom: self.border.colors.bottom.as_ref(),
-            left: self.border.colors.left.as_ref(),
-            right: self.border.colors.right.as_ref(),
-            left_top_corner: self.border.colors.top_left.as_ref(),
-            right_top_corner: self.border.colors.top_right.as_ref(),
-            left_bottom_corner: self.border.colors.bottom_left.as_ref(),
-            right_bottom_corner: self.border.colors.bottom_right.as_ref(),
+            top: self.colors.top.as_ref(),
+            bottom: self.colors.bottom.as_ref(),
+            left: self.colors.left.as_ref(),
+            right: self.colors.right.as_ref(),
+            left_top_corner: self.colors.top_left.as_ref(),
+            right_top_corner: self.colors.top_right.as_ref(),
+            left_bottom_corner: self.colors.bottom_left.as_ref(),
+            right_bottom_corner: self.colors.bottom_right.as_ref(),
         }
     }
 }
@@ -351,7 +351,7 @@ impl Theme {
     /// )
     /// ```
     pub fn set_lines_horizontal(&mut self, lines: HashMap<usize, HorizontalLine<char>>) {
-        self.lines.horizontals = Some(lines);
+        self.lines_horizontals = Some(lines);
     }
 
     /// Set vertical border lines.
@@ -391,78 +391,72 @@ impl Theme {
     /// )
     /// ```
     pub fn set_lines_vertical(&mut self, lines: HashMap<usize, VerticalLine<char>>) {
-        self.lines.verticals = Some(lines);
+        self.lines_verticals = Some(lines);
     }
 
     /// Insert a vertical line into specific column location.
     pub fn insert_line_vertical(&mut self, line: usize, vertical: VerticalLine<char>) {
-        match &mut self.lines.verticals {
+        match &mut self.lines_verticals {
             Some(verticals) => {
                 let _ = verticals.insert(line, vertical);
             }
-            None => self.lines.verticals = Some(HashMap::from_iter([(line, vertical)])),
+            None => self.lines_verticals = Some(HashMap::from_iter([(line, vertical)])),
         }
     }
 
     /// Insert a horizontal line to a specific row location.
     pub fn insert_line_horizontal(&mut self, line: usize, horizontal: HorizontalLine<char>) {
-        match &mut self.lines.horizontals {
+        match &mut self.lines_horizontals {
             Some(horizontals) => {
                 let _ = horizontals.insert(line, horizontal);
             }
-            None => self.lines.horizontals = Some(HashMap::from_iter([(line, horizontal)])),
+            None => self.lines_horizontals = Some(HashMap::from_iter([(line, horizontal)])),
         }
     }
 
     /// Get a vertical line at the row if any set.
     pub fn get_line_vertical(&self, column: usize) -> Option<VerticalLine<char>> {
-        self.lines
-            .verticals
+        self.lines_verticals
             .as_ref()
             .and_then(|lines| lines.get(&column).cloned())
     }
 
     /// Get a horizontal line at the row if any set.
     pub fn get_line_horizontal(&self, row: usize) -> Option<HorizontalLine<char>> {
-        self.lines
-            .horizontals
+        self.lines_horizontals
             .as_ref()
             .and_then(|list| list.get(&row).cloned())
     }
 }
 
-impl Theme {
-    const fn _new(border: TableBorders, lines: BorderLines) -> Self {
-        Self { border, lines }
-    }
-}
-
 impl From<Borders<char>> for Theme {
     fn from(borders: Borders<char>) -> Self {
-        Self::_new(
-            TableBorders::new(borders, Borders::empty()),
-            BorderLines::new(None, None, None),
-        )
+        Self::gen(borders, Borders::empty(), None, None, None)
     }
 }
 
 impl<R, D> TableOption<R, ColoredConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg_clear_borders(cfg);
-        cfg_set_custom_lines(cfg, self.lines);
-        cfg_set_borders(cfg, self.border);
+        cfg_set_custom_lines(
+            cfg,
+            self.lines_horizontals,
+            self.lines_verticals,
+            self.lines_horizontal1,
+        );
+        cfg_set_borders(cfg, self.chars, self.colors);
     }
 }
 
 impl<R, D> TableOption<R, CompactConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        *cfg = cfg.set_borders(self.border.chars);
+        *cfg = cfg.set_borders(self.chars);
     }
 }
 
 impl<R, D> TableOption<R, CompactMultilineConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
-        cfg.set_borders(self.border.chars);
+        cfg.set_borders(self.chars);
     }
 }
 
@@ -481,29 +475,7 @@ impl From<ColoredConfig> for Theme {
         let horizontals = cfg.get_horizontal_lines().into_iter().collect();
         let verticals = cfg.get_vertical_lines().into_iter().collect();
 
-        let borders = TableBorders::new(borders, colors);
-        let lines = BorderLines::new(None, Some(horizontals), Some(verticals));
-        Self::_new(borders, lines)
-    }
-}
-
-impl TableBorders {
-    const fn new(chars: Borders<char>, colors: Borders<Color>) -> Self {
-        Self { chars, colors }
-    }
-}
-
-impl BorderLines {
-    const fn new(
-        horizontal1: Option<HorizontalLine<char>>,
-        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
-        verticals: Option<HashMap<usize, VerticalLine<char>>>,
-    ) -> Self {
-        Self {
-            horizontal1,
-            horizontals,
-            verticals,
-        }
+        Self::gen(borders, colors, Some(horizontals), Some(verticals), None)
     }
 }
 
@@ -516,26 +488,31 @@ fn cfg_clear_borders(cfg: &mut ColoredConfig) {
     cfg.remove_color_line_vertical();
 }
 
-fn cfg_set_borders(cfg: &mut ColoredConfig, border: TableBorders) {
-    cfg.set_borders(border.chars);
+fn cfg_set_borders(cfg: &mut ColoredConfig, borders: Borders<char>, colors: Borders<Color>) {
+    cfg.set_borders(borders);
 
-    if !border.colors.is_empty() {
-        cfg.set_borders_color(border.colors.convert_into());
+    if !colors.is_empty() {
+        cfg.set_borders_color(colors.convert_into());
     }
 }
 
-fn cfg_set_custom_lines(cfg: &mut ColoredConfig, lines: BorderLines) {
-    if let Some(line) = lines.horizontal1 {
+fn cfg_set_custom_lines(
+    cfg: &mut ColoredConfig,
+    horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+    verticals: Option<HashMap<usize, VerticalLine<char>>>,
+    horizontal1: Option<HorizontalLine<char>>,
+) {
+    if let Some(line) = horizontal1 {
         cfg.insert_horizontal_line(1, line);
     }
 
-    if let Some(lines) = lines.horizontals {
+    if let Some(lines) = horizontals {
         for (row, line) in lines {
             cfg.insert_horizontal_line(row, line);
         }
     }
 
-    if let Some(lines) = lines.verticals {
+    if let Some(lines) = verticals {
         for (col, line) in lines {
             cfg.insert_vertical_line(col, line);
         }
