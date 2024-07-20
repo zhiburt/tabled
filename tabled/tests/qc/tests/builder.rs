@@ -2,7 +2,7 @@ use quickcheck::Arbitrary;
 use quickcheck_macros::quickcheck;
 use tabled::{
     builder::Builder,
-    grid::util::string::{string_width, string_width_multiline},
+    grid::util::string::{get_line_width, get_string_width},
     settings::Style,
     Table,
 };
@@ -20,7 +20,7 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let lines = table.lines().collect::<Vec<_>>();
     let lines_has_the_same_length = lines
         .iter()
-        .map(|line| string_width(line))
+        .map(|line| get_line_width(line))
         .all(|line_width| line_width == lines[0].len());
     lines_has_the_same_length
 }
@@ -37,7 +37,7 @@ fn qc_table_is_consistent_with_borders(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
+        assert_eq!(get_line_width(line), get_string_width(&output));
     }
 }
 
