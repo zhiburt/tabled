@@ -48,7 +48,7 @@
 //! assert_eq!(table, expected);
 //! ```
 
-use crate::grid::util::string::string_width;
+use crate::grid::util::string::get_line_width;
 use crate::Tabled;
 use std::cell::RefCell;
 use std::fmt::{self, Debug, Display};
@@ -127,7 +127,7 @@ impl ExtendedTable {
             return false;
         }
 
-        let suffix_width = string_width(suffix);
+        let suffix_width = get_line_width(suffix);
         if max < suffix_width {
             return false;
         }
@@ -137,7 +137,7 @@ impl ExtendedTable {
         let fields_max_width = self
             .fields
             .iter()
-            .map(|s| string_width(s))
+            .map(|s| get_line_width(s))
             .max()
             .unwrap_or_default();
 
@@ -208,14 +208,14 @@ impl Display for ExtendedTable {
 
         let max_field_width = fields
             .iter()
-            .map(|s| string_width(s))
+            .map(|s| get_line_width(s))
             .max()
             .unwrap_or_default();
 
         let max_values_length = self
             .records
             .iter()
-            .map(|record| record.iter().map(|s| string_width(s)).max())
+            .map(|record| record.iter().map(|s| get_line_width(s)).max())
             .max()
             .unwrap_or_default()
             .unwrap_or_default();

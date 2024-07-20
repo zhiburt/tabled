@@ -6,7 +6,7 @@
 
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline`] and [`count_lines`].
 #[cfg(feature = "std")]
-pub fn string_dimension(text: &str) -> (usize, usize) {
+pub fn get_string_dimension(text: &str) -> (usize, usize) {
     #[cfg(not(feature = "ansi"))]
     {
         let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
@@ -24,13 +24,13 @@ pub fn string_dimension(text: &str) -> (usize, usize) {
     #[cfg(feature = "ansi")]
     {
         get_lines(text)
-            .map(|line| string_width(&line))
+            .map(|line| get_line_width(&line))
             .fold((0, 0), |(i, acc), width| (i + 1, acc.max(width)))
     }
 }
 
 /// Returns a string width.
-pub fn string_width(text: &str) -> usize {
+pub fn get_line_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
         unicode_width::UnicodeWidthStr::width(text)
@@ -50,7 +50,7 @@ pub fn string_width(text: &str) -> usize {
 }
 
 /// Returns a max string width of a line.
-pub fn string_width_multiline(text: &str) -> usize {
+pub fn get_string_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
         text.lines()
@@ -61,7 +61,7 @@ pub fn string_width_multiline(text: &str) -> usize {
 
     #[cfg(feature = "ansi")]
     {
-        text.lines().map(string_width).max().unwrap_or(0)
+        text.lines().map(get_line_width).max().unwrap_or(0)
     }
 }
 
@@ -181,22 +181,19 @@ mod tests {
     fn string_width_emojie_test() {
         // ...emojis such as “joy”, which normally take up two columns when printed in a terminal
         // https://github.com/mgeisler/textwrap/pull/276
-        assert_eq!(string_width("🎩"), 2);
-        assert_eq!(string_width("Rust 💕"), 7);
-        assert_eq!(string_width_multiline("Go 👍\nC 😎"), 5);
+        assert_eq!(get_line_width("🎩"), 2);
+        assert_eq!(get_line_width("Rust 💕"), 7);
+        assert_eq!(get_string_width("Go 👍\nC 😎"), 5);
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn colored_string_width_test() {
         use owo_colors::OwoColorize;
-        assert_eq!(string_width(&"hello world".red().to_string()), 11);
-        assert_eq!(
-            string_width_multiline(&"hello\nworld".blue().to_string()),
-            5
-        );
-        assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
-        assert_eq!(string_width(&"0".red().to_string()), 1);
+        assert_eq!(get_line_width(&"hello world".red().to_string()), 11);
+        assert_eq!(get_string_width(&"hello\nworld".blue().to_string()), 5);
+        assert_eq!(get_line_width("\u{1b}[34m0\u{1b}[0m"), 1);
+        assert_eq!(get_line_width(&"0".red().to_string()), 1);
     }
 
     #[test]
@@ -212,7 +209,7 @@ mod tests {
     #[test]
     fn string_width_multinline_for_link() {
         assert_eq!(
-            string_width_multiline(
+            get_string_width(
                 "\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"
             ),
             7
@@ -223,7 +220,9 @@ mod tests {
     #[test]
     fn string_width_for_link() {
         assert_eq!(
-            string_width("\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"),
+            get_line_width(
+                "\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"
+            ),
             7
         );
     }
@@ -232,7 +231,7 @@ mod tests {
     #[test]
     fn string_dimension_test() {
         assert_eq!(
-            string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m"),
+            get_string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m"),
             {
                 #[cfg(feature = "ansi")]
                 {
@@ -245,11 +244,11 @@ mod tests {
             }
         );
         assert_eq!(
-            string_dimension("now is the time for all good men\n"),
+            get_string_dimension("now is the time for all good men\n"),
             (2, 32)
         );
-        assert_eq!(string_dimension("asd"), (1, 3));
-        assert_eq!(string_dimension(""), (1, 0));
+        assert_eq!(get_string_dimension("asd"), (1, 3));
+        assert_eq!(get_string_dimension(""), (1, 0));
     }
 
     #[cfg(feature = "std")]

@@ -3,7 +3,7 @@ use std::{borrow::Cow, cmp::max};
 
 use crate::{
     records::vec_records::Cell,
-    util::string::{self, count_lines, get_lines, string_width},
+    util::string::{self, count_lines, get_line_width, get_lines},
 };
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
@@ -149,7 +149,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
     // We check if there's only 1 line in which case we don't allocate lines Vec
     let count_lines = count_lines(info.text.as_ref());
     if count_lines < 2 {
-        info.width = string::string_width_multiline(info.text.as_ref());
+        info.width = string::get_string_width(info.text.as_ref());
         return info;
     }
 
@@ -171,7 +171,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
 
     info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
     for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
-        i.width = string_width(&line);
+        i.width = get_line_width(&line);
         i.text = line;
         info.width = max(info.width, i.width);
     }

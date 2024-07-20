@@ -76,7 +76,7 @@ use crate::{
             into_records::{LimitColumns, LimitRows},
             IntoRecords, IterRecords,
         },
-        util::string::string_width,
+        util::string::get_line_width,
         CompactGrid,
     },
     settings::{style::Style, TableOption},
@@ -256,7 +256,7 @@ where
         for row in mat.iter() {
             for (col, text) in row.iter().enumerate() {
                 let text = text.as_ref();
-                let text_width = string_width(text);
+                let text_width = get_line_width(text);
                 width[col] = max(width[col], text_width);
             }
         }

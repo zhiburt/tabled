@@ -9,7 +9,7 @@ use crate::{
         config::{ColoredConfig, Entity},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::string_width_multiline,
+        util::string::get_string_width,
     },
     settings::{
         measurement::Measurement,
@@ -151,7 +151,7 @@ where
             }
 
             let text = records.get_text(pos);
-            let cell_width = string_width_multiline(text);
+            let cell_width = get_string_width(text);
             if cell_width <= width {
                 continue;
             }

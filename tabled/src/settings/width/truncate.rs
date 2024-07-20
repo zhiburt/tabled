@@ -9,7 +9,7 @@ use crate::{
         config::{ColoredConfig, Entity, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::{string_width, string_width_multiline},
+        util::string::{get_line_width, get_string_width},
     },
     settings::{
         measurement::Measurement,
@@ -216,7 +216,7 @@ where
 
             let text = records.get_text(pos);
 
-            let cell_width = string_width_multiline(text);
+            let cell_width = get_string_width(text);
             if available >= cell_width {
                 continue;
             }
@@ -284,7 +284,7 @@ fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool 
 }
 
 fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str>, usize) {
-    let suffix_length = string_width(&suffix.text);
+    let suffix_length = get_line_width(&suffix.text);
     if width > suffix_length {
         return (Cow::Borrowed(suffix.text.as_ref()), width - suffix_length);
     }

@@ -6,7 +6,7 @@ use crate::{
     grid::config::{ColoredConfig, Entity},
     grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_lines, string_width_multiline},
+    grid::util::string::{get_lines, get_string_width},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -119,7 +119,7 @@ where
             }
 
             let cell = records.get_text(pos);
-            let cell_width = string_width_multiline(cell);
+            let cell_width = get_string_width(cell);
             if cell_width >= width {
                 continue;
             }
@@ -191,12 +191,12 @@ where
 }
 
 fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    use crate::grid::util::string::string_width;
+    use crate::grid::util::string::get_line_width;
     use std::{borrow::Cow, iter::repeat};
 
     get_lines(s)
         .map(|line| {
-            let length = string_width(&line);
+            let length = get_line_width(&line);
 
             if length < width {
                 let mut line = line.into_owned();

@@ -17,12 +17,12 @@ pub trait PeekableRecords {
 
     /// Returns a width of a text of a cell by an index.
     fn get_width(&self, pos: Position) -> usize {
-        crate::util::string::string_width_multiline(self.get_text(pos))
+        crate::util::string::get_string_width(self.get_text(pos))
     }
 
     /// Returns a width of line of a text of a cell by an index.
     fn get_line_width(&self, pos: Position, line: usize) -> usize {
-        crate::util::string::string_width(self.get_line(pos, line))
+        crate::util::string::get_line_width(self.get_line(pos, line))
     }
 }
 
