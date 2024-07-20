@@ -92,7 +92,7 @@ where
         if is_small {
             Some(EitherString::Some(text))
         } else {
-            let text = Truncate::truncate_text(text_ref, width);
+            let text = Truncate::truncate(text_ref, width);
             let text = text.into_owned();
             Some(EitherString::Owned(text))
         }

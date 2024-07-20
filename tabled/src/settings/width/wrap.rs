@@ -94,7 +94,7 @@ impl<W, P> Wrap<W, P> {
 
 impl Wrap<(), ()> {
     /// Wrap a given string
-    pub fn wrap_text(text: &str, width: usize, keeping_words: bool) -> String {
+    pub fn wrap(text: &str, width: usize, keeping_words: bool) -> String {
         wrap_text(text, width, keeping_words)
     }
 }

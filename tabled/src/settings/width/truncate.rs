@@ -179,7 +179,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl Truncate<'_, (), ()> {
     /// Truncate a given string
-    pub fn truncate_text(text: &str, width: usize) -> Cow<'_, str> {
+    pub fn truncate(text: &str, width: usize) -> Cow<'_, str> {
         truncate_text(text, width, "", false)
     }
 }
