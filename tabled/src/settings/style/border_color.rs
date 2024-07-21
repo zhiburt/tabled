@@ -31,7 +31,7 @@ use crate::{
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .modify(Rows::single(0), BorderColor::new().set_top(Color::FG_RED));
+///     .modify(Rows::single(0), BorderColor::new().top(Color::FG_RED));
 /// ```
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BorderColor {
