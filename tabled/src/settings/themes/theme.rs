@@ -118,11 +118,19 @@ impl Theme {
     /// Remove horizontal lines.
     pub fn remove_horizontal_lines(&mut self) {
         self.set_horizontal_lines(HashMap::new());
+        self.chars.horizontal = None;
+        self.chars.left_intersection = None;
+        self.chars.right_intersection = None;
+        self.chars.intersection = None;
     }
 
     /// Remove vertical lines.
     pub fn remove_vertical_lines(&mut self) {
         self.set_vertical_lines(HashMap::new());
+        self.chars.vertical = None;
+        self.chars.top_intersection = None;
+        self.chars.bottom_intersection = None;
+        self.chars.intersection = None;
     }
 
     /// Set an outer border.

@@ -3,6 +3,8 @@
 //!
 //! * Note how the multiline data is accepted, but then truncated in the display.
 
+#![allow(dead_code)]
+
 use tabled::{settings::style::Style, tables::CompactTable};
 
 fn main() {
@@ -12,8 +14,8 @@ fn main() {
         ["Manjaro", "A\nr\nc\nh", "true"],
     ];
 
-    let _table = CompactTable::from(data).with(Style::psql());
+    let table = CompactTable::from(data).with(Style::psql());
 
     #[cfg(feature = "std")]
-    println!("{}", _table.to_string());
+    println!("{}", table.to_string());
 }

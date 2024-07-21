@@ -6,8 +6,9 @@
 //! * Note how [`Format::content()`] is used to break out [`CellOption`]
 //! specifications. This is helpful for organizing extensive [`Table`] configurations.
 
+use std::iter::FromIterator;
+
 use tabled::{
-    builder::Builder,
     settings::{object::Rows, style::Style, themes::Colorization, Color, Concat},
     Table, Tabled,
 };
@@ -44,26 +45,25 @@ fn main() {
     ];
 
     let total = data.iter().map(|e| e.salary).sum::<usize>();
-    let total_row = Builder::from(vec![vec![
-        String::from(""),
-        String::from(""),
+    let total_row = Table::from_iter([vec![
+        String::default(),
+        String::default(),
         String::from("TOTAL"),
         total.to_string(),
-    ]])
-    .build();
+    ]]);
 
-    let color_data_primary = Color::BG_WHITE | Color::FG_BLACK;
-    let color_data_second = Color::BG_BRIGHT_WHITE | Color::FG_BLACK;
-    let color_head = Color::BOLD | Color::BG_CYAN | Color::FG_BLACK;
-    let color_footer = Color::BOLD | Color::BG_BLUE | Color::FG_BLACK;
+    let clr_data_primary = Color::BG_WHITE | Color::FG_BLACK;
+    let clr_data_second = Color::BG_BRIGHT_WHITE | Color::FG_BLACK;
+    let clr_head = Color::BOLD | Color::BG_CYAN | Color::FG_BLACK;
+    let clr_footer = Color::BOLD | Color::BG_BLUE | Color::FG_BLACK;
 
     let mut table = Table::new(data);
     table
         .with(Concat::vertical(total_row))
         .with(Style::empty())
-        .with(Colorization::rows([color_data_primary, color_data_second]))
-        .with(Colorization::exact([color_head], Rows::first()))
-        .with(Colorization::exact([color_footer], Rows::last()));
+        .with(Colorization::rows([clr_data_primary, clr_data_second]))
+        .with(Colorization::exact([clr_head], Rows::first()))
+        .with(Colorization::exact([clr_footer], Rows::last()));
 
     println!("{table}");
 }

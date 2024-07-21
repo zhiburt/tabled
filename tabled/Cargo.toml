@@ -149,13 +149,13 @@ path = "examples/col_row_macros.rs"
 required-features = ["macros", "derive"]
 
 [[example]]
-name = "merge_duplicates"
-path = "examples/merge_duplicates.rs"
+name = "merge_duplicates_horizontal"
+path = "examples/merge_duplicates_horizontal.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "merge_duplicates_2"
-path = "examples/merge_duplicates_2.rs"
+name = "merge_duplicates_vertical"
+path = "examples/merge_duplicates_vertical.rs"
 required-features = ["derive"]
 
 [[example]]

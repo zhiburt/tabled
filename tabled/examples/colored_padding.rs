@@ -8,8 +8,6 @@
 //!
 //! * Note how a unique color can be set for each direction.
 
-use std::convert::TryFrom;
-
 use owo_colors::OwoColorize;
 
 use tabled::{
@@ -25,9 +23,9 @@ use tabled::{
 #[tabled(rename_all = "PascalCase")]
 struct Fundamental {
     quantity: String,
-    symbol: char,
     value: String,
     unit: String,
+    symbol: char,
 }
 
 impl Fundamental {
@@ -52,9 +50,9 @@ fn main() {
         Fundamental::new("Faraday constant",    'F',    "9.648533289 × 10⁴",    "coulombs per mole"),
     ];
 
-    let pane_color = Color::try_from(' '.bg_rgb::<220, 220, 220>().to_string()).unwrap();
-    let border_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().bold().to_string()).unwrap();
-    let data_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().to_string()).unwrap();
+    let pane_color = Color::parse(' '.bg_rgb::<220, 220, 220>().to_string());
+    let border_color = Color::parse(' '.bg_rgb::<200, 200, 220>().bold().to_string());
+    let data_color = Color::parse(' '.bg_rgb::<200, 200, 220>().to_string());
 
     let header_settings = Modify::new(Rows::first())
         .with(Padding::new(1, 1, 2, 2))

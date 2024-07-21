@@ -5,21 +5,21 @@
 //! reusable themes for backgrounds.
 
 use tabled::{
-    settings::{Color, Modify, Style},
+    settings::{Color, Style},
     Table, Tabled,
 };
 
 #[derive(Tabled)]
 struct Bsd {
-    distribution: &'static str,
+    distribution: String,
     year_of_first_release: usize,
     is_active: bool,
 }
 
 impl Bsd {
-    fn new(distribution: &'static str, year_of_first_release: usize, is_active: bool) -> Self {
+    fn new(distribution: &str, year_of_first_release: usize, is_active: bool) -> Self {
         Self {
-            distribution,
+            distribution: distribution.to_string(),
             year_of_first_release,
             is_active,
         }
@@ -38,9 +38,9 @@ fn main() {
     let mut table = Table::new(data);
     table
         .with(Style::psql())
-        .with(Modify::new((0, 0)).with(Color::BG_BLUE))
-        .with(Modify::new((1, 1)).with(Color::BG_GREEN))
-        .with(Modify::new((2, 2)).with(Color::BG_RED));
+        .modify((0, 0), Color::BG_BLUE)
+        .modify((1, 1), Color::BG_GREEN)
+        .modify((2, 2), Color::BG_RED);
 
     println!("{table}");
 }

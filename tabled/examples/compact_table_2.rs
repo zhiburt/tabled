@@ -4,6 +4,8 @@
 //! * Note how [`CompactTable::from()`] inherits the lengths of the nested arrays
 //! as typed definitions through [const generics](https://practice.rs/generics-traits/const-generics.html).
 
+#![allow(dead_code)]
+
 use tabled::{settings::style::Style, tables::CompactTable};
 
 fn main() {
@@ -13,8 +15,8 @@ fn main() {
         ["Manjaro", "Arch", "true"],
     ];
 
-    let _table = CompactTable::from(data).with(Style::psql());
+    let table = CompactTable::from(data).with(Style::psql());
 
     #[cfg(feature = "std")]
-    println!("{}", _table.to_string());
+    println!("{}", table.to_string());
 }

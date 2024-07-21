@@ -25,17 +25,12 @@ struct Release {
 }
 
 impl Release {
-    const fn new(
-        version: &'static str,
-        published_date: &'static str,
-        is_active: bool,
-        major_feature: &'static str,
-    ) -> Self {
+    const fn new(v: &'static str, p: &'static str, active: bool, feature: &'static str) -> Self {
         Self {
-            version,
-            published_date,
-            is_active,
-            major_feature,
+            version: v,
+            published_date: p,
+            is_active: active,
+            major_feature: feature,
         }
     }
 }

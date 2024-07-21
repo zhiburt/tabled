@@ -21,7 +21,7 @@
 use tabled::{
     settings::{
         object::Rows,
-        style::{HorizontalLine, LineText, Style, VerticalLine},
+        style::{Border, HorizontalLine, LineText, Style},
         Theme,
     },
     Table,
@@ -30,8 +30,8 @@ use tabled::{
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
 
-    let hline = HorizontalLine::inherit(Style::modern())
-        .left(VerticalLine::inherit_left(Style::modern()).get_vertical());
+    let hline =
+        HorizontalLine::inherit(Style::modern()).left(Border::inherit(Style::modern()).get_left());
 
     let mut theme = Theme::from_style(Style::modern());
     theme.remove_horizontal_lines();

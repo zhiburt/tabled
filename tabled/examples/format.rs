@@ -40,17 +40,12 @@ fn main() {
         },
     ];
 
-    let table = Table::new(data)
-        .with(Style::psql())
-        .modify(
-            Rows::first(),
-            Format::positioned(|_, (_, column)| column.to_string()),
-        )
-        .modify(
-            Columns::first().not(Rows::first()),
-            Format::content(|s| format!("{s}...")),
-        )
-        .to_string();
+    let mut table = Table::new(data);
+    table.with(Style::psql());
+    table.modify(
+        Columns::first().not(Rows::first()),
+        Format::content(|s| s.chars().take(5).collect()),
+    );
 
     println!("{table}");
 }

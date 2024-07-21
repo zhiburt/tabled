@@ -7,7 +7,7 @@
 //! If the two tables are of unequal shape, additional blank cells are added as needed.
 
 use tabled::{
-    settings::{object::Segment, Alignment, Concat, Modify, Style},
+    settings::{Alignment, Concat, Style},
     Table, Tabled,
 };
 
@@ -52,7 +52,7 @@ fn main() {
     weather_table
         .with(Concat::horizontal(location_table))
         .with(Style::empty())
-        .with(Modify::new(Segment::all()).with(Alignment::left()));
+        .with(Alignment::right());
 
     println!("{weather_table}");
 }

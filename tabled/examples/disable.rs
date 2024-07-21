@@ -5,27 +5,23 @@
 //! It is safest to use [`Disable`] last in a chain of alterations.
 
 use tabled::{
-    settings::{
-        location::ByColumnName,
-        style::{Border, Style},
-        Disable,
-    },
+    settings::{location::ByColumnName, Disable},
     Table, Tabled,
 };
 
 #[derive(Tabled)]
 struct Distribution {
-    name: &'static str,
-    based_on: &'static str,
+    name: String,
+    based_on: String,
     is_active: bool,
     is_cool: bool,
 }
 
 impl Distribution {
-    fn new(name: &'static str, based_on: &'static str, is_active: bool, is_cool: bool) -> Self {
+    fn new(name: &str, based_on: &str, is_active: bool, is_cool: bool) -> Self {
         Self {
-            name,
-            based_on,
+            name: name.to_string(),
+            based_on: based_on.to_string(),
             is_active,
             is_cool,
         }
@@ -40,10 +36,7 @@ fn main() {
     ];
 
     let mut table = Table::new(data);
-    table
-        .with(Style::markdown())
-        .with(Disable::column(ByColumnName::new("is_active")))
-        .modify(ByColumnName::new("name"), Border::filled('#'));
+    table.with(Disable::column(ByColumnName::new("is_active")));
 
     println!("{table}");
 }

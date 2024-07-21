@@ -127,7 +127,7 @@ impl<O> Highlight<O> {
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
     // #[cfg(feature = "ansi")]
-    pub fn color<T, B, L, R>(target: O, border: BorderColor<T, B, L, R>) -> Self {
+    pub fn color(target: O, border: BorderColor) -> Self {
         let color = border.into_inner();
         let color = color.convert();
 
@@ -158,7 +158,7 @@ impl<O> Highlight<O> {
     pub fn colored_border<T, B, L, R>(
         target: O,
         border: Border<T, B, L, R>,
-        color: BorderColor<T, B, L, R>,
+        color: BorderColor,
     ) -> Self {
         let border = border.into_inner();
         let color = color.into_inner().convert();
