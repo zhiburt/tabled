@@ -39,12 +39,12 @@ path = "examples/derive/rename_all.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "rename"
+name = "derive_rename"
 path = "examples/derive/rename.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "order"
+name = "derive_order"
 path = "examples/derive/order.rs"
 required-features = ["derive"]
 
@@ -54,22 +54,22 @@ path = "examples/derive/skip.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "inline"
+name = "derive_inline"
 path = "examples/derive/inline.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "inline_enum"
+name = "derive_inline_enum"
 path = "examples/derive/inline_enum.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "display_with"
+name = "derive_display_with"
 path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "crate_override"
+name = "derive_crate_override"
 path = "examples/derive/crate_override.rs"
 required-features = ["derive"]
 
@@ -79,8 +79,8 @@ path = "examples/derive/format.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "derive_format2"
-path = "examples/derive/format2.rs"
+name = "derive_format_enum"
+path = "examples/derive/format_enum.rs"
 required-features = ["derive"]
 
 [[example]]

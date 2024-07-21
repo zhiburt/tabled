@@ -657,14 +657,14 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.set_border_bottom('a');
-            style.set_border_left('b');
-            style.set_border_intersection('x');
-            style.remove_border_right();
-            style.remove_border_top();
-            style.remove_border_intersection_top();
-            style.remove_border_corner_top_left();
-            style.remove_border_corner_top_right();
+            style.set_borders_bottom('a');
+            style.set_borders_left('b');
+            style.set_borders_intersection('x');
+            style.remove_borders_right();
+            style.remove_borders_top();
+            style.remove_borders_intersection_top();
+            style.remove_borders_corner_top_left();
+            style.remove_borders_corner_top_right();
             style
         }),
     "b N │    column 0     │ column 1 │ column 2  "
@@ -683,7 +683,7 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.remove_border_bottom();
+            style.remove_borders_bottom();
             style
         }),
     "┌───┬─────────────────┬──────────┬──────────┐"
@@ -703,7 +703,7 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.remove_border_bottom();
+            style.remove_borders_bottom();
             style
         })
         .with(Modify::new(Rows::last()).with(GridBorder { left_bottom_corner: Some('*'), ..Default::default() })),
@@ -2232,7 +2232,7 @@ test_table!(
     {
         let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into())).collect();
         let mut style = Theme::from_style(Style::rounded());
-        style.set_lines_vertical(verticals);
+        style.set_vertical_lines(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2276,7 +2276,7 @@ test_table!(
     {
         let mut style = Theme::from_style(Style::ascii());
         let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'x', 'c', '2').into())).collect();
-        style.set_lines_vertical(verticals);
+        style.set_vertical_lines(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2297,8 +2297,8 @@ test_table!(
         let m = Matrix::new(3, 3);
 
         let mut style = Theme::from_style(Style::ascii());
-        style.insert_line_horizontal(1, HorizontalLine::full('8', '8', '8', '8').into());
-        style.insert_line_vertical(1, VerticalLine::full('*', 'x', 'c', '2').into());
+        style.insert_horizontal_line(1, HorizontalLine::full('8', '8', '8', '8').into());
+        style.insert_vertical_line(1, VerticalLine::full('*', 'x', 'c', '2').into());
 
         m.with(style)
     },
