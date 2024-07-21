@@ -4,7 +4,7 @@
 //! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
 //! flexibility for improved performance.
 
-#![allow(dead_code)]
+#![allow(unused_variables)]
 
 use tabled::{settings::style::Style, tables::CompactTable};
 

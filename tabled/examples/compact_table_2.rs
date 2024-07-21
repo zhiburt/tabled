@@ -4,7 +4,7 @@
 //! * Note how [`CompactTable::from()`] inherits the lengths of the nested arrays
 //! as typed definitions through [const generics](https://practice.rs/generics-traits/const-generics.html).
 
-#![allow(dead_code)]
+#![allow(unused_variables)]
 
 use tabled::{settings::style::Style, tables::CompactTable};
 

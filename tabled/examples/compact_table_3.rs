@@ -3,7 +3,7 @@
 //!
 //! * Note how the multiline data is accepted, but then truncated in the display.
 
-#![allow(dead_code)]
+#![allow(unused_variables)]
 
 use tabled::{settings::style::Style, tables::CompactTable};
 
