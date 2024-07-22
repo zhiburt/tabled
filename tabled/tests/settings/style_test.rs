@@ -337,7 +337,7 @@ test_table!(
 
 test_table!(
     border_color_global,
-    Matrix::table(2, 2).with(BorderColor::new().set_bottom(Color::FG_RED)),
+    Matrix::table(2, 2).with(BorderColor::new().bottom(Color::FG_RED)),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
@@ -353,8 +353,8 @@ test_table!(
     Matrix::table(2, 2)
         .with(LineText::new("-Table", Rows::single(1)))
         .with(LineText::new("-Table213123", Rows::single(2)))
-        .with(Modify::new(Rows::single(1)).with(BorderColor::new().set_bottom(Color::FG_RED)))
-        .with(Modify::new(Rows::single(2)).with(BorderColor::new().set_bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
+        .with(Modify::new(Rows::single(1)).with(BorderColor::new().bottom(Color::FG_RED)))
+        .with(Modify::new(Rows::single(2)).with(BorderColor::new().bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "-Table---------+----------+"
@@ -657,14 +657,14 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.set_border_bottom('a');
-            style.set_border_left('b');
-            style.set_border_intersection('x');
-            style.remove_border_right();
-            style.remove_border_top();
-            style.remove_border_intersection_top();
-            style.remove_border_corner_top_left();
-            style.remove_border_corner_top_right();
+            style.set_borders_bottom('a');
+            style.set_borders_left('b');
+            style.set_borders_intersection('x');
+            style.remove_borders_right();
+            style.remove_borders_top();
+            style.remove_borders_intersection_top();
+            style.remove_borders_corner_top_left();
+            style.remove_borders_corner_top_right();
             style
         }),
     "b N │    column 0     │ column 1 │ column 2  "
@@ -683,7 +683,7 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.remove_border_bottom();
+            style.remove_borders_bottom();
             style
         }),
     "┌───┬─────────────────┬──────────┬──────────┐"
@@ -703,7 +703,7 @@ test_table!(
         .insert((1, 1), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.remove_border_bottom();
+            style.remove_borders_bottom();
             style
         })
         .with(Modify::new(Rows::last()).with(GridBorder { left_bottom_corner: Some('*'), ..Default::default() })),
@@ -2076,7 +2076,7 @@ fn border_colored_test() {
             Modify::new(Rows::single(1))
                 .with(
                     BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .set_top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
                 )
                 .with(Border::filled('*').set_top('#')),
         )
@@ -2114,7 +2114,7 @@ fn border_colored_test() {
             Modify::new(Rows::single(1))
                 .with(
                     BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .set_top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
                 )
                 .with(Border::filled('*').set_top('#')),
         )
@@ -2141,18 +2141,18 @@ fn border_colored_test() {
 #[test]
 fn style_with_color_test() {
     let mut style = Theme::from_style(Style::ascii());
-    style.set_border_left('[');
-    style.set_border_right(']');
-    style.set_border_top('-');
-    style.set_border_bottom('-');
-    style.set_border_vertical('|');
-    style.set_border_intersection('+');
-    style.set_border_color_left(Color::FG_RED);
-    style.set_border_color_right(Color::FG_RED);
-    style.set_border_color_top(Color::FG_BLUE);
-    style.set_border_color_bottom(Color::FG_BLUE);
-    style.set_border_color_vertical(Color::FG_YELLOW);
-    style.set_border_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
+    style.set_borders_left('[');
+    style.set_borders_right(']');
+    style.set_borders_top('-');
+    style.set_borders_bottom('-');
+    style.set_borders_vertical('|');
+    style.set_borders_intersection('+');
+    style.set_colors_left(Color::FG_RED);
+    style.set_colors_right(Color::FG_RED);
+    style.set_colors_top(Color::FG_BLUE);
+    style.set_colors_bottom(Color::FG_BLUE);
+    style.set_colors_vertical(Color::FG_YELLOW);
+    style.set_colors_intersection(Color::try_from(' '.purple().to_string()).unwrap());
 
     let table = Matrix::new(3, 3).with(style).to_string();
 
@@ -2232,7 +2232,7 @@ test_table!(
     {
         let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into())).collect();
         let mut style = Theme::from_style(Style::rounded());
-        style.set_lines_vertical(verticals);
+        style.set_vertical_lines(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2276,7 +2276,7 @@ test_table!(
     {
         let mut style = Theme::from_style(Style::ascii());
         let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'x', 'c', '2').into())).collect();
-        style.set_lines_vertical(verticals);
+        style.set_vertical_lines(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2297,8 +2297,8 @@ test_table!(
         let m = Matrix::new(3, 3);
 
         let mut style = Theme::from_style(Style::ascii());
-        style.insert_line_horizontal(1, HorizontalLine::full('8', '8', '8', '8').into());
-        style.insert_line_vertical(1, VerticalLine::full('*', 'x', 'c', '2').into());
+        style.insert_horizontal_line(1, HorizontalLine::full('8', '8', '8', '8').into());
+        style.insert_vertical_line(1, VerticalLine::full('*', 'x', 'c', '2').into());
 
         m.with(style)
     },

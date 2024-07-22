@@ -36,24 +36,19 @@ fn main() {
 #[derive(Tabled)]
 struct Database {
     #[tabled(rename = "db")]
-    db_name: &'static str,
-    origin_db: &'static str,
+    db_name: String,
+    origin_db: String,
     #[tabled(rename = "table")]
-    table_name: &'static str,
+    table_name: String,
     total: usize,
 }
 
 impl Database {
-    fn new(
-        db_name: &'static str,
-        origin_db: &'static str,
-        table_name: &'static str,
-        total: usize,
-    ) -> Self {
+    fn new(db_name: &str, origin_db: &str, table_name: &str, total: usize) -> Self {
         Self {
-            db_name,
-            origin_db,
-            table_name,
+            db_name: db_name.to_string(),
+            origin_db: origin_db.to_string(),
+            table_name: table_name.to_string(),
             total,
         }
     }

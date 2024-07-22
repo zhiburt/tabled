@@ -43,7 +43,7 @@ pub struct Color {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum ColorInner {
     Static(StaticColor<'static>),
-    Allocated(ANSIBuf),
+    Buf(ANSIBuf),
 }
 
 #[rustfmt::skip]
@@ -192,13 +192,13 @@ impl Color {
         S: Into<String>,
     {
         let color = ANSIBuf::new(prefix, suffix);
-        let inner = ColorInner::Allocated(color);
+        let inner = ColorInner::Buf(color);
 
         Self { inner }
     }
 
     /// Creates a new empty [`Color`]`.
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self::new_static("", "")
     }
 
@@ -213,7 +213,7 @@ impl Color {
     pub fn get_prefix(&self) -> &str {
         match &self.inner {
             ColorInner::Static(color) => color.get_prefix(),
-            ColorInner::Allocated(color) => color.get_prefix(),
+            ColorInner::Buf(color) => color.get_prefix(),
         }
     }
 
@@ -221,8 +221,22 @@ impl Color {
     pub fn get_suffix(&self) -> &str {
         match &self.inner {
             ColorInner::Static(color) => color.get_suffix(),
-            ColorInner::Allocated(color) => color.get_suffix(),
+            ColorInner::Buf(color) => color.get_suffix(),
         }
+    }
+
+    /// Parses the string,
+    ///
+    /// # Panics
+    ///
+    /// PANICS if the input string incorrectly built.
+    /// Use [`TryFrom`] instead if you are not sure about the input.
+    #[cfg(feature = "ansi")]
+    pub fn parse<S>(text: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        std::convert::TryFrom::try_from(text.as_ref()).unwrap()
     }
 }
 
@@ -238,7 +252,7 @@ impl From<Color> for ANSIBuf {
     fn from(color: Color) -> Self {
         match color.inner {
             ColorInner::Static(color) => ANSIBuf::from(color),
-            ColorInner::Allocated(color) => color,
+            ColorInner::Buf(color) => color,
         }
     }
 }
@@ -246,7 +260,7 @@ impl From<Color> for ANSIBuf {
 impl From<ANSIBuf> for Color {
     fn from(color: ANSIBuf) -> Self {
         Self {
-            inner: ColorInner::Allocated(color),
+            inner: ColorInner::Buf(color),
         }
     }
 }
@@ -282,7 +296,7 @@ impl std::convert::TryFrom<&str> for Color {
         let buf = ANSIBuf::try_from(value)?;
 
         Ok(Color {
-            inner: ColorInner::Allocated(buf),
+            inner: ColorInner::Buf(buf),
         })
     }
 }
@@ -295,7 +309,7 @@ impl std::convert::TryFrom<String> for Color {
         let buf = ANSIBuf::try_from(value)?;
 
         Ok(Color {
-            inner: ColorInner::Allocated(buf),
+            inner: ColorInner::Buf(buf),
         })
     }
 }
@@ -337,14 +351,14 @@ impl ANSIFmt for Color {
     fn fmt_ansi_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match &self.inner {
             ColorInner::Static(color) => color.fmt_ansi_prefix(f),
-            ColorInner::Allocated(color) => color.fmt_ansi_prefix(f),
+            ColorInner::Buf(color) => color.fmt_ansi_prefix(f),
         }
     }
 
     fn fmt_ansi_suffix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         match &self.inner {
             ColorInner::Static(color) => color.fmt_ansi_suffix(f),
-            ColorInner::Allocated(color) => color.fmt_ansi_suffix(f),
+            ColorInner::Buf(color) => color.fmt_ansi_suffix(f),
         }
     }
 }

@@ -146,8 +146,8 @@ test_table!(
         .with(Panel::horizontal(0,"Numbers"))
         .with({
             let mut style = Theme::from_style(Style::modern());
-            style.set_border_intersection_top('─');
-            style.set_lines_horizontal(HashMap::from_iter([(1,  HorizontalLine::inherit(Style::modern()).intersection('┬').into_inner())]));
+            style.set_borders_intersection_top('─');
+            style.set_horizontal_lines(HashMap::from_iter([(1,  HorizontalLine::inherit(Style::modern()).intersection('┬').into_inner())]));
             style
         })
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),

@@ -17,25 +17,6 @@ use tabled::{
     Table, Tabled,
 };
 
-#[derive(Tabled)]
-struct DatabaseTable {
-    #[tabled(rename = "db")]
-    db_name: &'static str,
-    #[tabled(rename = "table")]
-    table_name: &'static str,
-    total: usize,
-}
-
-impl DatabaseTable {
-    fn new(db_name: &'static str, table_name: &'static str, total: usize) -> Self {
-        Self {
-            db_name,
-            table_name,
-            total,
-        }
-    }
-}
-
 fn main() {
     let data = [
         DatabaseTable::new("database_1", "table_1", 10712),
@@ -55,4 +36,23 @@ fn main() {
         .to_string();
 
     println!("{table}");
+}
+
+#[derive(Tabled)]
+struct DatabaseTable {
+    #[tabled(rename = "db")]
+    db_name: String,
+    #[tabled(rename = "table")]
+    table_name: String,
+    total: usize,
+}
+
+impl DatabaseTable {
+    fn new(db_name: &str, table_name: &str, total: usize) -> Self {
+        Self {
+            db_name: db_name.to_string(),
+            table_name: table_name.to_string(),
+            total,
+        }
+    }
 }

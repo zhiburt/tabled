@@ -9,7 +9,7 @@
 //! [`tabled`] doesn't have the final say on whether a link is clickable or not.
 
 use tabled::{
-    settings::{object::Segment, Alignment, Modify, Style, Width},
+    settings::{object::Segment, Alignment, Style, Width},
     Table, Tabled,
 };
 
@@ -53,7 +53,7 @@ fn main() {
     table
         .with(Style::ascii_rounded())
         .with(Alignment::left())
-        .with(Modify::new(Segment::all()).with(Width::wrap(16).keep_words()));
+        .modify(Segment::all(), Width::wrap(16).keep_words(true));
 
     println!("{table}");
 
@@ -61,7 +61,7 @@ fn main() {
     table
         .with(Style::ascii_rounded())
         .with(Alignment::left())
-        .with(Modify::new(Segment::all()).with(Width::wrap(16)));
+        .modify(Segment::all(), Width::wrap(16));
 
     println!("{table}");
 }

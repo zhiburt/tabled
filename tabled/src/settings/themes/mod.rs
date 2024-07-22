@@ -4,8 +4,10 @@
 
 mod colorization;
 mod column_names;
+mod layout;
 mod theme;
 
 pub use colorization::{Colorization, ExactColorization};
 pub use column_names::ColumnNames;
+pub use layout::Layout;
 pub use theme::Theme;

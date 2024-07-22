@@ -15,13 +15,12 @@ use tabled::{
 fn main() {
     let data = vec![["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]];
 
-    let table = Table::new(data)
-        .with(Style::modern())
-        .with(Highlight::color(
-            Rows::first().and(Columns::single(1)),
-            BorderColor::filled(Color::BG_BRIGHT_BLACK),
-        ))
-        .to_string();
+    let target = Rows::first().and(Columns::single(1));
+    let color = Color::BG_BRIGHT_BLACK;
+
+    let mut table = Table::new(data);
+    table.with(Style::modern());
+    table.with(Highlight::color(target, BorderColor::filled(color)));
 
     println!("{table}");
 }

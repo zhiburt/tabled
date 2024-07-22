@@ -3,15 +3,13 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::marker::PhantomData;
-
 use crate::{
     grid::{
         config::SpannedConfig,
         config::{ColoredConfig, Entity},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::string_width_multiline,
+        util::string::get_string_width,
     },
     settings::{
         measurement::Measurement,
@@ -46,7 +44,7 @@ use crate::util::string::split_at_width;
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
     keep_words: bool,
-    _priority: PhantomData<P>,
+    priority: P,
 }
 
 impl<W> Wrap<W> {
@@ -58,7 +56,7 @@ impl<W> Wrap<W> {
         Wrap {
             width,
             keep_words: false,
-            _priority: PhantomData,
+            priority: PriorityNone::new(),
         }
     }
 }
@@ -76,11 +74,11 @@ impl<W, P> Wrap<W, P> {
     /// [`Padding`]: crate::settings::Padding
     /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
     /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
-    pub fn priority<PP>(self) -> Wrap<W, PP> {
+    pub fn priority<PP: Peaker>(self, priority: PP) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
             keep_words: self.keep_words,
-            _priority: PhantomData,
+            priority,
         }
     }
 
@@ -88,15 +86,15 @@ impl<W, P> Wrap<W, P> {
     ///
     /// If a wrapping point will be in a word, [`Wrap`] will
     /// preserve a word (if possible) and wrap the string before it.
-    pub fn keep_words(mut self) -> Self {
-        self.keep_words = true;
+    pub fn keep_words(mut self, on: bool) -> Self {
+        self.keep_words = on;
         self
     }
 }
 
 impl Wrap<(), ()> {
     /// Wrap a given string
-    pub fn wrap_text(text: &str, width: usize, keeping_words: bool) -> String {
+    pub fn wrap(text: &str, width: usize, keeping_words: bool) -> String {
         wrap_text(text, width, keeping_words)
     }
 }
@@ -125,7 +123,7 @@ where
             return;
         }
 
-        let priority = P::create();
+        let priority = self.priority;
         let keep_words = self.keep_words;
         let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
 
@@ -153,7 +151,7 @@ where
             }
 
             let text = records.get_text(pos);
-            let cell_width = string_width_multiline(text);
+            let cell_width = get_string_width(text);
             if cell_width <= width {
                 continue;
             }

@@ -8,21 +8,23 @@ pub mod unknown_crate {
     pub use ::tabled::{Table, Tabled};
 }
 
+// make sure we are not using default 'tabled::*' path
 #[allow(non_camel_case_types, dead_code)]
 type tabled = usize;
 
-use unknown_crate::{Table, Tabled};
-
-#[derive(Tabled)]
+#[derive(unknown_crate::Tabled)]
 #[tabled(crate = "unknown_crate")]
-struct Country<'a> {
-    name: &'a str,
-    capital_city: &'a str,
+struct Country {
+    name: String,
+    city: String,
 }
 
-impl<'a> Country<'a> {
-    fn new(name: &'a str, capital_city: &'a str) -> Self {
-        Self { name, capital_city }
+impl Country {
+    fn new(name: &str, city: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            city: city.to_string(),
+        }
     }
 }
 
@@ -33,7 +35,7 @@ fn main() {
         Country::new("Canada", "Ottawa"),
     ];
 
-    let table = Table::new(data);
+    let table = unknown_crate::Table::new(data);
 
     println!("{table}");
 }

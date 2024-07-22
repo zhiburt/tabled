@@ -15,53 +15,37 @@ use std::borrow::Cow;
 use tabled::{Table, Tabled};
 
 #[derive(Tabled)]
-#[tabled(rename_all = "camelCase")]
 struct Country {
-    name: &'static str,
-    #[tabled(display_with("display_capital", format!("CAPITAL {}", self.capital_city)))]
-    capital_city: &'static str,
+    name: String,
+    #[tabled(display_with = "str::to_uppercase")]
+    capital: String,
     #[tabled(display_with("display_perimeter", self))]
-    surface_area_km2: f32,
-    #[tabled(display_with = "str::to_lowercase")]
-    national_currency: &'static str,
-    national_currency_short: &'static str,
-}
-
-fn display_perimeter(country: &Country) -> Cow<'_, str> {
-    if country.surface_area_km2 > 1_000_000.0 {
-        "Very Big Land".into()
-    } else {
-        "Big Land".into()
-    }
-}
-
-fn display_capital(country: String) -> Cow<'static, str> {
-    format!("{country}!").into()
+    area_km2: f32,
 }
 
 impl Country {
-    fn new(
-        name: &'static str,
-        national_currency: &'static str,
-        national_currency_short: &'static str,
-        capital_city: &'static str,
-        surface_area_km2: f32,
-    ) -> Self {
+    fn new(name: &str, capital: &str, area_km2: f32) -> Self {
         Self {
-            name,
-            national_currency,
-            national_currency_short,
-            capital_city,
-            surface_area_km2,
+            name: name.to_string(),
+            capital: capital.to_string(),
+            area_km2,
         }
+    }
+}
+
+fn display_perimeter(country: &Country) -> Cow<'_, str> {
+    if country.area_km2 > 1_000_000.0 {
+        "BIG".into()
+    } else {
+        "small".into()
     }
 }
 
 fn main() {
     let data = [
-        Country::new("Afghanistan", "Afghani", "AFN", "Kabul", 652867.0),
-        Country::new("Angola", "Kwanza", "AOA", "Luanda", 1246700.0),
-        Country::new("Canada", "Canadian Dollar", "CAD", "Ottawa", 9984670.0),
+        Country::new("Afghanistan", "Kabul", 652867.0),
+        Country::new("Angola", "Luanda", 1246700.0),
+        Country::new("Canada", "Ottawa", 9984670.0),
     ];
 
     let table = Table::new(data);

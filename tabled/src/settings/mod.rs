@@ -48,7 +48,9 @@ mod table_option;
 mod alignment;
 mod extract;
 mod margin;
+mod margin_color;
 mod padding;
+mod padding_color;
 mod reverse;
 mod rotate;
 
@@ -94,6 +96,9 @@ pub mod measurement;
 pub mod merge;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod padding_expand;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod panel;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
@@ -119,8 +124,9 @@ pub use settings_list::{EmptySettings, Settings};
 pub use table_option::TableOption;
 
 pub use self::{
-    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, reverse::Reverse,
-    rotate::Rotate, style::Border, style::Style,
+    alignment::Alignment, extract::Extract, margin::Margin, margin_color::MarginColor,
+    padding::Padding, padding_color::PaddingColor, reverse::Reverse, rotate::Rotate, style::Border,
+    style::Style,
 };
 
 #[cfg(feature = "std")]

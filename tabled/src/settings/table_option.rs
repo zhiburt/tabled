@@ -69,3 +69,78 @@ where
         }
     }
 }
+
+#[cfg(feature = "std")]
+macro_rules! tuple_trait_impl {
+    ( $($name:ident)+ ) => {
+        impl<R, C, D, $($name: TableOption<R, C, D>),+> TableOption<R, C, D> for ($($name,)+) {
+            fn change(self, records: &mut R, cfg: &mut C, dimension: &mut D) {
+                #![allow(non_snake_case)]
+                let ($($name,)+) = self;
+                $(
+                    $name::change($name, records, cfg, dimension);
+                )+
+            }
+
+            fn hint_change(&self) -> Option<Entity> {
+                #![allow(non_snake_case)]
+                let ($($name,)+) = &self;
+                let list = [
+                    $(
+                        $name::hint_change($name),
+                    )+
+                ];
+
+                hint_change_list(&list)
+            }
+        }
+    };
+}
+
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8 T9);
+
+#[cfg(feature = "std")]
+pub(crate) fn hint_change_list(list: &[Option<Entity>]) -> Option<Entity> {
+    let mut entries = vec![];
+    for e in list.iter().flatten() {
+        entries.push(*e);
+    }
+
+    if entries.is_empty() {
+        return None;
+    }
+
+    Some(combine_entity_list(&entries))
+}
+
+#[cfg(feature = "std")]
+pub(crate) fn combine_entity_list(list: &[Entity]) -> Entity {
+    if list.is_empty() {
+        // must never happen
+        return Entity::Global;
+    }
+
+    let mut entity = list[0];
+    for e in &list[1..] {
+        entity = crate::settings::settings_list::combine_entity(entity, *e);
+    }
+
+    entity
+}

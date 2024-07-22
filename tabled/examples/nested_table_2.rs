@@ -8,83 +8,55 @@
 
 use tabled::{settings::Style, Table, Tabled};
 
+fn main() {
+    #[rustfmt::skip]
+    let data = [
+        Vendor::new("Azure", Dist::new("Windows", None), Dist::new("Manjaro", Some("Arch"))),
+        Vendor::new("AWS", Dist::new("Debian", None), Dist::new("Arch", None)),
+        Vendor::new("GCP", Dist::new("Debian", None), Dist::new("Arch", None)),
+    ];
+
+    let mut table = Table::new(data);
+    table.with(Style::modern());
+
+    println!("{table}");
+}
+
 #[derive(Tabled)]
 struct Vendor {
-    name: &'static str,
+    name: String,
     #[tabled(display_with = "display_distribution")]
-    main_os: Distribution,
+    main_os: Dist,
     #[tabled(display_with = "display_distribution")]
-    switch_os: Distribution,
+    switch_os: Dist,
 }
 
 impl Vendor {
-    fn new(name: &'static str, main_os: Distribution, switch_os: Distribution) -> Self {
+    fn new(name: &str, main_os: Dist, switch_os: Dist) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             main_os,
             switch_os,
         }
     }
 }
 
-fn display_distribution(d: &Distribution) -> String {
+fn display_distribution(d: &Dist) -> String {
     Table::new([d]).with(Style::extended()).to_string()
 }
 
 #[derive(Tabled)]
-struct Distribution {
-    name: &'static str,
-    #[tabled(display_with = "Self::display_based_on")]
-    based_on: Option<&'static str>,
-    is_active: bool,
-    is_cool: bool,
+struct Dist {
+    name: String,
+    #[tabled(format("{}", self.based_on.as_deref().unwrap_or_else(|| "Independent")))]
+    based_on: Option<String>,
 }
 
-impl Distribution {
-    fn display_based_on(o: &Option<&'static str>) -> String {
-        match o {
-            &Some(s) => s.into(),
-            None => "Independent".into(),
-        }
-    }
-}
-
-impl Distribution {
-    fn new(
-        name: &'static str,
-        based_on: Option<&'static str>,
-        is_active: bool,
-        is_cool: bool,
-    ) -> Self {
+impl Dist {
+    fn new(name: &str, based_on: Option<&str>) -> Self {
         Self {
-            name,
-            based_on,
-            is_active,
-            is_cool,
+            name: name.to_string(),
+            based_on: based_on.map(|s| s.to_string()),
         }
     }
-}
-
-fn main() {
-    let data = [
-        Vendor::new(
-            "Azure",
-            Distribution::new("Windows", None, true, true),
-            Distribution::new("Manjaro", Some("Arch"), true, true),
-        ),
-        Vendor::new(
-            "AWS",
-            Distribution::new("Debian", None, true, true),
-            Distribution::new("Arch", None, true, true),
-        ),
-        Vendor::new(
-            "GCP",
-            Distribution::new("Debian", None, true, true),
-            Distribution::new("Arch", None, true, true),
-        ),
-    ];
-
-    let table = Table::new(data).with(Style::modern()).to_string();
-
-    println!("{table}");
 }

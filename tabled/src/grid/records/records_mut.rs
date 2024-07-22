@@ -1,6 +1,6 @@
 use crate::grid::config::Position;
 #[cfg(feature = "std")]
-use crate::grid::records::vec_records::{CellInfo, VecRecords};
+use crate::grid::records::vec_records::{Text, VecRecords};
 
 /// A [`Records`] representation which can modify cell by (row, column) index.
 ///
@@ -20,15 +20,15 @@ where
 }
 
 #[cfg(feature = "std")]
-impl RecordsMut<String> for VecRecords<CellInfo<String>> {
+impl RecordsMut<String> for VecRecords<Text<String>> {
     fn set(&mut self, (row, col): Position, text: String) {
-        self[row][col] = CellInfo::new(text);
+        self[row][col] = Text::new(text);
     }
 }
 
 #[cfg(feature = "std")]
-impl RecordsMut<&str> for VecRecords<CellInfo<String>> {
+impl RecordsMut<&str> for VecRecords<Text<String>> {
     fn set(&mut self, (row, col): Position, text: &str) {
-        self[row][col] = CellInfo::new(text.to_string());
+        self[row][col] = Text::new(text.to_string());
     }
 }

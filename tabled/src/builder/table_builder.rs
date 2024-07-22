@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use crate::{grid::records::vec_records::CellInfo, Table};
+use crate::{grid::records::vec_records::Text, Table};
 
 use super::IndexBuilder;
 
@@ -39,11 +39,11 @@ use super::IndexBuilder;
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
     /// A list of rows.
-    data: Vec<Vec<CellInfo<String>>>,
+    data: Vec<Vec<Text<String>>>,
     /// A number of columns.
     count_columns: usize,
     /// A content of cells which are created in case rows has different length.
-    empty_text: CellInfo<String>,
+    empty_text: Text<String>,
 }
 
 impl Builder {
@@ -87,13 +87,13 @@ impl Builder {
     /// let data = vec![];
     /// let builder = Builder::from_vec(data);
     /// ```
-    pub fn from_vec(data: Vec<Vec<CellInfo<String>>>) -> Self {
+    pub fn from_vec(data: Vec<Vec<Text<String>>>) -> Self {
         let count_columns = if data.is_empty() { 0 } else { data[0].len() };
 
         Self {
             data,
             count_columns,
-            empty_text: CellInfo::default(),
+            empty_text: Text::default(),
         }
     }
 
@@ -112,7 +112,7 @@ impl Builder {
     where
         T: Into<String>,
     {
-        self.empty_text = CellInfo::new(text.into());
+        self.empty_text = Text::new(text.into());
     }
 
     /// Build creates a [`Table`] instance.
@@ -272,14 +272,14 @@ impl Builder {
             let text = iter
                 .next()
                 .map(Into::into)
-                .map(CellInfo::new)
+                .map(Text::new)
                 .unwrap_or(self.empty_text.clone());
 
             row.push(text);
         }
 
         for text in iter {
-            let text = CellInfo::new(text.into());
+            let text = Text::new(text.into());
 
             let mut row = Vec::with_capacity(self.count_columns + 1);
             for _ in 0..self.count_columns {
@@ -311,14 +311,14 @@ impl Builder {
             let text = iter
                 .next()
                 .map(Into::into)
-                .map(CellInfo::new)
+                .map(Text::new)
                 .unwrap_or(self.empty_text.clone());
 
             row.insert(index, text);
         }
 
         for text in iter {
-            let text = CellInfo::new(text.into());
+            let text = Text::new(text.into());
 
             let mut row = Vec::with_capacity(self.count_columns + 1);
             for _ in 0..index {
@@ -360,12 +360,12 @@ impl From<Builder> for Vec<Vec<String>> {
         builder
             .data
             .into_iter()
-            .map(|row| row.into_iter().map(CellInfo::into_inner).collect())
+            .map(|row| row.into_iter().map(Text::into_inner).collect())
             .collect()
     }
 }
 
-impl From<Builder> for Vec<Vec<CellInfo<String>>> {
+impl From<Builder> for Vec<Vec<Text<String>>> {
     fn from(builder: Builder) -> Self {
         builder.data
     }
@@ -399,7 +399,7 @@ impl From<Vec<Vec<String>>> for Builder {
     fn from(data: Vec<Vec<String>>) -> Self {
         let mut data = data
             .into_iter()
-            .map(|row| row.into_iter().map(CellInfo::new).collect())
+            .map(|row| row.into_iter().map(Text::new).collect())
             .collect();
 
         let count_columns = equalize_row_length(&mut data);
@@ -407,24 +407,24 @@ impl From<Vec<Vec<String>>> for Builder {
         Self {
             data,
             count_columns,
-            empty_text: CellInfo::default(),
+            empty_text: Text::default(),
         }
     }
 }
 
-impl From<Vec<Vec<CellInfo<String>>>> for Builder {
-    fn from(mut data: Vec<Vec<CellInfo<String>>>) -> Self {
+impl From<Vec<Vec<Text<String>>>> for Builder {
+    fn from(mut data: Vec<Vec<Text<String>>>) -> Self {
         let count_columns = equalize_row_length(&mut data);
 
         Self {
             data,
             count_columns,
-            empty_text: CellInfo::default(),
+            empty_text: Text::default(),
         }
     }
 }
 
-fn create_row<R>(row: R, size: usize, default: &CellInfo<String>) -> Vec<CellInfo<String>>
+fn create_row<R>(row: R, size: usize, default: &Text<String>) -> Vec<Text<String>>
 where
     R: IntoIterator,
     R::Item: Into<String>,
@@ -432,7 +432,7 @@ where
     let mut list = Vec::with_capacity(size);
     for text in row {
         let text = text.into();
-        let text = CellInfo::new(text);
+        let text = Text::new(text);
         list.push(text);
     }
 
@@ -446,7 +446,7 @@ where
     list
 }
 
-fn remove_empty_columns(data: &mut [Vec<CellInfo<String>>], count_columns: usize) -> usize {
+fn remove_empty_columns(data: &mut [Vec<Text<String>>], count_columns: usize) -> usize {
     let mut deleted = 0;
     for col in 0..count_columns {
         let col = col - deleted;
@@ -472,7 +472,7 @@ fn remove_empty_columns(data: &mut [Vec<CellInfo<String>>], count_columns: usize
     deleted
 }
 
-fn remove_empty_rows(data: &mut Vec<Vec<CellInfo<String>>>, count_columns: usize) {
+fn remove_empty_rows(data: &mut Vec<Vec<Text<String>>>, count_columns: usize) {
     let mut deleted = 0;
 
     for row in 0..data.len() {
@@ -494,7 +494,7 @@ fn remove_empty_rows(data: &mut Vec<Vec<CellInfo<String>>>, count_columns: usize
     }
 }
 
-fn resize_rows(data: &mut Vec<Vec<CellInfo<String>>>, size: usize, empty_text: &CellInfo<String>) {
+fn resize_rows(data: &mut Vec<Vec<Text<String>>>, size: usize, empty_text: &Text<String>) {
     for row in data {
         append_vec(row, empty_text.clone(), size);
     }
@@ -521,7 +521,7 @@ fn is_size_eq(expected: usize, new: usize) -> bool {
     }
 }
 
-fn equalize_row_length(data: &mut Vec<Vec<CellInfo<String>>>) -> usize {
+fn equalize_row_length(data: &mut Vec<Vec<Text<String>>>) -> usize {
     if data.is_empty() {
         return 0;
     }
@@ -536,7 +536,7 @@ fn equalize_row_length(data: &mut Vec<Vec<CellInfo<String>>>) -> usize {
     });
 
     if !is_consistent {
-        let empty_text = CellInfo::default();
+        let empty_text = Text::default();
         for row in data {
             let size = count_columns - row.len();
             append_vec(row, empty_text.clone(), size);

@@ -5,17 +5,17 @@ use tabled::{tables::ExtendedTable, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
-    name: &'static str,
-    based_on: &'static str,
+    name: String,
+    based_on: String,
     is_active: bool,
     is_cool: bool,
 }
 
 impl Distribution {
-    fn new(name: &'static str, based_on: &'static str, is_active: bool, is_cool: bool) -> Self {
+    fn new(name: &str, based_on: &str, is_active: bool, is_cool: bool) -> Self {
         Self {
-            name,
-            based_on,
+            name: name.to_string(),
+            based_on: based_on.to_string(),
             is_active,
             is_cool,
         }

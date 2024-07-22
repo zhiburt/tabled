@@ -12,7 +12,7 @@ use std::ops::{Deref, DerefMut};
 use super::PeekableRecords;
 
 pub use cell::Cell;
-pub use cell_info::{CellInfo, StrWithWidth};
+pub use cell_info::{StrWithWidth, Text};
 
 /// A [Records] implementation based on allocated buffers.
 #[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]

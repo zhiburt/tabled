@@ -39,12 +39,12 @@ path = "examples/derive/rename_all.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "rename"
+name = "derive_rename"
 path = "examples/derive/rename.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "order"
+name = "derive_order"
 path = "examples/derive/order.rs"
 required-features = ["derive"]
 
@@ -54,22 +54,22 @@ path = "examples/derive/skip.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "inline"
+name = "derive_inline"
 path = "examples/derive/inline.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "inline_enum"
+name = "derive_inline_enum"
 path = "examples/derive/inline_enum.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "display_with"
+name = "derive_display_with"
 path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "crate_override"
+name = "derive_crate_override"
 path = "examples/derive/crate_override.rs"
 required-features = ["derive"]
 
@@ -79,8 +79,8 @@ path = "examples/derive/format.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "derive_format2"
-path = "examples/derive/format2.rs"
+name = "derive_format_enum"
+path = "examples/derive/format_enum.rs"
 required-features = ["derive"]
 
 [[example]]
@@ -149,13 +149,13 @@ path = "examples/col_row_macros.rs"
 required-features = ["macros", "derive"]
 
 [[example]]
-name = "merge_duplicates"
-path = "examples/merge_duplicates.rs"
+name = "merge_duplicates_horizontal"
+path = "examples/merge_duplicates_horizontal.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "merge_duplicates_2"
-path = "examples/merge_duplicates_2.rs"
+name = "merge_duplicates_vertical"
+path = "examples/merge_duplicates_vertical.rs"
 required-features = ["derive"]
 
 [[example]]
@@ -311,7 +311,7 @@ ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { path="../papergrid", default-features = false }
+papergrid = { path = "../papergrid", default-features = false }
 tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }

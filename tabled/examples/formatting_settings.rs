@@ -7,8 +7,7 @@
 use tabled::{
     settings::{
         formatting::{AlignmentStrategy, TrimStrategy},
-        object::Segment,
-        Alignment, Modify, Style,
+        Alignment, Style,
     },
     Table,
 };
@@ -27,21 +26,17 @@ fn main() {
 ]"#;
 
     let mut table = Table::new([some_json]);
-    table
-        .with(Style::rounded())
-        .with(Modify::new(Segment::all()).with(Alignment::center()));
+    table.with(Style::rounded()).with(Alignment::center());
 
     println!("A default Alignment settings\n{table}");
 
-    table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
+    table.with(AlignmentStrategy::PerLine);
 
     println!("Per line Alignment strategy\n{table}");
 
-    table.with(
-        Modify::new(Segment::all())
-            .with(AlignmentStrategy::PerCell)
-            .with(TrimStrategy::Both),
-    );
+    table
+        .with(AlignmentStrategy::PerCell)
+        .with(TrimStrategy::Both);
 
     println!("A default Alignment; allowing vertical and horizontal trim\n{table}");
 }

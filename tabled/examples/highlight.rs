@@ -16,13 +16,14 @@ use tabled::{
 fn main() {
     let data = vec![["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]];
 
-    let table = Table::new(data)
-        .with(Style::modern())
-        .with(Highlight::outline(
-            Rows::first().and(Columns::single(1)),
-            '*',
-        ))
-        .to_string();
+    let target = Columns::first()
+        .not(Rows::last())
+        .and(Rows::last() - 1)
+        .and(Rows::last().intersect(Columns::last()));
+
+    let mut table = Table::new(data);
+    table.with(Style::modern());
+    table.with(Highlight::outline(target, '*'));
 
     println!("{table}");
 }

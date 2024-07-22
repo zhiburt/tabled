@@ -14,7 +14,7 @@ use crate::{
     config::{AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides},
     dimension::Dimension,
     records::{IntoRecords, Records},
-    util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
+    util::string::{count_lines, get_line_width, get_lines, get_string_width, Lines},
 };
 
 /// Grid provides a set of methods for building a text-based table.
@@ -301,12 +301,12 @@ fn print_single_line_column<F: Write, C: ANSIFmt>(
 
     let (text, text_width) = if fmt.horizontal_trim && !text.is_empty() {
         let text = string_trim(text);
-        let width = string_width(&text);
+        let width = get_line_width(&text);
 
         (text, width)
     } else {
         let text = Cow::Borrowed(text);
-        let width = string_width_multiline(&text);
+        let width = get_string_width(&text);
 
         (text, width)
     };
@@ -854,7 +854,7 @@ where
             line
         };
 
-        let line_width = string_width(&line);
+        let line_width = get_line_width(&line);
         let available_width = self.width - self.pad.left.size - self.pad.right.size;
 
         let (left, right) = if self.fmt.allow_lines_alignment {
@@ -1303,11 +1303,11 @@ fn count_empty_lines(cell: &str) -> (usize, usize, usize) {
 fn get_text_width(text: &str, trim: bool) -> usize {
     if trim {
         get_lines(text)
-            .map(|line| string_width(line.trim()))
+            .map(|line| get_line_width(line.trim()))
             .max()
             .unwrap_or(0)
     } else {
-        string_width_multiline(text)
+        get_string_width(text)
     }
 }
 

@@ -20,18 +20,23 @@ impl<'a> ANSIStr<'a> {
         Self { prefix, suffix }
     }
 
+    /// Constructs a new instance with suffix and prefix set to empty strings.
+    pub const fn empty() -> Self {
+        Self::new("", "")
+    }
+
     /// Verifies if anything was actually set.
     pub const fn is_empty(&self) -> bool {
         self.prefix.is_empty() && self.suffix.is_empty()
     }
 
     /// Gets a reference to a prefix.
-    pub fn get_prefix(&self) -> &'a str {
+    pub const fn get_prefix(&self) -> &'a str {
         self.prefix
     }
 
     /// Gets a reference to a suffix.
-    pub fn get_suffix(&self) -> &'a str {
+    pub const fn get_suffix(&self) -> &'a str {
         self.suffix
     }
 }

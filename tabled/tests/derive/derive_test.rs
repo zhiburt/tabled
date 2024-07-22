@@ -1563,6 +1563,73 @@ fn test_format_enum_inline() {
     assert_eq!(Struct::Variant3.fields(), ["", "", "", "+"]);
 }
 
+#[test]
+#[allow(dead_code)]
+fn test_macros_in_display_with() {
+    #[derive(Tabled)]
+    #[tabled(rename_all = "camelCase")]
+    struct Country {
+        name: String,
+        #[tabled(display_with("display_capital", format!(".{}", self.capital)))]
+        capital: String,
+        #[tabled(display_with("display_perimeter", self))]
+        area_km2: f32,
+        #[tabled(display_with = "str::to_lowercase")]
+        national_currency: String,
+        national_currency_short: String,
+    }
+
+    fn display_perimeter(country: &Country) -> std::borrow::Cow<'_, str> {
+        if country.area_km2 > 1_000_000.0 {
+            "Very Big Land".into()
+        } else {
+            "Big Land".into()
+        }
+    }
+
+    fn display_capital(country: String) -> std::borrow::Cow<'static, str> {
+        format!("{country}!").into()
+    }
+}
+
+#[test]
+#[allow(dead_code)]
+fn test_macros_in_format() {
+    #[derive(Tabled)]
+    struct Country {
+        name: String,
+        #[tabled(format("{}", format!(".{}", self.capital)))]
+        capital: String,
+        #[tabled(format("{}", self.field1[0]))]
+        field1: [u8; 4],
+    }
+}
+
+#[test]
+#[allow(dead_code)]
+fn test_enum_format_1() {
+    #[derive(Tabled)]
+    struct User {
+        #[tabled(format("{}.{}.{}.{}", self.ip[0], self.ip[1], self.ip[2], self.ip[3]))]
+        ip: [u8; 4],
+        #[tabled(inline)]
+        password: Password,
+    }
+
+    #[derive(Tabled)]
+    enum Password {
+        #[tabled(inline)]
+        Mask {
+            #[tabled(format("t={}/{}", self.text, self.factor))]
+            text: String,
+            #[tabled(skip)]
+            factor: usize,
+        },
+        #[tabled(inline)]
+        Plain(#[tabled(rename = "password")] String),
+    }
+}
+
 mod __ {
     #[test]
     fn dont_import_the_trait() {

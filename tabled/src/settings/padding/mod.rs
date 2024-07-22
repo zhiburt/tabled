@@ -2,42 +2,19 @@
 //!
 //! # Example
 //!
+//!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Padding, Style, Modify, object::Cell}};
-//!
-//! let table = Table::new("2022".chars())
-//!     .with(Style::modern())
-//!     .with(Modify::new((2, 0)).with(Padding::new(1, 1, 2, 2)))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         "┌──────┐\n",
-//!         "│ char │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "├──────┤\n",
-//!         "│      │\n",
-//!         "│      │\n",
-//!         "│ 0    │\n",
-//!         "│      │\n",
-//!         "│      │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "├──────┤\n",
-//!         "│ 2    │\n",
-//!         "└──────┘",
-//!     ),
-//! );
+//! # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data)
+//!     .with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 //! ```
 //!
 //! [`Table`]: crate::Table
 
 use crate::{
     grid::{
-        ansi::ANSIStr,
         config::{CompactConfig, CompactMultilineConfig},
         config::{Indent, Sides},
     },
@@ -45,22 +22,52 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::grid::{ansi::ANSIBuf, config::ColoredConfig, config::Entity};
-#[cfg(feature = "std")]
-use crate::settings::CellOption;
+use crate::{
+    grid::{config::ColoredConfig, config::Entity},
+    settings::padding_expand::PaddingExpand,
+    settings::CellOption,
+};
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
+/// # Example
+///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
+/// use tabled::{
+///     Table,
+///     settings::{Padding, Style, Modify, object::Cell},
+/// };
+///
+/// let table = Table::new("2022".chars())
+///     .with(Style::modern())
+///     .with(Modify::new((2, 0)).with(Padding::new(1, 1, 2, 2)))
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "┌──────┐\n",
+///         "│ char │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "├──────┤\n",
+///         "│      │\n",
+///         "│      │\n",
+///         "│ 0    │\n",
+///         "│      │\n",
+///         "│      │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "├──────┤\n",
+///         "│ 2    │\n",
+///         "└──────┘",
+///     ),
+/// );
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Padding<C = ANSIStr<'static>> {
+pub struct Padding {
     indent: Sides<Indent>,
-    colors: Option<Sides<C>>,
 }
 
 impl Padding {
@@ -76,7 +83,6 @@ impl Padding {
                 Indent::spaced(top),
                 Indent::spaced(bottom),
             ),
-            colors: None,
         }
     }
 
@@ -87,9 +93,7 @@ impl Padding {
     pub const fn zero() -> Self {
         Self::new(0, 0, 0, 0)
     }
-}
 
-impl<Color> Padding<Color> {
     /// The function, sets a characters for the padding on an each side.
     pub const fn fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.indent.left.fill = left;
@@ -99,71 +103,41 @@ impl<Color> Padding<Color> {
         self
     }
 
-    /// The function, sets a characters for the padding on an each side.
-    pub fn colorize<C>(self, left: C, right: C, top: C, bottom: C) -> Padding<C> {
-        Padding {
-            indent: self.indent,
-            colors: Some(Sides::new(left, right, top, bottom)),
+    #[cfg(feature = "std")]
+    /// Construct's an PaddingExpand object.
+    pub const fn expand(horizontal: bool) -> PaddingExpand {
+        if horizontal {
+            PaddingExpand::Horizontal
+        } else {
+            PaddingExpand::Vertical
         }
     }
 }
 
 #[cfg(feature = "std")]
-impl<R, C> CellOption<R, ColoredConfig> for Padding<C>
-where
-    C: Into<ANSIBuf> + Clone,
-{
+impl<R> CellOption<R, ColoredConfig> for Padding {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let indent = self.indent;
         let pad = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
         cfg.set_padding(entity, pad);
-
-        if let Some(colors) = &self.colors {
-            let pad = Sides::new(
-                Some(colors.left.clone().into()),
-                Some(colors.right.clone().into()),
-                Some(colors.top.clone().into()),
-                Some(colors.bottom.clone().into()),
-            );
-            cfg.set_padding_color(entity, pad);
-        }
     }
 }
 
 #[cfg(feature = "std")]
-impl<R, D, C> TableOption<R, ColoredConfig, D> for Padding<C>
-where
-    C: Into<ANSIBuf> + Clone,
-{
+impl<R, D> TableOption<R, ColoredConfig, D> for Padding {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
     }
 }
 
-impl<R, D, C> TableOption<R, CompactConfig, D> for Padding<C>
-where
-    C: Into<ANSIStr<'static>> + Clone,
-{
+impl<R, D> TableOption<R, CompactConfig, D> for Padding {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_padding(self.indent);
-
-        if let Some(c) = self.colors {
-            let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
-            *cfg = cfg.set_padding_color(colors);
-        }
     }
 }
 
-impl<R, D, C> TableOption<R, CompactMultilineConfig, D> for Padding<C>
-where
-    C: Into<ANSIStr<'static>> + Clone,
-{
+impl<R, D> TableOption<R, CompactMultilineConfig, D> for Padding {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         cfg.set_padding(self.indent);
-
-        if let Some(c) = self.colors {
-            let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
-            cfg.set_padding_color(colors);
-        }
     }
 }

@@ -2,14 +2,14 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::{borrow::Cow, iter, marker::PhantomData};
+use std::{borrow::Cow, iter};
 
 use crate::{
     grid::{
         config::{ColoredConfig, Entity, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::{string_width, string_width_multiline},
+        util::string::{get_line_width, get_string_width},
     },
     settings::{
         measurement::Measurement,
@@ -44,7 +44,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
     suffix: Option<TruncateSuffix<'a>>,
     multiline: bool,
-    _priority: PhantomData<P>,
+    priority: P,
 }
 
 #[cfg(feature = "ansi")]
@@ -89,12 +89,12 @@ where
     W: Measurement<Width>,
 {
     /// Creates a [`Truncate`] object
-    pub fn new(width: W) -> Truncate<'static, W> {
+    pub const fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
             multiline: false,
             suffix: None,
-            _priority: PhantomData,
+            priority: PriorityNone::new(),
         }
     }
 }
@@ -115,8 +115,8 @@ impl<'a, W, P> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
             multiline: self.multiline,
+            priority: self.priority,
             suffix: Some(suff),
-            _priority: PhantomData,
         }
     }
 
@@ -128,18 +128,18 @@ impl<'a, W, P> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
             multiline: self.multiline,
+            priority: self.priority,
             suffix: Some(suff),
-            _priority: PhantomData,
         }
     }
 
     /// Use trancate logic per line, not as a string as a whole.
-    pub fn multiline(self) -> Truncate<'a, W, P> {
+    pub fn multiline(self, on: bool) -> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
-            multiline: true,
+            multiline: on,
             suffix: self.suffix,
-            _priority: self._priority,
+            priority: self.priority,
         }
     }
 
@@ -152,8 +152,8 @@ impl<'a, W, P> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
             multiline: self.multiline,
+            priority: self.priority,
             suffix: Some(suff),
-            _priority: PhantomData,
         }
     }
 }
@@ -167,19 +167,19 @@ impl<'a, W, P> Truncate<'a, W, P> {
     ///
     /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
     /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
-    pub fn priority<PP: Peaker>(self) -> Truncate<'a, W, PP> {
+    pub fn priority<PP: Peaker>(self, priority: PP) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
             multiline: self.multiline,
             suffix: self.suffix,
-            _priority: PhantomData,
+            priority,
         }
     }
 }
 
 impl Truncate<'_, (), ()> {
     /// Truncate a given string
-    pub fn truncate_text(text: &str, width: usize) -> Cow<'_, str> {
+    pub fn truncate(text: &str, width: usize) -> Cow<'_, str> {
         truncate_text(text, width, "", false)
     }
 }
@@ -216,7 +216,7 @@ where
 
             let text = records.get_text(pos);
 
-            let cell_width = string_width_multiline(text);
+            let cell_width = get_string_width(text);
             if available >= cell_width {
                 continue;
             }
@@ -284,7 +284,7 @@ fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool 
 }
 
 fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str>, usize) {
-    let suffix_length = string_width(&suffix.text);
+    let suffix_length = get_line_width(&suffix.text);
     if width > suffix_length {
         return (Cow::Borrowed(suffix.text.as_ref()), width - suffix_length);
     }
@@ -333,10 +333,16 @@ where
             try_color: s.try_color,
         });
 
-        let priority = P::create();
         let multiline = self.multiline;
         let widths = truncate_total_width(
-            records, cfg, widths, total, width, priority, suffix, multiline,
+            records,
+            cfg,
+            widths,
+            total,
+            width,
+            self.priority,
+            suffix,
+            multiline,
         );
 
         dims.set_widths(widths);

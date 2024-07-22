@@ -13,17 +13,17 @@ use tabled::{settings::Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
-    name: &'static str,
-    based_on: &'static str,
+    name: String,
+    based_on: String,
     is_active: bool,
     is_cool: bool,
 }
 
 impl Distribution {
-    fn new(name: &'static str, based_on: &'static str, is_active: bool, is_cool: bool) -> Self {
+    fn new(name: &str, based: &str, is_active: bool, is_cool: bool) -> Self {
         Self {
-            name,
-            based_on,
+            name: name.to_string(),
+            based_on: based.to_string(),
             is_active,
             is_cool,
         }
@@ -31,7 +31,7 @@ impl Distribution {
 }
 
 fn main() {
-    let data = [
+    let data = vec![
         Distribution::new("Manjaro", "Arch", true, true),
         Distribution::new("Arch", "None", true, true),
         Distribution::new("Debian", "None", true, true),
@@ -44,7 +44,7 @@ fn main() {
         .name(None)
         .build();
 
-    table.with(Style::modern());
+    table.with(Style::modern_rounded());
 
     println!("{table}");
 }

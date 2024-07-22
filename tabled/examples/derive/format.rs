@@ -7,28 +7,31 @@ use tabled::{settings::Style, Table, Tabled};
 struct Phone {
     #[tabled(format = "code {}")]
     code: String,
-    #[tabled(skip)]
-    alias: String,
-    #[tabled(format("{}/{}", str::to_lowercase(&self.alias), self.number))]
+    #[tabled(rename = "")]
+    #[tabled(format("{}/{}", self.alias.join(","), self.number))]
     number: String,
+    #[tabled(skip)]
+    alias: Vec<String>,
 }
 
 impl Phone {
-    fn new(code: &str, alias: &str, number: &str) -> Self {
+    fn new(code: &str, number: &str, alias: &[&str]) -> Self {
+        let alias = alias.iter().map(ToString::to_string).collect();
+
         Self {
             code: code.to_string(),
-            alias: alias.to_string(),
             number: number.to_string(),
+            alias,
         }
     }
 }
 
 fn main() {
     let data = [
-        Phone::new("AFN", "Mate", "11111111"),
-        Phone::new("CAD", "Sara", "22222222"),
-        Phone::new("RUS", "Cris", "33333333"),
-        Phone::new("BLR", "Ham", "44444444"),
+        Phone::new("AFN", "11111111", &["Mate"]),
+        Phone::new("CAD", "22222222", &["Sara", "Football", "meetup"]),
+        Phone::new("RUS", "33333333", &["Cris", "meetup"]),
+        Phone::new("BLR", "44444444", &["Ham", "meetup"]),
     ];
 
     let mut table = Table::new(data);

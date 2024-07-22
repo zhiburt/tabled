@@ -2,13 +2,11 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::marker::PhantomData;
-
 use crate::{
     grid::config::{ColoredConfig, Entity},
     grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_lines, string_width_multiline},
+    grid::util::string::{get_lines, get_string_width},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -57,7 +55,7 @@ use super::util::get_table_widths_with_total;
 pub struct MinWidth<W = usize, P = PriorityNone> {
     width: W,
     fill: char,
-    _priority: PhantomData<P>,
+    priority: P,
 }
 
 impl<W> MinWidth<W>
@@ -65,11 +63,11 @@ where
     W: Measurement<Width>,
 {
     /// Creates a new instance of [`MinWidth`].
-    pub fn new(width: W) -> Self {
+    pub const fn new(width: W) -> Self {
         Self {
             width,
             fill: ' ',
-            _priority: PhantomData,
+            priority: PriorityNone::new(),
         }
     }
 }
@@ -92,11 +90,11 @@ impl<W, P> MinWidth<W, P> {
     ///
     /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
     /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
-    pub fn priority<PP: Peaker>(self) -> MinWidth<W, PP> {
+    pub fn priority<PP: Peaker>(self, peacker: PP) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,
             width: self.width,
-            _priority: PhantomData,
+            priority: peacker,
         }
     }
 }
@@ -121,7 +119,7 @@ where
             }
 
             let cell = records.get_text(pos);
-            let cell_width = string_width_multiline(cell);
+            let cell_width = get_string_width(cell);
             if cell_width >= width {
                 continue;
             }
@@ -161,7 +159,7 @@ where
             return;
         }
 
-        let widths = get_increase_list(widths, necessary_width, total_width, P::create());
+        let widths = get_increase_list(widths, necessary_width, total_width, self.priority);
         dims.set_widths(widths);
     }
 
@@ -193,12 +191,12 @@ where
 }
 
 fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    use crate::grid::util::string::string_width;
+    use crate::grid::util::string::get_line_width;
     use std::{borrow::Cow, iter::repeat};
 
     get_lines(s)
         .map(|line| {
-            let length = string_width(&line);
+            let length = get_line_width(&line);
 
             if length < width {
                 let mut line = line.into_owned();

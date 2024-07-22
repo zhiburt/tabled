@@ -1,6 +1,8 @@
 #![cfg(feature = "std")]
 
-use tabled::settings::{object::Cell, Border, Highlight, Margin, Modify, Span, Style, Width};
+use tabled::settings::{
+    object::Cell, Border, Highlight, Margin, MarginColor, Modify, Span, Style, Width,
+};
 
 use crate::matrix::Matrix;
 use testing_table::{is_lines_equal, static_table, test_table};
@@ -102,10 +104,7 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(
-        tabled::grid::util::string::string_width_multiline(&table),
-        50
-    );
+    assert_eq!(tabled::grid::util::string::get_string_width(&table), 50);
     assert_eq!(
         table,
         static_table!(
@@ -144,7 +143,8 @@ fn margin_color_test_not_colored_feature() {
 
     let table = Matrix::new(3, 3)
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
+        .with(MarginColor::new(
             Color::BG_GREEN,
             Color::BG_YELLOW,
             Color::BG_RED,
@@ -173,7 +173,8 @@ fn margin_color_test_not_colored_feature() {
 fn margin_color_test() {
     let table = Matrix::new(3, 3)
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
+        .with(MarginColor::new(
             Color::try_from(" ".red().bold().to_string()).unwrap(),
             Color::try_from(" ".green().to_string()).unwrap(),
             Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
