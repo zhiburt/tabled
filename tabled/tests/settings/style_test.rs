@@ -2297,8 +2297,8 @@ test_table!(
         let m = Matrix::new(3, 3);
 
         let mut style = Theme::from_style(Style::ascii());
-        style.insert_horizontal_line(1, HorizontalLine::full('8', '8', '8', '8').into());
-        style.insert_vertical_line(1, VerticalLine::full('*', 'x', 'c', '2').into());
+        style.insert_horizontal_line(1, HorizontalLine::full('8', '8', '8', '8'));
+        style.insert_vertical_line(1, VerticalLine::full('*', 'x', 'c', '2'));
 
         m.with(style)
     },

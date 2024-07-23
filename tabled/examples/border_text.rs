@@ -35,7 +35,7 @@ fn main() {
 
     let mut theme = Theme::from_style(Style::modern());
     theme.remove_horizontal_lines();
-    theme.insert_horizontal_line(1, hline.into());
+    theme.insert_horizontal_line(1, hline);
 
     let table = Table::new(data)
         .with(theme)
