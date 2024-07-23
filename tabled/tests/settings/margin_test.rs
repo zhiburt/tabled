@@ -5,7 +5,7 @@ use tabled::settings::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{is_lines_equal, static_table, test_table};
+use testing_table::{is_width_eq, static_table, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, std::convert::TryFrom, tabled::settings::Color};
@@ -92,7 +92,7 @@ fn table_with_margin_and_min_width() {
             "^^^^^^^^^^^^^^^^^^^^"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 }
 
 #[test]

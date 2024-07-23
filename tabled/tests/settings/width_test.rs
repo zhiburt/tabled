@@ -12,7 +12,7 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{is_lines_equal, static_table, test_table};
+use testing_table::{is_width_eq, static_table, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{ansi_str::AnsiStr, owo_colors::OwoColorize, tabled::settings::style::HorizontalLine};
@@ -95,7 +95,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 17 + 2 + 2));
+        assert!(is_width_eq(&table, 17 + 2 + 2));
 
         table
     },
@@ -114,7 +114,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 17 + 2 + 2));
+        assert!(is_width_eq(&table, 17 + 2 + 2));
 
         table
     },
@@ -133,7 +133,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 17 + 2 + 2));
+        assert!(is_width_eq(&table, 17 + 2 + 2));
 
         table
     },
@@ -153,7 +153,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 17 + 2 + 2));
+        assert!(is_width_eq(&table, 17 + 2 + 2));
 
         table
     },
@@ -174,7 +174,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 17 + 2 + 2));
+        assert!(is_width_eq(&table, 17 + 2 + 2));
 
         table
     },
@@ -193,7 +193,7 @@ test_table!(
             .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true)))
             .to_string();
 
-        assert!(is_lines_equal(&table, 8));
+        assert!(is_width_eq(&table, 8));
 
         table
     },
@@ -922,7 +922,7 @@ fn total_width_big_with_panel() {
         .with(MinWidth::new(80))
         .to_string();
 
-    assert!(is_lines_equal(&table, 80));
+    assert!(is_width_eq(&table, 80));
     assert_eq!(
         table,
         static_table!(
@@ -975,7 +975,7 @@ fn total_width_small() {
             "|  |  |  | 2 |"
         )
     );
-    assert!(is_lines_equal(&table, 14));
+    assert!(is_width_eq(&table, 14));
 }
 
 #[test]
@@ -1017,7 +1017,7 @@ fn total_width_small_with_panel() {
             "|  | 2- | 2- | 2-2 |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 
     let table = Matrix::iter(Vec::<usize>::new())
         .with(Panel::horizontal(0, "Hello World"))
@@ -1034,7 +1034,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!("+---+" "|Hel|" "+---+" "|usi|" "+---+")
     );
-    assert!(is_lines_equal(&table, 5));
+    assert!(is_width_eq(&table, 5));
 
     let table = Matrix::table(1, 2)
         .with(Panel::horizontal(0, "Hello World"))
@@ -1053,7 +1053,7 @@ fn total_width_small_with_panel() {
             "|  |  0-0  |  0-1  |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
@@ -1074,7 +1074,7 @@ fn total_width_small_with_panel() {
             "|  | 2- | 2- | 2-2 |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
@@ -1095,7 +1095,7 @@ fn total_width_small_with_panel() {
             "|  |  |  |  |"
         )
     );
-    assert!(is_lines_equal(&table, 13));
+    assert!(is_width_eq(&table, 13));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
@@ -1116,7 +1116,7 @@ fn total_width_small_with_panel() {
             "|  |  |  | 2 |"
         )
     );
-    assert!(is_lines_equal(&table, 14));
+    assert!(is_width_eq(&table, 14));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
@@ -1137,7 +1137,7 @@ fn total_width_small_with_panel() {
             "|  |  |  | 2 |"
         )
     );
-    assert!(is_lines_equal(&table, 14));
+    assert!(is_width_eq(&table, 14));
 }
 
 #[cfg(feature = "ansi")]
@@ -1166,7 +1166,7 @@ fn total_width_wrapping() {
             "|  | 0  | 1  |     |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 
     let table = Matrix::new(3, 3)
         .insert((3, 2), "some loong string")
@@ -1189,7 +1189,7 @@ fn total_width_wrapping() {
             "|  |  | string  |  |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 }
 
 #[test]
@@ -1219,7 +1219,7 @@ fn total_width_small_with_panel_using_wrapping() {
             "|  | 0  | 1  |     |"
         )
     );
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
@@ -1254,7 +1254,7 @@ fn total_width_small_with_panel_using_wrapping() {
             "|  |  |  | 2 |"
         )
     );
-    assert!(is_lines_equal(&table, 14));
+    assert!(is_width_eq(&table, 14));
 
     let table = Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
@@ -1289,7 +1289,7 @@ fn total_width_small_with_panel_using_wrapping() {
             "|  |  |  | 2 |"
         )
     );
-    assert!(is_lines_equal(&table, 14));
+    assert!(is_width_eq(&table, 14));
 }
 
 #[test]
@@ -1312,7 +1312,7 @@ fn max_width_with_span() {
             " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 36));
+    assert!(is_width_eq(&table.to_string(), 36));
 
     table.with(Width::truncate(20));
 
@@ -1326,7 +1326,7 @@ fn max_width_with_span() {
             "  | 2-0 | 2-1 | 2-2 "
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 20));
+    assert!(is_width_eq(&table.to_string(), 20));
 
     table.with(Width::truncate(10));
 
@@ -1340,7 +1340,7 @@ fn max_width_with_span() {
             "  |  |  |  "
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 11));
+    assert!(is_width_eq(&table.to_string(), 11));
 }
 
 #[test]
@@ -1406,7 +1406,7 @@ fn min_width_works_with_right_alignment() {
             r#"|                                                |"#
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
+    assert!(is_width_eq(&table.to_string(), 50));
 
     table
         .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
@@ -1429,7 +1429,7 @@ fn min_width_works_with_right_alignment() {
             r#"|                                                |"#
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
+    assert!(is_width_eq(&table.to_string(), 50));
 
     let mut table = Matrix::iter([json]);
     table
@@ -1481,7 +1481,7 @@ fn min_width_works_with_right_alignment() {
             r#"|                                                |"#
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
+    assert!(is_width_eq(&table.to_string(), 50));
 
     table
         .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
@@ -1504,7 +1504,7 @@ fn min_width_works_with_right_alignment() {
             r#"|                                                |"#
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
+    assert!(is_width_eq(&table.to_string(), 50));
 }
 
 #[test]
@@ -1532,7 +1532,7 @@ fn min_width_with_span_1() {
             "|                                   2                                    |            3            |"
         )
     );
-    assert!(is_lines_equal(&table, 100));
+    assert!(is_width_eq(&table, 100));
 }
 
 #[test]
@@ -1825,7 +1825,7 @@ fn max_width_truncate_priority_max() {
         .with(Width::truncate(35).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 35));
+    assert!(is_width_eq(&table, 35));
     assert_eq!(
         table,
         static_table!(
@@ -1843,7 +1843,7 @@ fn max_width_truncate_priority_max() {
         .with(Width::truncate(20).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
     assert_eq!(
         table,
         static_table!(
@@ -1861,7 +1861,7 @@ fn max_width_truncate_priority_max() {
         .with(Width::truncate(0).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 13));
+    assert!(is_width_eq(&table, 13));
     assert_eq!(
         table,
         static_table!(
@@ -1883,7 +1883,7 @@ fn max_width_truncate_priority_max_with_span() {
         .with(Width::truncate(15).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 15));
+    assert!(is_width_eq(&table, 15));
     assert_eq!(
         table,
         static_table!(
@@ -1904,7 +1904,7 @@ fn max_width_wrap_priority_max() {
         .with(Width::wrap(35).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 35));
+    assert!(is_width_eq(&table, 35));
     assert_eq!(
         table,
         static_table!(
@@ -1926,7 +1926,7 @@ fn max_width_wrap_priority_max() {
         .with(Width::wrap(20).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
     assert_eq!(
         table,
         static_table!(
@@ -1961,7 +1961,7 @@ fn max_width_wrap_priority_max() {
         .with(Width::wrap(0).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 13));
+    assert!(is_width_eq(&table, 13));
     assert_eq!(
         table,
         static_table!(
@@ -1983,7 +1983,7 @@ fn max_width_wrap_priority_max_with_span() {
         .with(Width::wrap(15).priority(PriorityMax))
         .to_string();
 
-    assert!(is_lines_equal(&table, 15));
+    assert!(is_width_eq(&table, 15));
     assert_eq!(
         table,
         static_table!(
@@ -2021,7 +2021,7 @@ fn max_width_truncate_priority_min() {
         .with(Width::truncate(35).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 35));
+    assert!(is_width_eq(&table, 35));
     assert_eq!(
         table,
         static_table!(
@@ -2039,7 +2039,7 @@ fn max_width_truncate_priority_min() {
         .with(Width::truncate(20).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
     assert_eq!(
         table,
         static_table!(
@@ -2057,7 +2057,7 @@ fn max_width_truncate_priority_min() {
         .with(Width::truncate(0).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 13));
+    assert!(is_width_eq(&table, 13));
     assert_eq!(
         table,
         static_table!(
@@ -2079,7 +2079,7 @@ fn max_width_truncate_priority_min_with_span() {
         .with(Width::truncate(15).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 15));
+    assert!(is_width_eq(&table, 15));
     assert_eq!(
         table,
         static_table!(
@@ -2098,7 +2098,7 @@ fn max_width_truncate_priority_min_with_span() {
         .with(Width::truncate(17).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 17));
+    assert!(is_width_eq(&table, 17));
     assert_eq!(
         table,
         static_table!(
@@ -2119,7 +2119,7 @@ fn max_width_wrap_priority_min() {
         .with(Width::wrap(35).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 35));
+    assert!(is_width_eq(&table, 35));
     assert_eq!(
         table,
         static_table!(
@@ -2138,7 +2138,7 @@ fn max_width_wrap_priority_min() {
         .with(Width::wrap(20).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 20));
+    assert!(is_width_eq(&table, 20));
     assert_eq!(
         table,
         static_table!(
@@ -2160,7 +2160,7 @@ fn max_width_wrap_priority_min() {
         .with(Width::wrap(0).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 13));
+    assert!(is_width_eq(&table, 13));
     assert_eq!(
         table,
         static_table!(
@@ -2182,7 +2182,7 @@ fn max_width_wrap_priority_min_with_span() {
         .with(Width::wrap(15).priority(PriorityMin))
         .to_string();
 
-    assert!(is_lines_equal(&table, 15));
+    assert!(is_width_eq(&table, 15));
     assert_eq!(
         table,
         static_table!(
@@ -2253,7 +2253,7 @@ fn max_width_tab_0() {
             .with(Width::wrap(60))
             .to_string();
 
-    assert!(is_lines_equal(&table, 60));
+    assert!(is_width_eq(&table, 60));
     assert_eq!(
         table,
         static_table!(
@@ -2524,7 +2524,7 @@ mod derived {
                 "| .4  |             |        |                          |"
             )
         );
-        assert!(is_lines_equal(&table, 57));
+        assert!(is_width_eq(&table, 57));
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
@@ -2547,7 +2547,7 @@ mod derived {
                 "| .4  |             |        |                          |"
             )
         );
-        assert!(is_lines_equal(&table, 57));
+        assert!(is_width_eq(&table, 57));
     }
 
     #[cfg(feature = "ansi")]
