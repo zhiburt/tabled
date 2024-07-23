@@ -10,10 +10,10 @@
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 You can do a lot of things with the library.\
-If it doesn't do something which you feel it should or it's not clear how to, please file an issue.
+If it does not do something which you feel it should or it is not clear how to, please file an issue.
 
 This README contains a lot of information but it might be not complete,\
-you can find more examples in an **[examples](/tabled/examples/)** folder.
+you can find more examples in the **[examples](/tabled/examples/)** folder.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show.gif">
@@ -113,17 +113,17 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
 
 To print a list of structs or enums as a table, there are 2 ways.
 
-* Using a builder method, to build a table step by step
-* Implement a `Tabled` trait for your type (or annotate your type with a derive macro) and use a iterator of this type.
+* Using a builder pattern to build a table step by step.
+* Implement a `Tabled` trait for your type (or annotate your type with a derive macro) and use an iterator of this type.
 
-A builder method gets handy, when a data schema is unknown,\
+A builder pattern gets handy when a data schema is unknown,
 while a typed struct is useful in cases where we know the data structure beforehand.
 
 Notice that there are a lot of [*mods*](#settings) available for your tables,
 as well as helpers such as [*derive macros*](#derive) and [*proc macros*](#macros).
 
-Below are shown both of these methods.\
-The example below is demonstrates a derive method.
+Both methods are demonstrated below,
+starting with the derive method.
 
 ```rust
 use tabled::{Tabled, Table};
@@ -168,7 +168,7 @@ let expected = "+------+----------------+---------------+\n\
 assert_eq!(table, expected);
 ```
 
-The next example shows a builder example.
+The next example illustrates a builder pattern.
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
@@ -214,16 +214,17 @@ assert_eq!(table, expected);
 
 ## Settings
 
-This section lists the set of settings you can apply to your table.
+This section lists the settings you can apply to your table.
 Most of the settings are leveraged by `Table::with` and `Table::modify`.
 
 ### Style
 
-#### Styles
+`Style` sole purpouse is to configure table look.
+`Style` primarily usage is in `const`/`static` context.
+If you want to peak style at runtime `Theme` might be better suited for it.
 
-There are a list of ready to use styles.
-Each style can be customized.
-A custom style also can be created from scratch.
+Any `Style` can be customized.
+As well as a custom `Style` can be created from scratch.
 
 A style can be used like this.
 
@@ -234,7 +235,10 @@ let mut table = Table::new(&data);
 table.with(Style::psql());
 ```
 
-Below is a rendered list of the preconfigured styles.
+#### Styles
+
+There are numerous preconfigured styles.
+Below there is a rendered list of them.
 
 If you think that there's some valuable style to be added,
 please open an issue.
@@ -381,10 +385,15 @@ Go   Rob Pike       2009
 #### Style customization
 
 You can modify existing styles to fit your needs.
-Notice that all modifications are done at compile time.
+Mind that all modifications are done at compile time.
 
-Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Style.html) for
-more customization options.
+Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Style.html)
+for more customization options.
+
+If you can't make desicions at compile time - use `Theme`.
+
+An example for castomization,
+where we remove all vertical and horizontal lines but adding single line.
 
 ```rust
 use tabled::settings::{Style, HorizontalLine, VerticalLine};
@@ -396,7 +405,7 @@ let style = Style::modern()
     .remove_vertical();
 ```
 
-The style will look like the following for the first example.
+This style will look like the following:
 
 ```rust
 ┌──────┬───────────────────────────────┐
@@ -408,21 +417,22 @@ The style will look like the following for the first example.
 └──────┴───────────────────────────────┘
 ```
 
-Also you can build your own one from scratch, and doing so is not always possible at compile time,
-so you may use `Theme` object to do that.
+As was said doing customization at `const`ant context is not always a best choise,
+you may use `Theme` object to do that.
 
-Notice that the `Theme` is quite powerful by itself, you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
+`Theme` is quite powerful by itself,
+you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
 
 ```rust
 use tabled::grid::config::{Border, HorizontalLine};
 use tabled::settings::Theme;
 
 let mut style = Theme::default();
-style.set_lines_horizontal(HashMap::from_iter([(1, HorizontalLine::full('-', '-', '+', '+'))]));
+style.insert_horizontal_line(1, HorizontalLine::full('-', '-', '+', '+'));
 style.set_border_frame(Border::filled('+'));
 ```
 
-The style will look like the following.
+This style will look like the following:
 
 ```rust
 +++++++++++++++++++++++++++++++++++++++
@@ -2220,10 +2230,10 @@ println!("{table}");
 
 ### Semver
 
-> When you need to release a breaking change—any breaking change—you do it in a major version. Period. No excuses.
+> When you need to release a breaking change — any breaking change — you do it in a major version. Period. No excuses.
 
 We still do it.
-We often do break change on minor version bump.
+We often do breaking changes on minor version bump.
 So you probably shall not depend on minor version (like `0.7`).
 It's likely better to depend on constant version e.g. `=0.8.0`
 
@@ -2233,10 +2243,10 @@ Breaking MSRV considered to be a breaking change; but see [semver-note](#semver)
 
 ### Comparison
 
-Nowadays there's a few libraries for pretty tables.
+Nowadays there are a few libraries for pretty tables.
 Some may wonder why `tabled` is better or worse than others libraries?
 
-I hope `tabled` does it's job well, but at the end of the day you probably need to decide for yourself.
+I hope `tabled` does its job well, but at the end of the day you probably need to decide for yourself.
 If you have any ideas for an enhancement or have a question about `tabled` please file an issue.
 
 Below you will find a list of crates which do similar things or do something which `tabled` doesn't.
