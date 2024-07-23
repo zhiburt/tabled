@@ -237,7 +237,12 @@ impl Theme {
     }
 
     /// Insert a vertical line into specific column location.
-    pub fn insert_vertical_line(&mut self, line: usize, vertical: VerticalLine<char>) {
+    pub fn insert_vertical_line<L>(&mut self, line: usize, vertical: L)
+    where
+        L: Into<VerticalLine<char>>,
+    {
+        let vertical = vertical.into();
+
         match &mut self.lines_verticals {
             Some(verticals) => {
                 let _ = verticals.insert(line, vertical);
@@ -247,7 +252,12 @@ impl Theme {
     }
 
     /// Insert a horizontal line to a specific row location.
-    pub fn insert_horizontal_line(&mut self, line: usize, horizontal: HorizontalLine<char>) {
+    pub fn insert_horizontal_line<L>(&mut self, line: usize, horizontal: L)
+    where
+        L: Into<HorizontalLine<char>>,
+    {
+        let horizontal = horizontal.into();
+
         match &mut self.lines_horizontals {
             Some(horizontals) => {
                 let _ = horizontals.insert(line, horizontal);
@@ -268,6 +278,36 @@ impl Theme {
         self.lines_horizontals
             .as_ref()
             .and_then(|list| list.get(&row))
+    }
+
+    /// Verifies if borders has left line set on the frame.
+    pub const fn borders_has_left(&self) -> bool {
+        self.chars.has_left()
+    }
+
+    /// Verifies if borders has right line set on the frame.
+    pub const fn borders_has_right(&self) -> bool {
+        self.chars.has_right()
+    }
+
+    /// Verifies if borders has top line set on the frame.
+    pub const fn borders_has_top(&self) -> bool {
+        self.chars.has_top()
+    }
+
+    /// Verifies if borders has bottom line set on the frame.
+    pub const fn borders_has_bottom(&self) -> bool {
+        self.chars.has_bottom()
+    }
+
+    /// Verifies if borders has horizontal lines set.
+    pub const fn borders_has_horizontal(&self) -> bool {
+        self.chars.has_horizontal()
+    }
+
+    /// Verifies if borders has vertical lines set.
+    pub const fn borders_has_vertical(&self) -> bool {
+        self.chars.has_vertical()
     }
 
     const fn gen(
