@@ -86,19 +86,17 @@ impl<R, D, C> TableOption<R, C, D> for EmptySettings {
     fn change(self, _: &mut R, _: &mut C, _: &mut D) {}
 }
 
-fn combine_entity(x1: Entity, x2: Entity) -> Entity {
+pub(crate) fn combine_entity(x1: Entity, x2: Entity) -> Entity {
     use Entity::*;
+
     match (x1, x2) {
-        (_, Global) => Global,
-        (Global, _) => Global,
-        (Column(_), Row(_)) => Global,
-        (Column(a), Column(_)) => Column(a),
-        (Column(a), Cell(_, _)) => Column(a),
-        (Row(_), Column(_)) => Global,
-        (Row(a), Row(_)) => Row(a),
-        (Row(a), Cell(_, _)) => Row(a),
-        (Cell(_, _), Column(a)) => Column(a),
-        (Cell(_, _), Row(a)) => Row(a),
-        (Cell(a, b), Cell(_, _)) => Cell(a, b),
+        (Column(a), Column(b)) if a == b => Column(a),
+        (Column(a), Cell(_, b)) if a == b => Column(a),
+        (Row(a), Row(b)) if a == b => Row(a),
+        (Row(a), Cell(b, _)) if a == b => Row(a),
+        (Cell(_, a), Column(b)) if a == b => Column(a),
+        (Cell(a, _), Row(b)) if a == b => Row(a),
+        (Cell(a, b), Cell(a1, b1)) if a == a1 && b == b1 => Cell(a, b),
+        _ => Global,
     }
 }

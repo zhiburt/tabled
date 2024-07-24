@@ -5,9 +5,9 @@
 
 use tabled::{
     settings::{
-        object::{Cell, Segment},
-        style::Style,
-        Alignment, Border, Extract, Highlight, Modify, Panel,
+        object::Rows,
+        style::{BorderSpanCorrection, Style},
+        Alignment, Border, Extract, Highlight, Padding, Panel,
     },
     Table, Tabled,
 };
@@ -37,21 +37,24 @@ fn main() {
 
     let committers_table = Table::new(committers)
         .with(Panel::header("Contributors"))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(Alignment::center())
+        .with(BorderSpanCorrection)
         .to_string();
 
     let issues_table = Table::new(issuers)
         .with(Panel::header("Issuers"))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(Alignment::center())
+        .with(BorderSpanCorrection)
         .to_string();
 
-    let mut a_welcome_table =
-        Table::new([String::from("Thank You"), committers_table, issues_table]);
-    a_welcome_table
+    let mut welcome_table = Table::new([(committers_table, issues_table)]);
+    welcome_table
         .with(Extract::rows(1..))
+        .with(Panel::header("Thank You"))
         .with(Style::ascii().remove_horizontal())
+        .modify(Rows::new(1..), Padding::new(1, 1, 1, 0))
         .with(Alignment::center())
-        .with(Highlight::border(Cell::new(0, 0), Border::filled('*')));
+        .with(Highlight::border(Rows::first(), Border::filled('*')));
 
-    println!("{a_welcome_table}");
+    println!("{welcome_table}");
 }

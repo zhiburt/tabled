@@ -31,12 +31,12 @@ impl<W> CellHeightLimit<W> {
     }
 
     /// Set's a priority by which the limit logic will be applied.
-    pub fn priority<P>(self) -> TableHeightLimit<W, P>
+    pub fn priority<P>(self, priority: P) -> TableHeightLimit<W, P>
     where
         P: Peaker,
         W: Measurement<Height>,
     {
-        TableHeightLimit::new(self.height).priority::<P>()
+        TableHeightLimit::new(self.height).priority(priority)
     }
 }
 

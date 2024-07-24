@@ -12,26 +12,28 @@
 use tabled::{Table, Tabled};
 
 #[derive(Tabled)]
-enum Contact<'a> {
-    #[tabled(inline("telegram::"))]
+enum Contact {
+    #[tabled(inline)]
     Telegram {
-        username: &'a str,
-        #[tabled(inline("telegram::"))]
-        number: Number,
+        #[tabled(inline("tg::"))]
+        num: Number,
     },
     #[tabled(inline)]
     Local(#[tabled(inline("local::"))] Number),
 }
 
-#[derive(tabled::Tabled)]
+#[derive(Tabled)]
 struct Number {
-    number: &'static str,
+    number: String,
     code: usize,
 }
 
 impl Number {
-    fn new(number: &'static str, code: usize) -> Self {
-        Self { number, code }
+    fn new(number: &str, code: usize) -> Self {
+        Self {
+            number: number.to_string(),
+            code,
+        }
     }
 }
 
@@ -39,8 +41,7 @@ fn main() {
     let data = [
         Contact::Local(Number::new("654321", 123)),
         Contact::Telegram {
-            username: "no2Presley",
-            number: Number::new("123456", 123),
+            num: Number::new("123456", 123),
         },
     ];
 

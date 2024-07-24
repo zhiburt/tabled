@@ -1229,6 +1229,32 @@ test_table!(
     "+------+-----++++++++++++++++++++++++++++------------+------------+------------+------------+------------+-----------+-----------+------------+------------+-----------+"
 );
 
+test_table!(
+    test_span_issue_0,
+    Table::new([["just 1 column"; 5]; 5])
+        .modify((3, 1), "span 2 columns\nspan\n2\ncolumns")
+        .modify((3, 1), Span::row(2))
+        .modify((3, 1), Span::column(2))
+        .with(Style::modern())
+        .with(BorderSpanCorrection)
+        .with(Alignment::center_vertical())
+        .to_string(),
+    "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐"
+    "│ 0             │ 1             │ 2             │ 3             │ 4             │"
+    "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤"
+    "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │ just 1 column │"
+    "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤"
+    "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │ just 1 column │"
+    "├───────────────┼───────────────┴───────────────┼───────────────┼───────────────┤"
+    "│ just 1 column │ span 2 columns                │ just 1 column │ just 1 column │"
+    "│               │ span                          │               │               │"
+    "├───────────────┤ 2                             ├───────────────┼───────────────┤"
+    "│ just 1 column │ columns                       │ just 1 column │ just 1 column │"
+    "├───────────────┼───────────────┬───────────────┼───────────────┼───────────────┤"
+    "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │ just 1 column │"
+    "└───────────────┴───────────────┴───────────────┴───────────────┴───────────────┘"
+);
+
 fn create_span_list(count_rows: usize, count_cols: usize) -> impl Iterator<Item = Position> {
     (0..count_rows).flat_map(move |r| (0..count_cols).map(move |c| (r, c)))
 }

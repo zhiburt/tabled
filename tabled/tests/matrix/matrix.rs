@@ -7,7 +7,7 @@ use std::{
 use tabled::{
     grid::config::ColoredConfig,
     grid::dimension::CompleteDimensionVecRecords,
-    grid::records::vec_records::{CellInfo, VecRecords},
+    grid::records::vec_records::{Text, VecRecords},
     settings::{object::Segment, Alignment, Modify, TableOption},
     Table, Tabled,
 };
@@ -93,11 +93,8 @@ impl Matrix {
 
     pub fn with<O>(self, opt: O) -> Table
     where
-        for<'a> O: TableOption<
-            VecRecords<CellInfo<String>>,
-            ColoredConfig,
-            CompleteDimensionVecRecords<'a>,
-        >,
+        for<'a> O:
+            TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'a>>,
     {
         let mut table = self.to_table();
         table.with(opt);

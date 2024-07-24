@@ -1,10 +1,10 @@
 mod macros;
 
-pub fn is_lines_equal(s: &str, width: usize) -> bool {
-    string_width_multiline(s) == width
+pub fn is_width_eq(s: &str, width: usize) -> bool {
+    get_string_width(s) == width
 }
 
-fn string_width_multiline(text: &str) -> usize {
+fn get_string_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
         text.lines()
@@ -15,12 +15,12 @@ fn string_width_multiline(text: &str) -> usize {
 
     #[cfg(feature = "ansi")]
     {
-        text.lines().map(string_width).max().unwrap_or(0)
+        text.lines().map(get_line_width).max().unwrap_or(0)
     }
 }
 
 #[allow(dead_code)]
-fn string_width(text: &str) -> usize {
+fn get_line_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
         unicode_width::UnicodeWidthStr::width(text)

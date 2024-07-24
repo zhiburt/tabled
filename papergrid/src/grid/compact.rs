@@ -12,7 +12,7 @@ use crate::{
     config::{AlignmentHorizontal, Borders, HorizontalLine, Indent, Sides},
     dimension::Dimension,
     records::{IntoRecords, Records},
-    util::string::string_width,
+    util::string::get_line_width,
 };
 
 use crate::config::compact::CompactConfig;
@@ -563,7 +563,7 @@ where
 {
     let available = width - (padding.left.space.size + padding.right.space.size);
 
-    let text_width = string_width(text);
+    let text_width = get_line_width(text);
     let (left, right) = if available > text_width {
         calculate_indent(alignment, text_width, available)
     } else {

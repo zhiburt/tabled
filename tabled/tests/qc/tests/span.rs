@@ -3,13 +3,13 @@ use quickcheck_macros::quickcheck;
 
 use tabled::{
     builder::Builder,
-    grid::util::string::{string_width, string_width_multiline},
+    grid::util::string::{get_line_width, get_string_width},
     settings::{Modify, Span, Style},
     Table,
 };
 
 #[quickcheck]
-fn qc_table_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
+fn qc_tget_string_widthable_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
     let mut table = create_table(table_structure.rows);
     set_theme(&mut table, table_structure.theme);
     set_span_hspan(&mut table, &table_structure.row_span);
@@ -18,7 +18,7 @@ fn qc_table_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) 
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
+        assert_eq!(get_line_width(line), get_string_width(&output));
     }
 }
 
@@ -31,7 +31,7 @@ fn qc_table_is_consistent_with_hspan(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
+        assert_eq!(get_line_width(line), get_string_width(&output));
     }
 }
 
@@ -44,7 +44,7 @@ fn qc_table_is_consistent_with_vspan(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
+        assert_eq!(get_line_width(line), get_string_width(&output));
     }
 }
 
@@ -134,7 +134,7 @@ fn test_data_span_test() {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
+        assert_eq!(get_line_width(line), get_string_width(&output));
     }
 }
 

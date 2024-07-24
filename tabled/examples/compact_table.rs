@@ -4,6 +4,8 @@
 //! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
 //! flexibility for improved performance.
 
+#![allow(unused_variables)]
+
 use tabled::{settings::style::Style, tables::CompactTable};
 
 fn main() {
@@ -13,11 +15,11 @@ fn main() {
         ["Manjaro", "Arch", "true"],
     ];
 
-    let _table = CompactTable::new(data)
+    let table = CompactTable::new(data)
         .columns(3)
         .width([7, 5, 5])
         .with(Style::markdown());
 
     #[cfg(feature = "std")]
-    println!("{}", _table.to_string());
+    println!("{}", table.to_string());
 }

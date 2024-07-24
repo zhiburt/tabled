@@ -17,21 +17,18 @@ fn main() {
     let board = [
         ["♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜"],
         ["♟", "♟", "♟", "♟", "♟", "♟", "♟", "♟"],
-        [" ", " ", " ", " ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " ", " ", " ", " "],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
+        ["", "", "", "", "", "", "", ""],
         ["♙", "♙", "♙", "♙", "♙", "♙", "♙", "♙"],
         ["♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"],
     ];
 
-    let color_white = Color::BG_WHITE | Color::FG_BLACK;
-    let color_black = Color::FG_WHITE | Color::BG_BLACK;
-
     let mut table = Builder::from_iter(board).build();
     table
         .with(Style::empty())
-        .with(Colorization::chess(color_white, color_black));
+        .with(Colorization::chess(Color::BG_WHITE, Color::BG_BLACK));
 
     println!("{table}");
 }

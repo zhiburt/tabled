@@ -35,7 +35,8 @@ fn main() {
 
     let mut table = Table::new(data);
 
-    table.with(Style::modern().remove_horizontal()).with(
+    table.with(Style::modern().remove_horizontal());
+    table.with(
         ColumnNames::default()
             .color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
             .alignment(Alignment::center()),

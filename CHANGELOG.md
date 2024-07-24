@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added more features to `themes::Theme`.
 - Added a new setting `Reverse` to reverse the table.
 - Added vertical support for `LineText`.
-- Added `ByContet` locator.
+- Added `ByContent` locator.
 - Added `ByCondition` locator.
 - Added `Locator` factory for `Location`s.
 - Added tabled features to all subprojects to be able to reduce binary size.

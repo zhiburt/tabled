@@ -33,7 +33,7 @@ fn main() {
 
     let table_ = table
         .clone()
-        .with(Height::limit(4).priority::<PriorityMax>())
+        .with(Height::limit(4).priority(PriorityMax))
         .to_string();
 
     println!("Table decrease height to 4\n");
@@ -41,7 +41,7 @@ fn main() {
 
     let table_ = table
         .clone()
-        .with(Height::limit(0).priority::<PriorityMax>())
+        .with(Height::limit(0).priority(PriorityMax))
         .to_string();
 
     println!("Table decrease height to 0\n");

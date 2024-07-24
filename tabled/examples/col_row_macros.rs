@@ -33,11 +33,15 @@ impl Person {
 }
 
 fn main() {
-    let validated = [Person::new("Sam", 31, true), Person::new("Sarah", 26, true)];
+    let validated = [
+        Person::new("Sam", 31, true),
+        Person::new("Sarah", 26, true),
+        Person::new("Sam", 31, true),
+    ];
 
     let not_validated = [
         Person::new("Jack Black", 51, false),
-        Person::new("Michelle Goldstein", 44, true),
+        Person::new("Michelle Goldstein", 44, false),
     ];
 
     let unsure = [
@@ -47,21 +51,18 @@ fn main() {
         Person::new("Adam Blend", 17, true),
     ];
 
-    let table_validated = Table::new(validated).with(Style::ascii()).to_string();
-    let table_not_validated = Table::new(not_validated).with(Style::modern()).to_string();
-    let table_unsure = Table::new(unsure).with(Style::ascii_rounded()).to_string();
+    let validated = Table::new(validated).with(Style::ascii()).to_string();
+    let not_validated = Table::new(not_validated).with(Style::modern()).to_string();
+    let unsure = Table::new(unsure).with(Style::ascii_rounded()).to_string();
 
-    let output1 = row![table_validated, table_not_validated];
-    let output2 = col![table_unsure; 3];
-
-    let output3 = col![
-        row![table_validated, table_not_validated].with(Style::empty()),
-        table_unsure
+    let output = col![
+        row![validated, not_validated]
+            .with(Style::empty())
+            .with(Alignment::center_vertical()),
+        row![unsure; 3].with(Style::empty())
     ]
     .with(Alignment::center())
     .to_string();
 
-    println!("{output1}");
-    println!("{output2}");
-    println!("{output3}");
+    println!("{output}");
 }

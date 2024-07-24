@@ -6,7 +6,7 @@ use papergrid::{
     },
     dimension::{spanned::SpannedGridDimension, Estimate},
     grid::peekable::PeekableGrid,
-    records::vec_records::{CellInfo, VecRecords},
+    records::vec_records::{Text, VecRecords},
 };
 
 fn main() {
@@ -49,7 +49,7 @@ fn main() {
 
     let data = data
         .iter()
-        .map(|row| row.iter().map(CellInfo::new).collect())
+        .map(|row| row.iter().map(Text::new).collect())
         .collect();
 
     let records = VecRecords::new(data);

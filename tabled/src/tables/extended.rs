@@ -48,10 +48,11 @@
 //! assert_eq!(table, expected);
 //! ```
 
-use std::fmt::{self, Display};
-
-use crate::grid::util::string::string_width;
+use crate::grid::util::string::get_line_width;
 use crate::Tabled;
+use std::cell::RefCell;
+use std::fmt::{self, Debug, Display};
+use std::rc::Rc;
 
 /// `ExtendedTable` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
@@ -77,10 +78,11 @@ use crate::Tabled;
 ///     )
 /// );
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ExtendedTable {
     fields: Vec<String>,
     records: Vec<Vec<String>>,
+    template: Rc<RefCell<dyn Fn(usize) -> String>>,
 }
 
 impl ExtendedTable {
@@ -106,6 +108,7 @@ impl ExtendedTable {
         Self {
             records: data,
             fields: header,
+            template: Rc::new(RefCell::new(record_template)),
         }
     }
 
@@ -124,7 +127,7 @@ impl ExtendedTable {
             return false;
         }
 
-        let suffix_width = string_width(suffix);
+        let suffix_width = get_line_width(suffix);
         if max < suffix_width {
             return false;
         }
@@ -134,7 +137,7 @@ impl ExtendedTable {
         let fields_max_width = self
             .fields
             .iter()
-            .map(|s| string_width(s))
+            .map(|s| get_line_width(s))
             .max()
             .unwrap_or_default();
 
@@ -162,6 +165,15 @@ impl ExtendedTable {
 
         true
     }
+
+    /// Sets the template for a record.
+    pub fn template<F>(mut self, template: F) -> Self
+    where
+        F: Fn(usize) -> String + 'static,
+    {
+        self.template = Rc::new(RefCell::new(template));
+        self
+    }
 }
 
 impl From<Vec<Vec<String>>> for ExtendedTable {
@@ -170,6 +182,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
             return Self {
                 fields: vec![],
                 records: vec![],
+                template: Rc::new(RefCell::new(record_template)),
             };
         }
 
@@ -178,6 +191,7 @@ impl From<Vec<Vec<String>>> for ExtendedTable {
         Self {
             fields,
             records: data,
+            template: Rc::new(RefCell::new(record_template)),
         }
     }
 }
@@ -194,20 +208,20 @@ impl Display for ExtendedTable {
 
         let max_field_width = fields
             .iter()
-            .map(|s| string_width(s))
+            .map(|s| get_line_width(s))
             .max()
             .unwrap_or_default();
 
         let max_values_length = self
             .records
             .iter()
-            .map(|record| record.iter().map(|s| string_width(s)).max())
+            .map(|record| record.iter().map(|s| get_line_width(s)).max())
             .max()
             .unwrap_or_default()
             .unwrap_or_default();
 
         for (i, records) in self.records.iter().enumerate() {
-            write_header_template(f, i, max_field_width, max_values_length)?;
+            write_header_template(f, &self.template, i, max_field_width, max_values_length)?;
 
             for (value, field) in records.iter().zip(fields.iter()) {
                 writeln!(f)?;
@@ -221,6 +235,15 @@ impl Display for ExtendedTable {
         }
 
         Ok(())
+    }
+}
+
+impl Debug for ExtendedTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExtendedTable")
+            .field("fields", &self.fields)
+            .field("records", &self.records)
+            .finish_non_exhaustive()
     }
 }
 
@@ -238,11 +261,13 @@ fn truncate_fields(records: &mut Vec<String>, max_width: usize, suffix: &str) {
 
 fn write_header_template(
     f: &mut fmt::Formatter<'_>,
+    template: &Rc<RefCell<dyn Fn(usize) -> String>>,
     index: usize,
     max_field_width: usize,
     max_values_length: usize,
 ) -> fmt::Result {
-    let mut template = format!("-[ RECORD {index} ]-");
+    let record_template = template.borrow()(index);
+    let mut template = format!("-{record_template}-");
     let default_template_length = template.len();
 
     // 3 - is responsible for ' | ' formatting
@@ -295,4 +320,8 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     if !suffix.is_empty() && cut_was_done {
         text.push_str(suffix);
     }
+}
+
+fn record_template(index: usize) -> String {
+    format!("[ RECORD {index} ]")
 }

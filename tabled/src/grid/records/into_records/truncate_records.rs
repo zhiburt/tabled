@@ -2,8 +2,7 @@
 
 use crate::{
     grid::dimension::Dimension, grid::records::into_records::either_string::EitherString,
-    grid::records::IntoRecords, grid::util::string::string_width_multiline,
-    settings::width::Truncate,
+    grid::records::IntoRecords, grid::util::string::get_string_width, settings::width::Truncate,
 };
 
 /// A records iterator which truncates all cells to a given width.
@@ -88,12 +87,12 @@ where
         let width = self.dimension.get_width(self.iter_column);
         self.iter_column += 1;
 
-        let text_width = string_width_multiline(text_ref);
+        let text_width = get_string_width(text_ref);
         let is_small = text_width <= width;
         if is_small {
             Some(EitherString::Some(text))
         } else {
-            let text = Truncate::truncate_text(text_ref, width);
+            let text = Truncate::truncate(text_ref, width);
             let text = text.into_owned();
             Some(EitherString::Owned(text))
         }

@@ -262,12 +262,12 @@ impl<T> BordersConfig<T> {
         let use_left = pos.1 == 0;
         let use_right = pos.1 == count_cols;
 
-        let itersection = self.cells.intersection.get(&pos);
-        if itersection.is_some() {
-            return itersection;
+        let intersection = self.cells.intersection.get(&pos);
+        if intersection.is_some() {
+            return intersection;
         }
 
-        let itersection = self.horizontals.get(&pos.0).and_then(|l| {
+        let intersection = self.horizontals.get(&pos.0).and_then(|l| {
             if use_left && l.left.is_some() {
                 l.left.as_ref()
             } else if use_right && l.right.is_some() {
@@ -278,11 +278,11 @@ impl<T> BordersConfig<T> {
                 None
             }
         });
-        if itersection.is_some() {
-            return itersection;
+        if intersection.is_some() {
+            return intersection;
         }
 
-        let itersection = self.verticals.get(&pos.1).and_then(|l| {
+        let intersection = self.verticals.get(&pos.1).and_then(|l| {
             if use_top && l.top.is_some() {
                 l.top.as_ref()
             } else if use_bottom && l.bottom.is_some() {
@@ -293,11 +293,11 @@ impl<T> BordersConfig<T> {
                 None
             }
         });
-        if itersection.is_some() {
-            return itersection;
+        if intersection.is_some() {
+            return intersection;
         }
 
-        let itersection = {
+        let intersection = {
             if use_top && use_left {
                 self.borders.top_left.as_ref()
             } else if use_top && use_right {
@@ -318,8 +318,8 @@ impl<T> BordersConfig<T> {
                 self.borders.intersection.as_ref()
             }
         };
-        if itersection.is_some() {
-            return itersection;
+        if intersection.is_some() {
+            return intersection;
         }
 
         self.global.as_ref()

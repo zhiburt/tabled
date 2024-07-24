@@ -17,28 +17,28 @@ use tabled::{
 
 #[derive(Tabled)]
 struct CodeEditor {
-    name: &'static str,
-    first_release: &'static str,
-    developer: &'static str,
+    name: String,
+    developer: String,
+    first_release: usize,
 }
 
 impl CodeEditor {
-    fn new(name: &'static str, first_release: &'static str, developer: &'static str) -> Self {
+    fn new(name: &str, first_release: usize, developer: &str) -> Self {
         Self {
-            name,
             first_release,
-            developer,
+            name: name.to_string(),
+            developer: developer.to_string(),
         }
     }
 }
 
 fn main() {
     let data = [
-        CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
-        CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),
-        CodeEditor::new("Notepad++", "2003", "Don Ho"),
-        CodeEditor::new("GNU Emacs", "1984", "Richard Stallman"),
-        CodeEditor::new("Neovim", "2015", "Vim community"),
+        CodeEditor::new("Sublime Text 3", 2008, "Sublime HQ"),
+        CodeEditor::new("Visual Studio Code", 2015, "Microsoft"),
+        CodeEditor::new("Notepad++", 2003, "Don Ho"),
+        CodeEditor::new("GNU Emacs", 1984, "Richard Stallman"),
+        CodeEditor::new("Neovim", 2015, "Vim community"),
     ];
 
     let theme = Style::modern()
@@ -48,7 +48,7 @@ fn main() {
         .remove_vertical();
 
     let mut table = Table::new(data);
-    table.with(theme).with(Alignment::left());
+    table.with((theme, Alignment::center()));
 
     println!("{table}");
 }

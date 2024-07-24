@@ -29,7 +29,6 @@ An example of `static_table` usage.
 <tr>
 <td>
 
-
 ```rust
 use static_table::static_table;
 
@@ -134,7 +133,7 @@ pub fn add(left: usize, right: usize) -> usize {
 ## Binary size concern
 
 It's something you shall be aware of.
-Using `static_table` MIGHT increase a binary size, because the table will be stored as actuall symbols in a static section of a binary file (ELF, PE etc.).
+Using `static_table` MIGHT increase a binary size, because the table will be stored as actual symbols in a static section of a binary file (ELF, PE etc.).
 
 I have run a few tests in this regard.
 And a binary which used `static_table` has SUBSTATIANALY smaller size than

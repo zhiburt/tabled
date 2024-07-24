@@ -20,8 +20,8 @@ fn main() {
     table.with(Style::rounded().remove_horizontals().remove_vertical());
     table.with(Padding::new(2, 2, 0, 0));
     table.with(Shadow::new(3).set_offset(6));
-    table.with(Reverse::rows());
-    table.with(Reverse::columns());
+    table.with(Reverse::rows(1, 0));
+    table.with(Reverse::columns(0, 0));
 
     println!("{table}");
 }

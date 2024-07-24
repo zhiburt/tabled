@@ -4,7 +4,7 @@ use crate::{
     grid::config::SpannedConfig,
     grid::dimension::SpannedGridDimension,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records},
-    grid::util::string::{self, string_width_multiline},
+    grid::util::string::{self, get_string_width},
     settings::{Height, Width},
 };
 
@@ -119,7 +119,7 @@ where
 {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
-        (0..count_cols).map(move |col| string_width_multiline(records.get_text((row, col))))
+        (0..count_cols).map(move |col| get_string_width(records.get_text((row, col))))
     })
 }
 

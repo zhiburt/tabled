@@ -9,4 +9,4 @@ ansi = ["ansitok"]
 
 [dependencies]
 ansitok = { version = "0.2", optional = true }
-unicode-width = "0.1"
+unicode-width = "=0.1.11"

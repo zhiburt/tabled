@@ -8,7 +8,7 @@ use papergrid::{
     },
     dimension::{spanned::SpannedGridDimension, Dimension},
     grid::peekable::PeekableGrid,
-    records::vec_records::{CellInfo, VecRecords},
+    records::vec_records::{Text, VecRecords},
 };
 
 use testing_table::test_table;
@@ -73,7 +73,7 @@ test_table!(
 
         let data = data
             .iter()
-            .map(|row| row.iter().map(CellInfo::new).collect())
+            .map(|row| row.iter().map(Text::new).collect())
             .collect();
 
         let records = VecRecords::new(data);
@@ -145,7 +145,7 @@ test_table!(
 
         let data = data
             .iter()
-            .map(|row| row.iter().map(CellInfo::new).collect())
+            .map(|row| row.iter().map(Text::new).collect())
             .collect();
 
         let records = VecRecords::new(data);

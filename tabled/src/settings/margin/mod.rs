@@ -4,31 +4,16 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{settings::{Margin, Style}, Table};
-//!
-//! let data = vec!["Hello", "World", "!"];
-//!
-//! let mut table = Table::new(data);
-//! table.with(Style::markdown()).with(Margin::new(3, 3, 1, 0));
-//!
-//! assert_eq!(
-//!     table.to_string(),
-//!     concat!(
-//!         "               \n",
-//!         "   | &str  |   \n",
-//!         "   |-------|   \n",
-//!         "   | Hello |   \n",
-//!         "   | World |   \n",
-//!         "   | !     |   ",
-//!     )
-//! );
+//! # use tabled::{settings::Margin, Table};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data)
+//!     .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'));
 //! ```
 //!
 //! [`Table`]: crate::Table
 
 use crate::{
     grid::{
-        ansi::ANSIStr,
         config::{CompactConfig, CompactMultilineConfig},
         config::{Indent, Sides},
     },
@@ -36,21 +21,38 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::grid::{ansi::ANSIBuf, config::ColoredConfig};
+use crate::grid::config::ColoredConfig;
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
+/// # Example
+///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::Margin, Table};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'));
+/// use tabled::{settings::{Margin, Style}, Table};
+///
+/// let data = vec!["Hello", "World", "!"];
+///
+/// let mut table = Table::new(data);
+/// table
+///     .with(Style::markdown())
+///     .with(Margin::new(3, 3, 1, 0));
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "               \n",
+///         "   | &str  |   \n",
+///         "   |-------|   \n",
+///         "   | Hello |   \n",
+///         "   | World |   \n",
+///         "   | !     |   ",
+///     )
+/// );
 /// ```
 #[derive(Debug, Clone)]
-pub struct Margin<C = ANSIStr<'static>> {
+pub struct Margin {
     indent: Sides<Indent>,
-    colors: Option<Sides<C>>,
 }
 
 impl Margin {
@@ -66,12 +68,9 @@ impl Margin {
                 Indent::spaced(top),
                 Indent::spaced(bottom),
             ),
-            colors: None,
         }
     }
-}
 
-impl<Color> Margin<Color> {
     /// The function, sets a characters for the margin on an each side.
     pub const fn fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.indent.left.fill = left;
@@ -80,64 +79,25 @@ impl<Color> Margin<Color> {
         self.indent.bottom.fill = bottom;
         self
     }
-
-    /// The function, sets a characters for the margin on an each side.
-    pub fn colorize<C>(self, left: C, right: C, top: C, bottom: C) -> Margin<C> {
-        Margin {
-            indent: self.indent,
-            colors: Some(Sides::new(left, right, top, bottom)),
-        }
-    }
 }
 
 #[cfg(feature = "std")]
-impl<R, D, C> TableOption<R, ColoredConfig, D> for Margin<C>
-where
-    C: Into<ANSIBuf> + Clone,
-{
+impl<R, D> TableOption<R, ColoredConfig, D> for Margin {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let indent = self.indent;
         let margin = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
         cfg.set_margin(margin);
-
-        if let Some(colors) = &self.colors {
-            let margin = Sides::new(
-                Some(colors.left.clone().into()),
-                Some(colors.right.clone().into()),
-                Some(colors.top.clone().into()),
-                Some(colors.bottom.clone().into()),
-            );
-            cfg.set_margin_color(margin);
-        }
     }
 }
 
-impl<R, D, C> TableOption<R, CompactConfig, D> for Margin<C>
-where
-    C: Into<ANSIStr<'static>> + Clone,
-{
+impl<R, D> TableOption<R, CompactConfig, D> for Margin {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_margin(self.indent);
-
-        if let Some(c) = self.colors {
-            // todo: make a new method (BECAUSE INTO doesn't work) try_into();
-            let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
-            *cfg = cfg.set_margin_color(colors);
-        }
     }
 }
 
-impl<R, D, C> TableOption<R, CompactMultilineConfig, D> for Margin<C>
-where
-    C: Into<ANSIStr<'static>> + Clone,
-{
+impl<R, D> TableOption<R, CompactMultilineConfig, D> for Margin {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         cfg.set_margin(self.indent);
-
-        if let Some(c) = self.colors {
-            // todo: make a new method (BECAUSE INTO doesn't work) try_into();
-            let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
-            cfg.set_margin_color(colors);
-        }
     }
 }

@@ -1,5 +1,8 @@
 use tabled::{
-    settings::{themes::Theme, Style},
+    settings::{
+        themes::{Layout, Theme},
+        Alignment, Reverse, Style,
+    },
     Table, Tabled,
 };
 
@@ -32,13 +35,11 @@ fn main() {
         Concept::new("VOP_STRATEGY", "VOP_STRATEGY method fulfills an I/O request described by given struct buf object"),
     ];
 
-    let mut theme = Theme::from_style(Style::ascii());
-    theme.reverse_rows(true);
-    theme.reverse_columns(true);
-    theme.set_footer(true);
-
     let mut table = Table::new(data);
-    table.with(theme);
+    table.with(Theme::from_style(Style::ascii()));
+    table.with(Reverse::rows(1, 0));
+    table.with(Reverse::columns(0, 0));
+    table.with(Layout::new(Alignment::top(), true));
 
     println!("{table}");
 }

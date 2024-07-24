@@ -19,7 +19,7 @@
 //!     * [`Padding`]
 
 use tabled::{
-    settings::{object::Rows, Alignment, Modify, Style},
+    settings::{object::Rows, Alignment, Style},
     Table, Tabled,
 };
 
@@ -50,7 +50,7 @@ fn main() {
     let mut table = Table::new(data);
     table
         .with(Style::markdown())
-        .with(Modify::new(Rows::first()).with(Alignment::center()));
+        .modify(Rows::first(), Alignment::center());
 
     println!("{table}");
 }

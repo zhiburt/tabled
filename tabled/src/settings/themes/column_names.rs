@@ -5,10 +5,10 @@ use crate::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
-            vec_records::{CellInfo, VecRecords},
+            vec_records::{Text, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
         },
-        util::string::string_width,
+        util::string::get_line_width,
     },
     settings::{
         object::{Column, Row},
@@ -223,12 +223,12 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<CellInfo<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
     for ColumnNames
 {
     fn change(
         self,
-        records: &mut VecRecords<CellInfo<String>>,
+        records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
@@ -268,7 +268,7 @@ fn set_column_text(
     target_line: usize,
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     dims: &mut CompleteDimensionVecRecords<'_>,
     cfg: &mut ColoredConfig,
 ) {
@@ -278,7 +278,7 @@ fn set_column_text(
     let widths = names
         .iter()
         .enumerate()
-        .map(|(col, name)| (cmp::max(string_width(name), dims.get_width(col))))
+        .map(|(col, name)| (cmp::max(get_line_width(name), dims.get_width(col))))
         .collect::<Vec<_>>();
 
     dims.set_widths(widths.clone());
@@ -304,7 +304,7 @@ fn set_row_text(
     target_line: usize,
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     dims: &mut CompleteDimensionVecRecords<'_>,
     cfg: &mut ColoredConfig,
 ) {
@@ -314,7 +314,7 @@ fn set_row_text(
     let heights = names
         .iter()
         .enumerate()
-        .map(|(row, name)| (cmp::max(string_width(name), dims.get_height(row))))
+        .map(|(row, name)| (cmp::max(get_line_width(name), dims.get_height(row))))
         .collect::<Vec<_>>();
 
     dims.set_heights(heights.clone());
@@ -336,7 +336,7 @@ fn set_row_text(
 }
 
 fn get_column_names(
-    records: &mut VecRecords<CellInfo<String>>,
+    records: &mut VecRecords<Text<String>>,
     opt: Option<Vec<String>>,
 ) -> Vec<String> {
     match opt {
@@ -363,7 +363,7 @@ fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
     data
 }
 
-fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
+fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
     if records.count_rows() == 0 || records.count_columns() == 0 {
         return Vec::new();
     }
@@ -399,16 +399,16 @@ fn get_color(colors: &Option<ListValue<Color>>, i: usize) -> Option<&Color> {
 fn get_horizontal_indent(text: &str, align: AlignmentHorizontal, available: usize) -> usize {
     match align {
         AlignmentHorizontal::Left => 0,
-        AlignmentHorizontal::Right => available - string_width(text),
-        AlignmentHorizontal::Center => (available - string_width(text)) / 2,
+        AlignmentHorizontal::Right => available - get_line_width(text),
+        AlignmentHorizontal::Center => (available - get_line_width(text)) / 2,
     }
 }
 
 fn get_vertical_indent(text: &str, align: AlignmentVertical, available: usize) -> usize {
     match align {
         AlignmentVertical::Top => 0,
-        AlignmentVertical::Bottom => available - string_width(text),
-        AlignmentVertical::Center => (available - string_width(text)) / 2,
+        AlignmentVertical::Bottom => available - get_line_width(text),
+        AlignmentVertical::Center => (available - get_line_width(text)) / 2,
     }
 }
 

@@ -1,19 +1,20 @@
+use core::fmt::Display;
 use std::{borrow::Cow, cmp::max};
 
 use crate::{
     records::vec_records::Cell,
-    util::string::{self, count_lines, get_lines, string_width},
+    util::string::{self, count_lines, get_line_width, get_lines},
 };
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CellInfo<S> {
+pub struct Text<S> {
     text: S,
     width: usize,
     lines: Vec<StrWithWidth<'static>>,
 }
 
-impl<S> CellInfo<S> {
+impl<S> Text<S> {
     /// Creates a new instance of the structure.
     pub fn new(text: S) -> Self
     where
@@ -33,7 +34,7 @@ impl<S> CellInfo<S> {
     }
 }
 
-impl<S> AsRef<str> for CellInfo<S>
+impl<S> AsRef<str> for Text<S>
 where
     S: AsRef<str>,
 {
@@ -42,7 +43,16 @@ where
     }
 }
 
-impl<S> Cell for CellInfo<S>
+impl<S> Display for Text<S>
+where
+    S: Display,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.text.fmt(f)
+    }
+}
+
+impl<S> Cell for Text<S>
 where
     S: AsRef<str>,
 {
@@ -75,7 +85,7 @@ where
     }
 }
 
-impl<S> Clone for CellInfo<S>
+impl<S> Clone for Text<S>
 where
     S: Clone + AsRef<str>,
 {
@@ -128,8 +138,8 @@ impl<'a> StrWithWidth<'a> {
     }
 }
 
-fn create_cell_info<S: AsRef<str>>(text: S) -> CellInfo<S> {
-    let mut info = CellInfo {
+fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
+    let mut info = Text {
         text,
         lines: vec![],
         width: 0,
@@ -139,7 +149,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> CellInfo<S> {
     // We check if there's only 1 line in which case we don't allocate lines Vec
     let count_lines = count_lines(info.text.as_ref());
     if count_lines < 2 {
-        info.width = string::string_width_multiline(info.text.as_ref());
+        info.width = string::get_string_width(info.text.as_ref());
         return info;
     }
 
@@ -161,7 +171,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> CellInfo<S> {
 
     info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
     for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
-        i.width = string_width(&line);
+        i.width = get_line_width(&line);
         i.text = line;
         info.width = max(info.width, i.width);
     }

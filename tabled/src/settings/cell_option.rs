@@ -73,3 +73,49 @@ where
         }
     }
 }
+
+#[cfg(feature = "std")]
+macro_rules! tuple_trait_impl {
+    ( $($name:ident)+ ) => {
+        impl<R, C, $($name: CellOption<R, C>),+> CellOption<R, C> for ($($name,)+) {
+            fn change(self, records: &mut R, cfg: &mut C, entity: Entity) {
+                #![allow(non_snake_case)]
+                let ($($name,)+) = self;
+                $(
+                    $name::change($name, records, cfg, entity);
+                )+
+            }
+
+            fn hint_change(&self) -> Option<Entity> {
+                #![allow(non_snake_case)]
+                let ($($name,)+) = &self;
+                let list = [
+                    $(
+                        $name::hint_change($name),
+                    )+
+                ];
+
+                crate::settings::table_option::hint_change_list(&list)
+            }
+        }
+    };
+}
+
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8);
+#[cfg(feature = "std")]
+tuple_trait_impl!(T0 T1 T2 T3 T4 T5 T6 T7 T8 T9);

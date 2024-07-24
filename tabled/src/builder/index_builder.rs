@@ -1,4 +1,4 @@
-use crate::{grid::records::vec_records::CellInfo, Table};
+use crate::{grid::records::vec_records::Text, Table};
 
 use super::Builder;
 
@@ -47,9 +47,9 @@ use super::Builder;
 pub struct IndexBuilder {
     /// Index is an index data.
     /// It's always set.
-    index: Vec<CellInfo<String>>,
+    index: Vec<Text<String>>,
     /// Name of an index
-    name: Option<CellInfo<String>>,
+    name: Option<Text<String>>,
     /// A flag which checks if we need to actually use index.
     ///
     /// It might happen when it's only necessary to [`Self::transpose`] table.
@@ -57,7 +57,7 @@ pub struct IndexBuilder {
     /// A flag which checks if table was transposed.
     transposed: bool,
     /// Data originated in [`Builder`].
-    data: Vec<Vec<CellInfo<String>>>,
+    data: Vec<Vec<Text<String>>>,
     /// A size of columns
     count_columns: usize,
 }
@@ -123,7 +123,7 @@ impl IndexBuilder {
     /// )
     /// ```
     pub fn name(mut self, name: Option<String>) -> Self {
-        self.name = name.map(CellInfo::new);
+        self.name = name.map(Text::new);
         self
     }
 
@@ -257,7 +257,7 @@ fn build_index(mut b: IndexBuilder) -> Builder {
 
     // add index column
     if b.print_index {
-        b.index.insert(0, CellInfo::default());
+        b.index.insert(0, Text::default());
         insert_column(&mut b.data, b.index, 0);
     }
 
@@ -266,7 +266,7 @@ fn build_index(mut b: IndexBuilder) -> Builder {
             b.data[0][0] = name;
         } else {
             let count_columns = b.data[0].len();
-            let mut name_row = vec![CellInfo::default(); count_columns];
+            let mut name_row = vec![Text::default(); count_columns];
             name_row[0] = name;
 
             b.data.insert(1, name_row);
@@ -276,8 +276,8 @@ fn build_index(mut b: IndexBuilder) -> Builder {
     Builder::from_vec(b.data)
 }
 
-fn build_range_index(n: usize) -> Vec<CellInfo<String>> {
-    (0..n).map(|i| i.to_string()).map(CellInfo::new).collect()
+fn build_range_index(n: usize) -> Vec<Text<String>> {
+    (0..n).map(|i| i.to_string()).map(Text::new).collect()
 }
 
 fn get_column<T>(v: &mut [Vec<T>], col: usize) -> Vec<T>

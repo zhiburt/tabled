@@ -33,12 +33,12 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 
     /// Sets a different priority logic.
-    pub fn priority<P>(self) -> TableHeightIncrease<W, P>
+    pub fn priority<P>(self, priority: P) -> TableHeightIncrease<W, P>
     where
         P: Peaker,
     {
         TableHeightIncrease {
-            priority: P::create(),
+            priority,
             height: self.height,
         }
     }

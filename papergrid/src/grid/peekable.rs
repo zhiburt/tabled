@@ -17,7 +17,7 @@ use crate::{
     config::{AlignmentHorizontal, AlignmentVertical, Entity, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
-    util::string::string_width,
+    util::string::get_line_width,
 };
 
 /// Grid provides a set of methods for building a text-based table.
@@ -390,7 +390,7 @@ mod grid_basic {
         let line = records.get_line(pos, index);
         let (line, line_width) = if cfg.formatting.horizontal_trim {
             let line = string_trim(line);
-            let width = string_width(&line);
+            let width = get_line_width(&line);
             (line, width)
         } else {
             let width = records.get_line_width(pos, index);
@@ -405,7 +405,7 @@ mod grid_basic {
         let cell_width = if cfg.formatting.horizontal_trim {
             (0..records.count_lines(pos))
                 .map(|i| records.get_line(pos, i))
-                .map(|line| string_width(line.trim()))
+                .map(|line| get_line_width(line.trim()))
                 .max()
                 .unwrap_or_default()
         } else {
@@ -909,7 +909,7 @@ mod grid_not_spanned {
         let line = records.get_line(pos, index);
         let (line, line_width) = if cfg.formatting.horizontal_trim {
             let line = string_trim(line);
-            let width = string_width(&line);
+            let width = get_line_width(&line);
             (line, width)
         } else {
             let width = records.get_line_width(pos, index);
@@ -925,7 +925,7 @@ mod grid_not_spanned {
         let cell_width = if cfg.formatting.horizontal_trim {
             (0..records.count_lines(pos))
                 .map(|i| records.get_line(pos, i))
-                .map(|line| string_width(line.trim()))
+                .map(|line| get_line_width(line.trim()))
                 .max()
                 .unwrap_or_default()
         } else {
@@ -1775,7 +1775,7 @@ mod grid_spanned {
         let line = records.get_line(pos, index);
         let (line, line_width) = if text_cfg.formatting.horizontal_trim {
             let line = string_trim(line);
-            let width = string_width(&line);
+            let width = get_line_width(&line);
             (line, width)
         } else {
             let width = records.get_line_width(pos, index);
@@ -1791,7 +1791,7 @@ mod grid_spanned {
         let cell_width = if text_cfg.formatting.horizontal_trim {
             (0..records.count_lines(pos))
                 .map(|i| records.get_line(pos, i))
-                .map(|line| string_width(line.trim()))
+                .map(|line| get_line_width(line.trim()))
                 .max()
                 .unwrap_or_default()
         } else {
