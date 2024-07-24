@@ -97,7 +97,11 @@ pub(crate) fn split_at_width(s: &str, at_width: usize) -> (usize, usize, usize) 
             break;
         };
 
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
+        let c_width = if ['\n', '\t', '\r', '\0'].contains(&c) {
+            1
+        } else {
+            unicode_width::UnicodeWidthChar::width(c).unwrap_or_default()
+        };
         let c_length = c.len_utf8();
 
         // We cut the chars which takes more then 1 symbol to display,
