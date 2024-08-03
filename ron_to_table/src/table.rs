@@ -13,7 +13,7 @@ use tabled::{
         },
         dimension::{CompleteDimension, DimensionPriority, PoolTableDimension},
         records::EmptyRecords,
-        util::string::{count_lines, get_lines, string_width, string_width_multiline},
+        util::string::{count_lines, get_line_width, get_lines, get_text_width},
     },
     settings::{style::Style, TableOption},
     tables::{PoolTable, TableValue},
@@ -237,7 +237,7 @@ fn table_value_width(value: &TableValue, has_vertical: bool) -> usize {
             .map(|value| table_value_width(value, has_vertical))
             .max()
             .unwrap_or(0),
-        TableValue::Cell(string) => string_width_multiline(string),
+        TableValue::Cell(string) => get_text_width(string),
     }
 }
 
@@ -302,7 +302,7 @@ fn increase_string_width(text: &str, by: usize, ah: AlignmentHorizontal) -> Stri
     let mut out = Vec::new();
 
     for line in get_lines(text) {
-        let w = string_width(&line);
+        let w = get_line_width(&line);
         let (left, right) = indent_horizontal(ah, w + by, w);
 
         let mut buf = String::new();

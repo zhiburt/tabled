@@ -6,7 +6,7 @@ use crate::{
     grid::config::{ColoredConfig, Entity},
     grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_lines, get_string_width},
+    grid::util::string::{get_lines, get_text_width},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -119,7 +119,7 @@ where
             }
 
             let cell = records.get_text(pos);
-            let cell_width = get_string_width(cell);
+            let cell_width = get_text_width(cell);
             if cell_width >= width {
                 continue;
             }

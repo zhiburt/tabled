@@ -8,7 +8,7 @@ use crate::{
             vec_records::{Text, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
         },
-        util::string::get_line_width,
+        util::string::{get_char_width, get_line_width},
     },
     settings::{
         object::{Column, Row},
@@ -414,13 +414,13 @@ fn get_vertical_indent(text: &str, align: AlignmentVertical, available: usize) -
 
 fn get_vertical_width(cfg: &mut ColoredConfig, pos: Position, count_columns: usize) -> usize {
     cfg.get_vertical(pos, count_columns)
-        .and_then(unicode_width::UnicodeWidthChar::width)
+        .map(get_char_width)
         .unwrap_or(0)
 }
 
 fn get_horizontal_width(cfg: &mut ColoredConfig, pos: Position, count_rows: usize) -> usize {
     cfg.get_horizontal(pos, count_rows)
-        .and_then(unicode_width::UnicodeWidthChar::width)
+        .map(get_char_width)
         .unwrap_or(0)
 }
 

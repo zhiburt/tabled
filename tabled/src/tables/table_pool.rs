@@ -251,7 +251,7 @@ mod print {
             dimension::{Dimension, DimensionPriority, Estimate, PoolTableDimension},
             records::Records,
             util::string::{
-                count_lines, get_line_width, get_lines, get_string_dimension, get_string_width,
+                count_lines, get_line_width, get_lines, get_text_dimension, get_text_width,
             },
         },
         settings::{Padding, Style, TableOption},
@@ -659,7 +659,7 @@ mod print {
                 line_index += 1;
             }
         } else {
-            let text_width = get_string_width(text);
+            let text_width = get_text_width(text);
             let (left, _) = indent_horizontal(halignment, width, text_width);
 
             for line in get_lines(text) {
@@ -1465,7 +1465,7 @@ mod print {
     }
 
     fn str_dimension(text: &str, cfg: &CompactMultilineConfig) -> Dim {
-        let (count_lines, width) = get_string_dimension(text);
+        let (count_lines, width) = get_text_dimension(text);
         let w = width + get_padding_horizontal(cfg);
         let h = count_lines + get_padding_vertical(cfg);
         Dim::new(w, h)
@@ -1590,7 +1590,7 @@ mod print {
         }
 
         let mut buf = String::new();
-        let width = get_string_width(table);
+        let width = get_text_width(table);
         let top_color = color.top;
         let bottom_color = color.bottom;
         let left_color = color.left;

@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 
 use tabled::{
-    grid::util::string::get_string_width,
+    grid::util::string::get_text_width,
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
@@ -877,7 +877,7 @@ fn total_width_big() {
         .with(MinWidth::new(80))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 80);
+    assert_eq!(get_text_width(&table), 80);
     assert_eq!(
         table,
         static_table!(
@@ -895,7 +895,7 @@ fn total_width_big() {
         .with(Settings::new(Width::truncate(80), Width::increase(80)))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 80);
+    assert_eq!(get_text_width(&table), 80);
     assert_eq!(
         table,
         static_table!(
@@ -1366,7 +1366,7 @@ fn min_width_works_with_right_alignment() {
         )
         .with(MinWidth::new(50));
 
-    assert_eq!(get_string_width(&table.to_string()), 50);
+    assert_eq!(get_text_width(&table.to_string()), 50);
     assert_eq!(
         table.to_string(),
         static_table!(
@@ -1458,7 +1458,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |"
         )
     );
-    assert_eq!(get_string_width(&table.to_string()), 50);
+    assert_eq!(get_text_width(&table.to_string()), 50);
 
     table
         .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal))
@@ -1521,7 +1521,7 @@ fn min_width_with_span_1() {
         .with(MinWidth::new(100))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 100);
+    assert_eq!(get_text_width(&table), 100);
     assert_eq!(
         table,
         static_table!(
@@ -1549,7 +1549,7 @@ fn min_width_with_span_2() {
         .with(MinWidth::new(100))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 100);
+    assert_eq!(get_text_width(&table), 100);
     assert_eq!(
         table,
         static_table!(
@@ -1724,7 +1724,7 @@ fn max_width_truncate_with_big_span() {
         .with(Width::truncate(40))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 40);
+    assert_eq!(get_text_width(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -1774,7 +1774,7 @@ fn max_width_truncate_with_big_span() {
             "|  |  2-0  | Hello World With Big Line |"
         )
     );
-    assert_eq!(get_string_width(&table), 40);
+    assert_eq!(get_text_width(&table), 40);
 
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line; Here we gooooooo")
@@ -1785,7 +1785,7 @@ fn max_width_truncate_with_big_span() {
         .with(Width::truncate(40))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 40);
+    assert_eq!(get_text_width(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -2211,7 +2211,7 @@ fn min_width_priority_max() {
         .with(MinWidth::new(60).priority(PriorityMax))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 60);
+    assert_eq!(get_text_width(&table), 60);
     assert_eq!(
         table,
         static_table!(
@@ -2231,7 +2231,7 @@ fn min_width_priority_min() {
         .with(MinWidth::new(60).priority(PriorityMin))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 60);
+    assert_eq!(get_text_width(&table), 60);
     assert_eq!(
         table,
         static_table!(
@@ -2273,7 +2273,7 @@ fn min_width_is_not_used_after_padding() {
         .with(Modify::new((0, 0)).with(Padding::new(2, 2, 0, 0)))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 40);
+    assert_eq!(get_text_width(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -2294,7 +2294,7 @@ fn min_width_is_used_after_margin() {
         .with(Width::increase(60))
         .to_string();
 
-    assert_eq!(get_string_width(&table), 60);
+    assert_eq!(get_text_width(&table), 60);
     assert_eq!(
         table,
         static_table!(
@@ -2316,7 +2316,7 @@ fn wrap_keeping_words_0() {
         .with(Width::wrap(8).keep_words(true))
         .to_string();
 
-    assert_eq!(tabled::grid::util::string::get_string_width(&table), 8);
+    assert_eq!(tabled::grid::util::string::get_text_width(&table), 8);
 
     assert_eq!(
         table,
@@ -2609,7 +2609,7 @@ mod derived {
                 "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
             )
         );
-        assert_eq!(get_string_width(&table), 57);
+        assert_eq!(get_text_width(&table), 57);
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
@@ -2632,7 +2632,7 @@ mod derived {
                 "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
             )
         );
-        assert_eq!(get_string_width(&table), 57);
+        assert_eq!(get_text_width(&table), 57);
     }
 
     #[cfg(feature = "ansi")]
@@ -2694,7 +2694,7 @@ mod derived {
             table,
             "| ver | published_d | is_act | major_feature            |\n|-----|-------------|--------|--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
         );
-        assert_eq!(get_string_width(&table), 57);
+        assert_eq!(get_text_width(&table), 57);
     }
 
     #[cfg(feature = "ansi")]

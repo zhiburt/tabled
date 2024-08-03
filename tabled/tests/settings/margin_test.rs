@@ -104,7 +104,7 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(tabled::grid::util::string::get_string_width(&table), 50);
+    assert_eq!(tabled::grid::util::string::get_text_width(&table), 50);
     assert_eq!(
         table,
         static_table!(

@@ -9,7 +9,7 @@ use crate::{
         config::{ColoredConfig, Entity},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::get_string_width,
+        util::string::{get_char_width, get_string_width, get_text_width},
     },
     settings::{
         measurement::Measurement,
@@ -151,7 +151,7 @@ where
             }
 
             let text = records.get_text(pos);
-            let cell_width = get_string_width(text);
+            let cell_width = get_text_width(text);
             if cell_width <= width {
                 continue;
             }
@@ -250,7 +250,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     let mut list = Vec::new();
     let mut i = 0;
     for c in s.chars() {
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
+        let c_width = get_char_width(c);
         if i + c_width > width {
             let count_unknowns = width - i;
             buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
@@ -306,7 +306,7 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         while !text_slice.is_empty() {
             let available_space = width - line_width;
 
-            let part_width = unicode_width::UnicodeWidthStr::width(text_slice);
+            let part_width = get_string_width(text_slice);
             if part_width <= available_space {
                 line.push_str(text_slice);
                 line_width += part_width;
@@ -329,7 +329,7 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
             text_slice = &rhs[split_char..];
 
             line.push_str(lhs);
-            line_width += unicode_width::UnicodeWidthStr::width(lhs);
+            line_width += get_string_width(lhs);
 
             const REPLACEMENT: char = '\u{FFFD}';
             line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
@@ -383,7 +383,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
             is_first_word = false;
         }
 
-        let word_width = unicode_width::UnicodeWidthStr::width(word);
+        let word_width = get_string_width(word);
 
         let line_has_space = line_width + word_width <= width;
         if line_has_space {
@@ -414,7 +414,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                     split_string_at(word_part, available_space);
 
                 word_part = &rhs[split_char..];
-                line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
+                line_width += get_string_width(lhs) + unknowns;
                 is_first_word = false;
 
                 line.push_str(lhs);
@@ -465,7 +465,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                 word_width = 0;
             }
             _ => {
-                word_width += unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                word_width += get_char_width(c);
                 word_chars += 1;
             }
         }
@@ -481,6 +481,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
 
 #[cfg(feature = "ansi")]
 mod parsing {
+    use super::get_char_width;
     use ansi_str::{AnsiBlock, AnsiBlockIter, Style};
     use std::fmt::Write;
 
@@ -567,7 +568,7 @@ mod parsing {
         }
 
         pub(super) fn fill(&mut self, c: char) -> usize {
-            debug_assert_eq!(unicode_width::UnicodeWidthChar::width(c), Some(1));
+            debug_assert_eq!(get_char_width(c), 1);
 
             let rest_width = self.available_width();
             for _ in 0..rest_width {
@@ -623,7 +624,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                let cwidth = get_char_width(c);
 
                 let available_space = self.width - self.width_last;
                 if available_space == 0 {
@@ -671,7 +672,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                let cwidth = get_char_width(c);
                 self.width_last += cwidth;
 
                 self.buf.push(c);

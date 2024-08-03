@@ -11,7 +11,7 @@ use crate::{
     config::Position,
     dimension::{Dimension, Estimate},
     records::{IntoRecords, Records},
-    util::string::{count_lines, get_string_dimension, get_string_width},
+    util::string::{count_lines, get_text_dimension, get_text_width},
 };
 
 use crate::config::spanned::SpannedConfig;
@@ -112,7 +112,7 @@ where
             }
 
             let text = cell.as_ref();
-            let (height, width) = get_string_dimension(text);
+            let (height, width) = get_text_dimension(text);
             let pad = cfg.get_padding(pos.into());
             let width = width + pad.left.size + pad.right.size;
             let height = height + pad.top.size + pad.bottom.size;
@@ -274,7 +274,7 @@ fn adjust_column_range(
 
 fn get_cell_width(text: &str, cfg: &SpannedConfig, pos: Position) -> usize {
     let padding = get_cell_padding(cfg, pos);
-    let width = get_string_width(text);
+    let width = get_text_width(text);
     width + padding
 }
 

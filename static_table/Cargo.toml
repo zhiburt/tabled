@@ -20,7 +20,7 @@ derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
 [dependencies]
-tabled = { version = "0.15", features = ["std"], default-features = false }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"

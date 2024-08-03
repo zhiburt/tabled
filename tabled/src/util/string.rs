@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use crate::grid::util::string::get_char_width;
+
 /// The function cuts the string to a specific width.
 /// Preserving colors with `ansi` feature on.
 pub(crate) fn split_str(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
@@ -97,7 +99,7 @@ pub(crate) fn split_at_width(s: &str, at_width: usize) -> (usize, usize, usize) 
             break;
         };
 
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
+        let c_width = get_char_width(c);
         let c_length = c.len_utf8();
 
         // We cut the chars which takes more then 1 symbol to display,

@@ -149,7 +149,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
     // We check if there's only 1 line in which case we don't allocate lines Vec
     let count_lines = count_lines(info.text.as_ref());
     if count_lines < 2 {
-        info.width = string::get_string_width(info.text.as_ref());
+        info.width = string::get_text_width(info.text.as_ref());
         return info;
     }
 

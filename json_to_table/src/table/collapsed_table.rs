@@ -11,7 +11,7 @@ use tabled::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset},
         dimension::{Dimension, Estimate},
         records::Records,
-        util::string::{count_lines, get_lines, string_dimension, string_width},
+        util::string::{count_lines, get_line_width, get_lines, get_text_dimension},
     },
     settings::{Padding, TableOption},
 };
@@ -989,7 +989,7 @@ fn empty_dimension(cfg: &Config) -> Dim {
 }
 
 fn str_dimension(text: &str, cfg: &Config) -> Dim {
-    let (count_lines, width) = string_dimension(text);
+    let (count_lines, width) = get_text_dimension(text);
     let w = width + get_padding_horizontal(cfg);
     let h = count_lines + get_padding_vertical(cfg);
     Dim::new(w, h)
@@ -1036,7 +1036,7 @@ fn set_string_dimension(
     out.extend(repeat(String::new()).take(top));
 
     for line in get_lines(text) {
-        let w = string_width(&line);
+        let w = get_line_width(&line);
         let (left, right) = indent_horizontal(ah, width, w);
 
         let mut buf = String::new();

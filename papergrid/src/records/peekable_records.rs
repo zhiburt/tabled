@@ -17,7 +17,7 @@ pub trait PeekableRecords {
 
     /// Returns a width of a text of a cell by an index.
     fn get_width(&self, pos: Position) -> usize {
-        crate::util::string::get_string_width(self.get_text(pos))
+        crate::util::string::get_text_width(self.get_text(pos))
     }
 
     /// Returns a width of line of a text of a cell by an index.

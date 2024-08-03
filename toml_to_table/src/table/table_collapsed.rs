@@ -4,7 +4,7 @@ use tabled::{
     grid::{
         config::{AlignmentHorizontal, AlignmentVertical},
         dimension::{DimensionPriority, PoolTableDimension},
-        util::string::{count_lines, get_lines, string_width, string_width_multiline},
+        util::string::{count_lines, get_line_width, get_lines, get_text_width},
     },
     tables::{PoolTable, TableValue},
 };
@@ -75,7 +75,7 @@ fn convert_map_to_column(map: &TomlMap, ctx: CollapseCtx) -> TableValue {
         .keys()
         .map(|key| key.to_string())
         .map(|key| {
-            let width = string_width_multiline(&key);
+            let width = get_text_width(&key);
             (key, width)
         })
         .collect::<Vec<_>>();
@@ -132,7 +132,7 @@ fn increase_string_width(text: &str, by: usize, ah: AlignmentHorizontal) -> Stri
     let mut out = Vec::new();
 
     for line in get_lines(text) {
-        let width = string_width(&line);
+        let width = get_line_width(&line);
         let (left, right) = indent_horizontal(ah, width + by, width);
 
         let mut buf = String::new();
