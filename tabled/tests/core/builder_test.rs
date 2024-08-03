@@ -168,6 +168,42 @@ test_table!(
 );
 
 test_table!(
+    push_column_4,
+    {
+        let mut b = Builder::default();
+        b.push_column(["4", "g", "h"]);
+        b.build()
+    },
+    "+---+"
+    "| 4 |"
+    "+---+"
+    "| g |"
+    "+---+"
+    "| h |"
+    "+---+"
+);
+
+test_table!(
+    push_column_5,
+    {
+        let mut b = Builder::default();
+        b.push_column(["4", "g", "h"]);
+        b.push_column(["5", "g", "h", "j"]);
+        b.push_column(["6"]);
+        b.build()
+    },
+    "+---+---+---+"
+    "| 4 | 5 | 6 |"
+    "+---+---+---+"
+    "| g | g |   |"
+    "+---+---+---+"
+    "| h | h |   |"
+    "+---+---+---+"
+    "|   | j |   |"
+    "+---+---+---+"
+);
+
+test_table!(
     insert_column_0,
     {
         let mut b = Builder::default();
