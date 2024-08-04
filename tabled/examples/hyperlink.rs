@@ -6,7 +6,7 @@
 //! * 🚩 This example requires the `color` feature.
 //!
 //! * ⚠️ Terminal interfaces may differ in how they parse links or make them interactive.
-//! [`tabled`] doesn't have the final say on whether a link is clickable or not.
+//!   [`tabled`] doesn't have the final say on whether a link is clickable or not.
 
 use tabled::{
     settings::{object::Segment, Alignment, Style, Width},

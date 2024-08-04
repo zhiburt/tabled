@@ -4,7 +4,7 @@
 //! * 🚩 This example requires the `color` feature.
 //!
 //! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
-//! reusable themes for text, backgrounds, padded whitespace, and borders.
+//!   reusable themes for text, backgrounds, padded whitespace, and borders.
 //!
 //! * Note how a unique color can be set for each direction.
 

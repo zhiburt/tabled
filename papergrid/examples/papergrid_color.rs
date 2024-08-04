@@ -3,8 +3,8 @@
 //! * 🚩 This example requires the `color` feature.
 //!
 //! * Note that this example uses inline ANSI escape characters to style
-//! grid cells. `Grid::new(_, _, _, NoColors)` indicates that a color
-//! map is not provided. NOT that colors are ignored in the output.
+//!   grid cells. `Grid::new(_, _, _, NoColors)` indicates that a color
+//!   map is not provided. NOT that colors are ignored in the output.
 
 use std::{
     fmt,
