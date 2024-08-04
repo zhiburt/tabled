@@ -5,8 +5,8 @@
 //! > -- <cite>Wikipedia</cite>
 //!
 //! * Note how [Builder] can be used to define a table's shape manually
-//!  and can be populated through iteration if it is mutable. This flexibility
-//! is useful when you don't have direct control over the datasets you intend to [table](tabled).
+//!   and can be populated through iteration if it is mutable. This flexibility
+//!   is useful when you don't have direct control over the datasets you intend to [table](tabled).
 
 use tabled::{builder::Builder, settings::Style};
 

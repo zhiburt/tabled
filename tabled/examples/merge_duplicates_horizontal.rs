@@ -2,7 +2,7 @@
 //! redundancies in a [`Table`] display.
 //!
 //! * Note how a custom theme is applied to give the [`Merged`](Merge) cells
-//! a unique look.
+//!   a unique look.
 //!
 //! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 

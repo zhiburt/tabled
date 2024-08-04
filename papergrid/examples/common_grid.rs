@@ -2,8 +2,8 @@
 //! of [`Borders`], [`CompactConfig`], and column counts with [`IterRecords`].
 //!
 //! * For an alternative to [`CompactGrid`] and [`CompactGridDimension`] with
-//! flexible row height, variable intra-column spans, and multiline cell support
-//! see [`Grid`] and [`SpannedGridDimension`].
+//!   flexible row height, variable intra-column spans, and multiline cell support
+//!   see [`Grid`] and [`SpannedGridDimension`].
 
 use papergrid::{
     config::compact::CompactConfig,

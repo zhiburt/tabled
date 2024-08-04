@@ -2,7 +2,7 @@
 //! the cells of a [`Table`].
 //!
 //! * Note how [`Format::content()`] gives access to the respective cell content for replacement.
-//! And [`Format::positioned()`] additionally provides the index coordinates of that cell.
+//!   And [`Format::positioned()`] additionally provides the index coordinates of that cell.
 //!
 //! * Note how the [std] [`format!`] macro is used to update the values of the affected cells.
 

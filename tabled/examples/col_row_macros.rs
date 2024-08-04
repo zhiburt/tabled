@@ -4,10 +4,10 @@
 //! * 🚩 This example requires the `macros` feature.
 //!
 //! * Note how both macros can be used in combination to layer
-//! several table arrangements together.
+//!   several table arrangements together.
 //!
 //! * Note how [`col!`] and [`row!`] support idiomatic argument duplication
-//! with the familiar `[T; N]` syntax.
+//!   with the familiar `[T; N]` syntax.
 
 use tabled::{
     col, row,

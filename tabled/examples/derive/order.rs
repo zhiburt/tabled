@@ -2,7 +2,7 @@
 //! [`order`] to relocate fields to specified indexes in a [`Table`] display.
 //!
 //! * By default, [`Table`] columns are shown in the same ordered they are
-//! defined in the deriving struct/enum definition.
+//!   defined in the deriving struct/enum definition.
 
 use tabled::{Table, Tabled};
 

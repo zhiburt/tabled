@@ -2,12 +2,12 @@
 //! [`inline`] to expand enum fields to individual columns in a [`Table`] display.
 //!
 //! * Note how the optional [`inline`] argument is used to apply prefixes
-//! to decomposed column headers. This is helpful for organizing tables
-//! with repetitive fields that would normally result in confusing headers.
+//!   to decomposed column headers. This is helpful for organizing tables
+//!   with repetitive fields that would normally result in confusing headers.
 //!
 //! * Note that without inlining a struct or enum field, those objects
-//! must implement the [`Display`] trait as they will be represented in
-//! a single column with the value of their [`ToString`] output.
+//!   must implement the [`Display`] trait as they will be represented in
+//!   a single column with the value of their [`ToString`] output.
 
 use tabled::{Table, Tabled};
 

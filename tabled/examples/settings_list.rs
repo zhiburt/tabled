@@ -2,7 +2,7 @@
 //! [`Table`] configurations in a separate step from instantiation.
 //!
 //! * Note how this methodology can lead to huge performance gains
-//! with compile-time constants.
+//!   with compile-time constants.
 
 use tabled::{
     settings::{

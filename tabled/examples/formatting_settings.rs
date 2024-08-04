@@ -2,7 +2,7 @@
 //! to align the content of a [`Table`] in several nuanced ways.
 //!
 //! * Note how [`AlignmentStrategy`] and [`TrimStrategy`] provide useful tools for managing multiline cells and
-//! cell values that are bloated with whitespace.
+//!   cell values that are bloated with whitespace.
 
 use tabled::{
     settings::{

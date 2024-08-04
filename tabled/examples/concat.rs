@@ -4,7 +4,7 @@
 //! * [`Concat`] supports appending tables vertically and horizontally.
 //!
 //! * Note how the base tables style settings take take precedence over the appended table.
-//! If the two tables are of unequal shape, additional blank cells are added as needed.
+//!   If the two tables are of unequal shape, additional blank cells are added as needed.
 
 use tabled::{
     settings::{Alignment, Concat, Style},

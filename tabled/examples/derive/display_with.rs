@@ -8,7 +8,7 @@
 //! * [`display_with`] attributes can be constructed in two ways (shown below).
 //!
 //! * Attribute arguments can be directly overridden with static values, effectively ignoring the
-//! augmented fields natural value entirely. Even an entire object can be passed as context with `self`.
+//!   augmented fields natural value entirely. Even an entire object can be passed as context with `self`.
 
 use std::borrow::Cow;
 

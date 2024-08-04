@@ -4,7 +4,7 @@
 //! * 🚩 This example requires the `color` feature.
 //!
 //! * Note how [`Format::content()`] is used to break out [`CellOption`]
-//! specifications. This is helpful for organizing extensive [`Table`] configurations.
+//!   specifications. This is helpful for organizing extensive [`Table`] configurations.
 
 use std::iter::FromIterator;
 

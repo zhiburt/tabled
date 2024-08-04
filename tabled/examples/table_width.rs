@@ -4,8 +4,8 @@
 //! * Note how table-wide size adjustments are applied proportionally to all columns.
 //!
 //! * Note how [fluent](https://en.wikipedia.org/wiki/Fluent_interface) functions
-//! are available to make subtle customizations to [`Width`] primary features like
-//! [`Width::truncate()`], [`Width::increase()`], and [`Width::wrap()`].
+//!   are available to make subtle customizations to [`Width`] primary features like
+//!   [`Width::truncate()`], [`Width::increase()`], and [`Width::wrap()`].
 
 use tabled::{
     settings::{measurement::Percent, object::Segment, Alignment, Modify, Style, Width},

@@ -2,7 +2,7 @@
 //! cell data from a [`Table`] display.
 //!
 //! * ⚠️ Using [`Disable`] in combination with other [`Style`] customizations may yield unexpected results.
-//! It is safest to use [`Disable`] last in a chain of alterations.
+//!   It is safest to use [`Disable`] last in a chain of alterations.
 
 use tabled::{
     settings::{location::ByColumnName, Disable},

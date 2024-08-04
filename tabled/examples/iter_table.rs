@@ -2,7 +2,7 @@
 //! free [`Table`] alternative that translates an iterator into a display.
 //!
 //! * Note how [`IterTable`] supports the familiar `.with()` syntax for applying display
-//! modifications.
+//!   modifications.
 //!
 //! * [`IterTable`] supports manual configuration of:
 //!     * Record sniffing (default 1000 rows)

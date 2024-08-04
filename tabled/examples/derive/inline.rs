@@ -2,8 +2,8 @@
 //! [`inline`] to expand struct fields to individual columns in a [`Table`] display.
 //!
 //! * Note that without inlining a struct or enum field, those objects
-//! must implement the [`Display`] trait as they will be represented in
-//! a single column with the value of their [`ToString`] output.
+//!   must implement the [`Display`] trait as they will be represented in
+//!   a single column with the value of their [`ToString`] output.
 
 use tabled::{Table, Tabled};
 

@@ -2,10 +2,10 @@
 //! redundancies in a [`Table`] display.
 //!
 //! * Note how repetitive entries must be consecutive, in their specified direction,
-//! to be merged together.
+//!   to be merged together.
 //!
 //! * Note how [`BorderSpanCorrection`] is used to resolve display issues incurred
-//! from [`Span`] decisions made through duplicate detection.
+//!   from [`Span`] decisions made through duplicate detection.
 //!
 //! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 

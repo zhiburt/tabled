@@ -7,7 +7,7 @@
 //!     * `segment()` | yields subsection of the initial table
 //!
 //! * Note how [`Extract`] methods accepts [`RangeBounds`] arguments,
-//! making subset specifications concise.
+//!   making subset specifications concise.
 
 use tabled::{
     settings::{object::Rows, Alignment, Extract, Style},

@@ -7,7 +7,7 @@
 //!     * Choosing a location for the new index column besides 0; the default
 //!
 //! * Note that like with any builder pattern the [`IndexBuilder::build()`] function
-//! is necessary to produce a displayable [`Table`].
+//!   is necessary to produce a displayable [`Table`].
 
 use tabled::{settings::Style, Table, Tabled};
 

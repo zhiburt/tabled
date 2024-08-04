@@ -2,7 +2,7 @@
 //! multidimensional array.
 //!
 //! * Note how [`CompactTable::from()`] inherits the lengths of the nested arrays
-//! as typed definitions through [const generics](https://practice.rs/generics-traits/const-generics.html).
+//!   as typed definitions through [const generics](https://practice.rs/generics-traits/const-generics.html).
 
 #![allow(unused_variables)]
 

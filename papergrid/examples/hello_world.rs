@@ -2,10 +2,10 @@
 //! of [`Borders`], [`SpannedConfig`], and column counts with [`IterRecords`].
 //!
 //! * For an alternative to [`Grid`] and [`SpannedGridDimension`] with
-//! uniform row height and intra-column spans see [`CompactGrid`] and [`CompactGridDimension`].
+//!   uniform row height and intra-column spans see [`CompactGrid`] and [`CompactGridDimension`].
 //! * Note that [`Grid`] supports multiline cells whereas [`CompactGrid`] does not.
 //! * Note that [`Dimension`] implementations rely on [`Dimension::estimate()`]
-//! to correctly format outputs, and typically trigger index-out-of-bounds errors otherwise.
+//!   to correctly format outputs, and typically trigger index-out-of-bounds errors otherwise.
 
 use papergrid::{
     colors::NoColors,

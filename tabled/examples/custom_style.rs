@@ -2,10 +2,10 @@
 //! to create a unique [`Table`] display.
 //!
 //! * Note that all predesigned styles can be configured completely.
-//! Styles can also be created from scratch!
+//!   Styles can also be created from scratch!
 //!
 //! * Note that adding and removing borders with a [`Style`] theme doesn't affect the
-//! number of functional columns and rows.
+//!   number of functional columns and rows.
 
 use tabled::{
     settings::{

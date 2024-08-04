@@ -2,7 +2,7 @@
 //! the cells of a [`Table`].
 //!
 //! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
-//! reusable themes for backgrounds.
+//!   reusable themes for backgrounds.
 
 use tabled::{
     settings::{Color, Style},

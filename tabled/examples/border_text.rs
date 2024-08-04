@@ -7,16 +7,16 @@
 //!     * Text colorization
 //!
 //! * Note how the flexibility of [`Style`] is utilized
-//! to remove horizontal borders from the table entirely,
-//! and then granularly reinserts one for a highly customized
-//! visualization.
+//!   to remove horizontal borders from the table entirely,
+//!   and then granularly reinserts one for a highly customized
+//!   visualization.
 //!
 //! * Note how the [`Rows`] utility object is used to idiomatically
-//! reference the first and last rows of a [`Table`] without writing
-//! the necessary logic by hand.
+//!   reference the first and last rows of a [`Table`] without writing
+//!   the necessary logic by hand.
 //!
 //! * 🚀 Combining several easy-to-use tools,
-//! to create unique data representations is what makes [`tabled`] great!
+//!   to create unique data representations is what makes [`tabled`] great!
 
 use tabled::{
     settings::{

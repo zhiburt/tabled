@@ -2,7 +2,7 @@
 //! around a [`Table`] display.
 //!
 //! * Note how the [`Margin::fill()`] function allows for overriding the default whitespace
-//! with any [`char`].
+//!   with any [`char`].
 
 use tabled::{
     settings::{Margin, Style},

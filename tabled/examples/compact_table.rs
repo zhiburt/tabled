@@ -2,7 +2,7 @@
 //! manual specifications for column count, column widths, and border styling.
 //!
 //! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
-//! flexibility for improved performance.
+//!   flexibility for improved performance.
 
 #![allow(unused_variables)]
 

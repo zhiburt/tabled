@@ -3,7 +3,7 @@
 //! * This first nested [`Table`] example showcases the [`Builder`] approach.
 //!
 //! * Note how a great deal of manual customizations have been applied to create a
-//! highly unique display.
+//!   highly unique display.
 //!
 //! * 🎉 Inspired by https://github.com/p-ranav/tabulate#nested-tables/
 
