@@ -89,6 +89,7 @@ you can find more examples in the **[examples](/tabled/examples/)** folder.
 - [Tips and Tricks](#tips-and-tricks)
   - [`std::fmt::*` options](#std::fmt::*-options)
   - [Tuple combination](#tuple-combination)
+  - [Tuple options](#tuple-options)
   - [Object](#object)
   - [Builder](#builder)
   - [Macros](#macros)
@@ -664,14 +665,11 @@ use tabled::{
     Table,
 };
 
-let data = [("Text", "Multiline\ntext"), ("text", "text")];
 let mut table = Table::new(data);
 table.modify(
     Segment::all(),
     Settings::new(Alignment::right(), Alignment::bottom()),
 );
-
-println!("{table}");
 ```
 
 The output would be.
@@ -859,7 +857,7 @@ Below is an example of setting an exact table width.
 use tabled::{
     settings::{
         peaker::{PriorityMax, PriorityMin},
-        Settings, Width,
+        Width,
     },
     Table,
 };
@@ -868,9 +866,9 @@ fn gen_table(string_size: usize, width: usize) -> String {
     let data = vec![(string_size.to_string(), "x".repeat(string_size))];
 
     let mut table = Table::new(data);
-    table.with(Settings::new(
-        Width::wrap(width).priority::<PriorityMax>(),
-        Width::increase(width).priority::<PriorityMin>(),
+    table.with((
+        Width::wrap(width).priority(PriorityMax),
+        Width::increase(width).priority(PriorityMin),
     ));
 
     table.to_string()
@@ -991,7 +989,7 @@ You can tweak `Truncate`, `Wrap`, `MinWidth` logic by setting a priority by whic
 ```rust
 use tabled::settings::{Width, peaker::PriorityMax};
 
-table.with(Width::truncate(10).priority::<PriorityMax>());
+table.with(Width::truncate(10).priority(PriorityMax));
 ```
 
 #### Percent
@@ -1915,6 +1913,39 @@ assert_eq!(
 );
 ```
 
+### Tuple options
+
+You can concat together options, just like `Settings` does, but in a more ideomatic way.
+
+```rust
+use tabled::{
+    settings::{Alignment, Style},
+    Table,
+};
+
+let movies = vec![
+    ("The Fall Guy", 2024, 6.9),
+    ("Barbie", 2023, 6.8),
+    ("The Chase for Carrera", 2023, 7.5),
+];
+
+let mut table = Table::new(movies);
+table.with((Alignment::right(), Style::modern()));
+
+assert_eq!(
+    table.to_string(),
+    "┌───────────────────────┬──────┬─────┐\n\
+     │                  &str │  i32 │ f64 │\n\
+     ├───────────────────────┼──────┼─────┤\n\
+     │          The Fall Guy │ 2024 │ 6.9 │\n\
+     ├───────────────────────┼──────┼─────┤\n\
+     │                Barbie │ 2023 │ 6.8 │\n\
+     ├───────────────────────┼──────┼─────┤\n\
+     │ The Chase for Carrera │ 2023 │ 7.5 │\n\
+     └───────────────────────┴──────┴─────┘",
+);
+```
+
 ### Object
 
 You can apply settings to a subgroup of cells using `and` and `not` methods for an object.
@@ -2217,7 +2248,7 @@ let data = [
 ];
 
 let table_settings = Settings::default()
-    .with(Width::wrap(width).priority::<PriorityMax>())
+    .with(Width::wrap(width).priority(PriorityMax))
     .with(Width::increase(width))
     .with(Height::limit(height))
     .with(Height::increase(height));
