@@ -1,14 +1,14 @@
 //! This example demonstrates using [`HtmlTable`] to easily transform a multi-dimensional array
 //! into web-friendly [html](https://developer.mozilla.org/en-US/docs/Web/HTML).
 //!
-//! * Note how [`HtmlTable::set_border()`] is used to customize the output markup.
+//! Note how [`HtmlTable::set_border()`] is used to customize the output markup.
 //! These changes are implemented through a prepended [style](https://developer.mozilla.org/en-US/docs/Web/css)
 //! section above the opening table tag.
-//! * Customization options include:
-//!     * Border
-//!     * Alignment
-//!     * Column and Row span
-//!     * Margin and Padding
+//! Customization options include:
+//!   Border
+//!   Alignment
+//!   Column and Row span
+//!   Margin and Padding
 
 use table_to_html::HtmlTable;
 
