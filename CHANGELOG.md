@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.16.0] - 2024-08-05
+
+### Added
+
+- Added `#[tabled(crate = "")]` attribute.
+- Added `#[tabled(format = "", format(""))]` attribute.
+- Support for expressions in `#[tabled(display_with(""))]`
+- Added tupple combinations of settings, just as `Settings` does.
+- Added `PriorityRight` and `PriorityLeft` priorities.
+- Created back `Layout`/`Reverse`/`MarginColor`/`PaddingColor`.
+- Added custom template setting in `ExtendedTable` (by [@brianheineman](https://github.com/brianheineman))
+
+# Changed
+
+- Stabilized `unicode-width` dependency so we expect the outcome (but probably there shall be done adjustments for it further support).
+- Work on format macros (by [@thomassimmer](https://github.com/thomassimmer)).
+- Renamed `wrap::wrap_text` and `truncate::truncate_text`.
+- Renamed `CellInfo` to `Text`.
+- Changed interface of `Theme` and splitted into other structs.
+- Changed `Width`/`Height::priority` interface so it's no longer generic.
+
+# Fixed
+
+- Fix issue with `Cow`` usage in derive.
+- Fix `Builder::push_column` (by [@zxch3n](https://github.com/zxch3n)).
+- Fix `README.md` (by [@akiomik](https://github.com/akiomik)).
+- Fix `README.md` (by [@fbonin](https://github.com/fbonin)).
+- Fix spellings (by [@Alexdelia](https://github.com/Alexdelia)).
+- Fix spellings (by [@xeruf](https://github.com/xeruf)).
+- Fix spellings (by [@strange-dv](https://github.com/strange-dv)).
+- Fix spellings (by [@rcorre](https://github.com/rcorre)).
+- Fix docs (by [@jvanbuel](https://github.com/jvanbuel)).
+- Fix docs (by [@obi1kenobi](https://github.com/obi1kenobi)).
+- Fix CI issues (by [@akiomik](https://github.com/akiomik)).
+
 ## [0.15.0] - 2023-12-20
 
 ### Added
