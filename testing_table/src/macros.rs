@@ -1,3 +1,14 @@
+/// Build a static table.
+/// 
+/// # Example
+/// 
+/// ```text
+/// static_table!(
+///     "|--|--|"
+///     "|XX|XY|"
+///     "|--|--|"
+/// )
+/// ```
 #[macro_export]
 macro_rules! static_table {
     ($($line:expr)*) => {
@@ -8,6 +19,19 @@ macro_rules! static_table {
     };
 }
 
+/// Create a test for a given table.
+/// 
+/// # Example
+/// 
+/// ```text
+/// test_table!(
+///     test_name,
+///     Table::new([[1, 2, 3], [4, 5, 6]]),
+///     "|--|--|"
+///     "|XX|XY|"
+///     "|--|--|"
+/// )
+/// ```
 #[macro_export]
 macro_rules! test_table {
     ($test:ident, $table:expr, $($line:expr)*) => {
@@ -27,6 +51,18 @@ macro_rules! test_table {
     };
 }
 
+/// Assert a given table.
+/// 
+/// # Example
+/// 
+/// ```text
+/// assert_table!(
+///     Table::new([[1, 2, 3], [4, 5, 6]]),
+///     "|--|--|"
+///     "|XX|XY|"
+///     "|--|--|"
+/// )
+/// ```
 #[macro_export]
 macro_rules! assert_table {
     ($table:expr, $($line:expr)*) => {
@@ -36,6 +72,13 @@ macro_rules! assert_table {
     };
 }
 
+/// Assert a given table width.
+/// 
+/// # Example
+/// 
+/// ```text
+/// assert_width!(Table::new([[1, 2, 3], [4, 5, 6]]), 10);
+/// ```
 #[macro_export]
 macro_rules! assert_width {
     ($table:expr, $expected:expr) => {

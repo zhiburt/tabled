@@ -1,3 +1,9 @@
+//! Crate provides a convinient functions for work with tables.
+//! 
+//! It was developed as a sub-project of [`tabled`].
+//! 
+//! [`tabled`]: https://github.com/zhiburt/tabled
+
 mod macros;
 mod util;
 
