@@ -45,7 +45,6 @@ macro_rules! test_table {
         fn $test() {
             let table = $table.to_string();
             let expected = $expected.to_string();
-            println!("{}", table);
             assert_eq!(table, expected);
         }
     };
@@ -67,7 +66,6 @@ macro_rules! test_table {
 macro_rules! assert_table {
     ($table:expr, $($line:expr)*) => {
         let table = $table.to_string();
-        println!("{}", table);
         assert_eq!(table, $crate::static_table!($($line)*));
     };
 }
@@ -84,7 +82,6 @@ macro_rules! assert_width {
     ($table:expr, $expected:expr) => {
         let expected = $expected;
         let table = $table.to_string();
-        println!("{}", table);
         let width = $crate::get_text_width(&table);
         assert_eq!(width, expected);
     };
