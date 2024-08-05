@@ -1,7 +1,7 @@
 /// Build a static table.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```text
 /// static_table!(
 ///     "|--|--|"
@@ -20,9 +20,9 @@ macro_rules! static_table {
 }
 
 /// Create a test for a given table.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```text
 /// test_table!(
 ///     test_name,
@@ -52,9 +52,9 @@ macro_rules! test_table {
 }
 
 /// Assert a given table.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```text
 /// assert_table!(
 ///     Table::new([[1, 2, 3], [4, 5, 6]]),
@@ -73,9 +73,9 @@ macro_rules! assert_table {
 }
 
 /// Assert a given table width.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```text
 /// assert_width!(Table::new([[1, 2, 3], [4, 5, 6]]), 10);
 /// ```
