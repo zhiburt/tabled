@@ -35,3 +35,14 @@ macro_rules! assert_table {
         assert_eq!(table, $crate::static_table!($($line)*));
     };
 }
+
+#[macro_export]
+macro_rules! assert_width {
+    ($table:expr, $expected:expr) => {
+        let expected = $expected;
+        let table = $table.to_string();
+        println!("{}", table);
+        let width = $crate::get_text_width(&table);
+        assert_eq!(width, expected);
+    };
+}

@@ -5,7 +5,7 @@ use tabled::settings::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{is_width_eq, static_table, test_table};
+use testing_table::{assert_table, assert_width, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, std::convert::TryFrom, tabled::settings::Color};
@@ -80,19 +80,17 @@ fn table_with_margin_and_min_width() {
         .with(Width::truncate(20))
         .to_string();
 
-    assert_eq!(
+    assert_table!(
         table,
-        static_table!(
-            "VVVVVVVVVVVVVVVVVVVV"
-            ">  | co | co | col <"
-            ">--+----+----+-----<"
-            ">  |   0-0   | 0-2 <"
-            ">  | 1- | 1- | 1-2 <"
-            ">  | 2- | 2- | 2-2 <"
-            "^^^^^^^^^^^^^^^^^^^^"
-        )
+        "VVVVVVVVVVVVVVVVVVVV"
+        ">  | co | co | col <"
+        ">--+----+----+-----<"
+        ">  |   0-0   | 0-2 <"
+        ">  | 1- | 1- | 1-2 <"
+        ">  | 2- | 2- | 2-2 <"
+        "^^^^^^^^^^^^^^^^^^^^"
     );
-    assert!(is_width_eq(&table, 20));
+    assert_width!(table, 20);
 }
 
 #[test]
@@ -104,18 +102,16 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(tabled::grid::util::string::get_text_width(&table), 50);
-    assert_eq!(
+    assert_width!(table, 50);
+    assert_table!(
         table,
-        static_table!(
-            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
-            ">  N   |  column 0   |  column 1   |  column 2   <"
-            ">------+-------------+-------------+-------------<"
-            ">  0   |            0-0            |     0-2     <"
-            ">  1   |     1-0     |     1-1     |     1-2     <"
-            ">  2   |     2-0     |     2-1     |     2-2     <"
-            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-        )
+        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+        ">  N   |  column 0   |  column 1   |  column 2   <"
+        ">------+-------------+-------------+-------------<"
+        ">  0   |            0-0            |     0-2     <"
+        ">  1   |     1-0     |     1-1     |     1-2     <"
+        ">  2   |     2-0     |     2-1     |     2-2     <"
+        "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
     );
 }
 
@@ -152,19 +148,17 @@ fn margin_color_test_not_colored_feature() {
         ))
         .to_string();
 
-    assert_eq!(
+    assert_table!(
         table,
-        static_table!(
-            "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
-            "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
-            "\u{1b}[42m>>\u{1b}[49m N | column 0 | column 1 | column 2 \u{1b}[43m<<\u{1b}[49m"
-            "\u{1b}[42m>>\u{1b}[49m---+----------+----------+----------\u{1b}[43m<<\u{1b}[49m"
-            "\u{1b}[42m>>\u{1b}[49m 0 |   0-0    |   0-1    |   0-2    \u{1b}[43m<<\u{1b}[49m"
-            "\u{1b}[42m>>\u{1b}[49m 1 |   1-0    |   1-1    |   1-2    \u{1b}[43m<<\u{1b}[49m"
-            "\u{1b}[42m>>\u{1b}[49m 2 |   2-0    |   2-1    |   2-2    \u{1b}[43m<<\u{1b}[49m"
-            "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
-            "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
-        )
+        "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
+        "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
+        "\u{1b}[42m>>\u{1b}[49m N | column 0 | column 1 | column 2 \u{1b}[43m<<\u{1b}[49m"
+        "\u{1b}[42m>>\u{1b}[49m---+----------+----------+----------\u{1b}[43m<<\u{1b}[49m"
+        "\u{1b}[42m>>\u{1b}[49m 0 |   0-0    |   0-1    |   0-2    \u{1b}[43m<<\u{1b}[49m"
+        "\u{1b}[42m>>\u{1b}[49m 1 |   1-0    |   1-1    |   1-2    \u{1b}[43m<<\u{1b}[49m"
+        "\u{1b}[42m>>\u{1b}[49m 2 |   2-0    |   2-1    |   2-2    \u{1b}[43m<<\u{1b}[49m"
+        "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
+        "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
     );
 }
 
@@ -182,18 +176,16 @@ fn margin_color_test() {
         ))
         .to_string();
 
-    assert_eq!(
+    assert_table!(
         table,
-        static_table!(
-            "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
-            "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
-            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m N | column 0 | column 1 | column 2 \u{1b}[32m<<\u{1b}[39m"
-            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m---+----------+----------+----------\u{1b}[32m<<\u{1b}[39m"
-            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 0 |   0-0    |   0-1    |   0-2    \u{1b}[32m<<\u{1b}[39m"
-            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 1 |   1-0    |   1-1    |   1-2    \u{1b}[32m<<\u{1b}[39m"
-            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 2 |   2-0    |   2-1    |   2-2    \u{1b}[32m<<\u{1b}[39m"
-            "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
-            "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
-        )
+        "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
+        "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
+        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m N | column 0 | column 1 | column 2 \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m---+----------+----------+----------\u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 0 |   0-0    |   0-1    |   0-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 1 |   1-0    |   1-1    |   1-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 2 |   2-0    |   2-1    |   2-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
+        "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
     );
 }
