@@ -1,6 +1,6 @@
 [package]
 name = "table_to_html"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 description = "The library provides a interface to convert a `tabled::Table` into a HTML table (`<table>`)."
@@ -17,8 +17,8 @@ derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
 [dependencies]
-tabled = { path = "../tabled", features = ["std"], default-features = false }
+tabled = { version = "0.16", features = ["std"], default-features = false }
 
 [dev-dependencies]
-tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }
-testing_table = { path = "../testing_table", features = ["ansi"] }
+tabled = { version = "0.16", features = ["std", "derive"], default-features = false }
+testing_table = { version = "0.1", features = ["ansi"] }
