@@ -134,7 +134,7 @@ fn test_data_span_test() {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(get_line_width(line), get_string_width(&output));
+        assert_eq!(get_line_width(line), get_text_width(&output));
     }
 }
 
