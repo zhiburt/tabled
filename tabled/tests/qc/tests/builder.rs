@@ -2,7 +2,7 @@ use quickcheck::Arbitrary;
 use quickcheck_macros::quickcheck;
 use tabled::{
     builder::Builder,
-    grid::util::string::{get_line_width, get_string_width},
+    grid::util::string::{get_line_width, get_text_width},
     settings::Style,
     Table,
 };
@@ -37,7 +37,7 @@ fn qc_table_is_consistent_with_borders(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(get_line_width(line), get_string_width(&output));
+        assert_eq!(get_line_width(line), get_text_width(&output));
     }
 }
 

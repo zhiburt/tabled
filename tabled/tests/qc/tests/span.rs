@@ -3,7 +3,7 @@ use quickcheck_macros::quickcheck;
 
 use tabled::{
     builder::Builder,
-    grid::util::string::{get_line_width, get_string_width},
+    grid::util::string::{get_line_width, get_text_width},
     settings::{Modify, Span, Style},
     Table,
 };
@@ -18,7 +18,7 @@ fn qc_tget_string_widthable_is_consistent_with_hspan_and_vspan(table_structure: 
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(get_line_width(line), get_string_width(&output));
+        assert_eq!(get_line_width(line), get_text_width(&output));
     }
 }
 
@@ -31,7 +31,7 @@ fn qc_table_is_consistent_with_hspan(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(get_line_width(line), get_string_width(&output));
+        assert_eq!(get_line_width(line), get_text_width(&output));
     }
 }
 
@@ -44,7 +44,7 @@ fn qc_table_is_consistent_with_vspan(table_structure: TableStructure) {
     let output = table.to_string();
 
     if let Some(line) = output.lines().next() {
-        assert_eq!(get_line_width(line), get_string_width(&output));
+        assert_eq!(get_line_width(line), get_text_width(&output));
     }
 }
 

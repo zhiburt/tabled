@@ -9,45 +9,42 @@
 //! * Note that like with any builder pattern the [`IndexBuilder::build()`] function
 //!   is necessary to produce a displayable [`Table`].
 
-use tabled::{
-    settings::{object::Columns, Alignment, Style},
-    Table, Tabled,
-};
+use tabled::{settings::Style, Table, Tabled};
 
 #[derive(Tabled)]
-#[tabled(rename_all = "PascalCase")]
-struct Post {
-    title: String,
-    #[tabled(format("{} @{}", self.writer, self.team.as_deref().unwrap_or("")))]
-    writer: String,
-    #[tabled(skip)]
-    team: Option<String>,
+struct Distribution {
+    name: String,
+    based_on: String,
+    is_active: bool,
+    is_cool: bool,
 }
 
-impl Post {
-    fn new(title: &str, writer: &str, team: Option<&str>) -> Self {
+impl Distribution {
+    fn new(name: &str, based: &str, is_active: bool, is_cool: bool) -> Self {
         Self {
-            title: title.to_string(),
-            writer: writer.to_string(),
-            team: team.map(ToString::to_string),
+            name: name.to_string(),
+            based_on: based.to_string(),
+            is_active,
+            is_cool,
         }
     }
 }
 
 fn main() {
-    let content = vec![
-        Post::new(
-            "crates.io: development update",
-            "Tobias Bieniek",
-            Some("crates.io"),
-        ),
-        Post::new("Announcing Rust 1.80.0", "", Some("The Rust Release Team")),
-        Post::new("Types Team Update and Roadmap", "lcnr", None),
+    let data = vec![
+        Distribution::new("Manjaro", "Arch", true, true),
+        Distribution::new("Arch", "None", true, true),
+        Distribution::new("Debian", "None", true, true),
     ];
 
-    let mut table = Table::new(content);
-    table.with(Style::rounded());
-    table.modify(Columns::last(), Alignment::right());
+    let mut table = Table::builder(data)
+        .index()
+        .column(0)
+        .transpose()
+        .name(None)
+        .build();
+
+    table.with(Style::modern_rounded());
 
     println!("{table}");
 }
