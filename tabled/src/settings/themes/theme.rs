@@ -118,6 +118,7 @@ impl Theme {
     /// Remove horizontal lines.
     pub fn remove_horizontal_lines(&mut self) {
         self.set_horizontal_lines(HashMap::new());
+        self.lines_horizontal1 = None;
         self.chars.horizontal = None;
         self.chars.left_intersection = None;
         self.chars.right_intersection = None;
