@@ -313,7 +313,7 @@ fn build_margin(pad: Pad<LitInt>) -> syn::Result<Margin> {
 }
 
 fn panic_not_supported_theme(ident: &LitStr) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         note="custom themes are yet not supported";
@@ -322,7 +322,7 @@ fn panic_not_supported_theme(ident: &LitStr) {
 }
 
 fn panic_not_supported_alignment(ident: &LitStr) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         note="custom themes are yet not supported";
@@ -331,7 +331,7 @@ fn panic_not_supported_alignment(ident: &LitStr) {
 }
 
 fn panic_not_supported_settings(ident: &Ident) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         help = r#"Supported list is [THEME, PADDING, MARGIN]"#

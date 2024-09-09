@@ -588,7 +588,7 @@ fn build_margin(pad: Pad<LitInt>) -> syn::Result<Margin> {
 }
 
 fn panic_not_supported_theme(ident: &LitStr) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         note="custom themes are yet not supported";
@@ -597,7 +597,7 @@ fn panic_not_supported_theme(ident: &LitStr) {
 }
 
 fn panic_not_supported_alignment(ident: &LitStr) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         help = r#"Supported alignment are [LEFT, RIGHT, CENTER, CENTER_VERTICAL, TOP, BOTTOM]"#
@@ -606,7 +606,7 @@ fn panic_not_supported_alignment(ident: &LitStr) {
 
 #[allow(dead_code)]
 fn panic_not_supported_bool(ident: &LitStr) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "Unexpected bool value";
         help = r#"Expected to get [TRUE, FALSE]"#
@@ -614,7 +614,7 @@ fn panic_not_supported_bool(ident: &LitStr) {
 }
 
 fn panic_not_supported_settings(ident: &Ident) {
-    proc_macro_error::abort!(
+    proc_macro_error2::abort!(
         ident,
         "The given settings is not supported";
         help = r#"Supported list is [THEME, PADDING, MARGIN]"#

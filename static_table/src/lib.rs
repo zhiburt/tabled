@@ -167,7 +167,7 @@
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
 
-use proc_macro_error::proc_macro_error;
+use proc_macro_error2::proc_macro_error;
 use quote::quote;
 use syn::parse_macro_input;
 

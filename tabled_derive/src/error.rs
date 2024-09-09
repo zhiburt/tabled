@@ -55,14 +55,14 @@ impl std::error::Error for Error {}
 pub fn abort(err: Error) -> ! {
     match err {
         Error::Syn(err) => {
-            proc_macro_error::abort! {err.span(), "{}", err}
+            proc_macro_error2::abort! {err.span(), "{}", err}
         }
         Error::Custom { span, error, help } => match help {
             Some(help) => {
-                proc_macro_error::abort! {span, "{}",  error; help="{}", help}
+                proc_macro_error2::abort! {span, "{}",  error; help="{}", help}
             }
             None => {
-                proc_macro_error::abort! {span, "{}",  error}
+                proc_macro_error2::abort! {span, "{}",  error}
             }
         },
     }
