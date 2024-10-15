@@ -5,7 +5,7 @@ use crate::grid::{
 
 /// A trait for configuring a single cell.
 ///
-/// ~~~~ Where cell represented by 'row' and 'column' indexes. ~~~~
+/// A cell is represented by row and column indexes.
 ///
 /// A cell can be targeted by [`Cell`].
 ///
