@@ -397,20 +397,22 @@ fn collect_vspan(matrix: &MatrixInput) -> Result<HashMap<(usize, usize), usize>>
                         let arr_len = len.base10_parse::<usize>()?;
                         match elem {
                             ExprVal::Lit(_) => {}
-                            ExprVal::Scope { expr, .. } => match expr {
-                                Some(val) => match val {
-                                    ScopeVal::Expr(_) => {}
-                                    ScopeVal::List(_) => {}
-                                    ScopeVal::Sized { len, .. } => {
-                                        let len = len.base10_parse::<usize>()?;
-                                        if len > 0 {
-                                            let iter = (0..arr_len).map(|i| ((row, i * len), len));
-                                            spans.extend(iter);
+                            ExprVal::Scope { expr, .. } => {
+                                if let Some(val) = expr {
+                                    match val {
+                                        ScopeVal::Expr(_) => {}
+                                        ScopeVal::List(_) => {}
+                                        ScopeVal::Sized { len, .. } => {
+                                            let len = len.base10_parse::<usize>()?;
+                                            if len > 0 {
+                                                let iter =
+                                                    (0..arr_len).map(|i| ((row, i * len), len));
+                                                spans.extend(iter);
+                                            }
                                         }
                                     }
-                                },
-                                None => {}
-                            },
+                                }
+                            }
                         }
                     }
                 }
