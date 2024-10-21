@@ -12,7 +12,7 @@ mod parse;
 
 use attributes::FormatArg;
 use proc_macro2::TokenStream;
-use proc_macro_error::proc_macro_error;
+use proc_macro_error2::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
 use syn::visit_mut::VisitMut;

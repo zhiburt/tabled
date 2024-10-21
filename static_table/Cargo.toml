@@ -24,7 +24,7 @@ tabled = { version = "0.16", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"
-proc-macro-error = "1.0"
+proc-macro-error2 = "2.0.1"
 
 [dev-dependencies]
 testing_table = { version = "0.1", features = ["ansi"] }
