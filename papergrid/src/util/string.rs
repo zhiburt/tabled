@@ -7,33 +7,16 @@
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline`] and [`count_lines`].
 #[cfg(feature = "std")]
 pub fn get_text_dimension(text: &str) -> (usize, usize) {
-    #[cfg(not(feature = "ansi"))]
-    {
-        let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
-            if c == '\n' {
-                (lines + 1, 0, acc.max(max))
-            } else {
-                let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
-                (lines, acc + w, max)
-            }
-        });
-
-        (lines, acc.max(max))
-    }
-
-    #[cfg(feature = "ansi")]
-    {
-        get_lines(text)
-            .map(|line| get_line_width(&line))
-            .fold((0, 0), |(i, acc), width| (i + 1, acc.max(width)))
-    }
+    get_lines(text)
+        .map(|line| get_line_width(&line))
+        .fold((0, 0), |(i, acc), width| (i + 1, acc.max(width)))
 }
 
 /// Returns a string width.
 pub fn get_line_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
-        unicode_width::UnicodeWidthStr::width(text)
+        get_string_width(text)
     }
 
     #[cfg(feature = "ansi")]
@@ -44,7 +27,7 @@ pub fn get_line_width(text: &str) -> usize {
         ansitok::parse_ansi(text)
             .filter(|e| e.kind() == ansitok::ElementKind::Text)
             .map(|e| &text[e.start()..e.end()])
-            .map(unicode_width::UnicodeWidthStr::width)
+            .map(get_string_width)
             .sum()
     }
 }
@@ -53,10 +36,7 @@ pub fn get_line_width(text: &str) -> usize {
 pub fn get_text_width(text: &str) -> usize {
     #[cfg(not(feature = "ansi"))]
     {
-        text.lines()
-            .map(unicode_width::UnicodeWidthStr::width)
-            .max()
-            .unwrap_or(0)
+        text.lines().map(get_string_width).max().unwrap_or(0)
     }
 
     #[cfg(feature = "ansi")]
@@ -72,7 +52,7 @@ pub fn get_char_width(c: char) -> usize {
 
 /// Returns a string width (accouting all characters).
 pub fn get_string_width(text: &str) -> usize {
-    unicode_width::UnicodeWidthStr::width(text)
+    unicode_width::UnicodeWidthStr::width(text.replace(|c| c < ' ', "").as_str())
 }
 
 /// Calculates a number of lines.
