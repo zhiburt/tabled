@@ -42,7 +42,7 @@ use crate::{
     settings::{Style, TableOption},
 };
 
-use super::util::utf8_writer::UTF8Writer;
+use crate::util::utf8_writer::UTF8Writer;
 
 /// A table which consumes an [`IntoRecords`] iterator.
 ///

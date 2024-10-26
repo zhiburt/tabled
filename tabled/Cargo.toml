@@ -311,8 +311,8 @@ ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { version = "0.12", default-features = false }
-tabled_derive = { version = "0.8", optional = true }
+papergrid = { path = "../papergrid", default-features = false }
+tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }
 

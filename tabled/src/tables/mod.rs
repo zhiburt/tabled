@@ -18,7 +18,6 @@
 //! A table with a greater control of a layout.
 
 mod compact;
-mod util;
 
 #[cfg(feature = "std")]
 mod extended;
