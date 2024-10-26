@@ -1,5 +1,3 @@
-use papergrid::config::Entity;
-
 use crate::grid::{
     ansi::ANSIStr,
     config::{

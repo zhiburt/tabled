@@ -225,6 +225,14 @@ impl Color {
         }
     }
 
+    /// Tries to get a static value of the color.
+    pub fn as_ansi_str(&self) -> Option<StaticColor<'static>> {
+        match self.inner {
+            ColorInner::Static(value) => Some(value),
+            ColorInner::Buf(_) => None,
+        }
+    }
+
     /// Parses the string,
     ///
     /// # Panics
@@ -261,6 +269,14 @@ impl From<ANSIBuf> for Color {
     fn from(color: ANSIBuf) -> Self {
         Self {
             inner: ColorInner::Buf(color),
+        }
+    }
+}
+
+impl From<StaticColor<'static>> for Color {
+    fn from(color: StaticColor<'static>) -> Self {
+        Self {
+            inner: ColorInner::Static(color),
         }
     }
 }

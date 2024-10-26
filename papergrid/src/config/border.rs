@@ -123,6 +123,23 @@ impl<T> Border<T> {
             || self.right_top_corner.is_some()
             || self.right_bottom_corner.is_some()
     }
+
+    /// Converts a border with a given function.
+    pub fn map<F, T1>(self, f: F) -> Border<T1>
+    where
+        F: Fn(T) -> T1,
+    {
+        Border {
+            top: self.top.map(&f),
+            bottom: self.bottom.map(&f),
+            left: self.left.map(&f),
+            right: self.right.map(&f),
+            left_top_corner: self.left_top_corner.map(&f),
+            left_bottom_corner: self.left_bottom_corner.map(&f),
+            right_top_corner: self.right_top_corner.map(&f),
+            right_bottom_corner: self.right_bottom_corner.map(&f),
+        }
+    }
 }
 
 impl<T: Copy> Border<T> {

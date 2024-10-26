@@ -5,9 +5,9 @@
 //! [`TableOption`]: crate::settings::TableOption
 //! [`CellOption`]: crate::settings::CellOption
 
+pub mod config;
 pub mod dimension;
 pub mod records;
-pub mod config;
 
 pub use papergrid::ansi;
 pub use papergrid::colors;

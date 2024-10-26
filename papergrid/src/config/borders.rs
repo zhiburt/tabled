@@ -173,4 +173,28 @@ impl<T> Borders<T> {
             vertical: self.vertical.map(Into::into),
         }
     }
+
+    /// Converts borders with a given function.
+    pub fn map<F, T1>(self, f: F) -> Borders<T1>
+    where
+        F: Fn(T) -> T1,
+    {
+        Borders {
+            left: self.left.map(&f),
+            right: self.right.map(&f),
+            top: self.top.map(&f),
+            bottom: self.bottom.map(&f),
+            bottom_intersection: self.bottom_intersection.map(&f),
+            bottom_left: self.bottom_left.map(&f),
+            bottom_right: self.bottom_right.map(&f),
+            horizontal: self.horizontal.map(&f),
+            intersection: self.intersection.map(&f),
+            left_intersection: self.left_intersection.map(&f),
+            right_intersection: self.right_intersection.map(&f),
+            top_intersection: self.top_intersection.map(&f),
+            top_left: self.top_left.map(&f),
+            top_right: self.top_right.map(&f),
+            vertical: self.vertical.map(&f),
+        }
+    }
 }

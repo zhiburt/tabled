@@ -137,6 +137,8 @@ impl Alignment {
         Self::vertical(AlignmentVertical::Center)
     }
 
+    // todo: rename get_horizontal into as_horizontal
+
     /// Convert alignment to horizontal.
     pub const fn get_horizontal(self) -> Option<AlignmentHorizontal> {
         match self.inner {

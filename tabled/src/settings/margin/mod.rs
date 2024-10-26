@@ -81,6 +81,18 @@ impl Margin {
     }
 }
 
+impl From<Margin> for Sides<Indent> {
+    fn from(value: Margin) -> Self {
+        value.indent
+    }
+}
+
+impl From<Sides<Indent>> for Margin {
+    fn from(indent: Sides<Indent>) -> Self {
+        Self { indent }
+    }
+}
+
 #[cfg(feature = "std")]
 impl<R, D> TableOption<R, ColoredConfig, D> for Margin {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {

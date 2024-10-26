@@ -1,11 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{
-    grid::{
-        ansi::ANSIBuf,
-        config::{Entity, EntityMap, SpannedConfig},
-    },
-    settings::Padding,
+use crate::grid::{
+    ansi::ANSIBuf,
+    config::{Entity, EntityMap, SpannedConfig},
 };
 
 /// A spanned configuration plus colors for cells.

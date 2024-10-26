@@ -42,4 +42,17 @@ impl<T> Sides<T> {
             self.bottom.into(),
         )
     }
+
+    /// Converts all sides with a given function.
+    pub fn map<F, T1>(self, f: F) -> Sides<T1>
+    where
+        F: Fn(T) -> T1,
+    {
+        Sides::new(
+            (f)(self.left),
+            (f)(self.right),
+            (f)(self.top),
+            (f)(self.bottom),
+        )
+    }
 }

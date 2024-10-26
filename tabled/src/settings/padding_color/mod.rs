@@ -96,6 +96,18 @@ impl PaddingColor<ANSIStr<'static>> {
     }
 }
 
+impl<C> From<PaddingColor<C>> for Sides<C> {
+    fn from(value: PaddingColor<C>) -> Self {
+        value.colors
+    }
+}
+
+impl<C> From<Sides<C>> for PaddingColor<C> {
+    fn from(colors: Sides<C>) -> Self {
+        Self { colors }
+    }
+}
+
 #[cfg(feature = "std")]
 impl<R, C> CellOption<R, ColoredConfig> for PaddingColor<C>
 where
