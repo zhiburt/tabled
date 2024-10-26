@@ -221,7 +221,7 @@ impl<I, D> CompactTable<I, D> {
         D: Dimension,
         W: std::io::Write,
     {
-        let writer = super::util::utf8_writer::UTF8Writer::new(writer);
+        let writer = crate::util::utf8_writer::UTF8Writer::new(writer);
         self.fmt(writer)
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
     }
