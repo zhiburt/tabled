@@ -6,7 +6,7 @@ use tabled::settings::{
     object::{Cell, Object, Rows, Segment},
     style::{BorderSpanCorrection, HorizontalLine, Style},
     themes::Theme,
-    Alignment, Border, Highlight, Modify, Panel, Span, Width,
+    Alignment, Highlight, Modify, Panel, Span, Width,
 };
 
 use crate::matrix::Matrix;
@@ -28,7 +28,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::border(Cell::new(0, 0), Border::filled('#'))),
+        .with(Highlight::outline(Cell::new(0, 0), '#')),
     "#####                                "
     "#        Linux Distributions         "
     "#####----------+----------+----------"
@@ -43,10 +43,10 @@ test_table!(
     Matrix::new(3, 3)
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::border(Cell::new(0, 0), Border::filled('#')))
-        .with(Highlight::border(Cell::new(0, 1), Border::filled('#')))
-        .with(Highlight::border(Cell::new(0, 2), Border::filled('#')))
-        .with(Highlight::border(Cell::new(0, 3), Border::filled('#'))),
+        .with(Highlight::outline(Cell::new(0, 0), '#'))
+        .with(Highlight::outline(Cell::new(0, 1), '#'))
+        .with(Highlight::outline(Cell::new(0, 2), '#'))
+        .with(Highlight::outline(Cell::new(0, 3), '#')),
     "######################################"
     "#        Linux Distributions         #"
     "######################################"

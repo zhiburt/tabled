@@ -271,8 +271,8 @@ mod grid_basic {
     where
         F: fmt::Write,
     {
-        let intersection = match cfg.get_intersection(pos, (shape.count_rows, shape.count_columns))
-        {
+        let intersection = cfg.get_intersection(pos, (shape.count_rows, shape.count_columns));
+        let intersection = match intersection {
             Some(c) => c,
             None => return Ok(()),
         };

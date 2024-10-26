@@ -51,7 +51,7 @@ where
 }
 
 const fn convert_orientation(position: Alignment) -> HeadPosition {
-    match (position.get_horizontal(), position.get_vertical()) {
+    match (position.as_horizontal(), position.as_vertical()) {
         (None, Some(AlignmentVertical::Top)) => HeadPosition::Top,
         (None, Some(AlignmentVertical::Bottom)) => HeadPosition::Bottom,
         (Some(AlignmentHorizontal::Left), None) => HeadPosition::Left,

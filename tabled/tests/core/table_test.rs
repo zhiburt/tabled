@@ -5,8 +5,7 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     settings::{
-        formatting::Charset, Border, Height, Highlight, Modify, Padding, Settings, Shadow, Style,
-        Width,
+        formatting::Charset, Height, Highlight, Modify, Padding, Settings, Shadow, Style, Width,
     },
     Table,
 };
@@ -894,7 +893,7 @@ test_table!(
     table_tuple_settings_list_2_test,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with((Padding::new(2, 2, 0, 0), Highlight::border((0, 0), Border::filled('*')), Shadow::new(5))),
+        .with((Padding::new(2, 2, 0, 0), Highlight::outline((0, 0), '*'), Shadow::new(5))),
     "*******                                            "
     "*  N  *  column 0  |  column 1  |  column 2  |▒▒▒▒▒"
     "*******------------|------------|------------|▒▒▒▒▒"
