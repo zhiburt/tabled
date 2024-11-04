@@ -1313,39 +1313,7 @@ fn text_width(text: &str, trim: bool) -> usize {
 
 #[cfg(test)]
 mod tests {
-    // use crate::util::string_width;
-
     use super::*;
-
-    // #[test]
-    // fn horizontal_alignment_test() {
-    //     use std::fmt;
-
-    //     struct F<'a>(&'a str, AlignmentHorizontal, usize);
-
-    //     impl fmt::Display for F<'_> {
-    //         fn fmt(&self, f: &mut impl fmt::Write) -> fmt::Result {
-    //             let (left, right) = calculate_indent(self.1, string_width(self.0), self.2);
-    //             print_text_formatted(f, &self.0, 4, Option::<&AnsiColor<'_>>::None)
-    //         }
-    //     }
-
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
-
-    //     #[cfg(feature = "ansi")]
-    //     {
-    //         use owo_colors::OwoColorize;
-    //         let text = "Colored Text".red().to_string();
-    //         assert_eq!(
-    //             F(&text, AlignmentHorizontal::Center, 15).to_string(),
-    //             format!(" {}  ", text)
-    //         );
-    //     }
-    // }
 
     #[test]
     fn vertical_alignment_test() {

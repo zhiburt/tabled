@@ -9,7 +9,7 @@ use tabled::{
 };
 
 #[quickcheck]
-fn qc_tget_string_widthable_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
+fn qc_table_width_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
     let mut table = create_table(table_structure.rows);
     set_theme(&mut table, table_structure.theme);
     set_span_hspan(&mut table, &table_structure.row_span);
