@@ -133,11 +133,9 @@ pub struct StepByObjectIter<I> {
 
 impl<I> StepByObjectIter<I> {
     fn new(iter: I, step: usize) -> Self {
-        Self {
-            iter,
-            step,
-            end: false,
-        }
+        let end = step == 0;
+
+        Self { iter, step, end }
     }
 }
 
@@ -155,7 +153,7 @@ where
         let item = self.iter.next();
         let _ = item.as_ref()?;
 
-        for _ in 0..self.step {
+        for _ in 0..self.step - 1 {
             let next = self.iter.next();
             if next.is_none() {
                 self.end = true;
@@ -257,22 +255,30 @@ mod tests {
         assert_eq!(cells((1, 5).skip(1), 10, 10), []);
         assert_eq!(cells((1, 5).skip(0), 10, 10), [Cell(1, 5)]);
 
-        assert_eq!(cells(Rows::new(1..5).skip(00), 10, 10), []);
+        assert_eq!(
+            cells(Rows::new(1..5).skip(0), 10, 10),
+            [Row(1), Row(2), Row(3), Row(4)]
+        );
     }
 
     #[test]
     fn test_step_by_iterator() {
         use Entity::*;
 
-        assert_eq!(cells(Rows::new(1..5).step_by(1), 10, 10), [Row(1), Row(3)]);
+        assert_eq!(cells(Rows::new(1..5).step_by(0), 10, 10), []);
+        assert_eq!(
+            cells(Rows::new(1..5).step_by(1), 10, 10),
+            [Row(1), Row(2), Row(3), Row(4)]
+        );
+        assert_eq!(cells(Rows::new(1..5).step_by(2), 10, 10), [Row(1), Row(3)]);
 
         assert_eq!(
-            cells(Columns::new(5..).step_by(0), 10, 10),
+            cells(Columns::new(5..).step_by(1), 10, 10),
             [Column(5), Column(6), Column(7), Column(8), Column(9)]
         );
 
+        assert_eq!(cells((1, 5).step_by(2), 10, 10), [Cell(1, 5)]);
         assert_eq!(cells((1, 5).step_by(1), 10, 10), [Cell(1, 5)]);
-        assert_eq!(cells((1, 5).step_by(0), 10, 10), [Cell(1, 5)]);
 
         assert_eq!(cells(Rows::new(1..5).step_by(100), 10, 10), [Row(1)]);
     }

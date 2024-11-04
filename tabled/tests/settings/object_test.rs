@@ -33,7 +33,7 @@ test_table!(
 
 test_table!(
     step_by,
-    Matrix::new(3, 3).with(Style::psql()).modify(Columns::new(..).step_by(2), Alignment::right()),
+    Matrix::new(3, 3).with(Style::psql()).modify(Columns::new(..).step_by(3), Alignment::right()),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |      0-2 "
