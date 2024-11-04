@@ -1,8 +1,6 @@
 #![cfg(feature = "std")]
 
-use tabled::settings::{
-    object::Cell, Border, Highlight, Margin, MarginColor, Modify, Span, Style, Width,
-};
+use tabled::settings::{object::Cell, Highlight, Margin, MarginColor, Modify, Span, Style, Width};
 
 use crate::matrix::Matrix;
 use testing_table::{assert_table, assert_width, test_table};
@@ -14,8 +12,8 @@ test_table!(
     margin_with_table_based_on_grid_borders,
     Matrix::new(3, 3)
         .with(Style::extended())
-        .with(Highlight::border(Cell::new(0, 0), Border::filled('+')))
-        .with(Highlight::border(Cell::new(1, 1), Border::filled('*')))
+        .with(Highlight::outline(Cell::new(0, 0), '+'))
+        .with(Highlight::outline(Cell::new(1, 1), '*'))
         .with(Margin::new(1, 2, 1, 2).fill('>', '<', 'V', '^')),
     "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
     ">+++++══════════╦══════════╦══════════╗<<"

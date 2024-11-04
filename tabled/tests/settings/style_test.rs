@@ -537,7 +537,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Border::inherit(Style::modern()))),
+    Matrix::table(2, 2).with(Highlight::new(Rows::single(1), Border::inherit(Style::modern()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -551,8 +551,8 @@ test_table!(
     style_frame_test_1,
     Matrix::table(2, 2)
         .with(Style::blank())
-        .with(Highlight::border(Rows::single(0), Border::inherit(Style::extended())))
-        .with(Highlight::border(Rows::single(2), Border::inherit(Style::extended()))),
+        .with(Highlight::new(Rows::single(0), Border::inherit(Style::extended())))
+        .with(Highlight::new(Rows::single(2), Border::inherit(Style::extended()))),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"

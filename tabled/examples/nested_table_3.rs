@@ -7,7 +7,7 @@ use tabled::{
     settings::{
         object::Rows,
         style::{BorderSpanCorrection, Style},
-        Alignment, Border, Extract, Highlight, Padding, Panel,
+        Alignment, Extract, Highlight, Padding, Panel,
     },
     Table, Tabled,
 };
@@ -54,7 +54,7 @@ fn main() {
         .with(Style::ascii().remove_horizontal())
         .modify(Rows::new(1..), Padding::new(1, 1, 1, 0))
         .with(Alignment::center())
-        .with(Highlight::border(Rows::first(), Border::filled('*')));
+        .with(Highlight::outline(Rows::first(), '*'));
 
     println!("{welcome_table}");
 }

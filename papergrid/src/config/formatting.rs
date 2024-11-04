@@ -1,4 +1,4 @@
-/// Formatting represent a logic of formatting of a cell.
+/// Formatting represent a logic of formatting of a cell text.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Formatting {
     /// An setting to allow horizontal trim.

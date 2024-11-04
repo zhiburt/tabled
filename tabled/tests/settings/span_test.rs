@@ -8,7 +8,7 @@ use tabled::{
     grid::config::Position,
     settings::{
         object::{Columns, Segment},
-        style::{Border, BorderSpanCorrection, Style},
+        style::{BorderSpanCorrection, Style},
         Alignment, Highlight, Modify, Padding, Panel, Span,
     },
     Table,
@@ -1042,7 +1042,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new((1, 1)).with(Span::row(3)))
             .with(Style::modern())
-            .with(Highlight::border(Columns::single(1), Border::filled('*')))
+            .with(Highlight::outline(Columns::single(1), '*'))
             .to_string();
 
         assert_eq!(
@@ -1075,7 +1075,7 @@ fn highlight_row_col_span_test() {
     let table = Table::new(data)
         .with(Modify::new((1, 1)).with(Span::row(3)).with(Span::column(2)))
         .with(Style::modern())
-        .with(Highlight::border(Columns::new(1..3), Border::filled('*')))
+        .with(Highlight::outline(Columns::new(1..3), '*'))
         .to_string();
 
     assert_eq!(

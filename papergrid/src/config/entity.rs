@@ -37,13 +37,7 @@ pub enum Entity {
 impl Entity {
     /// Iterate over cells which are covered via the [`Entity`].
     pub fn iter(&self, count_rows: usize, count_cols: usize) -> EntityIterator {
-        EntityIterator {
-            entity: *self,
-            count_rows,
-            count_cols,
-            i: 0,
-            j: 0,
-        }
+        EntityIterator::new(*self, count_rows, count_cols)
     }
 }
 
@@ -63,6 +57,18 @@ pub struct EntityIterator {
     count_cols: usize,
     i: usize,
     j: usize,
+}
+
+impl EntityIterator {
+    fn new(entity: Entity, count_rows: usize, count_cols: usize) -> Self {
+        Self {
+            entity,
+            count_rows,
+            count_cols,
+            i: 0,
+            j: 0,
+        }
+    }
 }
 
 impl Iterator for EntityIterator {

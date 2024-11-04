@@ -10,7 +10,6 @@
 // IMHO 2
 
 use std::collections::HashMap;
-use std::iter::FromIterator;
 
 use crate::{
     grid::config::{
@@ -244,12 +243,15 @@ impl Theme {
     {
         let vertical = vertical.into();
 
-        match &mut self.lines_verticals {
-            Some(verticals) => {
-                let _ = verticals.insert(line, vertical);
+        let verticals = match &mut self.lines_verticals {
+            Some(verticals) => verticals,
+            None => {
+                self.lines_verticals = Some(HashMap::with_capacity(1));
+                self.lines_verticals.as_mut().expect("checked")
             }
-            None => self.lines_verticals = Some(HashMap::from_iter([(line, vertical)])),
-        }
+        };
+
+        let _ = verticals.insert(line, vertical);
     }
 
     /// Insert a horizontal line to a specific row location.
@@ -259,26 +261,34 @@ impl Theme {
     {
         let horizontal = horizontal.into();
 
-        match &mut self.lines_horizontals {
-            Some(horizontals) => {
-                let _ = horizontals.insert(line, horizontal);
+        let horizontals = match &mut self.lines_horizontals {
+            Some(horizontals) => horizontals,
+            None => {
+                self.lines_horizontals = Some(HashMap::with_capacity(1));
+                self.lines_horizontals.as_mut().expect("checked")
             }
-            None => self.lines_horizontals = Some(HashMap::from_iter([(line, horizontal)])),
-        }
+        };
+
+        let _ = horizontals.insert(line, horizontal);
     }
 
     /// Get a vertical line at the row if any set.
     pub fn get_vertical_line(&self, column: usize) -> Option<&VerticalLine<char>> {
-        self.lines_verticals
-            .as_ref()
-            .and_then(|lines| lines.get(&column))
+        self.lines_verticals.as_ref().and_then(|m| m.get(&column))
     }
 
     /// Get a horizontal line at the row if any set.
     pub fn get_horizontal_line(&self, row: usize) -> Option<&HorizontalLine<char>> {
-        self.lines_horizontals
-            .as_ref()
-            .and_then(|list| list.get(&row))
+        let line = self.lines_horizontals.as_ref().and_then(|m| m.get(&row));
+        if line.is_some() {
+            return line;
+        }
+
+        if row == 1 && self.lines_horizontal1.is_some() {
+            return self.lines_horizontal1.as_ref();
+        }
+
+        None
     }
 
     /// Verifies if borders has left line set on the frame.
@@ -314,23 +324,29 @@ impl Theme {
     const fn gen(
         chars: Borders<char>,
         colors: Borders<Color>,
-        lines_horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
-        lines_verticals: Option<HashMap<usize, VerticalLine<char>>>,
-        lines_horizontal1: Option<HorizontalLine<char>>,
+        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+        verticals: Option<HashMap<usize, VerticalLine<char>>>,
+        horizontal1: Option<HorizontalLine<char>>,
     ) -> Self {
         Self {
             chars,
             colors,
-            lines_horizontals,
-            lines_verticals,
-            lines_horizontal1,
+            lines_horizontals: horizontals,
+            lines_verticals: verticals,
+            lines_horizontal1: horizontal1,
         }
     }
 }
 
 impl From<Borders<char>> for Theme {
     fn from(borders: Borders<char>) -> Self {
-        Self::gen(borders, Borders::empty(), None, None, None)
+        Self::gen(
+            borders,
+            Borders::empty(),
+            Default::default(),
+            Default::default(),
+            None,
+        )
     }
 }
 
@@ -579,14 +595,14 @@ fn cfg_set_custom_lines(
         cfg.insert_horizontal_line(1, line);
     }
 
-    if let Some(lines) = horizontals {
-        for (row, line) in lines {
+    if let Some(horizontals) = horizontals {
+        for (row, line) in horizontals {
             cfg.insert_horizontal_line(row, line);
         }
     }
 
-    if let Some(lines) = verticals {
-        for (col, line) in lines {
+    if let Some(verticals) = verticals {
+        for (col, line) in verticals {
             cfg.insert_vertical_line(col, line);
         }
     }

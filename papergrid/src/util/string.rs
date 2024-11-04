@@ -52,7 +52,17 @@ pub fn get_char_width(c: char) -> usize {
 
 /// Returns a string width (accouting all characters).
 pub fn get_string_width(text: &str) -> usize {
-    unicode_width::UnicodeWidthStr::width(text.replace(|c| c < ' ', "").as_str())
+    #[cfg(feature = "std")]
+    {
+        let text = text.replace(|c| c < ' ', "");
+        unicode_width::UnicodeWidthStr::width(text.as_str())
+    }
+
+    #[cfg(not(feature = "std"))]
+    {
+        // todo: make sure it's allright
+        unicode_width::UnicodeWidthStr::width(text)
+    }
 }
 
 /// Calculates a number of lines.

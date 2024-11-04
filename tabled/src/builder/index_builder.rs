@@ -203,7 +203,7 @@ impl IndexBuilder {
         std::mem::swap(&mut self.index, &mut columns);
 
         let count_columns = columns.len();
-        make_rows_columns(&mut self.data, self.index.len());
+        rotate_vector(&mut self.data, self.index.len());
 
         self.data.insert(0, columns);
 
@@ -280,6 +280,31 @@ fn build_range_index(n: usize) -> Vec<Text<String>> {
     (0..n).map(|i| i.to_string()).map(Text::new).collect()
 }
 
+// note: Pretty heavy operation.
+fn rotate_vector<T>(rows: &mut Vec<Vec<T>>, count_columns: usize)
+where
+    T: Default + Clone,
+{
+    let count_rows = rows.len();
+    let mut columns = vec![vec![T::default(); count_rows]; count_columns];
+    for col in 0..count_columns {
+        for (row, data) in rows.iter_mut().enumerate() {
+            let value = data.pop().expect("expected to be controlled");
+            let col = count_columns - col - 1;
+            columns[col][row] = value;
+        }
+    }
+
+    *rows = columns;
+}
+
+fn insert_column<T: Default>(v: &mut [Vec<T>], mut column: Vec<T>, col: usize) {
+    for row in v.iter_mut() {
+        let value = column.remove(col);
+        row.insert(col, value);
+    }
+}
+
 fn get_column<T>(v: &mut [Vec<T>], col: usize) -> Vec<T>
 where
     T: Default,
@@ -291,29 +316,4 @@ where
     }
 
     column
-}
-
-// todo: Seems like can be hugely simplified.
-fn make_rows_columns<T>(v: &mut Vec<Vec<T>>, count_columns: usize)
-where
-    T: Default,
-{
-    let mut columns = Vec::with_capacity(count_columns);
-    for _ in 0..count_columns {
-        let column = get_column(v, 0);
-        columns.push(column);
-    }
-
-    v.clear();
-
-    for column in columns {
-        v.push(column);
-    }
-}
-
-fn insert_column<T: Default>(v: &mut [Vec<T>], mut column: Vec<T>, col: usize) {
-    for row in v.iter_mut() {
-        let value = column.remove(col);
-        row.insert(col, value);
-    }
 }

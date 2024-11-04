@@ -138,7 +138,7 @@ impl Alignment {
     }
 
     /// Convert alignment to horizontal.
-    pub const fn get_horizontal(self) -> Option<AlignmentHorizontal> {
+    pub const fn as_horizontal(self) -> Option<AlignmentHorizontal> {
         match self.inner {
             Horizontal(alignment) => Some(alignment),
             Vertical(_) => None,
@@ -146,7 +146,7 @@ impl Alignment {
     }
 
     /// Convert alignment to vertical.
-    pub const fn get_vertical(self) -> Option<AlignmentVertical> {
+    pub const fn as_vertical(self) -> Option<AlignmentVertical> {
         match self.inner {
             Horizontal(_) => None,
             Vertical(alignment) => Some(alignment),
