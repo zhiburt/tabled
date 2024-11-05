@@ -6,8 +6,10 @@
 mod cell;
 mod columns;
 mod frame;
+mod iterator;
 mod rows;
 mod segment;
+
 pub(crate) mod util;
 
 use std::{collections::HashSet, marker::PhantomData};
@@ -22,6 +24,10 @@ use crate::{
 pub use cell::{Cell, EntityOnce};
 pub use columns::{Column, Columns, ColumnsIter, FirstColumn, LastColumn, LastColumnOffset};
 pub use frame::{Frame, FrameIter};
+pub use iterator::{
+    FilterObject, FilterObjectIter, ObjectIterator, SkipObject, SkipObjectIter, StepByObject,
+    StepByObjectIter,
+};
 pub use rows::{FirstRow, LastRow, LastRowOffset, Row, Rows, RowsIter};
 pub use segment::{SectorIter, Segment, SegmentAll};
 

@@ -13,6 +13,7 @@ mod highlingt_test;
 mod layout_test;
 mod margin_test;
 mod merge_test;
+mod object_test;
 mod padding_test;
 mod panel_test;
 mod render_settings;
