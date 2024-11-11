@@ -303,6 +303,12 @@ name = "theme"
 path = "examples/theme.rs"
 required-features = ["derive", "std"]
 
+[[example]]
+name = "interactive"
+path = "example/interactive.rs"
+required-features = ["derive"]
+
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
