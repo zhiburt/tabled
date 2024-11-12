@@ -181,6 +181,10 @@ impl Color {
     /// 
     /// Notice that the colors are constants so you can't combine them.
     pub const BOLD:              Self = Self::new_static("\u{1b}[1m", "\u{1b}[22m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const UNDERLINE:         Self = Self::new_static("\u{1b}[4m", "\u{1b}[24m");
 }
 
 impl Color {
@@ -245,6 +249,28 @@ impl Color {
         S: AsRef<str>,
     {
         std::convert::TryFrom::try_from(text.as_ref()).unwrap()
+    }
+
+    /// Create a 24 bit foreground color with RGB
+    pub fn rgb_fg(r: u8, g: u8, b: u8) -> Self {
+        Self {
+            inner: ColorInner::Buf(ANSIBuf::new(
+                format!("\u{1b}[38;2;{};{};{}m", r, g, b),
+                "\u{1b}[39m",
+            )),
+        }
+    }
+
+    /// Create a 24 bit background color with RGB.
+    ///
+    /// The terminal need to support the escape sequence
+    pub fn rgb_bg(r: u8, g: u8, b: u8) -> Self {
+        Self {
+            inner: ColorInner::Buf(ANSIBuf::new(
+                format!("\u{1b}[48;2;{};{};{}m", r, g, b),
+                "\u{1b}[49m",
+            )),
+        }
     }
 }
 
@@ -421,5 +447,34 @@ mod tests {
             Color::try_from("....".red().on_green().to_string()),
             Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
         );
+    }
+
+    #[test]
+    fn test_rgb_color() {
+        assert_eq!(
+            Color::rgb_bg(255, 255, 255),
+            Color::new("\u{1b}[48;2;255;255;255m", "\u{1b}[49m")
+        );
+        assert_eq!(
+            Color::rgb_bg(0, 255, 128),
+            Color::new("\u{1b}[48;2;0;255;128m", "\u{1b}[49m")
+        );
+
+        assert_eq!(
+            Color::rgb_fg(0, 255, 128),
+            Color::new("\u{1b}[38;2;0;255;128m", "\u{1b}[39m")
+        );
+        assert_eq!(
+            Color::rgb_fg(255, 255, 255),
+            Color::new("\u{1b}[38;2;255;255;255m", "\u{1b}[39m")
+        );
+
+        assert_eq!(
+            Color::rgb_bg(255, 255, 255) | Color::rgb_fg(0, 0, 0),
+            Color::new(
+                "\u{1b}[48;2;255;255;255m\u{1b}[38;2;0;0;0m",
+                "\u{1b}[49m\u{1b}[39m"
+            )
+        )
     }
 }
