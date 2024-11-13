@@ -13,123 +13,137 @@ use tabled_derive::Tabled;
 
 #[derive(Tabled, Clone, Debug)]
 struct Item {
-    name: &'static str,
-    category: &'static str,
+    name: String,
+    #[tabled(format("{}", self.category.join(",")))]
+    category: Vec<String>,
     value: f64,
 }
 
-const CLEAR: &str = "\u{1b}[2J";
-
-type Step = Box<dyn Fn(&mut Table) -> (u64, &mut Table)>;
-
-const ITEM_LIST: &[Item] = &[
-    Item {
-        name: "Light Bulb",
-        category: "Household",
-        value: 3.67,
-    },
-    Item {
-        name: "Toothbrush",
-        category: "Bathroom",
-        value: 0.99,
-    },
-    Item {
-        name: "Tire",
-        category: "Vehicle",
-        value: 230.0,
-    },
-];
-
-const TIME: u64 = 400;
-
-fn main() {
-    let mut table = Table::new(ITEM_LIST);
-    let steps: Vec<Step> = vec![
-        Box::new(|t: &mut Table| (TIME, t.with(Style::blank()))),
-        Box::new(|t: &mut Table| {
-            (
-                TIME,
-                t.with(Colorization::rows([
-                    Color::rgb_bg(0, 0, 0) | Color::rgb_fg(255, 255, 255),
-                    Color::rgb_bg(255, 255, 255) | Color::rgb_fg(0, 0, 0),
-                ])),
-            )
-        }),
-        Box::new(|t: &mut Table| {
-            (
-                TIME,
-                t.with(Colorization::exact([Color::UNDERLINE], Rows::first())),
-            )
-        }),
-        Box::new(|t: &mut Table| {
-            (
-                TIME,
-                t.modify(
-                    Rows::new(1..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(255, 255, 255)),
-                )
-                .modify(
-                    Rows::new(2..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(0, 0, 0)),
-                ),
-            )
-        }),
-        Box::new(|t: &mut Table| {
-            (
-                TIME,
-                t.with(Colorization::exact(
-                    [
-                        Color::rgb_bg(0, 0, 0) | Color::rgb_fg(255, 255, 255),
-                        Color::rgb_bg(255, 255, 255) | Color::rgb_fg(0, 0, 0),
-                    ],
-                    Rows::new(1..),
-                ))
-                .modify(
-                    Rows::new(1..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(0, 0, 0)),
-                )
-                .modify(
-                    Rows::new(2..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(255, 255, 255)),
-                ),
-            )
-        }),
-        Box::new(|t: &mut Table| {
-            (
-                300,
-                t.with(Colorization::exact(
-                    [
-                        Color::rgb_bg(128, 128, 255) | Color::rgb_fg(0, 0, 0),
-                        Color::rgb_bg(200, 100, 150) | Color::rgb_fg(0, 0, 0),
-                    ],
-                    Rows::new(1..),
-                ))
-                .modify(
-                    Rows::new(1..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(128, 128, 255)),
-                )
-                .modify(
-                    Rows::new(2..).step_by(2),
-                    BorderColor::new().left(Color::rgb_bg(200, 100, 150)),
-                ),
-            )
-        }),
-    ];
-
-    run_steps(&mut table, &steps);
+impl Item {
+    fn new(name: &str, category: &[&str], value: f64) -> Self {
+        Self {
+            name: name.to_owned(),
+            category: category.iter().map(ToString::to_string).collect(),
+            value,
+        }
+    }
 }
 
-fn run_steps(initial_table: &mut Table, steps: &[Step]) {
-    let mut t: u64;
-    let mut table = initial_table;
-    for step in steps {
-        println!("{}", CLEAR);
-        println!("{}", table);
-        (t, table) = step(table);
-        sleep(Duration::from_millis(t));
+fn main() {
+    let mut p = Pager::default();
+    p.append(|t| {
+        t.with(Style::blank());
+    });
+    p.append(|t| {
+        t.with(Colorization::rows([
+            Color::rgb_bg(0, 0, 0) | Color::rgb_fg(255, 255, 255),
+            Color::rgb_bg(255, 255, 255) | Color::rgb_fg(0, 0, 0),
+        ]));
+    });
+    p.append(|t| {
+        t.with(Colorization::exact([Color::UNDERLINE], Rows::first()));
+    });
+    p.append(|t| {
+        t.modify(
+            Rows::new(1..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(255, 255, 255)),
+        )
+        .modify(
+            Rows::new(2..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(0, 0, 0)),
+        );
+    });
+    p.append(|t| {
+        t.with(Colorization::exact(
+            [
+                Color::rgb_bg(0, 0, 0) | Color::rgb_fg(255, 255, 255),
+                Color::rgb_bg(255, 255, 255) | Color::rgb_fg(0, 0, 0),
+            ],
+            Rows::new(1..),
+        ))
+        .modify(
+            Rows::new(1..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(0, 0, 0)),
+        )
+        .modify(
+            Rows::new(2..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(255, 255, 255)),
+        );
+    });
+    p.append(|t| {
+        t.with(Colorization::exact(
+            [
+                Color::rgb_bg(128, 128, 255) | Color::rgb_fg(0, 0, 0),
+                Color::rgb_bg(200, 100, 150) | Color::rgb_fg(0, 0, 0),
+            ],
+            Rows::new(1..),
+        ))
+        .modify(
+            Rows::new(1..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(128, 128, 255)),
+        )
+        .modify(
+            Rows::new(2..).step_by(2),
+            BorderColor::new().left(Color::rgb_bg(200, 100, 150)),
+        );
+    });
+
+    let data = [
+        Item::new("Light Bulb", &["Household"], 3.67),
+        Item::new("Toothbrush", &["Household", "Bathroom"], 3.67),
+        Item::new("Tire", &["Vehicle"], 299.0),
+    ];
+
+    let table = Table::new(data);
+
+    p.render(table);
+}
+
+type Step = Box<dyn Fn(&mut Table) -> u64>;
+
+#[derive(Default)]
+struct Pager {
+    pages: Vec<Step>,
+}
+
+impl Pager {
+    fn append<F>(&mut self, f: F)
+    where
+        F: Fn(&mut Table) + 'static,
+    {
+        self.append_timed(f, 400);
     }
 
-    println!("{}", CLEAR);
-    println!("{}", table);
-    sleep(Duration::from_millis(1000));
+    fn append_timed<F>(&mut self, f: F, time_ms: u64)
+    where
+        F: Fn(&mut Table) + 'static,
+    {
+        self.pages.push(step(f, time_ms));
+    }
+
+    fn render(&self, mut table: Table) {
+        run_steps(&mut table, &self.pages)
+    }
+}
+
+fn step<F>(f: F, delay_ms: u64) -> Step
+where
+    F: Fn(&mut Table) + 'static,
+{
+    Box::new(move |t| {
+        (f)(t);
+        delay_ms
+    })
+}
+
+fn run_steps(table: &mut Table, steps: &[Step]) {
+    const CLEAR: &str = "\u{1b}[2J";
+
+    let mut t: u64;
+    for step in steps {
+        println!("{}", CLEAR);
+        t = (step)(table);
+        println!("{}", table);
+        sleep(Duration::from_millis(t));
+    }
 }
