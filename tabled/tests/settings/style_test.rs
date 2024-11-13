@@ -254,6 +254,18 @@ test_table!(
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
     "| 0 |   0-0    |   0-1    |"
+    "-Table---------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    top_border_override_last_1_test,
+    Matrix::table(2, 2).with(LineText::new("-Table", Rows::last() + 1)),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
     "+---+----------+----------+"
     "| 1 |   1-0    |   1-1    |"
     "-Table---------+----------+"
@@ -537,7 +549,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Matrix::table(2, 2).with(Highlight::new(Rows::single(1), Border::inherit(Style::modern()))),
+    Matrix::table(2, 2).with(Highlight::new(Rows::single(1)).border(Border::inherit(Style::modern()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -551,8 +563,8 @@ test_table!(
     style_frame_test_1,
     Matrix::table(2, 2)
         .with(Style::blank())
-        .with(Highlight::new(Rows::single(0), Border::inherit(Style::extended())))
-        .with(Highlight::new(Rows::single(2), Border::inherit(Style::extended()))),
+        .with(Highlight::new(Rows::single(0)).border(Border::inherit(Style::extended())))
+        .with(Highlight::new(Rows::single(2)).border(Border::inherit(Style::extended()))),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"

@@ -8,10 +8,14 @@ use std::collections::HashSet;
 use crate::{
     grid::{
         ansi::ANSIBuf,
-        config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
+        config::{Border, ColoredConfig, Entity, Position, SpannedConfig},
         records::{ExactRecords, Records},
     },
-    settings::{object::Object, style::BorderColor, Border, Color, TableOption},
+    settings::{
+        object::Object,
+        style::{Border as ConstBorder, BorderColor},
+        Color, TableOption,
+    },
 };
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
@@ -60,31 +64,16 @@ use crate::{
 #[derive(Debug)]
 pub struct Highlight<O> {
     target: O,
-    border: HighlightInner,
-}
-
-#[derive(Debug)]
-enum HighlightInner {
-    Border(GridBorder<char>),
-    // #[cfg(feature = "ansi")]
-    Color(GridBorder<ANSIBuf>),
-    // #[cfg(feature = "ansi")]
-    ColoredBorder(GridBorder<char>, GridBorder<ANSIBuf>),
+    border: Option<Border<char>>,
+    color: Option<Border<ANSIBuf>>,
 }
 
 impl<O> Highlight<O> {
-    /// Build a new instance of [`Highlight`],
-    /// highlighting by a color, while preserving existing border.
+    /// Build a new instance of [`Highlight`] with '*' char being used as changer.
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    pub fn color(target: O, border: BorderColor) -> Self {
-        let color = border.into_inner();
-        let color = color.convert();
-
-        Self {
-            target,
-            border: HighlightInner::Color(color),
-        }
+    pub const fn new(target: O) -> Self {
+        Self::_new(target, None, None)
     }
 
     /// Build a new instance of [`Highlight`],
@@ -92,37 +81,48 @@ impl<O> Highlight<O> {
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
     pub const fn outline(target: O, c: char) -> Self {
-        Self::new(target, Border::filled(c))
+        Self::_new(target, Some(Border::filled(c)), None)
     }
 
     /// Build a new instance of [`Highlight`],
     /// highlighting by a color and a given character for a border.
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    pub fn outline_colored<T, B, L, R>(target: O, c: char, color: Color) -> Self {
-        Self::colored(target, Border::filled(c), BorderColor::filled(color))
+    pub fn colored(target: O, color: Color) -> Self {
+        let color = Border::filled(&color).cloned().convert();
+        Self::_new(target, None, Some(color))
+    }
+
+    /// Set a border for a [`Highlight`].
+    pub fn border<T, B, L, R>(self, border: ConstBorder<T, B, L, R>) -> Self {
+        let border = border.into_inner();
+        Self {
+            target: self.target,
+            border: Some(border),
+            color: self.color,
+        }
+    }
+
+    /// Set a border color for a [`Highlight`].
+    pub fn color(self, border: BorderColor) -> Self {
+        let border = border.into_inner();
+        let border = border.convert();
+
+        Self {
+            target: self.target,
+            border: self.border,
+            color: Some(border),
+        }
     }
 
     /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    pub const fn new<T, B, L, R>(target: O, border: Border<T, B, L, R>) -> Self {
+    const fn _new(target: O, border: Option<Border<char>>, color: Option<Border<ANSIBuf>>) -> Self {
         Self {
             target,
-            border: HighlightInner::Border(border.into_inner()),
-        }
-    }
-
-    /// Build a new instance of [`Highlight`] colored.
-    ///
-    /// BE AWARE: if target exceeds boundaries it may panic.
-    pub fn colored<T, B, L, R>(target: O, border: Border<T, B, L, R>, color: BorderColor) -> Self {
-        let border = border.into_inner();
-        let color = color.into_inner().convert();
-
-        Self {
-            target,
-            border: HighlightInner::ColoredBorder(border, color),
+            border,
+            color,
         }
     }
 }
@@ -139,18 +139,25 @@ where
         let cells = self.target.cells(records);
         let segments = split_segments(cells, count_rows, count_cols);
 
-        for sector in segments {
-            match &self.border {
-                HighlightInner::Border(border) => {
-                    set_border(cfg, &sector, *border);
+        match (self.border, self.color) {
+            (None, Some(color)) => {
+                for sector in segments {
+                    set_border_color(cfg, &sector, &color);
                 }
-                HighlightInner::Color(color) => {
-                    set_border_color(cfg, &sector, color);
+            }
+            (Some(border), None) => {
+                for sector in segments {
+                    set_border(cfg, &sector, border);
                 }
-                HighlightInner::ColoredBorder(border, color) => {
-                    set_border(cfg, &sector, *border);
-                    set_border_color(cfg, &sector, color);
+            }
+            (Some(border), Some(color)) => {
+                for sector in segments {
+                    set_border(cfg, &sector, border);
+                    set_border_color(cfg, &sector, &color);
                 }
+            }
+            (None, None) => {
+                // noop
             }
         }
     }
@@ -160,11 +167,7 @@ where
     }
 }
 
-fn set_border_color(
-    cfg: &mut SpannedConfig,
-    sector: &HashSet<Position>,
-    border: &GridBorder<ANSIBuf>,
-) {
+fn set_border_color(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: &Border<ANSIBuf>) {
     if sector.is_empty() {
         return;
     }
@@ -252,7 +255,7 @@ fn is_segment_connected(segment1: &HashSet<Position>, segment2: &HashSet<Positio
     false
 }
 
-fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: GridBorder<char>) {
+fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: Border<char>) {
     if sector.is_empty() {
         return;
     }
@@ -266,8 +269,8 @@ fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: GridB
 fn build_cell_border<T>(
     sector: &HashSet<Position>,
     (row, col): Position,
-    border: &GridBorder<T>,
-) -> GridBorder<T>
+    border: &Border<T>,
+) -> Border<T>
 where
     T: Default + Clone,
 {
@@ -281,7 +284,7 @@ where
     let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
     let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
-    let mut cell_border = GridBorder::default();
+    let mut cell_border = Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
             cell_border.top = Some(c.clone());

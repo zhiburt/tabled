@@ -14,7 +14,7 @@ use testing_table::{static_table, test_table};
 
 test_table!(
     highlingt_object_exceeds_boundaries,
-    Matrix::new(3, 3).with(Style::modern()).with(Highlight::new(Cell::new(1000, 0), Border::filled('+'))),
+    Matrix::new(3, 3).with(Style::modern()).with(Highlight::outline(Cell::new(1000, 0), '+')),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -30,7 +30,7 @@ test_table!(
     highlingt_empty_table,
     Builder::default()
         .build()
-        .with(Highlight::new(Segment::all(), Border::filled('+'))),
+        .with(Highlight::outline(Segment::all(), '+')),
     ""
 );
 
@@ -38,8 +38,8 @@ test_table!(
     highlingt_cell,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Cell::new(0, 0), Border::filled('+')))
-        .with(Highlight::new(Cell::new(1, 1), Border::filled('*'))),
+        .with(Highlight::outline(Cell::new(0, 0), '+'))
+        .with(Highlight::outline(Cell::new(1, 1), '*')),
     "+++++──────────┬──────────┬──────────┐"
     "+ N + column 0 │ column 1 │ column 2 │"
     "++++************──────────┼──────────┤"
@@ -55,8 +55,8 @@ test_table!(
     highlingt_row,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Rows::single(0), Border::filled('+')))
-        .with(Highlight::new(Rows::single(3), Border::filled('*'))),
+        .with(Highlight::outline(Rows::single(0), '+'))
+        .with(Highlight::outline(Rows::single(3), '*')),
     "++++++++++++++++++++++++++++++++++++++"
     "+ N │ column 0 │ column 1 │ column 2 +"
     "++++++++++++++++++++++++++++++++++++++"
@@ -72,8 +72,8 @@ test_table!(
     highlingt_column,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Columns::single(0), Border::filled('+')))
-        .with(Highlight::new(Columns::single(2), Border::filled('*'))),
+        .with(Highlight::new(Columns::single(0)).border(Border::filled('+')))
+        .with(Highlight::new(Columns::single(2)).border(Border::filled('*'))),
     "+++++──────────************──────────┐"
     "+ N + column 0 * column 1 * column 2 │"
     "+───+──────────*──────────*──────────┤"
@@ -89,7 +89,7 @@ test_table!(
     highlingt_row_range,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Rows::new(1..3), Border::filled('+'))),
+        .with(Highlight::outline(Rows::new(1..3), '+')),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "++++++++++++++++++++++++++++++++++++++"
@@ -105,7 +105,7 @@ test_table!(
     highlingt_column_range,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Columns::new(..2), Border::filled('+'))),
+        .with(Highlight::outline(Columns::new(..2), '+')),
     "++++++++++++++++──────────┬──────────┐"
     "+ N │ column 0 + column 1 │ column 2 │"
     "+───┼──────────+──────────┼──────────┤"
@@ -121,8 +121,7 @@ test_table!(
     highlingt_frame,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(
-            Frame,
+        .with(Highlight::new(Frame).border(
             Border::filled('+')
                 .set_corner_top_left('*')
                 .set_corner_top_right('#')
@@ -144,8 +143,7 @@ test_table!(
     highlingt_full,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(
-            Segment::all(),
+        .with(Highlight::new(Segment::all()).border(
             Border::filled('+')
                 .set_corner_top_left('*')
                 .set_corner_top_right('#')
@@ -167,8 +165,8 @@ test_table!(
     highlingt_single_column,
     Matrix::table(3, 0)
         .with(Style::modern())
-        .with(Highlight::new(Cell::new(0, 0), Border::new().set_left('*').set_top('x')))
-        .with(Highlight::new(Rows::new(1..3), Border::new().set_left('n'))),
+        .with(Highlight::new(Cell::new(0, 0)).border(Border::new().set_left('*').set_top('x')))
+        .with(Highlight::new(Rows::new(1..3)).border(Border::new().set_left('n'))),
     "┌xxx┐"
     "* N │"
     "├───┤"
@@ -184,9 +182,9 @@ test_table!(
     highlingt_several_times,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Frame, Border::filled('*')))
-        .with(Highlight::new(Cell::new(1, 1), Border::filled('#')))
-        .with(Highlight::new(Columns::single(3), Border::filled('x'))),
+        .with(Highlight::outline(Frame, '*'))
+        .with(Highlight::outline(Cell::new(1, 1), '#'))
+        .with(Highlight::outline(Columns::single(3), 'x')),
     "**************************xxxxxxxxxxxx"
     "* N │ column 0 │ column 1 x column 2 x"
     "*───############──────────x──────────x"
@@ -233,7 +231,7 @@ fn highlingt_complex_figures() {
 
             let table = Matrix::new(3, 3)
                 .with(Style::modern())
-                .with(Highlight::new($object, border))
+                .with(Highlight::new($object).border(border))
                 .to_string();
 
             assert_eq!(table, $expected);
