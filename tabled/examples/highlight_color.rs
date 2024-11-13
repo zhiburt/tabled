@@ -6,7 +6,6 @@
 use tabled::{
     settings::{
         object::{Columns, Object, Rows},
-        style::BorderColor,
         Color, Highlight, Style,
     },
     Table,
@@ -20,7 +19,7 @@ fn main() {
 
     let mut table = Table::new(data);
     table.with(Style::modern());
-    table.with(Highlight::color(target, BorderColor::filled(color)));
+    table.with(Highlight::colored(target, color));
 
     println!("{table}");
 }

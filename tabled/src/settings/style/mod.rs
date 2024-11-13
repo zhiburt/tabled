@@ -105,16 +105,16 @@ mod vertical_line;
 #[cfg(feature = "std")]
 mod border_color;
 #[cfg(feature = "std")]
-mod line_text;
-#[cfg(feature = "std")]
 mod line_char;
+#[cfg(feature = "std")]
+mod line_text;
 #[cfg(feature = "std")]
 mod span_border_correction;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border_color::BorderColor, line_text::LineText, line_char::LineChar,
+    border_color::BorderColor, line_char::LineChar, line_text::LineText,
     span_border_correction::BorderSpanCorrection,
 };
 
