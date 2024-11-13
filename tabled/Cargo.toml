@@ -305,7 +305,7 @@ required-features = ["derive", "std"]
 
 [[example]]
 name = "interactive"
-path = "example/interactive.rs"
+path = "examples/interactive.rs"
 required-features = ["derive"]
 
 
