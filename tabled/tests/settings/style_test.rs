@@ -348,15 +348,57 @@ test_table!(
 );
 
 test_table!(
-    border_color_global,
+    border_global_0,
+    Matrix::table(2, 2)
+        .with(Border::full('=', '*', '!','@', '#', '$', '%', '^')),
+    "#=========================$"
+    "! N | column 0 | column 1 @"
+    "!---+----------+----------@"
+    "! 0 |   0-0    |   0-1    @"
+    "!---+----------+----------@"
+    "! 1 |   1-0    |   1-1    @"
+    "%*************************^"
+);
+
+test_table!(
+    border_global_1,
+    Matrix::table(2, 2).with(Border::new().bottom('*')),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+*************************+"
+);
+
+test_table!(
+    border_color_global_0,
+    Matrix::table(2, 2)
+        .with(BorderColor::full(
+            Color::FG_RED, Color::FG_BLUE,
+            Color::FG_GREEN, Color::FG_CYAN,
+            Color::FG_BLACK, Color::FG_WHITE, Color::FG_MAGENTA, Color::FG_YELLOW
+        )),
+        "\u{1b}[30m+\u{1b}[39m\u{1b}[31m---+----------+----------\u{1b}[39m\u{1b}[37m+\u{1b}[39m"
+        "\u{1b}[32m|\u{1b}[39m N | column 0 | column 1 \u{1b}[36m|\u{1b}[39m"
+        "\u{1b}[32m+\u{1b}[39m---+----------+----------\u{1b}[36m+\u{1b}[39m"
+        "\u{1b}[32m|\u{1b}[39m 0 |   0-0    |   0-1    \u{1b}[36m|\u{1b}[39m"
+        "\u{1b}[32m+\u{1b}[39m---+----------+----------\u{1b}[36m+\u{1b}[39m"
+        "\u{1b}[32m|\u{1b}[39m 1 |   1-0    |   1-1    \u{1b}[36m|\u{1b}[39m"
+        "\u{1b}[35m+\u{1b}[39m\u{1b}[34m---+----------+----------\u{1b}[39m\u{1b}[33m+\u{1b}[39m"
+);
+
+test_table!(
+    border_color_global_1,
     Matrix::table(2, 2).with(BorderColor::new().bottom(Color::FG_RED)),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
-    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    "+---+----------+----------+"
     "| 0 |   0-0    |   0-1    |"
-    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    "+---+----------+----------+"
     "| 1 |   1-0    |   1-1    |"
-    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    "+\u{1b}[31m---+----------+----------\u{1b}[39m+"
 );
 
 #[cfg(feature = "ansi")]

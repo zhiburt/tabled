@@ -2,7 +2,10 @@ use core::marker::PhantomData;
 
 use crate::{
     grid::config::Border as GridBorder,
-    settings::{style::On, style::Style},
+    settings::{
+        style::{On, Style},
+        TableOption,
+    },
 };
 
 #[cfg(feature = "std")]
@@ -250,6 +253,17 @@ where
 }
 
 #[cfg(feature = "std")]
+impl<T, B, L, R, Data, D> TableOption<Data, ColoredConfig, D> for Border<T, B, L, R>
+where
+    Data: Records + ExactRecords,
+{
+    fn change(self, records: &mut Data, cfg: &mut ColoredConfig, dims: &mut D) {
+        let border = self.into_inner();
+        TableOption::change(border, records, cfg, dims);
+    }
+}
+
+#[cfg(feature = "std")]
 impl<R> CellOption<R, ColoredConfig> for GridBorder<char>
 where
     R: Records + ExactRecords,
@@ -260,6 +274,76 @@ where
         for pos in entity.iter(shape.0, shape.1) {
             cfg.set_border(pos, self);
         }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R, D> TableOption<R, ColoredConfig, D> for GridBorder<char>
+where
+    R: Records + ExactRecords,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let count_rows = records.count_rows();
+        let count_columns = records.count_columns();
+        let shape = (count_rows, count_columns);
+
+        if count_rows == 0 || count_columns == 0 {
+            return;
+        }
+
+        let border = self;
+
+        for col in 0..count_columns {
+            let pos = (0, col);
+            let mut b = cfg.get_border(pos, shape);
+            b.top = border.top;
+            b.right_top_corner = border.top;
+            cfg.set_border(pos, b);
+
+            let pos = (count_rows - 1, col);
+            let mut b = cfg.get_border(pos, shape);
+            b.bottom = border.bottom;
+            b.right_bottom_corner = border.bottom;
+            cfg.set_border(pos, b);
+        }
+
+        for row in 0..count_rows {
+            let pos = (row, 0);
+            let mut b = cfg.get_border(pos, shape);
+            b.left = border.left;
+            b.left_bottom_corner = border.left;
+            cfg.set_border(pos, b);
+
+            let pos = (row, count_columns - 1);
+            let mut b = cfg.get_border(pos, shape);
+            b.right = border.right;
+            b.right_bottom_corner = border.right;
+            cfg.set_border(pos, b);
+        }
+
+        let pos = (0, 0);
+        let mut b = cfg.get_border(pos, shape);
+        b.left_top_corner = border.left_top_corner;
+        cfg.remove_border(pos, shape);
+        cfg.set_border(pos, b);
+
+        let pos = (0, count_columns - 1);
+        let mut b = cfg.get_border(pos, shape);
+        b.right_top_corner = border.right_top_corner;
+        cfg.remove_border(pos, shape);
+        cfg.set_border(pos, b);
+
+        let pos = (count_rows - 1, 0);
+        let mut b = cfg.get_border(pos, shape);
+        b.left_bottom_corner = border.left_bottom_corner;
+        cfg.remove_border(pos, shape);
+        cfg.set_border(pos, b);
+
+        let pos = (count_rows - 1, count_columns - 1);
+        let mut b = cfg.get_border(pos, shape);
+        b.right_bottom_corner = border.right_bottom_corner;
+        cfg.remove_border(pos, shape);
+        cfg.set_border(pos, b);
     }
 }
 

@@ -100,6 +100,20 @@ impl<T> Border<T> {
             && self.right.is_none()
     }
 
+    /// Checks whether all sides are equal to one another.
+    pub fn is_same(&self) -> bool
+    where
+        T: PartialEq,
+    {
+        self.top == self.bottom
+            && self.top == self.left
+            && self.top == self.right
+            && self.top == self.left_top_corner
+            && self.top == self.right_top_corner
+            && self.top == self.left_bottom_corner
+            && self.top == self.right_bottom_corner
+    }
+
     /// Verifies whether anything is set on the top.
     pub const fn has_top(&self) -> bool {
         self.top.is_some() || self.left_top_corner.is_some() || self.right_top_corner.is_some()
