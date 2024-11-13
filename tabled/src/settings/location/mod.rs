@@ -144,7 +144,7 @@ where
 
 impl<B, R> Location<R> for Rows<B>
 where
-    R: Records,
+    R: ExactRecords,
     B: RangeBounds<usize>,
 {
     type Coordinate = usize;
@@ -154,7 +154,7 @@ where
         let (from, to) = bounds_to_usize(
             self.get_range().start_bound(),
             self.get_range().end_bound(),
-            records.count_columns(),
+            records.count_rows(),
         );
 
         from..to
