@@ -202,11 +202,11 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
         }),
         action(|t| {
             t.with(Highlight::new(Rows::single(2)).color(BorderColor::default().top(Color::FG_YELLOW)));
-            t.with(Highlight::new(Rows::single(2)).border(Border::new().set_top('━')));
+            t.with(Highlight::new(Rows::single(2)).border(Border::new().top('━')));
         }),
         action(|t| {
             t.with(Highlight::new(Rows::last()).color(BorderColor::default().top(Color::FG_YELLOW)));
-            t.with(Highlight::new(Rows::last()).border(Border::new().set_top('━')));
+            t.with(Highlight::new(Rows::last()).border(Border::new().top('━')));
         }),
         action(|t| {
             let color = Color::try_from(" ".black().on_yellow().to_string()).unwrap();
