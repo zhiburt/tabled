@@ -152,13 +152,18 @@ where
     Data: Records + ExactRecords,
 {
     fn change(self, records: &mut Data, cfg: &mut ColoredConfig, entity: Entity) {
+        let border = self.inner.clone().convert();
+        if matches!(entity, Entity::Global) && border.is_same() && !border.is_empty() {
+            let color = border.top.expect("ok");
+            cfg.set_border_color_default(color);
+            return;
+        }
+
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 
-        let border_color = self.inner.clone().convert();
-
         for pos in entity.iter(count_rows, count_columns) {
-            cfg.set_border_color(pos, border_color.clone());
+            cfg.set_border_color(pos, border.clone());
         }
     }
 }
@@ -170,13 +175,64 @@ where
     fn change(self, records: &mut Data, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let shape = (count_rows, count_columns);
 
-        let border_color = self.inner.clone().convert();
+        if count_rows == 0 || count_columns == 0 {
+            return;
+        }
+
+        let color = self.inner.clone().convert();
+
+        for col in 0..count_columns {
+            let pos = (0, col);
+            let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+            b.top = color.top.clone();
+            b.right_top_corner = color.top.clone();
+            cfg.set_border_color(pos, b);
+
+            let pos = (count_rows - 1, col);
+            let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+            b.bottom = color.bottom.clone();
+            b.right_bottom_corner = color.bottom.clone();
+            cfg.set_border_color(pos, b);
+        }
 
         for row in 0..count_rows {
-            for col in 0..count_columns {
-                cfg.set_border_color((row, col), border_color.clone());
-            }
+            let pos = (row, 0);
+            let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+            b.left = color.left.clone();
+            b.left_bottom_corner = color.left.clone();
+            cfg.set_border_color(pos, b);
+
+            let pos = (row, count_columns - 1);
+            let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+            b.right = color.right.clone();
+            b.right_bottom_corner = color.right.clone();
+            cfg.set_border_color(pos, b);
         }
+
+        let pos = (0, 0);
+        let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+        b.left_top_corner = color.left_top_corner.clone();
+        cfg.remove_border_color(pos, shape);
+        cfg.set_border_color(pos, b);
+
+        let pos = (0, count_columns - 1);
+        let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+        b.right_top_corner = color.right_top_corner.clone();
+        cfg.remove_border_color(pos, shape);
+        cfg.set_border_color(pos, b);
+
+        let pos = (count_rows - 1, 0);
+        let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+        b.left_bottom_corner = color.left_bottom_corner.clone();
+        cfg.remove_border_color(pos, shape);
+        cfg.set_border_color(pos, b);
+
+        let pos = (count_rows - 1, count_columns - 1);
+        let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
+        b.right_bottom_corner = color.right_bottom_corner.clone();
+        cfg.remove_border_color(pos, shape);
+        cfg.set_border_color(pos, b);
     }
 }
