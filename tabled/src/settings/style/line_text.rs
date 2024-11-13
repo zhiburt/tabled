@@ -1,12 +1,15 @@
 use crate::{
     grid::{
         ansi::ANSIBuf,
-        config::{self, ColoredConfig, SpannedConfig},
+        config::{self, ColoredConfig, Entity, SpannedConfig},
         dimension::{Dimension, Estimate},
         records::{ExactRecords, Records},
     },
     settings::{
-        object::{Column, FirstColumn, FirstRow, LastColumn, LastRow, Row},
+        object::{
+            Column, FirstColumn, FirstRow, LastColumn, LastColumnOffset, LastRow, LastRowOffset,
+            Object, Row,
+        },
         Color, TableOption,
     },
 };
@@ -112,8 +115,25 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        let line = records.count_rows();
-        change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        let line = self.line.cells(records).next();
+        if let Some(Entity::Row(line)) = line {
+            change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        }
+    }
+}
+
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<LastRowOffset>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        let line = self.line.cells(records).next();
+        if let Some(Entity::Row(line)) = line {
+            change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        }
     }
 }
 
@@ -152,6 +172,21 @@ where
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = records.count_rows();
         change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+    }
+}
+
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<LastColumnOffset>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        let line = self.line.cells(records).next();
+        if let Some(Entity::Column(line)) = line {
+            change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        }
     }
 }
 
