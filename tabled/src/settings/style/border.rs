@@ -33,7 +33,7 @@ use crate::{
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .modify(Rows::single(0), Border::new().set_top('x'));
+///     .modify(Rows::single(0), Border::new().top('x'));
 /// ```
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Border<T, B, L, R> {
@@ -123,25 +123,25 @@ impl<T, B, L, R> Border<T, B, L, R> {
 
 impl<T, B, L, R> Border<T, B, L, R> {
     /// Set a top border character.
-    pub const fn set_top(mut self, c: char) -> Border<On, B, L, R> {
+    pub const fn top(mut self, c: char) -> Border<On, B, L, R> {
         self.inner.top = Some(c);
         Border::from_border(self.inner)
     }
 
     /// Set a bottom border character.
-    pub const fn set_bottom(mut self, c: char) -> Border<T, On, L, R> {
+    pub const fn bottom(mut self, c: char) -> Border<T, On, L, R> {
         self.inner.bottom = Some(c);
         Border::from_border(self.inner)
     }
 
     /// Set a left border character.
-    pub const fn set_left(mut self, c: char) -> Border<T, B, On, R> {
+    pub const fn left(mut self, c: char) -> Border<T, B, On, R> {
         self.inner.left = Some(c);
         Border::from_border(self.inner)
     }
 
     /// Set a right border character.
-    pub const fn set_right(mut self, c: char) -> Border<T, B, L, On> {
+    pub const fn right(mut self, c: char) -> Border<T, B, L, On> {
         self.inner.right = Some(c);
         Border::from_border(self.inner)
     }
@@ -182,7 +182,7 @@ impl<T, L, R> Border<T, On, L, R> {
 
 impl<B, R> Border<On, B, On, R> {
     /// Set a top left intersection character.
-    pub const fn set_corner_top_left(mut self, c: char) -> Self {
+    pub const fn corner_top_left(mut self, c: char) -> Self {
         self.inner.left_top_corner = Some(c);
         self
     }
@@ -195,7 +195,7 @@ impl<B, R> Border<On, B, On, R> {
 
 impl<B, L> Border<On, B, L, On> {
     /// Set a top right intersection character.
-    pub const fn set_corner_top_right(mut self, c: char) -> Self {
+    pub const fn corner_top_right(mut self, c: char) -> Self {
         self.inner.right_top_corner = Some(c);
         self
     }
@@ -208,7 +208,7 @@ impl<B, L> Border<On, B, L, On> {
 
 impl<T, R> Border<T, On, On, R> {
     /// Set a bottom left intersection character.
-    pub const fn set_corner_bottom_left(mut self, c: char) -> Self {
+    pub const fn corner_bottom_left(mut self, c: char) -> Self {
         self.inner.left_bottom_corner = Some(c);
         self
     }
@@ -221,7 +221,7 @@ impl<T, R> Border<T, On, On, R> {
 
 impl<T, L> Border<T, On, L, On> {
     /// Set a bottom right intersection character.
-    pub const fn set_corner_bottom_right(mut self, c: char) -> Self {
+    pub const fn corner_bottom_right(mut self, c: char) -> Self {
         self.inner.right_bottom_corner = Some(c);
         self
     }

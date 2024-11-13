@@ -123,10 +123,10 @@ test_table!(
         .with(Style::modern())
         .with(Highlight::new(Frame).border(
             Border::filled('+')
-                .set_corner_top_left('*')
-                .set_corner_top_right('#')
-                .set_corner_bottom_left('@')
-                .set_corner_bottom_right('.'),
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.'),
         )),
     "*++++++++++++++++++++++++++++++++++++#"
     "+ N │ column 0 │ column 1 │ column 2 +"
@@ -145,10 +145,10 @@ test_table!(
         .with(Style::modern())
         .with(Highlight::new(Segment::all()).border(
             Border::filled('+')
-                .set_corner_top_left('*')
-                .set_corner_top_right('#')
-                .set_corner_bottom_left('@')
-                .set_corner_bottom_right('.'),
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.'),
         )),
     "*++++++++++++++++++++++++++++++++++++#"
     "+ N │ column 0 │ column 1 │ column 2 +"
@@ -165,8 +165,8 @@ test_table!(
     highlingt_single_column,
     Matrix::table(3, 0)
         .with(Style::modern())
-        .with(Highlight::new(Cell::new(0, 0)).border(Border::new().set_left('*').set_top('x')))
-        .with(Highlight::new(Rows::new(1..3)).border(Border::new().set_left('n'))),
+        .with(Highlight::new(Cell::new(0, 0)).border(Border::new().left('*').top('x')))
+        .with(Highlight::new(Rows::new(1..3)).border(Border::new().left('n'))),
     "┌xxx┐"
     "* N │"
     "├───┤"
@@ -224,10 +224,10 @@ fn highlingt_complex_figures() {
     macro_rules! test_highlight {
         ($object:expr, $expected:expr,) => {
             let border = Border::filled('+')
-                .set_corner_top_left('*')
-                .set_corner_top_right('#')
-                .set_corner_bottom_left('@')
-                .set_corner_bottom_right('.');
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.');
 
             let table = Matrix::new(3, 3)
                 .with(Style::modern())
