@@ -146,7 +146,7 @@ where
             return EntityOnce::new(None);
         }
 
-        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        let row = count_rows - 1;
 
         EntityOnce::new(Some(Entity::Row(row)))
     }
@@ -156,7 +156,15 @@ impl Sub<usize> for LastRow {
     type Output = LastRowOffset;
 
     fn sub(self, rhs: usize) -> Self::Output {
-        LastRowOffset { offset: rhs }
+        LastRowOffset::sub(rhs)
+    }
+}
+
+impl Add<usize> for LastRow {
+    type Output = LastRowOffset;
+
+    fn add(self, rhs: usize) -> Self::Output {
+        LastRowOffset::add(rhs)
     }
 }
 
@@ -164,6 +172,20 @@ impl Sub<usize> for LastRow {
 #[derive(Debug)]
 pub struct LastRowOffset {
     offset: usize,
+    sign: bool,
+}
+
+impl LastRowOffset {
+    fn sub(offset: usize) -> Self {
+        Self {
+            offset,
+            sign: false,
+        }
+    }
+
+    fn add(offset: usize) -> Self {
+        Self { offset, sign: true }
+    }
 }
 
 impl<I> Object<I> for LastRowOffset
@@ -178,13 +200,19 @@ where
             return EntityOnce::new(None);
         }
 
-        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
-        if self.offset > row {
-            return EntityOnce::new(None);
-        }
+        let last_row = count_rows - 1;
 
-        let row = row - self.offset;
-        EntityOnce::new(Some(Entity::Row(row)))
+        if self.sign {
+            let row = last_row + self.offset;
+            EntityOnce::new(Some(Entity::Row(row)))
+        } else {
+            if self.offset > last_row {
+                return EntityOnce::new(None);
+            }
+
+            let row = last_row - self.offset;
+            EntityOnce::new(Some(Entity::Row(row)))
+        }
     }
 }
 
