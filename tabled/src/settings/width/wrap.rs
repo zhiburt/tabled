@@ -9,7 +9,7 @@ use crate::{
         config::{ColoredConfig, Entity},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::{get_char_width, get_string_width, get_text_width},
+        util::string::{get_char_width, get_text_width},
     },
     settings::{
         measurement::Measurement,
@@ -18,6 +18,9 @@ use crate::{
         CellOption, TableOption,
     },
 };
+
+#[cfg(not(feature = "ansi"))]
+use crate::grid::util::string::get_string_width;
 
 use super::util::{get_table_widths, get_table_widths_with_total};
 use crate::util::string::split_at_width;
@@ -240,16 +243,32 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
 
 #[cfg(not(feature = "ansi"))]
 fn chunks(s: &str, width: usize) -> Vec<String> {
+    const REPLACEMENT: char = '\u{FFFD}';
+
     if width == 0 {
         return Vec::new();
     }
 
-    const REPLACEMENT: char = '\u{FFFD}';
+    println!("---> {:?}", s);
 
+    let mut prev_newline = false;
     let mut buf = String::with_capacity(width);
     let mut list = Vec::new();
     let mut i = 0;
     for c in s.chars() {
+        if c == '\n' {
+            if buf.is_empty() {
+                list.push(String::new());
+            } else {
+                list.push(buf);
+            }
+
+            buf = String::with_capacity(width);
+            i = 0;
+            prev_newline = true;
+            continue;
+        }
+
         let c_width = get_char_width(c);
         if i + c_width > width {
             let count_unknowns = width - i;
@@ -264,10 +283,11 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
             list.push(buf);
             buf = String::with_capacity(width);
             i = 0;
+            prev_newline = false;
         }
     }
 
-    if !buf.is_empty() {
+    if !buf.is_empty() || prev_newline {
         list.push(buf);
     }
 
@@ -304,9 +324,12 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         let _ = write!(&mut line, "{}", text_style.start());
 
         while !text_slice.is_empty() {
+            println!("... {} {}", width, line_width);
+
             let available_space = width - line_width;
 
-            let part_width = get_string_width(text_slice);
+            let part_width = get_text_width(text_slice);
+
             if part_width <= available_space {
                 line.push_str(text_slice);
                 line_width += part_width;
@@ -326,10 +349,17 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
 
             let (lhs, rhs, (unknowns, split_char)) = split_string_at(text_slice, available_space);
 
+            println!(
+                "---------> {:?} {} {}",
+                text_slice, available_space, split_char
+            );
+            println!("---------> {:?} {}", lhs, get_text_width(lhs));
+            println!("---------> {:?}", rhs);
+
             text_slice = &rhs[split_char..];
 
             line.push_str(lhs);
-            line_width += get_string_width(lhs);
+            line_width += get_text_width(lhs);
 
             const REPLACEMENT: char = '\u{FFFD}';
             line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));

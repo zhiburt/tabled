@@ -99,6 +99,12 @@ pub(crate) fn split_at_width(s: &str, at_width: usize) -> (usize, usize, usize) 
             break;
         };
 
+        if c == '\n' {
+            width = 0;
+            length += 1;
+            continue;
+        }
+
         let c_width = get_char_width(c);
         let c_length = c.len_utf8();
 
