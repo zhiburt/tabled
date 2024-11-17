@@ -81,7 +81,7 @@ where
             for col in 0..records.count_columns() {
                 let pos = (row, col);
                 let text = records.get_text(pos);
-                let text = text.replace(['\t', '\r'], "");
+                let text = clean_charset(text);
                 records.set(pos, text);
             }
         }
@@ -97,8 +97,14 @@ where
         let count_cols = records.count_columns();
         for pos in entity.iter(count_rows, count_cols) {
             let text = records.get_text(pos);
-            let text = text.replace(['\t', '\r'], "");
+            let text = clean_charset(text);
             records.set(pos, text);
         }
     }
+}
+
+fn clean_charset(text: &str) -> String {
+    // It's enough for covering '\t' and '\r'
+    // as well as a list of other unwanted escapes.
+    text.replace(|c| c != '\n' && c < ' ', "")
 }

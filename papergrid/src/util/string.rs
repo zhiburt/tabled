@@ -34,15 +34,7 @@ pub fn get_line_width(text: &str) -> usize {
 
 /// Returns a max string width of a line.
 pub fn get_text_width(text: &str) -> usize {
-    #[cfg(not(feature = "ansi"))]
-    {
-        text.lines().map(get_string_width).max().unwrap_or(0)
-    }
-
-    #[cfg(feature = "ansi")]
-    {
-        text.lines().map(get_line_width).max().unwrap_or(0)
-    }
+    text.lines().map(get_line_width).max().unwrap_or(0)
 }
 
 /// Returns a char width.
@@ -52,17 +44,7 @@ pub fn get_char_width(c: char) -> usize {
 
 /// Returns a string width (accouting all characters).
 pub fn get_string_width(text: &str) -> usize {
-    #[cfg(feature = "std")]
-    {
-        let text = text.replace(|c| c < ' ', "");
-        unicode_width::UnicodeWidthStr::width(text.as_str())
-    }
-
-    #[cfg(not(feature = "std"))]
-    {
-        // todo: make sure it's allright
-        unicode_width::UnicodeWidthStr::width(text)
-    }
+    unicode_width::UnicodeWidthStr::width(text)
 }
 
 /// Calculates a number of lines.
@@ -239,7 +221,7 @@ mod tests {
                 }
                 #[cfg(not(feature = "ansi"))]
                 {
-                    (2, 36)
+                    (2, 37)
                 }
             }
         );
