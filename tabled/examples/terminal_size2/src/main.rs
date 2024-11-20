@@ -28,7 +28,7 @@ fn main() {
     let (width, height) = get_terminal_size();
 
     let term_size_settings = Settings::default()
-        .with(Width::wrap(width).priority(PriorityMax))
+        .with(Width::wrap(width).priority(PriorityMax::default()))
         .with(Width::increase(width))
         .with(Height::limit(height))
         .with(Height::increase(height));

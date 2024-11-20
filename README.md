@@ -867,8 +867,8 @@ fn gen_table(string_size: usize, width: usize) -> String {
 
     let mut table = Table::new(data);
     table.with((
-        Width::wrap(width).priority(PriorityMax),
-        Width::increase(width).priority(PriorityMin),
+        Width::wrap(width).priority(PriorityMax::right()),
+        Width::increase(width).priority(PriorityMin::right()),
     ));
 
     table.to_string()
@@ -989,7 +989,7 @@ You can tweak `Truncate`, `Wrap`, `MinWidth` logic by setting a priority by whic
 ```rust
 use tabled::settings::{Width, peaker::PriorityMax};
 
-table.with(Width::truncate(10).priority(PriorityMax));
+table.with(Width::truncate(10).priority(PriorityMax::default()));
 ```
 
 #### Percent
@@ -2248,7 +2248,7 @@ let data = [
 ];
 
 let table_settings = Settings::default()
-    .with(Width::wrap(width).priority(PriorityMax))
+    .with(Width::wrap(width).priority(PriorityMax::default()))
     .with(Width::increase(width))
     .with(Height::limit(height))
     .with(Height::increase(height));

@@ -22,3 +22,5 @@ pub use max::PriorityMax;
 pub use min::PriorityMin;
 pub use none::PriorityNone;
 pub use right::PriorityRight;
+
+// todo: Priority::max -->

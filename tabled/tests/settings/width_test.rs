@@ -449,7 +449,11 @@ fn max_width_keep_words_1() {
             .remove_horizontal()
             .horizontals([(1, HorizontalLine::inherit(Style::modern()))]),
     )
-    .with(Width::wrap(21).keep_words(true).priority(PriorityMax))
+    .with(
+        Width::wrap(21)
+            .keep_words(true)
+            .priority(PriorityMax::right()),
+    )
     .with(Alignment::center())
     .to_string();
 
@@ -1822,7 +1826,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority(PriorityMax))
+        .with(Width::truncate(35).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 35);
@@ -1840,7 +1844,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority(PriorityMax))
+        .with(Width::truncate(20).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 20);
@@ -1858,7 +1862,7 @@ fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority(PriorityMax))
+        .with(Width::truncate(0).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 13);
@@ -1880,7 +1884,7 @@ fn max_width_truncate_priority_max_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority(PriorityMax))
+        .with(Width::truncate(15).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 15);
@@ -1901,7 +1905,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority(PriorityMax))
+        .with(Width::wrap(35).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 35);
@@ -1923,7 +1927,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority(PriorityMax))
+        .with(Width::wrap(20).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 20);
@@ -1958,7 +1962,7 @@ fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority(PriorityMax))
+        .with(Width::wrap(0).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 13);
@@ -1980,7 +1984,7 @@ fn max_width_wrap_priority_max_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority(PriorityMax))
+        .with(Width::wrap(15).priority(PriorityMax::right()))
         .to_string();
 
     assert_width!(table, 15);
@@ -2018,7 +2022,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority(PriorityMin))
+        .with(Width::truncate(35).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 35);
@@ -2036,7 +2040,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority(PriorityMin))
+        .with(Width::truncate(20).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 20);
@@ -2054,7 +2058,7 @@ fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority(PriorityMin))
+        .with(Width::truncate(0).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 13);
@@ -2076,7 +2080,7 @@ fn max_width_truncate_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority(PriorityMin))
+        .with(Width::truncate(15).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 15);
@@ -2095,7 +2099,7 @@ fn max_width_truncate_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(17).priority(PriorityMin))
+        .with(Width::truncate(17).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 17);
@@ -2116,7 +2120,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority(PriorityMin))
+        .with(Width::wrap(35).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 35);
@@ -2135,7 +2139,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority(PriorityMin))
+        .with(Width::wrap(20).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 20);
@@ -2157,7 +2161,7 @@ fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority(PriorityMin))
+        .with(Width::wrap(0).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 13);
@@ -2179,7 +2183,7 @@ fn max_width_wrap_priority_min_with_span() {
         .insert((2, 1), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority(PriorityMin))
+        .with(Width::wrap(15).priority(PriorityMin::right()))
         .to_string();
 
     assert_width!(table, 15);
@@ -2208,7 +2212,7 @@ fn max_width_wrap_priority_min_with_span() {
 fn min_width_priority_max() {
     let table = Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority(PriorityMax))
+        .with(MinWidth::new(60).priority(PriorityMax::right()))
         .to_string();
 
     assert_eq!(get_text_width(&table), 60);
@@ -2228,7 +2232,7 @@ fn min_width_priority_max() {
 fn min_width_priority_min() {
     let table = Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority(PriorityMin))
+        .with(MinWidth::new(60).priority(PriorityMin::right()))
         .to_string();
 
     assert_eq!(get_text_width(&table), 60);
@@ -2479,6 +2483,62 @@ test_table!(
     "| 2 |   2-0    |   2-1    |   2-2    | 2 |  |  |  |  |  |  |"
     "|   |          |          |          | - |  |  |  |  |  |  |"
     "|   |          |          |          | 3 |  |  |  |  |  |  |"
+);
+
+test_table!(
+    priority_max_left,
+    Matrix::new(3, 3)
+        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 2), "Hello World With Big Line")
+        .with(Style::markdown())
+        .with(Width::truncate(37).priority(PriorityMax::left())),
+    "| N | column  | column 1 | column 2 |"
+    "|---|---------|----------|----------|"
+    "| 0 |   0-0   |   0-1    |   0-2    |"
+    "| 1 | Hello W | Hello Wo |   1-2    |"
+    "| 2 |   2-0   |   2-1    |   2-2    |"
+);
+
+test_table!(
+    priority_max_right,
+    Matrix::new(3, 3)
+        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 2), "Hello World With Big Line")
+        .with(Style::markdown())
+        .with(Width::truncate(37).priority(PriorityMax::right())),
+    "| N | column 0 | column 1 | column  |"
+    "|---|----------|----------|---------|"
+    "| 0 |   0-0    |   0-1    |   0-2   |"
+    "| 1 | Hello Wo | Hello Wo |   1-2   |"
+    "| 2 |   2-0    |   2-1    |   2-2   |"
+);
+
+test_table!(
+    priority_min_left,
+    Matrix::new(3, 3).with(Width::truncate(30).priority(PriorityMin::left())),
+    "+--+----------+----------+---+"
+    "|  | column 0 | column 1 | c |"
+    "+--+----------+----------+---+"
+    "|  |   0-0    |   0-1    | 0 |"
+    "+--+----------+----------+---+"
+    "|  |   1-0    |   1-1    | 1 |"
+    "+--+----------+----------+---+"
+    "|  |   2-0    |   2-1    | 2 |"
+    "+--+----------+----------+---+"
+);
+
+test_table!(
+    priority_min_right,
+    Matrix::new(3, 3).with(Width::truncate(30).priority(PriorityMin::right())),
+    "+--+---+----------+----------+"
+    "|  | c | column 1 | column 2 |"
+    "+--+---+----------+----------+"
+    "|  | 0 |   0-1    |   0-2    |"
+    "+--+---+----------+----------+"
+    "|  | 1 |   1-1    |   1-2    |"
+    "+--+---+----------+----------+"
+    "|  | 2 |   2-1    |   2-2    |"
+    "+--+---+----------+----------+"
 );
 
 #[cfg(feature = "derive")]
