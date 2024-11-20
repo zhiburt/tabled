@@ -128,8 +128,8 @@ test_table!(
     padding_by_column_name_not_existing,
     Matrix::new(3, 3)
         .with(Style::psql())
-        .with(Modify::new(ByColumnName::new("column 01123123")).with(Padding::new(3, 3, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Alignment::center())),
+        .modify(ByColumnName::new("column 01123123"), Padding::new(3, 3, 0, 0))
+        .with(Alignment::center()),
         " N | column 0 | column 1 | column 2 "
         "---+----------+----------+----------"
         " 0 |   0-0    |   0-1    |   0-2    "
