@@ -242,7 +242,7 @@ impl Color {
     /// # Panics
     ///
     /// PANICS if the input string incorrectly built.
-    /// Use [`TryFrom`] instead if you are not sure about the input.
+    /// Use [`std::convert::TryFrom`] instead if you are not sure about the input.
     #[cfg(feature = "ansi")]
     pub fn parse<S>(text: S) -> Self
     where

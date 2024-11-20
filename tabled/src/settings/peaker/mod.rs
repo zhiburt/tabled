@@ -1,5 +1,6 @@
-//! The module contains [`Peaker`] trait and its implementations to be used in [`Height`] and [`Width`].
-//!
+//! The module contains [`Priority`] and [`Peaker`] trait,
+//! its implementations to be used in [`Height`] and [`Width`].
+//! 
 //! [`Width`]: crate::settings::width::Width
 //! [`Height`]: crate::settings::height::Height
 
@@ -32,7 +33,7 @@ pub trait Peaker {
 /// ```
 /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
 /// # use testing_table::assert_table;
-///
+/// #
 /// let data = [
 ///     ("1", "Hello", 100),
 ///     ("2", "World", 1000),
@@ -73,7 +74,7 @@ impl Priority {
     /// ```
     /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
     /// # use testing_table::assert_table;
-    ///
+    /// #
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -113,7 +114,7 @@ impl Priority {
     /// ```
     /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
     /// # use testing_table::assert_table;
-    ///
+    /// #
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -146,7 +147,7 @@ impl Priority {
     /// ```
     /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
     /// # use testing_table::assert_table;
-    ///
+    /// #
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -185,7 +186,7 @@ impl Priority {
     /// ```
     /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
     /// # use testing_table::assert_table;
-    ///
+    /// #
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -228,7 +229,7 @@ impl Priority {
     /// ```
     /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
     /// # use testing_table::assert_table;
-    ///
+    /// #
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
