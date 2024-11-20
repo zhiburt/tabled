@@ -249,8 +249,6 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
         return Vec::new();
     }
 
-    println!("---> {:?}", s);
-
     let mut prev_newline = false;
     let mut buf = String::with_capacity(width);
     let mut list = Vec::new();
@@ -324,8 +322,6 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         let _ = write!(&mut line, "{}", text_style.start());
 
         while !text_slice.is_empty() {
-            println!("... {} {}", width, line_width);
-
             let available_space = width - line_width;
 
             let part_width = get_text_width(text_slice);
@@ -348,13 +344,6 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
             }
 
             let (lhs, rhs, (unknowns, split_char)) = split_string_at(text_slice, available_space);
-
-            println!(
-                "---------> {:?} {} {}",
-                text_slice, available_space, split_char
-            );
-            println!("---------> {:?} {}", lhs, get_text_width(lhs));
-            println!("---------> {:?}", rhs);
 
             text_slice = &rhs[split_char..];
 
