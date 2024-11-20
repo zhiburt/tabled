@@ -66,7 +66,14 @@ macro_rules! test_table {
 macro_rules! assert_table {
     ($table:expr, $($line:expr)*) => {
         let table = $table.to_string();
-        assert_eq!(table, $crate::static_table!($($line)*));
+        let expected = $crate::static_table!($($line)*);
+        assert_eq!(
+            table,
+            expected,
+            "\ngot:\n{}\nexpected:\n{}",
+            table,
+            expected,
+        );
     };
 }
 
