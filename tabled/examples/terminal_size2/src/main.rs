@@ -2,7 +2,7 @@
 
 use tabled::{
     builder::Builder,
-    settings::{peaker::PriorityMax, Height, Settings, Width},
+    settings::{peaker::Priority, Height, Settings, Width},
     Table,
 };
 use terminal_size::{terminal_size, Height as TerminalHeight, Width as TerminalWidth};
@@ -28,7 +28,7 @@ fn main() {
     let (width, height) = get_terminal_size();
 
     let term_size_settings = Settings::default()
-        .with(Width::wrap(width).priority(PriorityMax::default()))
+        .with(Width::wrap(width).priority(Priority::right(true)))
         .with(Width::increase(width))
         .with(Height::limit(height))
         .with(Height::increase(height));

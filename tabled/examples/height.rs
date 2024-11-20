@@ -11,7 +11,7 @@
 //!       row heights irrespective of [`Padding`] or [`Margin`].
 
 use tabled::{
-    settings::{peaker::PriorityMax, Height, Style},
+    settings::{peaker::Priority, Height, Style},
     Table,
 };
 
@@ -33,7 +33,7 @@ fn main() {
 
     let table_ = table
         .clone()
-        .with(Height::limit(4).priority(PriorityMax::default()))
+        .with(Height::limit(4).priority(Priority::max(true)))
         .to_string();
 
     println!("Table decrease height to 4\n");
@@ -41,7 +41,7 @@ fn main() {
 
     let table_ = table
         .clone()
-        .with(Height::limit(0).priority(PriorityMax::default()))
+        .with(Height::limit(0).priority(Priority::max(true)))
         .to_string();
 
     println!("Table decrease height to 0\n");
