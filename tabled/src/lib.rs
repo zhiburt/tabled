@@ -23,21 +23,9 @@
 //! }
 //!
 //! let languages = vec![
-//!     Language{
-//!         name: "C",
-//!         designed_by: "Dennis Ritchie",
-//!         invented_year: 1972
-//!     },
-//!     Language{
-//!         name: "Rust",
-//!         designed_by: "Graydon Hoare",
-//!         invented_year: 2010
-//!     },
-//!     Language{
-//!         name: "Go",
-//!         designed_by: "Rob Pike",
-//!         invented_year: 2009
-//!     },
+//!     Language{ name: "C", designed_by: "Dennis Ritchie", invented_year: 1972 },
+//!     Language{ name: "Rust", designed_by: "Graydon Hoare", invented_year: 2010 },
+//!     Language{ name: "Go", designed_by: "Rob Pike", invented_year: 2009 },
 //! ];
 //!
 //! let table = Table::new(languages).to_string();

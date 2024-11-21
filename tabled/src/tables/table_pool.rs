@@ -124,13 +124,12 @@ impl PoolTable {
             iter.iter_rows()
                 .into_iter()
                 .map(|row| {
-                    TableValue::Row(
-                        row.into_iter()
-                            .map(|cell| cell.as_ref().to_string())
-                            .map(TableValue::Cell)
-                            .collect(),
-                    )
+                    row.into_iter()
+                        .map(|cell| cell.as_ref().to_string())
+                        .map(TableValue::Cell)
+                        .collect()
                 })
+                .map(TableValue::Row)
                 .collect(),
         );
 

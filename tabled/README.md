@@ -20,46 +20,37 @@ Most of a table configuration can be found in [`tabled::settings`](https://docs.
 
 ```rust
 use tabled::{Table, Tabled};
+use testing_table::assert_table;
 
 #[derive(Tabled)]
-struct Language {
-    name: String,
-    designed_by: String,
+struct Language<'a> {
+    name: &'a str,
+    designed_by: &'a str,
     invented_year: usize,
 }
 
-impl Language {
-    fn new(name: &str, designed_by: &str, invented_year: usize) -> Self {
-        Self {
-            name: name.to_string(),
-            designed_by: designed_by.to_string(),
-            invented_year,
-        }
-    }
-}
-
 let languages = vec![
-    Language::new("C", "Dennis Ritchie", 1972),
-    Language::new("Go", "Rob Pike", 2009),
-    Language::new("Rust", "Graydon Hoare", 2010),
-    Language::new("Hare", "Drew DeVault", 2022),
+    Language { name: "C",    designed_by: "Dennis Ritchie", invented_year: 1972 },
+    Language { name: "Go",   designed_by: "Rob Pike",       invented_year: 2009 },
+    Language { name: "Rust", designed_by: "Graydon Hoare",  invented_year: 2010 },
+    Language { name: "Hare", designed_by: "Drew DeVault",   invented_year: 2022 },
 ];
 
-let table = Table::new(languages).to_string();
+let table = Table::new(languages);
 
-assert_eq!(
+assert_table!(
     table,
-    "+------+----------------+---------------+\n\
-     | name | designed_by    | invented_year |\n\
-     +------+----------------+---------------+\n\
-     | C    | Dennis Ritchie | 1972          |\n\
-     +------+----------------+---------------+\n\
-     | Go   | Rob Pike       | 2009          |\n\
-     +------+----------------+---------------+\n\
-     | Rust | Graydon Hoare  | 2010          |\n\
-     +------+----------------+---------------+\n\
-     | Hare | Drew DeVault   | 2022          |\n\
-     +------+----------------+---------------+"
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "| C    | Dennis Ritchie | 1972          |"
+    "+------+----------------+---------------+"
+    "| Go   | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  | 2010          |"
+    "+------+----------------+---------------+"
+    "| Hare | Drew DeVault   | 2022          |"
+    "+------+----------------+---------------+"
 );
 ```
 
@@ -67,6 +58,7 @@ The same example but we are building a table step by step.
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
+use testing_table::assert_table;
 
 let mut builder = Builder::new();
 builder.push_record(["C", "Dennis Ritchie", "1972"]);
@@ -74,19 +66,16 @@ builder.push_record(["Go", "Rob Pike", "2009"]);
 builder.push_record(["Rust", "Graydon Hoare", "2010"]);
 builder.push_record(["Hare", "Drew DeVault", "2022"]);
 
-let table = builder.build()
-    .with(Style::ascii_rounded())
-    .to_string();
+let mut table = builder.build();
+table.with(Style::ascii_rounded());
 
-assert_eq!(
+assert_table!(
     table,
-    concat!(
-        ".------------------------------.\n",
-        "| C    | Dennis Ritchie | 1972 |\n",
-        "| Go   | Rob Pike       | 2009 |\n",
-        "| Rust | Graydon Hoare  | 2010 |\n",
-        "| Hare | Drew DeVault   | 2022 |\n",
-        "'------------------------------'"
-    )
+    ".------------------------------."
+    "| C    | Dennis Ritchie | 1972 |"
+    "| Go   | Rob Pike       | 2009 |"
+    "| Rust | Graydon Hoare  | 2010 |"
+    "| Hare | Drew DeVault   | 2022 |"
+    "'------------------------------'"
 );
 ```

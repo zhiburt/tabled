@@ -1,6 +1,6 @@
 //! The module contains [`Priority`] and [`Peaker`] trait,
 //! its implementations to be used in [`Height`] and [`Width`].
-//! 
+//!
 //! [`Width`]: crate::settings::width::Width
 //! [`Height`]: crate::settings::height::Height
 

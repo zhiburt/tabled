@@ -49,6 +49,38 @@ use crate::util::utf8_writer::UTF8Writer;
 /// To be able to build table we need a dimensions.
 /// If no width and count_columns is set, [`IterTable`] will sniff the records, by
 /// keeping a number of rows buffered (You can set the number via [`IterTable::sniff`]).
+///
+/// In contrast to [`Table`] [`IterTable`] does no allocations but it consumes an iterator.
+/// It's useful when you don't want to re/allocate a buffer for your data.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{grid::records::IterRecords, tables::IterTable};
+///
+/// let data = vec![
+///     vec!["First", "row"],
+///     vec!["Second", "row"],
+///     vec!["Third", "big row"],
+/// ];
+///
+/// let records = IterRecords::new(data, 2, Some(2));
+/// let table = IterTable::new(records).sniff(1);
+///
+/// // notice because of sniff 1 we have all rows after the first one being truncated
+/// assert_eq!(
+///     table.to_string(),
+///     "+-------+-----+\n\
+///      | First | row |\n\
+///      +-------+-----+\n\
+///      | Secon | row |\n\
+///      +-------+-----+\n\
+///      | Third | big |\n\
+///      +-------+-----+",
+/// );
+/// ```
+///
+/// [`Table`]: crate::Table
 #[derive(Debug, Clone)]
 pub struct IterTable<I> {
     records: I,

@@ -1,52 +1,5 @@
 //! This module contains an [`ExtendedTable`] structure which is useful in cases where
 //! a structure has a lot of fields.
-//!
-#![cfg_attr(feature = "derive", doc = "```")]
-#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Tabled, tables::ExtendedTable};
-//!
-//! #[derive(Tabled)]
-//! struct Language {
-//!     name: &'static str,
-//!     designed_by: &'static str,
-//!     invented_year: usize,
-//! }
-//!
-//! let languages = vec![
-//!     Language{
-//!         name: "C",
-//!         designed_by: "Dennis Ritchie",
-//!         invented_year: 1972
-//!     },
-//!     Language{
-//!         name: "Rust",
-//!         designed_by: "Graydon Hoare",
-//!         invented_year: 2010
-//!     },
-//!     Language{
-//!         name: "Go",
-//!         designed_by: "Rob Pike",
-//!         invented_year: 2009
-//!     },
-//! ];
-//!
-//! let table = ExtendedTable::new(languages).to_string();
-//!
-//! let expected = "-[ RECORD 0 ]-+---------------\n\
-//!                 name          | C\n\
-//!                 designed_by   | Dennis Ritchie\n\
-//!                 invented_year | 1972\n\
-//!                 -[ RECORD 1 ]-+---------------\n\
-//!                 name          | Rust\n\
-//!                 designed_by   | Graydon Hoare\n\
-//!                 invented_year | 2010\n\
-//!                 -[ RECORD 2 ]-+---------------\n\
-//!                 name          | Go\n\
-//!                 designed_by   | Rob Pike\n\
-//!                 invented_year | 2009";
-//!
-//! assert_eq!(table, expected);
-//! ```
 
 use crate::grid::util::string::get_line_width;
 use crate::Tabled;
@@ -62,21 +15,39 @@ use std::rc::Rc;
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that ANSI sequences will be not be rendered too so colores will not be showed.
 ///
-/// ```
-/// use tabled::tables::ExtendedTable;
+#[cfg_attr(feature = "derive", doc = "```")]
+#[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+/// use tabled::{Tabled, tables::ExtendedTable};
 ///
-/// let data = vec!["Hello", "2021"];
-/// let table = ExtendedTable::new(&data).to_string();
+/// #[derive(Tabled)]
+/// struct Language {
+///     name: &'static str,
+///     designed_by: &'static str,
+///     invented_year: usize,
+/// }
 ///
-/// assert_eq!(
-///     table,
-///     concat!(
-///         "-[ RECORD 0 ]-\n",
-///         "&str | Hello\n",
-///         "-[ RECORD 1 ]-\n",
-///         "&str | 2021",
-///     )
-/// );
+/// let languages = vec![
+///     Language{ name: "C", designed_by: "Dennis Ritchie", invented_year: 1972 },
+///     Language{ name: "Rust", designed_by: "Graydon Hoare", invented_year: 2010 },
+///     Language{ name: "Go", designed_by: "Rob Pike", invented_year: 2009 },
+/// ];
+///
+/// let table = ExtendedTable::new(languages).to_string();
+///
+/// let expected = "-[ RECORD 0 ]-+---------------\n\
+///                 name          | C\n\
+///                 designed_by   | Dennis Ritchie\n\
+///                 invented_year | 1972\n\
+///                 -[ RECORD 1 ]-+---------------\n\
+///                 name          | Rust\n\
+///                 designed_by   | Graydon Hoare\n\
+///                 invented_year | 2010\n\
+///                 -[ RECORD 2 ]-+---------------\n\
+///                 name          | Go\n\
+///                 designed_by   | Rob Pike\n\
+///                 invented_year | 2009";
+///
+/// assert_eq!(table, expected);
 /// ```
 #[derive(Clone)]
 pub struct ExtendedTable {
