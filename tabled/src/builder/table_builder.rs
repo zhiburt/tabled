@@ -371,6 +371,64 @@ impl From<Builder> for Vec<Vec<Text<String>>> {
     }
 }
 
+impl<K, V, S> From<std::collections::HashMap<K, V, S>> for Builder
+where
+    K: ToString,
+    V: ToString,
+{
+    fn from(m: std::collections::HashMap<K, V, S>) -> Self {
+        let mut b = Self::with_capacity(m.len(), 2);
+        for (k, v) in m {
+            b.push_record([k.to_string(), v.to_string()]);
+        }
+
+        b
+    }
+}
+
+impl<K, V> From<std::collections::BTreeMap<K, V>> for Builder
+where
+    K: ToString,
+    V: ToString,
+{
+    fn from(m: std::collections::BTreeMap<K, V>) -> Self {
+        let mut b = Self::with_capacity(m.len(), 2);
+        for (k, v) in m {
+            b.push_record([k.to_string(), v.to_string()]);
+        }
+
+        b
+    }
+}
+
+impl<V> From<std::collections::HashSet<V>> for Builder
+where
+    V: ToString,
+{
+    fn from(m: std::collections::HashSet<V>) -> Self {
+        let mut b = Self::with_capacity(m.len(), 1);
+        for v in m {
+            b.push_record([v.to_string()]);
+        }
+
+        b
+    }
+}
+
+impl<V> From<std::collections::BTreeSet<V>> for Builder
+where
+    V: ToString,
+{
+    fn from(m: std::collections::BTreeSet<V>) -> Self {
+        let mut b = Self::with_capacity(m.len(), 1);
+        for v in m {
+            b.push_record([v.to_string()]);
+        }
+
+        b
+    }
+}
+
 impl<R> FromIterator<R> for Builder
 where
     R: IntoIterator,
