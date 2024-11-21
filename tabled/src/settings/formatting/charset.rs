@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
@@ -71,6 +73,26 @@ impl Charset {
 /// ```
 #[derive(Debug, Default, Clone)]
 pub struct CleanCharset;
+
+impl CleanCharset {
+    /// Removes all symbols which may break the layout such as `\t`, `\r` and more.
+    ///
+    /// Notice that tab is just removed rather then being replaced with spaces.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::settings::formatting::CleanCharset;
+    ///
+    /// assert_eq!(
+    ///     CleanCharset::clean("Some\ttext\t\twith \\tabs\r\nSome"),
+    ///     "Sometextwith \\tabs\nSome"
+    /// )
+    /// ```
+    pub fn clean(s: &str) -> Cow<'_, str> {
+        Cow::Owned(clean_charset(s))
+    }
+}
 
 impl<R, D, C> TableOption<R, C, D> for CleanCharset
 where
