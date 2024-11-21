@@ -1,12 +1,12 @@
-//! This module contains a [`Disable`] structure which helps to
+//! This module contains a [`Remove`] structure which helps to
 //! remove an etheir column or row from a [`Table`].
 //!
 //! # Example
 //!
 //! ```rust,no_run
-//! # use tabled::{Table, settings::{Disable, object::Rows}};
+//! # use tabled::{Table, settings::{Remove, object::Rows}};
 //! # let data: Vec<&'static str> = Vec::new();
-//! let table = Table::new(&data).with(Disable::row(Rows::first()));
+//! let table = Table::new(&data).with(Remove::row(Rows::first()));
 //! ```
 //!
 //! [`Table`]: crate::Table
@@ -18,22 +18,22 @@ use crate::{
     settings::{location::Location, TableOption},
 };
 
-/// Disable removes particular rows/columns from a [`Table`].
+/// Remove removes particular rows/columns from a [`Table`].
 ///
 /// It tries to keeps track of style changes which may occur.
 /// But it's not guaranteed will be the way you would expect it to be.
 ///
-/// Generally you should avoid use of [`Disable`] because it's a slow function and modifies the underlying records.
+/// Generally you should avoid use of [`Remove`] because it's a slow function and modifies the underlying records.
 /// Providing correct data right away is better.
 ///
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, settings::{Disable, object::Rows}};
+/// use tabled::{Table, settings::{Remove, object::Rows}};
 ///
 /// let data = vec!["Hello", "World", "!!!"];
 ///
-/// let table = Table::new(data).with(Disable::row(Rows::new(1..2))).to_string();
+/// let table = Table::new(data).with(Remove::row(Rows::new(1..2))).to_string();
 ///
 /// assert_eq!(
 ///     table,
@@ -49,13 +49,13 @@ use crate::{
 /// ```
 /// [`Table`]: crate::Table
 #[derive(Debug)]
-pub struct Disable<L, Target> {
+pub struct Remove<L, Target> {
     locator: L,
     target: PhantomData<Target>,
 }
 
-impl<L> Disable<L, TargetColumn> {
-    /// Disable columns.
+impl<L> Remove<L, TargetColumn> {
+    /// Remove columns.
     ///
     /// Available locators are:
     ///
@@ -66,14 +66,14 @@ impl<L> Disable<L, TargetColumn> {
     /// - [`ByColumnName`]
     ///
     /// ```rust
-    /// use tabled::{builder::Builder, settings::{Disable, location::ByColumnName, object::Columns}};
+    /// use tabled::{builder::Builder, settings::{Remove, location::ByColumnName, object::Columns}};
     ///
     /// let mut builder = Builder::default();
     /// builder.push_record(["col1", "col2", "col3"]);
     /// builder.push_record(["Hello", "World", "1"]);
     ///
     /// let table = builder.build()
-    ///     .with(Disable::column(ByColumnName::new("col3")))
+    ///     .with(Remove::column(ByColumnName::new("col3")))
     ///     .to_string();
     ///
     /// assert_eq!(
@@ -99,8 +99,8 @@ impl<L> Disable<L, TargetColumn> {
     }
 }
 
-impl<L> Disable<L, TargetRow> {
-    /// Disable rows.
+impl<L> Remove<L, TargetRow> {
+    /// Remove rows.
     ///
     /// Available locators are:
     ///
@@ -110,14 +110,14 @@ impl<L> Disable<L, TargetRow> {
     /// - [`LastRow`]
     ///
     /// ```rust
-    /// use tabled::{settings::{Disable, object::Rows}, builder::Builder};
+    /// use tabled::{settings::{Remove, object::Rows}, builder::Builder};
     ///
     /// let mut builder = Builder::default();
     /// builder.push_record(["col1", "col2", "col3"]);
     /// builder.push_record(["Hello", "World", "1"]);
     ///
     /// let table = builder.build()
-    ///     .with(Disable::row(Rows::first()))
+    ///     .with(Remove::row(Rows::first()))
     ///     .to_string();
     ///
     /// assert_eq!(
@@ -140,15 +140,15 @@ impl<L> Disable<L, TargetRow> {
     }
 }
 
-/// A marker struct for [`Disable`].
+/// A marker struct for [`Remove`].
 #[derive(Debug)]
 pub struct TargetRow;
 
-/// A marker struct for [`Disable`].
+/// A marker struct for [`Remove`].
 #[derive(Debug)]
 pub struct TargetColumn;
 
-impl<L, R, D, C> TableOption<R, C, D> for Disable<L, TargetColumn>
+impl<L, R, D, C> TableOption<R, C, D> for Remove<L, TargetColumn>
 where
     L: Location<R, Coordinate = usize>,
     R: Records + Resizable,
@@ -171,7 +171,7 @@ where
     }
 }
 
-impl<L, R, D, C> TableOption<R, C, D> for Disable<L, TargetRow>
+impl<L, R, D, C> TableOption<R, C, D> for Remove<L, TargetRow>
 where
     L: Location<R, Coordinate = usize>,
     R: ExactRecords + Resizable,

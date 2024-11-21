@@ -134,7 +134,7 @@ pub use self::{
 pub use self::{
     color::Color,
     concat::Concat,
-    disable::Disable,
+    disable::Remove,
     duplicate::Dup,
     format::Format,
     height::Height,

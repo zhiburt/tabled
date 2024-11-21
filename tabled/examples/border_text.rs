@@ -41,7 +41,7 @@ fn main() {
         .with(theme)
         .with(LineText::new("Numbers", Rows::first()).offset(1))
         .with(LineText::new("More numbers", Rows::single(1)).offset(1))
-        .with(LineText::new("end", Rows::last()).offset(1))
+        .with(LineText::new("end", Rows::last() + 1).offset(1))
         .to_string();
 
     println!("{table}");

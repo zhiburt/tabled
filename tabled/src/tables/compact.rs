@@ -1,69 +1,4 @@
 //! This module contains a [`CompactTable`] table.
-//!
-//! In contrast to [`Table`] [`CompactTable`] does no allocations but it consumes an iterator.
-//! It's useful when you don't want to re/allocate a buffer for your data.
-//!
-//! # Example
-//!
-//! It works smoothly with arrays.
-//!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//!use tabled::{settings::Style, tables::CompactTable};
-//!
-//! let data = [
-//!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
-//!     ["OpenBSD", "1995", "Theo de Raadt", ""],
-//!     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
-//! ];
-//!
-//! let table = CompactTable::from(data)
-//!     .with(Style::psql())
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         " FreeBSD     | 1993 | William and Lynne Jolitz     | ? \n",
-//!         " OpenBSD     | 1995 | Theo de Raadt                |   \n",
-//!         " HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |   ",
-//!     )
-//! );
-//! ```
-//!
-//! But it's default creation requires to be given an estimated cell width, and the amount of columns.
-//!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//!use tabled::{settings::Style, tables::CompactTable};
-//!
-//! let data = [
-//!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
-//!     ["OpenBSD", "1995", "Theo de Raadt", ""],
-//!     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
-//! ];
-//!
-//! // See what will happen if the given width is too narrow
-//!
-//! let table = CompactTable::new(&data)
-//!     .columns(4)
-//!     .width(5)
-//!     .with(Style::ascii())
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     "+-----+-----+-----+-----+\n\
-//!      | FreeBSD | 1993 | William and Lynne Jolitz | ?   |\n\
-//!      |-----+-----+-----+-----|\n\
-//!      | OpenBSD | 1995 | Theo de Raadt |     |\n\
-//!      |-----+-----+-----+-----|\n\
-//!      | HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |     |\n\
-//!      +-----+-----+-----+-----+"
-//! );
-//! ```
-//!
-//! [`Table`]: crate::Table
 
 use core::cmp::max;
 use core::fmt;
@@ -84,6 +19,71 @@ use crate::{
 
 /// A table which consumes an [`IntoRecords`] iterator.
 /// It assumes that the content has only single line.
+///
+/// In contrast to [`Table`] [`CompactTable`] does no allocations but it consumes an iterator.
+/// It's useful when you don't want to re/allocate a buffer for your data.
+///
+/// # Example
+///
+/// It works smoothly with arrays.
+///
+#[cfg_attr(feature = "std", doc = "```")]
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+/// use tabled::{settings::Style, tables::CompactTable};
+///
+/// let data = [
+///     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
+///     ["OpenBSD", "1995", "Theo de Raadt", ""],
+///     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
+/// ];
+///
+/// let table = CompactTable::from(data)
+///     .with(Style::psql())
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         " FreeBSD     | 1993 | William and Lynne Jolitz     | ? \n",
+///         " OpenBSD     | 1995 | Theo de Raadt                |   \n",
+///         " HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |   ",
+///     )
+/// );
+/// ```
+///
+/// But it's default creation requires to be given an estimated cell width, and the amount of columns.
+///
+#[cfg_attr(feature = "std", doc = "```")]
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+/// use tabled::{settings::Style, tables::CompactTable};
+///
+/// let data = [
+///     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
+///     ["OpenBSD", "1995", "Theo de Raadt", ""],
+///     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
+/// ];
+///
+/// // See what will happen if the given width is too narrow
+///
+/// let table = CompactTable::new(&data)
+///     .columns(4)
+///     .width(5)
+///     .with(Style::ascii())
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     "+-----+-----+-----+-----+\n\
+///      | FreeBSD | 1993 | William and Lynne Jolitz | ?   |\n\
+///      |-----+-----+-----+-----|\n\
+///      | OpenBSD | 1995 | Theo de Raadt |     |\n\
+///      |-----+-----+-----+-----|\n\
+///      | HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |     |\n\
+///      +-----+-----+-----+-----+"
+/// );
+/// ```
+///
+/// [`Table`]: crate::Table
 #[derive(Debug, Clone)]
 pub struct CompactTable<I, D> {
     records: I,

@@ -28,7 +28,7 @@ use crate::{
 /// Or simply call `.to_string()` method.
 ///
 /// The default table [`Style`] is [`Style::ascii`],
-/// with a 1 left and right [`Padding`].
+/// with a single left and right [`Padding`].
 ///
 /// ## Example
 ///
@@ -47,9 +47,37 @@ use crate::{
 ///
 /// let data = vec!["Hello", "2021"];
 /// let mut table = Table::new(&data);
-/// table.with(Style::psql()).with(Alignment::left());
+/// table
+///     .with(Style::psql())
+///     .with(Alignment::left());
+/// ```
 ///
-/// println!("{}", table);
+/// ### With a [`Tabled`] trait.
+///
+/// ```rust,no_run
+/// use tabled::{Table, Tabled};
+///
+/// #[derive(Tabled)]
+/// struct Character {
+///     good: f32,
+///     bad: f32,
+///     encouraging: f32,
+///     destructive: f32,
+/// }
+///
+/// #[derive(Tabled)]
+/// struct Person<'a>(
+///     #[tabled(rename = "name")] &'a str,
+///     #[tabled(inline)] Character,
+/// );
+///
+/// let data = vec![
+///     Person("007", Character { good: 0.8, bad: 0.2, encouraging: 0.8, destructive: 0.1}),
+///     Person("001", Character { good: 0.2, bad: 0.5, encouraging: 0.2, destructive: 0.1}),
+///     Person("006", Character { good: 0.4, bad: 0.1, encouraging: 0.5, destructive: 0.8}),
+/// ];
+///
+/// let table = Table::new(&data);
 /// ```
 ///
 /// [`Padding`]: crate::settings::Padding
@@ -63,10 +91,59 @@ pub struct Table {
 }
 
 impl Table {
-    /// New creates a Table instance.
+    /// Creates a Table instance, from a list of [`Tabled`] values.
     ///
     /// If you use a reference iterator you'd better use [`FromIterator`] instead.
     /// As it has a different lifetime constraints and make less copies therefore.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     Relationship { love: true },
+    ///     Relationship { love: false },
+    /// ];
+    ///
+    /// let table = Table::new(list);
+    /// ```
+    ///
+    /// ## Notice that you can pass tuples.
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     ("Kate", Relationship { love: true }),
+    ///     ("", Relationship { love: false }),
+    /// ];
+    ///
+    /// let table = Table::new(list);
+    /// ```
+    ///
+    /// ## Notice that you can pass const arrays as well.
+    ///
+    /// ```
+    /// use tabled::Table;
+    ///
+    /// let list = vec![
+    ///     ["Kate", "+", "+", "+", "-"],
+    ///     ["", "-", "-", "-", "-"],
+    /// ];
+    ///
+    /// let table = Table::new(list);
+    /// ```
     pub fn new<I, T>(iter: I) -> Self
     where
         I: IntoIterator<Item = T>,
@@ -105,7 +182,6 @@ impl Table {
     ///
     /// # Example
     ///
-    ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{
@@ -137,7 +213,7 @@ impl Table {
     ///     .column(0)
     ///     .transpose()
     ///     .build()
-    ///     .with(Modify::new(Segment::new(1.., 1..)).with(Alignment::center()))
+    ///     .modify(Segment::new(1.., 1..), Alignment::center())
     ///     .to_string();
     ///
     /// assert_eq!(

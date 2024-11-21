@@ -9,7 +9,7 @@ use crate::grid::{
 ///
 /// A cell can be targeted by [`Cell`].
 ///
-/// [`Cell`]: crate::object::Cell
+/// [`Cell`]: crate::settings::object::Cell
 pub trait CellOption<R, C> {
     /// Modification function of a certail part of a grid targeted by [`Entity`].
     fn change(self, records: &mut R, cfg: &mut C, entity: Entity);
