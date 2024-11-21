@@ -1,11 +1,11 @@
-//! This example demonstrates using the [`Disable`] [`TableOption`] to remove specific
+//! This example demonstrates using the [`Remove`] to remove specific
 //! cell data from a [`Table`] display.
 //!
-//! * ⚠️ Using [`Disable`] in combination with other [`Style`] customizations may yield unexpected results.
-//!   It is safest to use [`Disable`] last in a chain of alterations.
+//! * ⚠️ Using [`Remove`] in combination with other [`Style`] customizations may yield unexpected results.
+//!   It is safest to use [`Remove`] last in a chain of alterations.
 
 use tabled::{
-    settings::{location::ByColumnName, Disable},
+    settings::{location::ByColumnName, Remove},
     Table, Tabled,
 };
 
@@ -36,7 +36,7 @@ fn main() {
     ];
 
     let mut table = Table::new(data);
-    table.with(Disable::column(ByColumnName::new("is_active")));
+    table.with(Remove::column(ByColumnName::new("is_active")));
 
     println!("{table}");
 }

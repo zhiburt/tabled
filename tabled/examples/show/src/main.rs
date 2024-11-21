@@ -27,7 +27,7 @@ use tabled::{
     settings::{
         object::{Columns, Object, Rows},
         style::{Border, BorderColor, LineText, Style},
-        Alignment, Color, Disable, Format, Highlight, Margin, Panel, Width,
+        Alignment, Color, Remove, Format, Highlight, Margin, Panel, Width,
     },
     Table, Tabled,
 };
@@ -131,21 +131,21 @@ fn run(movies: &[Movie], debug: bool) {
 fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
     #[rustfmt::skip]
     let create_titles_actions: Vec<Action> = vec![
-        detached_action(|t| { t.with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(1..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(2..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(3..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(4..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(5..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(1..))).with(Remove::column(Columns::new(1..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(1..))).with(Remove::column(Columns::new(2..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(1..))).with(Remove::column(Columns::new(3..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(1..))).with(Remove::column(Columns::new(4..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(1..))).with(Remove::column(Columns::new(5..))).with(Style::modern()); }),
     ];
 
     #[rustfmt::skip]
     let add_movies_actions: Vec<Action> = vec![
-        detached_action(|t| { t.with(Disable::row(Rows::new(2..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(3..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(4..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(5..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(6..))).with(Style::modern()); }),
-        detached_action(|t| { t.with(Disable::row(Rows::new(7..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(2..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(3..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(4..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(5..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(6..))).with(Style::modern()); }),
+        detached_action(|t| { t.with(Remove::row(Rows::new(7..))).with(Style::modern()); }),
     ];
 
     #[rustfmt::skip]

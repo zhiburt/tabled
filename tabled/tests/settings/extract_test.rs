@@ -4,7 +4,7 @@ use tabled::{
     builder::Builder,
     settings::{
         object::{Rows, Segment},
-        Alignment, Disable, Extract, Format, Modify, Padding,
+        Alignment, Extract, Format, Modify, Padding, Remove,
     },
 };
 
@@ -181,7 +181,7 @@ test_table!(
 
 test_table!(
     extract_inside_test,
-    Matrix::new(3, 3).with(Disable::row(Rows::first())).with(Extract::segment(1..2, 1..2)),
+    Matrix::new(3, 3).with(Remove::row(Rows::first())).with(Extract::segment(1..2, 1..2)),
     "+-----+"
     "| 1-0 |"
     "+-----+"
@@ -189,7 +189,7 @@ test_table!(
 
 test_table!(
     extract_left_test,
-    Matrix::new(3, 3).with(Disable::row(Rows::first())).with(Extract::segment(.., ..1)),
+    Matrix::new(3, 3).with(Remove::row(Rows::first())).with(Extract::segment(.., ..1)),
     "+---+"
     "| 0 |"
     "+---+"
@@ -201,7 +201,7 @@ test_table!(
 
 test_table!(
     extract_right_test,
-    Matrix::new(3, 3).with(Disable::row(Rows::first())).with(Extract::segment(.., 2..)),
+    Matrix::new(3, 3).with(Remove::row(Rows::first())).with(Extract::segment(.., 2..)),
     "+-----+-----+"
     "| 0-1 | 0-2 |"
     "+-----+-----+"
@@ -213,7 +213,7 @@ test_table!(
 
 test_table!(
     extract_top_test,
-    Matrix::new(3, 3).with(Disable::row(Rows::first())).with(Extract::segment(..1, ..)),
+    Matrix::new(3, 3).with(Remove::row(Rows::first())).with(Extract::segment(..1, ..)),
     "+---+-----+-----+-----+"
     "| 0 | 0-0 | 0-1 | 0-2 |"
     "+---+-----+-----+-----+"
@@ -221,7 +221,7 @@ test_table!(
 
 test_table!(
     extract_bottom_test,
-    Matrix::new(3, 3).with(Disable::row(Rows::first())).with(Extract::segment(2.., ..)),
+    Matrix::new(3, 3).with(Remove::row(Rows::first())).with(Extract::segment(2.., ..)),
     "+---+-----+-----+-----+"
     "| 2 | 2-0 | 2-1 | 2-2 |"
     "+---+-----+-----+-----+"
@@ -230,7 +230,7 @@ test_table!(
 test_table!(
     extract_all_test,
     Matrix::new(3, 3)
-        .with(Disable::row(Rows::first()))
+        .with(Remove::row(Rows::first()))
         .with(Extract::segment(3.., 3..)),
     ""
 );

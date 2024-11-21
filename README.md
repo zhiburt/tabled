@@ -62,7 +62,7 @@ you can find more examples in the **[examples](/tabled/examples/)** folder.
     - [Height Increase](#height-increase)
     - [Height Limit](#height-limit)
   - [Rotate](#rotate)
-  - [Disable](#disable)
+  - [Remove](#remove)
   - [Extract](#extract)
   - [Header and Footer and Panel](#header-and-footer-and-panel)
   - [Merge](#merge)
@@ -1106,19 +1106,15 @@ table.with(Rotate::Left);
 └──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
 ```
 
-### Disable
+### Remove
 
-You can remove certain rows or columns from the table by `Disable`.
+You can remove certain rows or columns from the table by `Remove`.
 
 ```rust
-use tabled::settings::{
-    object::{Columns, Rows},
-    Disable,
-};
+use tabled::settings::{object::{Columns, Rows}, Remove};
 
-table
-    .with(Disable::row(Rows::first()))
-    .with(Disable::column(Columns::single(2)));
+table.with(Remove::row(Rows::first()));
+table.with(Remove::column(Columns::single(2)));
 ```
 
 If the above example be applied for a first example in a file it would look like this.
@@ -1493,7 +1489,7 @@ struct Person {
 
 You can mark filds as hidden in which case they will be ignored and not be present on a sheet.
 
-A similar effect could be achieved by the means of a `Disable` setting.
+A similar effect could be achieved by the means of a [`Remove`](#remove).
 
 ```rust
 use tabled::Tabled;

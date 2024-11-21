@@ -336,7 +336,7 @@ pub use crate::{tabled::Tabled, tables::Table};
 ///
 /// You can mark fields as hidden in which case they fill be ignored and not be present on a sheet.
 ///
-/// A similar affect could be achieved by the means of a `Disable` setting.
+/// A similar affect could be achieved by the means of a `Remove`.
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
