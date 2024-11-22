@@ -17,9 +17,8 @@ ansi = ["tabled/ansi"]
 derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
-
 [dependencies]
-toml = "0.7"
+toml = "0.8"
 tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
