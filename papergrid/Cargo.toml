@@ -1,6 +1,6 @@
 [package]
 name = "papergrid"
-version = "0.12.0"
+version = "0.13.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a core library to print a table"
@@ -21,7 +21,7 @@ ansitok = { version = "0.2", optional = true  }
 
 [dev-dependencies]
 owo-colors = "3.4.0"
-testing_table = { path = "../testing_table", features = ["ansi"] }
+testing_table = { version = "0.2", features = ["ansi"] }
 
 [[example]]
 name = "papergrid_color"
