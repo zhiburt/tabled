@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.17.0] - 2024-23-11
+
+### Added
+
+- Added `Color::rgb_fg`, `Color::rgb_bg` (by [@k86td](https://github.com/k86td))
+- Added `ObjectIterator`: so things like `Rows::new(1..10).step_by(2)` be possible.
+- Added support for `Rows::last() + 100` and `Columns::last() + 100` add operation.
+- Added `left|right` specifiers to `PriorityMax` and `PriorityMin`.
+- Added `Priority` factory to create different priorities. Basically a more convinient way.
+- Added a descriptive error message to `testing_table::assert_table`.
+- Added `Builder::from(HashMap::new())` implementation.
+- Added `CleanCharset::clean("")` function for cases where we build a table by `Builder`.
+
+# Changed
+
+- Switched back to upstream `unicode-width` crate (by [@joshtriplett](https://github.com/joshtriplett)).
+- Migrated from proc-macro-error to proc-macro-error2 (by [@welpo](https://github.com/welpo)).
+- Refactorings to improve code quality further.
+- Made Charset::clean method more presise so we can hopefully work with latest `unicode-width`.
+- Improved Wrap algorithm. As it was misstreating new lines characters.
+- Splited `Padding` to `Padding` and `PaddingColor`.
+- Splited `Margin` to `Margin` and `MarginColor`.
+- Changed `Highlight` interface.
+- Changed `Border` and `BorderColor` implementation when applied to table, so it sets a frame rather then all cells.
+- Renamed `Disable` into `Remove`.
+- Set CI MSRV check to 1.66.
+
+# Fixed
+
+- Fixed docs (by [@joshtriplett](https://github.com/joshtriplett)).
+- Fixed docs (by [@akiomik](https://github.com/akiomik)).
+- Fixed clippy (by [@akiomik](https://github.com/akiomik)).
+- Added absent license in `testing_table` (by [@michel-slm](https://github.com/michel-slm)).
+- Fix removal of 1st line in `Theme::remove_horizontal_lines` when used from `Theme::from(Style::*)`.
+- Fix `Disable::row` issue when it was not deleting a row.
+
 ## [0.16.0] - 2024-08-05
 
 ### Added
