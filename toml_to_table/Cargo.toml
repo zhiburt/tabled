@@ -20,7 +20,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 toml = "0.7"
-tabled = { version = "0.16", features = ["std"], default-features = false }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
-testing_table = { version = "0.1", features = ["ansi"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }
