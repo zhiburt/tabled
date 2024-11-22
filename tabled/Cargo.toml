@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.16.0"
+version = "0.17.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -317,14 +317,14 @@ ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { path = "../papergrid", default-features = false }
-tabled_derive = { path = "../tabled_derive", optional = true }
+papergrid = { version = "0.13", default-features = false }
+tabled_derive = { version = "0.9", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }
 
 [dev-dependencies]
 owo-colors = "3.5"
-testing_table = { path = "../testing_table", features = ["ansi"] }
+testing_table = { version = "0.2", features = ["ansi"] }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
