@@ -100,6 +100,7 @@ impl Table {
     ///
     /// ```
     /// use tabled::{Table, Tabled};
+    /// use testing_table::assert_table;
     ///
     /// #[derive(Tabled)]
     /// struct Relationship {
@@ -112,12 +113,24 @@ impl Table {
     /// ];
     ///
     /// let table = Table::new(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+-------+"
+    ///     "| love  |"
+    ///     "+-------+"
+    ///     "| true  |"
+    ///     "+-------+"
+    ///     "| false |"
+    ///     "+-------+"
+    /// );
     /// ```
     ///
     /// ## Notice that you can pass tuples.
     ///
     /// ```
     /// use tabled::{Table, Tabled};
+    /// use testing_table::assert_table;
     ///
     /// #[derive(Tabled)]
     /// struct Relationship {
@@ -130,12 +143,24 @@ impl Table {
     /// ];
     ///
     /// let table = Table::new(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+------+-------+"
+    ///     "| &str | love  |"
+    ///     "+------+-------+"
+    ///     "| Kate | true  |"
+    ///     "+------+-------+"
+    ///     "|      | false |"
+    ///     "+------+-------+"
+    /// );
     /// ```
     ///
     /// ## Notice that you can pass const arrays as well.
     ///
     /// ```
     /// use tabled::Table;
+    /// use testing_table::assert_table;
     ///
     /// let list = vec![
     ///     ["Kate", "+", "+", "+", "-"],
@@ -143,6 +168,41 @@ impl Table {
     /// ];
     ///
     /// let table = Table::new(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+------+---+---+---+---+"
+    ///     "| 0    | 1 | 2 | 3 | 4 |"
+    ///     "+------+---+---+---+---+"
+    ///     "| Kate | + | + | + | - |"
+    ///     "+------+---+---+---+---+"
+    ///     "|      | - | - | - | - |"
+    ///     "+------+---+---+---+---+"
+    /// );
+    /// ```
+    ///
+    /// ## As a different way to create a [`Table`], you can use [`Table::from_iter`].  
+    ///
+    /// ```
+    /// use std::iter::FromIterator;
+    /// use tabled::Table;
+    /// use testing_table::assert_table;
+    ///
+    /// let list = vec![
+    ///     vec!["Kate", "+", "+", "+", "-"],
+    ///     vec!["", "-", "-", "-", "-"],
+    /// ];
+    ///
+    /// let table = Table::from_iter(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+------+---+---+---+---+"
+    ///     "| Kate | + | + | + | - |"
+    ///     "+------+---+---+---+---+"
+    ///     "|      | - | - | - | - |"
+    ///     "+------+---+---+---+---+"
+    /// );
     /// ```
     pub fn new<I, T>(iter: I) -> Self
     where

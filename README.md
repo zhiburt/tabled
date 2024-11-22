@@ -133,9 +133,9 @@ struct Language {
 }
 
 let languages = vec![
-    Language{ name: "C",    designed_by: "Dennis Ritchie",  invented_year: 1972 },
-    Language{ name: "Rust", designed_by: "Graydon Hoare",   invented_year: 2010 },
-    Language{ name: "Go",   designed_by: "Rob Pike",        invented_year: 2009 },
+    Language { name: "C",    designed_by: "Dennis Ritchie",  invented_year: 1972 },
+    Language { name: "Rust", designed_by: "Graydon Hoare",   invented_year: 2010 },
+    Language { name: "Go",   designed_by: "Rob Pike",        invented_year: 2009 },
 ];
 
 let table = Table::new(languages).to_string();
@@ -210,14 +210,12 @@ If you want to peak style at runtime `Theme` might be better suited for it.
 Any `Style` can be customized.
 As well as a custom `Style` can be created from scratch.
 
-A style can be used like this.
-
 ```rust
 use tabled::{Table, Style};
 
 let mut table = Table::new(&data);
 table.with(Style::psql());
-```expected
+```
 
 #### Styles
 
