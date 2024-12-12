@@ -110,7 +110,7 @@ fn get_fields_length(fields: &Fields, tabled_trait: &ExprPath) -> Result<TokenSt
     let size_components = std::iter::once(quote!(0)).chain(size_components);
 
     let mut stream = TokenStream::new();
-    stream.append_separated(size_components, syn::token::Add::default());
+    stream.append_separated(size_components, syn::token::Plus::default());
 
     Ok(stream)
 }
@@ -123,7 +123,7 @@ fn get_enum_length(enum_ast: &DataEnum, trait_path: &ExprPath) -> Result<TokenSt
         let size = size?;
 
         if i != 0 {
-            stream.append_all(syn::token::Add::default().into_token_stream());
+            stream.append_all(syn::token::Plus::default().into_token_stream());
         }
 
         stream.append_all(size);

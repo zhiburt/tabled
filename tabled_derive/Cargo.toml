@@ -11,8 +11,8 @@ license = "MIT"
 proc-macro = true
 
 [dependencies]
-syn = { version = "1", features = ["full", "visit-mut"] }
+syn = { version = "2", features = ["full", "visit-mut"] }
 quote = "1"
 proc-macro2 = "1"
-heck = "0.4"
+heck = "0.5"
 proc-macro-error2 = "2.0.1"
