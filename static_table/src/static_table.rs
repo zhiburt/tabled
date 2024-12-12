@@ -287,31 +287,42 @@ impl<T: Parse> Parse for Pad<T> {
     }
 }
 
-fn expr_lit_to_string(expr_lit: &ExprLit) -> String {
+fn expr_lit_to_string(expr_lit: &ExprLit) -> Result<String> {
     match &expr_lit.lit {
-        Lit::Str(val) => val.value(),
-        Lit::ByteStr(val) => format!("{:?}", val.value()),
-        Lit::Int(val) => val.base10_digits().to_string(),
-        Lit::Float(val) => val.base10_digits().to_string(),
-        Lit::Char(val) => val.value().to_string(),
-        Lit::Byte(val) => val.value().to_string(),
-        Lit::Bool(val) => val.value().to_string(),
-        Lit::Verbatim(val) => val.to_token_stream().to_string(),
+        Lit::Str(val) => Ok(val.value()),
+        Lit::ByteStr(val) => Ok(format!("{:?}", val.value())),
+        Lit::Int(val) => Ok(val.base10_digits().to_string()),
+        Lit::Float(val) => Ok(val.base10_digits().to_string()),
+        Lit::Char(val) => Ok(val.value().to_string()),
+        Lit::Byte(val) => Ok(val.value().to_string()),
+        Lit::Bool(val) => Ok(val.value().to_string()),
+        Lit::Verbatim(val) => Ok(val.to_token_stream().to_string()),
+        _ => Err(syn::Error::new_spanned(
+            expr_lit,
+            "Unsupported literal type",
+        )),
     }
 }
 
 fn expr_val_to_list(expr_val: &ExprVal) -> Result<Vec<String>> {
     match expr_val {
-        ExprVal::Lit(lit) => Ok(vec![expr_lit_to_string(lit)]),
+        ExprVal::Lit(lit) => Ok(vec![expr_lit_to_string(lit)?]),
         ExprVal::Scope { expr, .. } => match expr {
             Some(val) => match val {
-                ScopeVal::Expr(lit) => Ok(vec![expr_lit_to_string(lit)]),
-                ScopeVal::List(list) => Ok(list.into_iter().map(expr_lit_to_string).collect()),
+                ScopeVal::Expr(lit) => Ok(vec![expr_lit_to_string(lit)?]),
+                ScopeVal::List(list) => {
+                    let mut data = Vec::with_capacity(list.len());
+                    for val in list {
+                        data.push(expr_lit_to_string(val)?);
+                    }
+
+                    Ok(data)
+                }
                 ScopeVal::Sized { elem, len, .. } => {
                     let len = len.base10_parse::<usize>()?;
                     let mut data = vec![String::new(); len];
                     if len > 0 {
-                        data[0] = expr_lit_to_string(elem);
+                        data[0] = expr_lit_to_string(elem)?;
                     }
 
                     Ok(data)
