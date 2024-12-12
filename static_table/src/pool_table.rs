@@ -3,6 +3,7 @@ use syn::{
     bracketed,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
     token::{self},
     ExprLit, Ident, Lit, LitInt, LitStr, Result, Token,
 };
@@ -202,16 +203,17 @@ impl<T: Parse> Parse for Pad<T> {
     }
 }
 
-fn expr_lit_to_string(expr_lit: &ExprLit) -> String {
+fn expr_lit_to_string(expr_lit: &ExprLit) -> Result<String> {
     match &expr_lit.lit {
-        Lit::Str(val) => val.value(),
-        Lit::ByteStr(val) => format!("{:?}", val.value()),
-        Lit::Int(val) => val.base10_digits().to_string(),
-        Lit::Float(val) => val.base10_digits().to_string(),
-        Lit::Char(val) => val.value().to_string(),
-        Lit::Byte(val) => val.value().to_string(),
-        Lit::Bool(val) => val.value().to_string(),
-        Lit::Verbatim(val) => val.to_token_stream().to_string(),
+        Lit::Str(val) => Ok(val.value()),
+        Lit::ByteStr(val) => Ok(format!("{:?}", val.value())),
+        Lit::Int(val) => Ok(val.base10_digits().to_string()),
+        Lit::Float(val) => Ok(val.base10_digits().to_string()),
+        Lit::Char(val) => Ok(val.value().to_string()),
+        Lit::Byte(val) => Ok(val.value().to_string()),
+        Lit::Bool(val) => Ok(val.value().to_string()),
+        Lit::Verbatim(val) => Ok(val.to_token_stream().to_string()),
+        _ => Err(syn::Error::new(expr_lit.span(), "unsupported literal type")),
     }
 }
 
@@ -240,7 +242,7 @@ fn collect_row(elems: &MatrixRowElements) -> Result<Vec<String>> {
         MatrixRowElements::List(list) => {
             let mut row = Vec::with_capacity(list.len());
             for val in list {
-                let val = expr_lit_to_string(val);
+                let val = expr_lit_to_string(val)?;
                 row.push(val);
             }
 
@@ -248,7 +250,7 @@ fn collect_row(elems: &MatrixRowElements) -> Result<Vec<String>> {
         }
         MatrixRowElements::Static { elem, len, .. } => {
             let len = len.base10_parse::<usize>()?;
-            let elem = expr_lit_to_string(elem);
+            let elem = expr_lit_to_string(elem)?;
             let row = vec![elem; len];
 
             Ok(row)
