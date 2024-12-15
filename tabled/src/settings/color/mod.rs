@@ -115,7 +115,6 @@ impl Color {
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-
     pub const BG_BLACK:          Self = Self::new_static("\u{1b}[40m", "\u{1b}[49m");
     /// A color representation.
     /// 

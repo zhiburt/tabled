@@ -239,7 +239,6 @@ impl<T, B, L, R> From<Border<T, B, L, R>> for GridBorder<char> {
 }
 
 #[cfg(feature = "std")]
-
 impl<T, B, L, R, Data> CellOption<Data, ColoredConfig> for Border<T, B, L, R>
 where
     Data: Records + ExactRecords,
