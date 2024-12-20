@@ -56,3 +56,10 @@ impl<T> Sides<T> {
         )
     }
 }
+
+impl<T> Sides<Option<T>> {
+    /// Checkes whether any option was set
+    pub const fn is_empty(&self) -> bool {
+        self.left.is_none() && self.right.is_none() && self.top.is_none() && self.bottom.is_none()
+    }
+}

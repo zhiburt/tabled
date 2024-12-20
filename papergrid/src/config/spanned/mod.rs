@@ -29,8 +29,9 @@ type VerticalLine = super::VerticalLine<char>;
 /// grid: crate::Grid.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SpannedConfig {
-    margin: Sides<ColoredMarginIndent>,
-    padding: EntityMap<Sides<ColoredIndent>>,
+    margin: Sides<MarginIndent>,
+    padding: EntityMap<Sides<Indent>>,
+    padding_color: EntityMap<Sides<Option<ANSIBuf>>>,
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
     formatting: EntityMap<Formatting>,
@@ -52,6 +53,7 @@ impl Default for SpannedConfig {
         Self {
             margin: Sides::default(),
             padding: EntityMap::default(),
+            padding_color: EntityMap::default(),
             formatting: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left),
             alignment_v: EntityMap::new(AlignmentVertical::Top),
@@ -413,46 +415,22 @@ impl SpannedConfig {
 
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, entity: Entity, padding: Sides<Indent>) {
-        let mut pad = self.padding.get(entity).clone();
-        pad.left.indent = padding.left;
-        pad.right.indent = padding.right;
-        pad.top.indent = padding.top;
-        pad.bottom.indent = padding.bottom;
-
-        self.padding.insert(entity, pad);
+        self.padding.insert(entity, padding);
     }
 
     /// Set a padding to a given cells.
     pub fn set_padding_color(&mut self, entity: Entity, padding: Sides<Option<ANSIBuf>>) {
-        let mut pad = self.padding.get(entity).clone();
-        pad.left.color = padding.left;
-        pad.right.color = padding.right;
-        pad.top.color = padding.top;
-        pad.bottom.color = padding.bottom;
-
-        self.padding.insert(entity, pad);
+        self.padding_color.insert(entity, padding);
     }
 
     /// Get a padding for a given [Entity].
     pub fn get_padding(&self, entity: Entity) -> Sides<Indent> {
-        let pad = self.padding.get(entity);
-        Sides::new(
-            pad.left.indent,
-            pad.right.indent,
-            pad.top.indent,
-            pad.bottom.indent,
-        )
+        *self.padding.get(entity)
     }
 
     /// Get a padding color for a given [Entity].
     pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<ANSIBuf>> {
-        let pad = self.padding.get(entity);
-        Sides::new(
-            pad.left.color.clone(),
-            pad.right.color.clone(),
-            pad.top.color.clone(),
-            pad.bottom.color.clone(),
-        )
+        self.padding_color.get(entity).clone()
     }
 
     /// Set a formatting to a given cells.
@@ -660,24 +638,18 @@ impl SpannedConfig {
 
     /// Verifies if there's any custom padding set.
     pub fn has_padding_color(&self) -> bool {
-        let map = HashMap::from(self.padding.clone());
-        let mut has_color = false;
+        let map = HashMap::from(self.padding_color.clone());
         for (entity, value) in map {
             if matches!(entity, Entity::Global) {
                 continue;
             }
 
-            has_color = value.bottom.color.is_some()
-                || value.top.color.is_some()
-                || value.left.color.is_some()
-                || value.right.color.is_some();
-
-            if has_color {
-                break;
+            if !value.is_empty() {
+                return true;
             }
         }
 
-        has_color
+        false
     }
 
     /// Verifies if there's any custom formatting set.
@@ -898,15 +870,9 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
     })
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
-struct ColoredIndent {
-    indent: Indent,
-    color: Option<ANSIBuf>,
-}
-
 /// A colorefull margin indent.
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct ColoredMarginIndent {
+struct MarginIndent {
     /// An indent value.
     indent: Indent,
     /// An offset value.
@@ -915,7 +881,7 @@ struct ColoredMarginIndent {
     color: Option<ANSIBuf>,
 }
 
-impl Default for ColoredMarginIndent {
+impl Default for MarginIndent {
     fn default() -> Self {
         Self {
             indent: Indent::default(),
