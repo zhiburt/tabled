@@ -5,6 +5,12 @@ We profile only actual table construction.
 **Be WARE** that it's being run against a specific (but general) use case.
 Some libraries **might** perform better in certain scenarios or certain use cases.
 
+```bash
+cargo bench
+```
+
+TODO: Add an option to peak a libs list at the CLI run.
+
 ## Result
 
 |                          | cli_table      | comfy_table    | prettytable_rs      | term_table     | tabled             | tabled_color     | tabled_compact     | tabled_iter    |
