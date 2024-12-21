@@ -87,27 +87,22 @@ pub enum TrimStrategy {
 
 impl<R> CellOption<R, ColoredConfig> for TrimStrategy {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let mut formatting = *cfg.get_formatting(entity);
-
-        // todo: could be changed to be a struct an enum like consts in `impl` block.
         match self {
             TrimStrategy::Vertical => {
-                formatting.vertical_trim = true;
+                cfg.set_trim_vertical(entity, true);
             }
             TrimStrategy::Horizontal => {
-                formatting.horizontal_trim = true;
+                cfg.set_trim_horizontal(entity, true);
             }
             TrimStrategy::Both => {
-                formatting.vertical_trim = true;
-                formatting.horizontal_trim = true;
+                cfg.set_trim_horizontal(entity, true);
+                cfg.set_trim_vertical(entity, true);
             }
             TrimStrategy::None => {
-                formatting.vertical_trim = false;
-                formatting.horizontal_trim = false;
+                cfg.set_trim_horizontal(entity, false);
+                cfg.set_trim_vertical(entity, false);
             }
         }
-
-        cfg.set_formatting(entity, formatting);
     }
 }
 

@@ -10,8 +10,10 @@ use std::{
 use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
-    config::spanned::{Offset, SpannedConfig},
-    config::{AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides},
+    config::{
+        spanned::{Offset, SpannedConfig},
+        AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides,
+    },
     dimension::Dimension,
     records::{IntoRecords, Records},
     util::string::{count_lines, get_line_width, get_lines, get_text_width, Lines},
@@ -292,7 +294,6 @@ fn print_single_line_column<F: Write, C: ANSIFmt>(
     color: Option<&C>,
     pos: Position,
 ) -> fmt::Result {
-    let pos = pos.into();
     let pad = cfg.get_padding(pos);
     let pad_color = cfg.get_padding_color(pos);
     let fmt = cfg.get_formatting(pos);
@@ -782,14 +783,14 @@ where
         color: Option<C>,
         pos: Position,
     ) -> Cell<T, C> {
-        let fmt = *cfg.get_formatting(pos.into());
-        let pad = cfg.get_padding(pos.into());
-        let pad_color = cfg.get_padding_color(pos.into()).clone();
-        let alignh = *cfg.get_alignment_horizontal(pos.into());
-        let alignv = *cfg.get_alignment_vertical(pos.into());
+        let fmt = cfg.get_formatting(pos);
+        let pad = cfg.get_padding(pos);
+        let pad_color = cfg.get_padding_color(pos).clone();
+        let alignh = *cfg.get_alignment_horizontal(pos);
+        let alignv = *cfg.get_alignment_vertical(pos);
         let justification = (
-            cfg.get_justification(pos.into()),
-            cfg.get_justification_color(pos.into()).cloned(),
+            cfg.get_justification(pos),
+            cfg.get_justification_color(pos).cloned(),
         );
 
         let (count_lines, skip) = if fmt.vertical_trim {

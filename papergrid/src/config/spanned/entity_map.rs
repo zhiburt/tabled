@@ -32,40 +32,29 @@ impl<T> EntityMap<T> {
     }
 
     /// Get a value for an [`Entity`].
-    pub fn get(&self, entity: Entity) -> &T {
-        if self.rows.is_empty() && self.columns.is_empty() && self.cells.is_empty() {
-            return &self.global;
-        }
+    pub fn get(&self, (row, col): Position) -> &T {
+        // todo: optimize;
+        //
+        // Cause we can change rows/columns/cells separately we need to check them separately.
+        // But we often doing this checks in `Grid::fmt` and I believe if we could optimize it it could be beneficial.
+        //
+        // Haven't found a solution for that yet.
+        //
+        // I was wondering if there is a hash function like.
+        // Apparently it doesn't make sense cause we will reset columns/rows on cell insert which is not what we want.
+        //
+        // ```
+        // hash(column, row) == hash(column) == hash(row)
+        // ```
+        //
+        // ref: https://opendsa-server.cs.vt.edu/ODSA/Books/Everything/html/Sparse.html
+        // ref: https://users.rust-lang.org/t/make-hash-return-same-value-whather-the-order-of-element-of-a-tuple/69932/13
 
-        match entity {
-            Entity::Column(col) => self.columns.get(&col).unwrap_or(&self.global),
-            Entity::Row(row) => self.rows.get(&row).unwrap_or(&self.global),
-            Entity::Cell(row, col) => {
-                // todo: optimize;
-                //
-                // Cause we can change rows/columns/cells separately we need to check them separately.
-                // But we often doing this checks in `Grid::fmt` and I believe if we could optimize it it could be beneficial.
-                //
-                // Haven't found a solution for that yet.
-                //
-                // I was wondering if there is a hash function like.
-                // Apparently it doesn't make sense cause we will reset columns/rows on cell insert which is not what we want.
-                //
-                // ```
-                // hash(column, row) == hash(column) == hash(row)
-                // ```
-                //
-                // ref: https://opendsa-server.cs.vt.edu/ODSA/Books/Everything/html/Sparse.html
-                // ref: https://users.rust-lang.org/t/make-hash-return-same-value-whather-the-order-of-element-of-a-tuple/69932/13
-
-                self.cells
-                    .get(&(row, col))
-                    .or_else(|| self.columns.get(&col))
-                    .or_else(|| self.rows.get(&row))
-                    .unwrap_or(&self.global)
-            }
-            Entity::Global => &self.global,
-        }
+        self.cells
+            .get(&(row, col))
+            .or_else(|| self.columns.get(&col))
+            .or_else(|| self.rows.get(&row))
+            .unwrap_or(&self.global)
     }
 
     /// Removes a value for an [`Entity`].
@@ -132,5 +121,11 @@ impl<T> From<EntityMap<T>> for HashMap<Entity, T> {
         }
 
         m
+    }
+}
+
+impl<T> AsRef<T> for EntityMap<T> {
+    fn as_ref(&self) -> &T {
+        &self.global
     }
 }

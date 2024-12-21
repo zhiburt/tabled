@@ -14,7 +14,7 @@ use crate::{
         spanned::{Offset, SpannedConfig},
         Formatting,
     },
-    config::{AlignmentHorizontal, AlignmentVertical, Entity, Indent, Position, Sides},
+    config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::get_line_width,
@@ -103,11 +103,10 @@ where
     }
 
     let is_basic = !ctx.cfg.has_border_colors()
+        && !ctx.cfg.has_padding_color()
         && !ctx.cfg.has_justification()
-        && ctx.cfg.get_justification_color(Entity::Global).is_none()
         && !ctx.cfg.has_offset_chars()
         && !has_margin(ctx.cfg)
-        && !has_padding_color(ctx.cfg)
         && ctx.colors.is_empty();
 
     if is_basic {
@@ -120,14 +119,6 @@ where
 fn has_margin(cfg: &SpannedConfig) -> bool {
     let margin = cfg.get_margin();
     margin.left.size > 0 || margin.right.size > 0 || margin.top.size > 0 || margin.bottom.size > 0
-}
-
-fn has_padding_color(cfg: &SpannedConfig) -> bool {
-    let pad = cfg.get_padding_color(Entity::Global);
-    let has_pad =
-        pad.left.is_some() || pad.right.is_some() || pad.top.is_some() || pad.bottom.is_some();
-
-    has_pad || cfg.has_padding_color()
 }
 
 mod grid_basic {
@@ -322,16 +313,14 @@ mod grid_basic {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
-        let entity = Entity::from(pos);
-
         let width = ctx.dims.get_width(pos.1);
 
-        let pad = ctx.cfg.get_padding(entity);
-        let valignment = *ctx.cfg.get_alignment_vertical(entity);
+        let pad = ctx.cfg.get_padding(pos);
+        let valignment = *ctx.cfg.get_alignment_vertical(pos);
         let text_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(entity),
-            formatting: *ctx.cfg.get_formatting(entity),
-            justification: ctx.cfg.get_justification(Entity::Global),
+            alignment: *ctx.cfg.get_alignment_horizontal(pos),
+            formatting: ctx.cfg.get_formatting(pos),
+            justification: ctx.cfg.get_justification(pos),
         };
 
         let mut cell_height = ctx.records.count_lines(pos);
@@ -833,24 +822,22 @@ mod grid_not_spanned {
         C: Colors,
         D: Dimension,
     {
-        let entity = pos.into();
-
         let width = ctx.dims.get_width(pos.1);
 
-        let formatting = ctx.cfg.get_formatting(entity);
+        let formatting = ctx.cfg.get_formatting(pos);
         let text_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(entity),
+            alignment: *ctx.cfg.get_alignment_horizontal(pos),
             color: ctx.colors.get_color(pos),
             justification: Colored::new(
-                ctx.cfg.get_justification(entity),
-                ctx.cfg.get_justification_color(entity),
+                ctx.cfg.get_justification(pos),
+                ctx.cfg.get_justification_color(pos),
             ),
-            formatting: *formatting,
+            formatting,
         };
 
-        let pad = ctx.cfg.get_padding(entity);
-        let pad_color = ctx.cfg.get_padding_color(entity);
-        let valignment = *ctx.cfg.get_alignment_vertical(entity);
+        let pad = ctx.cfg.get_padding(pos);
+        let pad_color = ctx.cfg.get_padding_color(pos);
+        let valignment = *ctx.cfg.get_alignment_vertical(pos);
 
         let mut cell_height = ctx.records.count_lines(pos);
         if formatting.vertical_trim {
@@ -1699,10 +1686,8 @@ mod grid_spanned {
         R: Records + PeekableRecords + ExactRecords,
         C: Colors,
     {
-        let entity = pos.into();
-
         let mut cell_height = ctx.records.count_lines(pos);
-        let formatting = ctx.cfg.get_formatting(entity);
+        let formatting = ctx.cfg.get_formatting(pos);
         if formatting.vertical_trim {
             cell_height -= count_empty_lines_at_start(ctx.records, pos)
                 + count_empty_lines_at_end(ctx.records, pos);
@@ -1713,9 +1698,9 @@ mod grid_spanned {
             cell_height = height;
         }
 
-        let pad = ctx.cfg.get_padding(entity);
-        let pad_color = ctx.cfg.get_padding_color(entity);
-        let alignment = ctx.cfg.get_alignment_vertical(entity);
+        let pad = ctx.cfg.get_padding(pos);
+        let pad_color = ctx.cfg.get_padding_color(pos);
+        let alignment = ctx.cfg.get_alignment_vertical(pos);
         let indent = top_indent(&pad, *alignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
@@ -1742,13 +1727,13 @@ mod grid_spanned {
         let width = width - pad.left.size - pad.right.size;
 
         let line_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(entity),
-            formatting: *formatting,
+            alignment: *ctx.cfg.get_alignment_horizontal(pos),
             color: ctx.colors.get_color(pos),
             justification: Colored::new(
-                ctx.cfg.get_justification(entity),
-                ctx.cfg.get_justification_color(entity),
+                ctx.cfg.get_justification(pos),
+                ctx.cfg.get_justification_color(pos),
             ),
+            formatting,
         };
 
         print_line(f, ctx.records, pos, index, width, line_cfg)?;

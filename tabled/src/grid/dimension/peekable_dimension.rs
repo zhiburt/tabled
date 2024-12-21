@@ -83,7 +83,7 @@ mod estimation {
                 let height = cell.count_lines();
                 let width = cell.width();
 
-                let pad = cfg.get_padding(pos.into());
+                let pad = cfg.get_padding(pos);
                 let width = width + pad.left.size + pad.right.size;
                 let height = height + pad.top.size + pad.bottom.size;
 

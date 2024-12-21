@@ -10,13 +10,14 @@ use std::collections::HashMap;
 
 use crate::ansi::{ANSIBuf, ANSIStr};
 use crate::config::compact::CompactConfig;
-use crate::config::Formatting;
 use crate::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
 };
 use borders_config::BordersConfig;
 
 pub use self::{entity_map::EntityMap, offset::Offset};
+
+use super::Formatting;
 
 /// HorizontalLine represents a horizontal border line.
 type HorizontalLine = super::HorizontalLine<char>;
@@ -34,7 +35,9 @@ pub struct SpannedConfig {
     padding_color: EntityMap<Sides<Option<ANSIBuf>>>,
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
-    formatting: EntityMap<Formatting>,
+    formatting_trim_h: EntityMap<bool>,
+    formatting_trim_v: EntityMap<bool>,
+    formatting_line_alignment: EntityMap<bool>,
     span_columns: HashMap<Position, usize>,
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
@@ -54,7 +57,9 @@ impl Default for SpannedConfig {
             margin: Sides::default(),
             padding: EntityMap::default(),
             padding_color: EntityMap::default(),
-            formatting: EntityMap::default(),
+            formatting_trim_h: EntityMap::default(),
+            formatting_trim_v: EntityMap::default(),
+            formatting_line_alignment: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left),
             alignment_v: EntityMap::new(AlignmentVertical::Top),
             span_columns: HashMap::default(),
@@ -423,24 +428,53 @@ impl SpannedConfig {
         self.padding_color.insert(entity, padding);
     }
 
-    /// Get a padding for a given [Entity].
-    pub fn get_padding(&self, entity: Entity) -> Sides<Indent> {
-        *self.padding.get(entity)
+    /// Get a padding for a given cell by [Position].
+    pub fn get_padding(&self, pos: Position) -> Sides<Indent> {
+        *self.padding.get(pos)
     }
 
-    /// Get a padding color for a given [Entity].
-    pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<ANSIBuf>> {
-        self.padding_color.get(entity).clone()
+    /// Get a padding color for a given cell by [Position].
+    pub fn get_padding_color(&self, pos: Position) -> Sides<Option<ANSIBuf>> {
+        self.padding_color.get(pos).clone()
     }
 
     /// Set a formatting to a given cells.
-    pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
-        self.formatting.insert(entity, formatting);
+    pub fn set_trim_horizontal(&mut self, entity: Entity, on: bool) {
+        self.formatting_trim_h.insert(entity, on);
     }
 
-    /// Get a formatting settings for a given [Entity].
-    pub fn get_formatting(&self, entity: Entity) -> &Formatting {
-        self.formatting.get(entity)
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_trim_horizonal(&self, pos: Position) -> bool {
+        *self.formatting_trim_h.get(pos)
+    }
+
+    /// Set a formatting to a given cells.
+    pub fn set_trim_vertical(&mut self, entity: Entity, on: bool) {
+        self.formatting_trim_v.insert(entity, on);
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_trim_vertical(&self, pos: Position) -> bool {
+        *self.formatting_trim_v.get(pos)
+    }
+
+    /// Set a formatting to a given cells.
+    pub fn set_line_alignment(&mut self, entity: Entity, on: bool) {
+        self.formatting_line_alignment.insert(entity, on);
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_line_alignment(&self, pos: Position) -> bool {
+        *self.formatting_line_alignment.get(pos)
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_formatting(&self, pos: Position) -> Formatting {
+        Formatting::new(
+            *self.formatting_trim_h.get(pos),
+            *self.formatting_trim_v.get(pos),
+            *self.formatting_line_alignment.get(pos),
+        )
     }
 
     /// Set a vertical alignment to a given cells.
@@ -448,9 +482,9 @@ impl SpannedConfig {
         self.alignment_v.insert(entity, alignment);
     }
 
-    /// Get a vertical alignment for a given [Entity].
-    pub fn get_alignment_vertical(&self, entity: Entity) -> &AlignmentVertical {
-        self.alignment_v.get(entity)
+    /// Get a vertical alignment for a given cell by [Position].
+    pub fn get_alignment_vertical(&self, pos: Position) -> &AlignmentVertical {
+        self.alignment_v.get(pos)
     }
 
     /// Set a horizontal alignment to a given cells.
@@ -458,9 +492,9 @@ impl SpannedConfig {
         self.alignment_h.insert(entity, alignment);
     }
 
-    /// Get a horizontal alignment for a given [Entity].
-    pub fn get_alignment_horizontal(&self, entity: Entity) -> &AlignmentHorizontal {
-        self.alignment_h.get(entity)
+    /// Get a horizontal alignment for a given cell by [Position].
+    pub fn get_alignment_horizontal(&self, pos: Position) -> &AlignmentHorizontal {
+        self.alignment_h.get(pos)
     }
 
     /// Set border set a border value to all cells in [`Entity`].
@@ -533,15 +567,15 @@ impl SpannedConfig {
     }
 
     /// Get a justification which will be used while expanding cells width/height.
-    pub fn get_justification(&self, entity: Entity) -> char {
-        *self.justification.get(entity)
+    pub fn get_justification(&self, pos: Position) -> char {
+        *self.justification.get(pos)
     }
 
     /// Get a justification color which will be used while expanding cells width/height.
     ///
     /// `None` means no color.
-    pub fn get_justification_color(&self, entity: Entity) -> Option<&ANSIBuf> {
-        self.justification_color.get(entity).as_ref()
+    pub fn get_justification_color(&self, pos: Position) -> Option<&ANSIBuf> {
+        self.justification_color.get(pos).as_ref()
     }
 
     /// Set a justification which will be used while expanding cells width/height.
@@ -628,7 +662,9 @@ impl SpannedConfig {
 
     /// Verifies if there's any colors set for a borders.
     pub fn has_justification(&self) -> bool {
-        !self.justification.is_empty() || !self.justification_color.is_empty()
+        !self.justification.is_empty()
+            || !self.justification_color.is_empty()
+            || self.justification_color.as_ref().is_some()
     }
 
     /// Verifies if there's any custom padding set.
@@ -638,23 +674,27 @@ impl SpannedConfig {
 
     /// Verifies if there's any custom padding set.
     pub fn has_padding_color(&self) -> bool {
-        let map = HashMap::from(self.padding_color.clone());
-        for (entity, value) in map {
-            if matches!(entity, Entity::Global) {
-                continue;
-            }
+        if !self.padding_color.is_empty() {
+            let map = HashMap::from(self.padding_color.clone());
+            for (entity, value) in map {
+                if matches!(entity, Entity::Global) {
+                    continue;
+                }
 
-            if !value.is_empty() {
-                return true;
+                if !value.is_empty() {
+                    return true;
+                }
             }
         }
 
-        false
+        !self.padding_color.as_ref().is_empty()
     }
 
     /// Verifies if there's any custom formatting set.
     pub fn has_formatting(&self) -> bool {
-        !self.formatting.is_empty()
+        !self.formatting_trim_h.is_empty()
+            || !self.formatting_trim_v.is_empty()
+            || !self.formatting_line_alignment.is_empty()
     }
 
     /// Verifies if there's any custom alignment vertical set.

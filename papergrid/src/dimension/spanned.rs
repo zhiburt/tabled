@@ -113,7 +113,7 @@ where
 
             let text = cell.as_ref();
             let (height, width) = get_text_dimension(text);
-            let pad = cfg.get_padding(pos.into());
+            let pad = cfg.get_padding(pos);
             let width = width + pad.left.size + pad.right.size;
             let height = height + pad.top.size + pad.bottom.size;
 
@@ -204,7 +204,7 @@ fn count_horizontal_borders(cfg: &SpannedConfig, len: usize, start: usize, end: 
 
 fn get_cell_height(cell: &str, cfg: &SpannedConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
-    let padding = cfg.get_padding(pos.into());
+    let padding = cfg.get_padding(pos);
     count_lines + padding.top.size + padding.bottom.size
 }
 
@@ -279,7 +279,7 @@ fn get_cell_width(text: &str, cfg: &SpannedConfig, pos: Position) -> usize {
 }
 
 fn get_cell_padding(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos.into());
+    let padding = cfg.get_padding(pos);
     padding.left.size + padding.right.size
 }
 
