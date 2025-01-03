@@ -3,11 +3,14 @@ pub mod tabled {
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        let mut b = Builder::from(data);
-        b.set_columns(columns);
-        let table = b.build();
+        let mut b = Builder::with_capacity(data.len() + 1, columns.len());
+        b.push_record(columns);
 
-        table.to_string()
+        for row in data {
+            b.push_record(row);
+        }
+
+        b.build().to_string()
     }
 }
 
@@ -16,11 +19,14 @@ pub mod tabled_color {
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        let mut b = Builder::from(data);
-        b.set_columns(columns);
-        let table = b.build();
+        let mut b = Builder::with_capacity(data.len() + 1, columns.len());
+        b.push_record(columns);
 
-        table.to_string()
+        for row in data {
+            b.push_record(row);
+        }
+
+        b.build().to_string()
     }
 }
 

@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     iter::FromIterator,
+    ops::Deref,
 };
 
 use quote::ToTokens;
@@ -641,8 +642,7 @@ pub(crate) fn build_table(table_st: &TableStruct) -> Result<String> {
         apply_settings(&mut table, &table_st.settings)?;
     }
 
-    let has_spans = table.get_config().has_column_spans() || table.get_config().has_row_spans();
-    if has_spans {
+    if table.get_config().deref().has_spans() {
         table.with(BorderSpanCorrection);
     }
 

@@ -109,11 +109,10 @@ where
     let count_rows = records.count_rows();
     let count_cols = records.count_columns();
 
-    for (row, col) in entity.iter(count_rows, count_cols) {
-        let pos = Entity::Cell(row, col);
-
+    for pos in entity.iter(count_rows, count_cols) {
+        let col = pos.1;
         let column_width = widths[col];
-        let width = records.get_width((row, col));
+        let width = records.get_width(pos);
 
         if width < column_width {
             let alignment = *cfg.get_alignment_horizontal(pos);
@@ -125,7 +124,7 @@ where
             pad.left.size = left;
             pad.right.size = right;
 
-            cfg.set_padding(pos, pad);
+            cfg.set_padding(Entity::from(pos), pad);
         }
     }
 }
@@ -141,11 +140,10 @@ where
     let count_rows = records.count_rows();
     let count_cols = records.count_columns();
 
-    for (row, col) in entity.iter(count_rows, count_cols) {
-        let pos = Entity::Cell(row, col);
-
+    for pos in entity.iter(count_rows, count_cols) {
+        let row = pos.0;
         let row_height = heights[row];
-        let cell_height = records.count_lines((row, col));
+        let cell_height = records.count_lines(pos);
 
         if cell_height < row_height {
             let alignment = *cfg.get_alignment_vertical(pos);
@@ -157,7 +155,7 @@ where
             pad.top.size = top;
             pad.bottom.size = bottom;
 
-            cfg.set_padding(pos, pad);
+            cfg.set_padding(Entity::from(pos), pad);
         }
     }
 }

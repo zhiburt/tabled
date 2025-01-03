@@ -143,13 +143,12 @@ pub enum AlignmentStrategy {
 
 impl<R> CellOption<R, ColoredConfig> for AlignmentStrategy {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let mut formatting = *cfg.get_formatting(entity);
-        match &self {
-            AlignmentStrategy::PerCell => formatting.allow_lines_alignment = false,
-            AlignmentStrategy::PerLine => formatting.allow_lines_alignment = true,
-        }
+        let on = match &self {
+            AlignmentStrategy::PerCell => false,
+            AlignmentStrategy::PerLine => true,
+        };
 
-        cfg.set_formatting(entity, formatting);
+        cfg.set_line_alignment(entity, on);
     }
 }
 

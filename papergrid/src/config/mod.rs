@@ -3,6 +3,7 @@
 mod alignment;
 mod border;
 mod borders;
+mod cell_config;
 mod entity;
 mod formatting;
 mod horizontal_line;
@@ -18,6 +19,7 @@ pub mod spanned;
 pub use alignment::{AlignmentHorizontal, AlignmentVertical};
 pub use border::Border;
 pub use borders::Borders;
+pub use cell_config::CellConfig;
 pub use entity::{Entity, EntityIterator};
 pub use formatting::Formatting;
 pub use horizontal_line::HorizontalLine;

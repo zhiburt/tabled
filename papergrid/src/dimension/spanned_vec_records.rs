@@ -92,7 +92,7 @@ fn build_dimensions<T: Cell + AsRef<str>>(
 
             let width = cell.width();
             let height = cell.count_lines();
-            let pad = cfg.get_padding(pos.into());
+            let pad = cfg.get_padding(pos);
             let width = width + pad.left.size + pad.right.size;
             let height = height + pad.top.size + pad.bottom.size;
 
@@ -246,12 +246,12 @@ fn adjust_column_range(
 }
 
 fn get_cell_padding_horizontal(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos.into());
+    let padding = cfg.get_padding(pos);
     padding.left.size + padding.right.size
 }
 
 fn get_cell_vertical_padding(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos.into());
+    let padding = cfg.get_padding(pos);
     padding.top.size + padding.bottom.size
 }
 

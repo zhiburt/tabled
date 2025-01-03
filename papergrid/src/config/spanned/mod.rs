@@ -10,11 +10,12 @@ use std::collections::HashMap;
 
 use crate::ansi::{ANSIBuf, ANSIStr};
 use crate::config::compact::CompactConfig;
-use crate::config::Formatting;
 use crate::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
 };
 use borders_config::BordersConfig;
+
+use super::{CellConfig, Formatting};
 
 pub use self::{entity_map::EntityMap, offset::Offset};
 
@@ -24,48 +25,63 @@ type HorizontalLine = super::HorizontalLine<char>;
 /// VerticalLine represents a vertical border line.
 type VerticalLine = super::VerticalLine<char>;
 
+// TODO: IMPROVE FORMAT::CFG add all possible args to it
+
 /// This structure represents a settings of a grid.
 ///
 /// grid: crate::Grid.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SpannedConfig {
-    margin: Sides<ColoredMarginIndent>,
-    padding: EntityMap<Sides<ColoredIndent>>,
-    alignment_h: EntityMap<AlignmentHorizontal>,
-    alignment_v: EntityMap<AlignmentVertical>,
-    formatting: EntityMap<Formatting>,
-    span_columns: HashMap<Position, usize>,
-    span_rows: HashMap<Position, usize>,
+    margin: Sides<MarginIndent>,
     borders: BordersConfig<char>,
     borders_colors: BordersConfig<ANSIBuf>,
     borders_missing_char: char,
-    horizontal_chars: HashMap<Position, HashMap<Offset, char>>,
-    horizontal_colors: HashMap<Position, HashMap<Offset, ANSIBuf>>, // squash a map to be HashMap<(Pos, Offset), char>
-    vertical_chars: HashMap<Position, HashMap<Offset, char>>,
-    vertical_colors: HashMap<Position, HashMap<Offset, ANSIBuf>>,
-    justification: EntityMap<char>,
-    justification_color: EntityMap<Option<ANSIBuf>>,
+    cells: EntityMap<CellConfig>,
+    spans: HashMap<Position, CellSpan>,
+    chars_horizontal: HashMap<Position, HashMap<Offset, LineChar>>,
+    chars_vertical: HashMap<Position, HashMap<Offset, LineChar>>,
+    summary: ConfigSummary,
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+struct ConfigSummary {
+    padding_color: bool,
+    border_color: bool,
+    justification: bool,
+    margin: bool,
+    offset: bool,
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+struct LineChar {
+    char: Option<char>,
+    color: Option<ANSIBuf>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+struct CellSpan {
+    row: usize,
+    col: usize,
+}
+
+impl CellSpan {
+    fn new(row: usize, col: usize) -> Self {
+        Self { row, col }
+    }
 }
 
 impl Default for SpannedConfig {
     fn default() -> Self {
         Self {
+            cells: EntityMap::default(),
             margin: Sides::default(),
-            padding: EntityMap::default(),
-            formatting: EntityMap::default(),
-            alignment_h: EntityMap::new(AlignmentHorizontal::Left),
-            alignment_v: EntityMap::new(AlignmentVertical::Top),
-            span_columns: HashMap::default(),
-            span_rows: HashMap::default(),
+            spans: HashMap::default(),
             borders: BordersConfig::default(),
             borders_colors: BordersConfig::default(),
             borders_missing_char: ' ',
-            horizontal_chars: HashMap::default(),
-            horizontal_colors: HashMap::default(),
-            vertical_chars: HashMap::default(),
-            vertical_colors: HashMap::default(),
-            justification: EntityMap::new(' '),
-            justification_color: EntityMap::default(),
+            chars_horizontal: HashMap::default(),
+            chars_vertical: HashMap::default(),
+            summary: ConfigSummary::default(),
         }
     }
 }
@@ -77,6 +93,8 @@ impl SpannedConfig {
         self.margin.right.indent = margin.right;
         self.margin.top.indent = margin.top;
         self.margin.bottom.indent = margin.bottom;
+
+        self.summary.margin = true;
     }
 
     /// Set a color of margin of a grid.
@@ -137,22 +155,39 @@ impl SpannedConfig {
 
     /// Removes border changes.
     pub fn remove_color_line_horizontal(&mut self) {
-        self.horizontal_colors.clear();
+        self.chars_horizontal.values_mut().for_each(|chars| {
+            chars.values_mut().for_each(|c| {
+                c.color = None;
+            });
+        });
     }
 
     /// Removes border changes.
     pub fn remove_color_line_vertical(&mut self) {
-        self.vertical_colors.clear();
+        // todo: maybe delete None elements
+        self.chars_vertical.values_mut().for_each(|chars| {
+            chars.values_mut().for_each(|c| {
+                c.color = None;
+            });
+        });
     }
 
     /// Removes border changes.
     pub fn remove_horizontal_chars(&mut self) {
-        self.horizontal_chars.clear();
+        self.chars_horizontal.values_mut().for_each(|chars| {
+            chars.values_mut().for_each(|c| {
+                c.char = None;
+            });
+        });
     }
 
     /// Removes border changes.
     pub fn remove_vertical_chars(&mut self) {
-        self.vertical_chars.clear();
+        self.chars_vertical.values_mut().for_each(|chars| {
+            chars.values_mut().for_each(|c| {
+                c.char = None;
+            });
+        });
     }
 
     /// Set the [`Borders`] value as correct one.
@@ -246,12 +281,10 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn set_horizontal_char(&mut self, pos: Position, c: char, offset: Offset) {
-        let chars = self
-            .horizontal_chars
-            .entry(pos)
-            .or_insert_with(|| HashMap::with_capacity(1));
+        let line_char = hm_offset_get(&mut self.chars_horizontal, pos, offset);
+        line_char.char = Some(c);
 
-        chars.insert(offset, c);
+        self.summary.offset = true;
     }
 
     /// Get a list of overridden chars in a horizontal border.
@@ -259,22 +292,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn lookup_horizontal_char(&self, pos: Position, offset: usize, end: usize) -> Option<char> {
-        self.horizontal_chars
-            .get(&pos)
-            .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
-                    if end > offset {
-                        if end == 0 {
-                            chars.get(&Offset::End(0))
-                        } else {
-                            chars.get(&Offset::End(end - offset - 1))
-                        }
-                    } else {
-                        None
-                    }
-                })
-            })
-            .copied()
+        hm_offset_lookup(&self.chars_horizontal, pos, offset, end)?.char
     }
 
     /// Checks if there any char in a horizontal border being overridden.
@@ -282,7 +300,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn is_overridden_horizontal(&self, pos: Position) -> bool {
-        self.horizontal_chars.contains_key(&pos)
+        self.chars_horizontal.contains_key(&pos)
     }
 
     /// Removes a list of overridden chars in a horizontal border.
@@ -290,7 +308,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn remove_overridden_horizontal(&mut self, pos: Position) {
-        self.horizontal_chars.remove(&pos);
+        self.chars_horizontal.remove(&pos);
     }
 
     /// Override a vertical split line.
@@ -300,12 +318,10 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn set_vertical_char(&mut self, pos: Position, c: char, offset: Offset) {
-        let chars = self
-            .vertical_chars
-            .entry(pos)
-            .or_insert_with(|| HashMap::with_capacity(1));
+        let line_char = hm_offset_get(&mut self.chars_vertical, pos, offset);
+        line_char.char = Some(c);
 
-        chars.insert(offset, c);
+        self.summary.offset = true;
     }
 
     /// Get a list of overridden chars in a horizontal border.
@@ -313,22 +329,7 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn lookup_vertical_char(&self, pos: Position, offset: usize, end: usize) -> Option<char> {
-        self.vertical_chars
-            .get(&pos)
-            .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
-                    if end > offset {
-                        if end == 0 {
-                            chars.get(&Offset::End(0))
-                        } else {
-                            chars.get(&Offset::End(end - offset - 1))
-                        }
-                    } else {
-                        None
-                    }
-                })
-            })
-            .copied()
+        hm_offset_lookup(&self.chars_vertical, pos, offset, end)?.char
     }
 
     /// Checks if there any char in a horizontal border being overridden.
@@ -336,7 +337,7 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn is_overridden_vertical(&self, pos: Position) -> bool {
-        self.vertical_chars.contains_key(&pos)
+        self.chars_vertical.contains_key(&pos)
     }
 
     /// Removes a list of overridden chars in a horizontal border.
@@ -344,17 +345,13 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn remove_overridden_vertical(&mut self, pos: Position) {
-        self.vertical_chars.remove(&pos);
+        self.chars_vertical.remove(&pos);
     }
 
     /// Override a character color on a horizontal line.
     pub fn set_horizontal_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
-        let chars = self
-            .horizontal_colors
-            .entry(pos)
-            .or_insert_with(|| HashMap::with_capacity(1));
-
-        chars.insert(offset, c);
+        let line_char = hm_offset_get(&mut self.chars_horizontal, pos, offset);
+        line_char.color = Some(c);
     }
 
     /// Get a overridden color in a horizontal border.
@@ -364,29 +361,15 @@ impl SpannedConfig {
         offset: usize,
         end: usize,
     ) -> Option<&ANSIBuf> {
-        self.horizontal_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
-                if end > offset {
-                    if end == 0 {
-                        chars.get(&Offset::End(0))
-                    } else {
-                        chars.get(&Offset::End(end - offset - 1))
-                    }
-                } else {
-                    None
-                }
-            })
-        })
+        hm_offset_lookup(&self.chars_horizontal, pos, offset, end)?
+            .color
+            .as_ref()
     }
 
     /// Override a character color on a vertical line.
     pub fn set_vertical_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
-        let chars = self
-            .vertical_colors
-            .entry(pos)
-            .or_insert_with(|| HashMap::with_capacity(1));
-
-        chars.insert(offset, c);
+        let line_char = hm_offset_get(&mut self.chars_vertical, pos, offset);
+        line_char.color = Some(c);
     }
 
     /// Get a overridden color in a vertical border.
@@ -396,93 +379,92 @@ impl SpannedConfig {
         offset: usize,
         end: usize,
     ) -> Option<&ANSIBuf> {
-        self.vertical_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
-                if end > offset {
-                    if end == 0 {
-                        chars.get(&Offset::End(0))
-                    } else {
-                        chars.get(&Offset::End(end - offset - 1))
-                    }
-                } else {
-                    None
-                }
-            })
-        })
+        hm_offset_lookup(&self.chars_vertical, pos, offset, end)?
+            .color
+            .as_ref()
     }
 
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, entity: Entity, padding: Sides<Indent>) {
-        let mut pad = self.padding.get(entity).clone();
-        pad.left.indent = padding.left;
-        pad.right.indent = padding.right;
-        pad.top.indent = padding.top;
-        pad.bottom.indent = padding.bottom;
+        self.cells.modify(entity, move |c| c.padding = padding);
+    }
 
-        self.padding.insert(entity, pad);
+    /// Get a padding for a given cell by [Position].
+    pub fn get_padding(&self, pos: Position) -> Sides<Indent> {
+        self.cells.get(pos).padding
     }
 
     /// Set a padding to a given cells.
     pub fn set_padding_color(&mut self, entity: Entity, padding: Sides<Option<ANSIBuf>>) {
-        let mut pad = self.padding.get(entity).clone();
-        pad.left.color = padding.left;
-        pad.right.color = padding.right;
-        pad.top.color = padding.top;
-        pad.bottom.color = padding.bottom;
+        self.cells
+            .modify(entity, move |c| c.padding_color = padding.clone());
 
-        self.padding.insert(entity, pad);
+        self.summary.padding_color = true;
     }
 
-    /// Get a padding for a given [Entity].
-    pub fn get_padding(&self, entity: Entity) -> Sides<Indent> {
-        let pad = self.padding.get(entity);
-        Sides::new(
-            pad.left.indent,
-            pad.right.indent,
-            pad.top.indent,
-            pad.bottom.indent,
-        )
-    }
-
-    /// Get a padding color for a given [Entity].
-    pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<ANSIBuf>> {
-        let pad = self.padding.get(entity);
-        Sides::new(
-            pad.left.color.clone(),
-            pad.right.color.clone(),
-            pad.top.color.clone(),
-            pad.bottom.color.clone(),
-        )
+    /// Get a padding color for a given cell by [Position].
+    pub fn get_padding_color(&self, pos: Position) -> Sides<Option<ANSIBuf>> {
+        self.cells.get(pos).padding_color.clone()
     }
 
     /// Set a formatting to a given cells.
-    pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
-        self.formatting.insert(entity, formatting);
+    pub fn set_trim_horizontal(&mut self, entity: Entity, on: bool) {
+        self.cells
+            .modify(entity, move |c| c.formatting.horizontal_trim = on);
     }
 
-    /// Get a formatting settings for a given [Entity].
-    pub fn get_formatting(&self, entity: Entity) -> &Formatting {
-        self.formatting.get(entity)
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_trim_horizonal(&self, pos: Position) -> bool {
+        self.cells.get(pos).formatting.horizontal_trim
+    }
+
+    /// Set a formatting to a given cells.
+    pub fn set_trim_vertical(&mut self, entity: Entity, on: bool) {
+        self.cells
+            .modify(entity, move |c| c.formatting.vertical_trim = on);
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_trim_vertical(&self, pos: Position) -> bool {
+        self.cells.get(pos).formatting.vertical_trim
+    }
+
+    /// Set a formatting to a given cells.
+    pub fn set_line_alignment(&mut self, entity: Entity, on: bool) {
+        self.cells
+            .modify(entity, move |c| c.formatting.allow_lines_alignment = on);
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_line_alignment(&self, pos: Position) -> bool {
+        self.cells.get(pos).formatting.allow_lines_alignment
+    }
+
+    /// Get a formatting settings for a given cell by [Position].
+    pub fn get_formatting(&self, pos: Position) -> Formatting {
+        self.cells.get(pos).formatting
     }
 
     /// Set a vertical alignment to a given cells.
     pub fn set_alignment_vertical(&mut self, entity: Entity, alignment: AlignmentVertical) {
-        self.alignment_v.insert(entity, alignment);
+        self.cells
+            .modify(entity, move |c| c.alignment_vertical = alignment);
     }
 
-    /// Get a vertical alignment for a given [Entity].
-    pub fn get_alignment_vertical(&self, entity: Entity) -> &AlignmentVertical {
-        self.alignment_v.get(entity)
+    /// Get a vertical alignment for a given cell by [Position].
+    pub fn get_alignment_vertical(&self, pos: Position) -> &AlignmentVertical {
+        &self.cells.get(pos).alignment_vertical
     }
 
     /// Set a horizontal alignment to a given cells.
     pub fn set_alignment_horizontal(&mut self, entity: Entity, alignment: AlignmentHorizontal) {
-        self.alignment_h.insert(entity, alignment);
+        self.cells
+            .modify(entity, move |c| c.alignment_horizontal = alignment);
     }
 
-    /// Get a horizontal alignment for a given [Entity].
-    pub fn get_alignment_horizontal(&self, entity: Entity) -> &AlignmentHorizontal {
-        self.alignment_h.get(entity)
+    /// Get a horizontal alignment for a given cell by [Position].
+    pub fn get_alignment_horizontal(&self, pos: Position) -> &AlignmentHorizontal {
+        &self.cells.get(pos).alignment_horizontal
     }
 
     /// Set border set a border value to all cells in [`Entity`].
@@ -521,6 +503,7 @@ impl SpannedConfig {
     pub fn set_border_color_default(&mut self, clr: ANSIBuf) {
         self.borders_colors = BordersConfig::default();
         self.borders_colors.set_global(clr);
+        self.summary.border_color = true;
     }
 
     /// Gets colors of a borders carcass on the grid.
@@ -531,11 +514,13 @@ impl SpannedConfig {
     /// Sets colors of border carcass on the grid.
     pub fn set_borders_color(&mut self, clrs: Borders<ANSIBuf>) {
         self.borders_colors.set_borders(clrs);
+        self.summary.border_color = true;
     }
 
     /// Sets a color of border of a cell on the grid.
     pub fn set_border_color(&mut self, pos: Position, border: Border<ANSIBuf>) {
-        self.borders_colors.insert_border(pos, border)
+        self.borders_colors.insert_border(pos, border);
+        self.summary.border_color = true;
     }
 
     /// Sets off all borders possible on the [`Entity`].
@@ -555,57 +540,72 @@ impl SpannedConfig {
     }
 
     /// Get a justification which will be used while expanding cells width/height.
-    pub fn get_justification(&self, entity: Entity) -> char {
-        *self.justification.get(entity)
+    pub fn get_justification(&self, pos: Position) -> char {
+        self.cells.get(pos).justification
+    }
+
+    /// Set a justification which will be used while expanding cells width/height.
+    pub fn set_justification(&mut self, entity: Entity, s: char) {
+        self.cells.modify(entity, move |c| c.justification = s);
+        self.summary.justification = true;
     }
 
     /// Get a justification color which will be used while expanding cells width/height.
     ///
     /// `None` means no color.
-    pub fn get_justification_color(&self, entity: Entity) -> Option<&ANSIBuf> {
-        self.justification_color.get(entity).as_ref()
-    }
-
-    /// Set a justification which will be used while expanding cells width/height.
-    pub fn set_justification(&mut self, entity: Entity, c: char) {
-        self.justification.insert(entity, c);
+    pub fn get_justification_color(&self, pos: Position) -> Option<&ANSIBuf> {
+        self.cells.get(pos).justification_color.as_ref()
     }
 
     /// Set a justification color which will be used while expanding cells width/height.
     ///
     /// `None` removes it.
     pub fn set_justification_color(&mut self, entity: Entity, color: Option<ANSIBuf>) {
-        self.justification_color.insert(entity, color);
+        self.cells
+            .modify(entity, move |c| c.justification_color = color.clone());
+        self.summary.justification = true;
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn get_column_spans(&self) -> HashMap<Position, usize> {
-        self.span_columns.clone()
+        self.spans
+            .iter()
+            .map(|(pos, spans)| (*pos, spans.col))
+            .collect()
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn get_row_spans(&self) -> HashMap<Position, usize> {
-        self.span_rows.clone()
+        self.spans
+            .iter()
+            .map(|(pos, spans)| (*pos, spans.row))
+            .collect()
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn get_column_span(&self, pos: Position) -> Option<usize> {
-        self.span_columns.get(&pos).copied()
+        self.spans
+            .get(&pos)
+            .map(|spans| spans.col)
+            .filter(|&span| span > 1)
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn get_row_span(&self, pos: Position) -> Option<usize> {
-        self.span_rows.get(&pos).copied()
+        self.spans
+            .get(&pos)
+            .map(|spans| spans.row)
+            .filter(|&span| span > 1)
     }
 
-    /// Removes column spans.
-    pub fn remove_column_spans(&mut self) {
-        self.span_columns.clear()
+    /// Get a span value of the cell, if any is set.
+    pub fn get_span(&self, pos: Position) -> Option<(usize, usize)> {
+        self.spans.get(&pos).map(|spans| (spans.col, spans.row))
     }
 
-    /// Removes row spans.
-    pub fn remove_row_spans(&mut self) {
-        self.span_rows.clear()
+    /// Removes all spans.
+    pub fn remove_spans(&mut self) {
+        self.spans.clear()
     }
 
     /// Set a column span to a given cells.
@@ -619,8 +619,13 @@ impl SpannedConfig {
     }
 
     /// Verifies if there's any spans set.
+    pub fn has_spans(&self) -> bool {
+        !self.spans.is_empty()
+    }
+
+    /// Verifies if there's any spans set.
     pub fn has_column_spans(&self) -> bool {
-        !self.span_columns.is_empty()
+        self.spans.values().any(|spans| spans.col > 1)
     }
 
     /// Set a column span to a given cells.
@@ -635,7 +640,7 @@ impl SpannedConfig {
 
     /// Verifies if there's any spans set.
     pub fn has_row_spans(&self) -> bool {
-        !self.span_rows.is_empty()
+        self.spans.values().any(|spans| spans.row > 1)
     }
 
     /// Verifies if there's any colors set for a borders.
@@ -645,54 +650,17 @@ impl SpannedConfig {
 
     /// Verifies if there's any colors set for a borders.
     pub fn has_offset_chars(&self) -> bool {
-        !self.horizontal_chars.is_empty() || !self.vertical_chars.is_empty()
+        !self.chars_horizontal.is_empty() || !self.chars_vertical.is_empty()
     }
 
     /// Verifies if there's any colors set for a borders.
     pub fn has_justification(&self) -> bool {
-        !self.justification.is_empty() || !self.justification_color.is_empty()
-    }
-
-    /// Verifies if there's any custom padding set.
-    pub fn has_padding(&self) -> bool {
-        !self.padding.is_empty()
+        self.summary.justification
     }
 
     /// Verifies if there's any custom padding set.
     pub fn has_padding_color(&self) -> bool {
-        let map = HashMap::from(self.padding.clone());
-        let mut has_color = false;
-        for (entity, value) in map {
-            if matches!(entity, Entity::Global) {
-                continue;
-            }
-
-            has_color = value.bottom.color.is_some()
-                || value.top.color.is_some()
-                || value.left.color.is_some()
-                || value.right.color.is_some();
-
-            if has_color {
-                break;
-            }
-        }
-
-        has_color
-    }
-
-    /// Verifies if there's any custom formatting set.
-    pub fn has_formatting(&self) -> bool {
-        !self.formatting.is_empty()
-    }
-
-    /// Verifies if there's any custom alignment vertical set.
-    pub fn has_alignment_vertical(&self) -> bool {
-        !self.alignment_v.is_empty()
-    }
-
-    /// Verifies if there's any custom alignment horizontal set.
-    pub fn has_alignment_horizontal(&self) -> bool {
-        !self.alignment_h.is_empty()
+        self.summary.padding_color
     }
 
     /// Gets an intersection character which would be rendered on the grid.
@@ -810,6 +778,11 @@ impl SpannedConfig {
     pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
         is_cell_covered_by_both_spans(self, pos)
     }
+
+    /// Return configuration of a given cell.
+    pub fn get_cell_settings(&self, pos: Position) -> &CellConfig {
+        self.cells.get(pos)
+    }
 }
 
 impl From<CompactConfig> for SpannedConfig {
@@ -845,14 +818,27 @@ fn set_cell_row_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
         return;
     }
 
-    // It's a default span so we can do nothing.
-    // but we check if it's an override of a span.
-    if span == 1 {
-        cfg.span_rows.remove(&pos);
-        return;
-    }
+    match cfg.spans.get_mut(&pos) {
+        Some(spans) => {
+            // It's a default span so we can do nothing.
+            // but we check if it's an override of a span.
+            if span == 1 && spans.col == 0 {
+                cfg.spans.remove(&pos);
+                return;
+            }
 
-    cfg.span_rows.insert(pos, span);
+            spans.row = span;
+        }
+        None => {
+            // It's a default span so we can do nothing.
+            // but we check if it's an override of a span.
+            if span == 1 {
+                return;
+            }
+
+            cfg.spans.insert(pos, CellSpan::new(span, 0));
+        }
+    }
 }
 
 fn set_cell_column_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
@@ -861,52 +847,97 @@ fn set_cell_column_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
         return;
     }
 
-    // It's a default span so we can do nothing.
-    // but we check if it's an override of a span.
-    if span == 1 {
-        cfg.span_columns.remove(&pos);
-        return;
-    }
+    match cfg.spans.get_mut(&pos) {
+        Some(spans) => {
+            // It's a default span so we can do nothing.
+            // but we check if it's an override of a span.
+            if span == 1 && spans.row == 0 {
+                cfg.spans.remove(&pos);
+                return;
+            }
 
-    cfg.span_columns.insert(pos, span);
+            spans.col = span;
+        }
+        None => {
+            // It's a default span so we can do nothing.
+            // but we check if it's an override of a span.
+            if span == 1 {
+                return;
+            }
+
+            cfg.spans.insert(pos, CellSpan::new(0, span));
+        }
+    }
 }
 
 fn is_cell_covered_by_column_span(cfg: &SpannedConfig, pos: Position) -> bool {
-    cfg.span_columns
-        .iter()
-        .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
+    cfg.spans.iter().any(|(&(row, col), span)| {
+        let span = span.col;
+        pos.1 > col && pos.1 < col + span && row == pos.0
+    })
 }
 
 fn is_cell_covered_by_row_span(cfg: &SpannedConfig, pos: Position) -> bool {
-    cfg.span_rows
-        .iter()
-        .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
+    cfg.spans.iter().any(|(&(row, col), span)| {
+        let span = span.row;
+        pos.0 > row && pos.0 < row + span && col == pos.1
+    })
 }
 
 fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
-    if !cfg.has_column_spans() || !cfg.has_row_spans() {
+    if !cfg.has_spans() {
         return false;
     }
 
-    cfg.span_rows.iter().any(|(p1, row_span)| {
-        cfg.span_columns
-            .iter()
-            .filter(|(p2, _)| &p1 == p2)
+    let rows = cfg.get_row_spans();
+    let cols = cfg.get_column_spans();
+
+    rows.into_iter().any(|(p1, row_span)| {
+        cols.iter()
+            .filter(|(&p2, _)| p1 == p2)
             .any(|(_, col_span)| {
                 pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span
             })
     })
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
-struct ColoredIndent {
-    indent: Indent,
-    color: Option<ANSIBuf>,
+fn hm_offset_get<T>(
+    hm: &mut HashMap<Position, HashMap<Offset, T>>,
+    pos: Position,
+    offset: Offset,
+) -> &mut T
+where
+    T: Default,
+{
+    hm.entry(pos)
+        .or_insert_with(|| HashMap::with_capacity(1))
+        .entry(offset)
+        .or_default()
+}
+
+fn hm_offset_lookup<T>(
+    hm: &HashMap<Position, HashMap<Offset, T>>,
+    pos: Position,
+    offset: usize,
+    size: usize,
+) -> Option<&T> {
+    let values = hm.get(&pos)?;
+    match values.get(&Offset::Begin(offset)) {
+        Some(value) => Some(value),
+        None => {
+            if size > offset {
+                let pos_from_end = size - offset - 1;
+                values.get(&Offset::End(pos_from_end))
+            } else {
+                None
+            }
+        }
+    }
 }
 
 /// A colorefull margin indent.
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct ColoredMarginIndent {
+struct MarginIndent {
     /// An indent value.
     indent: Indent,
     /// An offset value.
@@ -915,7 +946,7 @@ struct ColoredMarginIndent {
     color: Option<ANSIBuf>,
 }
 
-impl Default for ColoredMarginIndent {
+impl Default for MarginIndent {
     fn default() -> Self {
         Self {
             indent: Indent::default(),
