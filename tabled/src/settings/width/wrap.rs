@@ -871,7 +871,7 @@ fn get_decrease_cell_list(
                 };
 
                 if width >= width_min {
-                    let padding = cfg.get_padding((row, col).into());
+                    let padding = cfg.get_padding((row, col));
                     let width = width.saturating_sub(padding.left.size + padding.right.size);
 
                     points.push(((row, col), width));

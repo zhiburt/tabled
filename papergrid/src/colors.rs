@@ -64,17 +64,16 @@ where
 #[cfg(feature = "std")]
 impl<C> Colors for crate::config::spanned::EntityMap<Option<C>>
 where
-    C: ANSIFmt,
+    C: ANSIFmt + PartialEq,
 {
     type Color = C;
 
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
-        self.get(pos.into()).as_ref()
+        self.get(pos).as_ref()
     }
 
     fn is_empty(&self) -> bool {
-        crate::config::spanned::EntityMap::is_empty(self)
-            && self.get(crate::config::Entity::Global).is_none()
+        self.is_empty() && self.as_ref().is_none()
     }
 }
 

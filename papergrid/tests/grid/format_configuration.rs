@@ -787,7 +787,9 @@ fn formatting_test() {
             .config(|cfg| {
                 cfg.set_alignment_horizontal(Entity::Global, test.0);
                 cfg.set_alignment_vertical(Entity::Global, test.1);
-                cfg.set_formatting(Entity::Global, test.2);
+                cfg.set_line_alignment(Entity::Global, test.2.allow_lines_alignment);
+                cfg.set_trim_horizontal(Entity::Global, test.2.horizontal_trim);
+                cfg.set_trim_vertical(Entity::Global, test.2.vertical_trim);
             })
             .clone()
             .build();
@@ -803,7 +805,11 @@ fn formatting_empty_test() {
         let formatting = Formatting::new(true, true, true);
         assert_eq!(
             grid(rows, cols)
-                .config(|cfg| cfg.set_formatting(Entity::Global, formatting))
+                .config(|cfg| {
+                    cfg.set_line_alignment(Entity::Global, formatting.allow_lines_alignment);
+                    cfg.set_trim_horizontal(Entity::Global, formatting.horizontal_trim);
+                    cfg.set_trim_vertical(Entity::Global, formatting.vertical_trim);
+                })
                 .build(),
             ""
         );
@@ -855,7 +861,7 @@ fn formatting_1x1_test() {
 
     assert_eq!(
         grid.clone()
-            .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(false, false, true)))
+            .config(|cfg| cfg.set_line_alignment(Entity::Global, true))
             .build(),
         static_table!(
             r#"+--------------------------------------------------+"#
@@ -878,7 +884,8 @@ fn formatting_1x1_test() {
 
     assert_eq!(
         grid.clone()
-            .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(true, false, true)))
+            .config(|cfg| cfg.set_line_alignment(Entity::Global, true))
+            .config(|cfg| cfg.set_trim_horizontal(Entity::Global, true))
             .build(),
         static_table!(
             r#"+--------------------------------------------------+"#
@@ -900,7 +907,9 @@ fn formatting_1x1_test() {
     );
 
     assert_eq!(
-        grid.config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(true, true, true)))
+        grid.config(|cfg| cfg.set_line_alignment(Entity::Global, true))
+            .config(|cfg| cfg.set_trim_horizontal(Entity::Global, true))
+            .config(|cfg| cfg.set_trim_vertical(Entity::Global, true))
             .build(),
         static_table!(
             r#"+--------------------------------------------------+"#

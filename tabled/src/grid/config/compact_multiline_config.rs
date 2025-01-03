@@ -157,7 +157,9 @@ impl From<CompactMultilineConfig> for crate::grid::config::SpannedConfig {
 
         let mut cfg = SpannedConfig::from(compact.config);
         cfg.set_alignment_vertical(Global, compact.alignment_vertical);
-        cfg.set_formatting(Global, compact.formatting);
+        cfg.set_line_alignment(Global, compact.formatting.allow_lines_alignment);
+        cfg.set_trim_horizontal(Global, compact.formatting.horizontal_trim);
+        cfg.set_trim_vertical(Global, compact.formatting.vertical_trim);
 
         cfg
     }

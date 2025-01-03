@@ -8,8 +8,8 @@ use crate::{
     grid::{
         colors::NoColors,
         config::{
-            AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Formatting,
-            Indent, Sides, SpannedConfig,
+            AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Indent, Sides,
+            SpannedConfig,
         },
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate, PeekableDimension},
         records::{
@@ -536,7 +536,9 @@ fn configure_grid() -> SpannedConfig {
         ),
     );
     cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
-    cfg.set_formatting(Entity::Global, Formatting::new(false, false, false));
+    cfg.set_line_alignment(Entity::Global, false);
+    cfg.set_trim_horizontal(Entity::Global, false);
+    cfg.set_trim_vertical(Entity::Global, false);
     cfg.set_borders(Style::ascii().get_borders());
 
     cfg
