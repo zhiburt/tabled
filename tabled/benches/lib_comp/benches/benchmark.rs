@@ -30,10 +30,12 @@ macro_rules! create_bench {
         bench_lib!(
             $name,
             $table,
-            { "tabled", lib_comp::tabled_current::build },
+            { "current", lib_comp::tabled_current::build },
+            { "current_color", lib_comp::tabled_color::build },
+            { "current_iter", lib_comp::tabled_current_iter::build },
+            { "current_compact", lib_comp::tabled_current_compact::build },
+            { "tabled", lib_comp::tabled::build },
             { "tabled_color", lib_comp::tabled_color_current::build },
-            { "tabled_iter", lib_comp::tabled_current_iter::build },
-            { "tabled_compact", lib_comp::tabled_current_compact::build },
             { "cli_table", lib_comp::cli_table::build  },
             { "comfy_table", lib_comp::comfy_table::build },
             { "term_table", lib_comp::term_table::build  },
@@ -42,43 +44,33 @@ macro_rules! create_bench {
     };
 }
 
-create_bench!(test_empty_table, |size| build_cost_table(size, "", ""));
-
-create_bench!(test_const_table, |size| build_cost_table(
-    size,
-    "Hello World",
-    "Hi!"
-));
-
-create_bench!(test_dynamic_table, build_dynamic_table);
-
-create_bench!(test_multiline_table, |size| build_cost_table(
-    size,
-    "H\ne\nl\nlo\nWo\nr\nld",
-    "Hello\n111\n111\ni\n!"
-));
+create_bench!(test_empty_table, benching_empty_table);
+create_bench!(test_small_table, benching_small_table);
+create_bench!(test_general_table, benching_general_table);
+create_bench!(test_small_multiline_table, benching_small_multiline_table);
 
 criterion_group!(
     benches,
     test_empty_table,
-    test_const_table,
-    test_dynamic_table,
-    test_multiline_table,
+    test_small_table,
+    test_general_table,
+    test_small_multiline_table,
 );
 criterion_main!(benches);
 
-fn build_cost_table<H, R>(size: usize, header: H, record: R) -> (Vec<String>, Vec<Vec<String>>)
-where
-    H: Into<String>,
-    R: Into<String>,
-{
-    (
-        vec![header.into(); size],
-        vec![vec![record.into(); size]; size],
-    )
+fn benching_empty_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
+    build_cost_table(size, "", "")
 }
 
-fn build_dynamic_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
+fn benching_small_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
+    build_cost_table(size, "Hello World", "Hi!")
+}
+
+fn benching_small_multiline_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
+    build_cost_table(size, "H\ne\nl\nlo\nWo\nr\nld", "Hello\n111\n111\ni\n!")
+}
+
+fn benching_general_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
     let mut data = Vec::with_capacity(size);
     for i in 0..size {
         let mut row = build_row(size, |i| format!("{i}"));
@@ -104,4 +96,15 @@ fn build_row(size: usize, f: impl Fn(usize) -> String) -> Vec<String> {
     }
 
     row
+}
+
+fn build_cost_table<H, R>(size: usize, header: H, record: R) -> (Vec<String>, Vec<Vec<String>>)
+where
+    H: Into<String>,
+    R: Into<String>,
+{
+    (
+        vec![header.into(); size],
+        vec![vec![record.into(); size]; size],
+    )
 }
