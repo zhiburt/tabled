@@ -93,8 +93,7 @@ where
 {
     // spanned version is a bit more complex and 'supposedly' slower,
     // because spans are considered to be not a general case we are having 2 versions
-    let grid_has_spans = cfg.has_column_spans() || cfg.has_row_spans();
-    if grid_has_spans {
+    if cfg.has_spans() {
         print_grid_spanned(f, records, cfg, dimension, colors)
     } else {
         print_grid_general(f, records, cfg, dimension, colors)

@@ -20,6 +20,9 @@ use crate::{
     util::string::get_line_width,
 };
 
+// TODO: Rename these PeekableGrid etc...
+//      And SpannedConfig....
+
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
 pub struct PeekableGrid<R, G, D, C> {
@@ -97,8 +100,7 @@ where
     D: Dimension,
     C: Colors,
 {
-    let has_spans = ctx.cfg.has_column_spans() || ctx.cfg.has_row_spans();
-    if has_spans {
+    if ctx.cfg.has_spans() {
         return grid_spanned::build_grid(f, ctx);
     }
 
@@ -128,6 +130,20 @@ mod grid_basic {
         alignment: AlignmentHorizontal,
         formatting: Formatting,
         justification: char,
+    }
+
+    impl TextCfg {
+        fn new(
+            alignment: AlignmentHorizontal,
+            formatting: Formatting,
+            justification: char,
+        ) -> Self {
+            Self {
+                alignment,
+                formatting,
+                justification,
+            }
+        }
     }
 
     #[derive(Debug, Clone, Copy)]
@@ -315,13 +331,14 @@ mod grid_basic {
     {
         let width = ctx.dims.get_width(pos.1);
 
-        let pad = ctx.cfg.get_padding(pos);
-        let valignment = *ctx.cfg.get_alignment_vertical(pos);
-        let text_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(pos),
-            formatting: ctx.cfg.get_formatting(pos),
-            justification: ctx.cfg.get_justification(pos),
-        };
+        let cell = ctx.cfg.get_cell_settings(pos);
+        let pad = cell.padding;
+        let valignment = cell.alignment_vertical;
+        let text_cfg = TextCfg::new(
+            cell.alignment_horizontal,
+            cell.formatting,
+            cell.justification,
+        );
 
         let mut cell_height = ctx.records.count_lines(pos);
         if text_cfg.formatting.vertical_trim {
@@ -512,6 +529,22 @@ mod grid_not_spanned {
         formatting: Formatting,
         color: Option<C>,
         justification: Colored<char, C1>,
+    }
+
+    impl<C, C1> TextCfg<C, C1> {
+        fn new(
+            alignment: AlignmentHorizontal,
+            formatting: Formatting,
+            color: Option<C>,
+            justification: Colored<char, C1>,
+        ) -> Self {
+            Self {
+                alignment,
+                formatting,
+                color,
+                justification,
+            }
+        }
     }
 
     struct Colored<T, C> {
@@ -824,23 +857,22 @@ mod grid_not_spanned {
     {
         let width = ctx.dims.get_width(pos.1);
 
-        let formatting = ctx.cfg.get_formatting(pos);
-        let text_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(pos),
-            color: ctx.colors.get_color(pos),
-            justification: Colored::new(
-                ctx.cfg.get_justification(pos),
-                ctx.cfg.get_justification_color(pos),
-            ),
-            formatting,
-        };
+        // TODO: We did worthen locality apparantly
 
-        let pad = ctx.cfg.get_padding(pos);
-        let pad_color = ctx.cfg.get_padding_color(pos);
-        let valignment = *ctx.cfg.get_alignment_vertical(pos);
+        let cell = ctx.cfg.get_cell_settings(pos);
+        let text_cfg = TextCfg::new(
+            cell.alignment_horizontal,
+            cell.formatting,
+            ctx.colors.get_color(pos),
+            Colored::new(cell.justification, cell.justification_color.as_ref()),
+        );
+
+        let pad = cell.padding;
+        let pad_color = &cell.padding_color;
+        let valignment = cell.alignment_vertical;
 
         let mut cell_height = ctx.records.count_lines(pos);
-        if formatting.vertical_trim {
+        if cell.formatting.vertical_trim {
             cell_height -= count_empty_lines_at_start(ctx.records, pos)
                 + count_empty_lines_at_end(ctx.records, pos);
         }
@@ -862,7 +894,7 @@ mod grid_not_spanned {
             return print_indent(f, pad.bottom.fill, width, pad_color.bottom.as_ref());
         }
 
-        if formatting.vertical_trim {
+        if cell.formatting.vertical_trim {
             let empty_lines = count_empty_lines_at_start(ctx.records, pos);
             index += empty_lines;
 
@@ -1248,6 +1280,22 @@ mod grid_spanned {
         formatting: Formatting,
         color: Option<C>,
         justification: Colored<char, C1>,
+    }
+
+    impl<C, C1> TextCfg<C, C1> {
+        fn new(
+            alignment: AlignmentHorizontal,
+            formatting: Formatting,
+            color: Option<C>,
+            justification: Colored<char, C1>,
+        ) -> Self {
+            Self {
+                alignment,
+                formatting,
+                color,
+                justification,
+            }
+        }
     }
 
     struct Colored<T, C> {
@@ -1686,8 +1734,20 @@ mod grid_spanned {
         R: Records + PeekableRecords + ExactRecords,
         C: Colors,
     {
+        let cell = ctx.cfg.get_cell_settings(pos);
+        let pad = cell.padding;
+        let pad_color = &cell.padding_color;
+        let alignment = cell.alignment_vertical;
+        let formatting = cell.formatting;
+
+        let line_cfg = TextCfg::new(
+            cell.alignment_horizontal,
+            formatting,
+            ctx.colors.get_color(pos),
+            Colored::new(cell.justification, cell.justification_color.as_ref()),
+        );
+
         let mut cell_height = ctx.records.count_lines(pos);
-        let formatting = ctx.cfg.get_formatting(pos);
         if formatting.vertical_trim {
             cell_height -= count_empty_lines_at_start(ctx.records, pos)
                 + count_empty_lines_at_end(ctx.records, pos);
@@ -1698,10 +1758,7 @@ mod grid_spanned {
             cell_height = height;
         }
 
-        let pad = ctx.cfg.get_padding(pos);
-        let pad_color = ctx.cfg.get_padding_color(pos);
-        let alignment = ctx.cfg.get_alignment_vertical(pos);
-        let indent = top_indent(&pad, *alignment, cell_height, height);
+        let indent = top_indent(&pad, alignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
         }
@@ -1725,16 +1782,6 @@ mod grid_spanned {
         print_indent(f, pad.left.fill, pad.left.size, pad_color.left.as_ref())?;
 
         let width = width - pad.left.size - pad.right.size;
-
-        let line_cfg = TextCfg {
-            alignment: *ctx.cfg.get_alignment_horizontal(pos),
-            color: ctx.colors.get_color(pos),
-            justification: Colored::new(
-                ctx.cfg.get_justification(pos),
-                ctx.cfg.get_justification_color(pos),
-            ),
-            formatting,
-        };
 
         print_line(f, ctx.records, pos, index, width, line_cfg)?;
 

@@ -12,6 +12,7 @@ pub(crate) struct BordersConfig<T> {
     layout: BordersLayout,
 }
 
+// TODO: Maybe do smth....
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(crate) struct BordersMap<T> {
     vertical: HashMap<Position, T>,
