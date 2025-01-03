@@ -16,7 +16,6 @@ ansi = ["ansi-str", "ansitok"]
 unicode-width = "0.2"
 bytecount = "0.6"
 fnv = "1.0"
-rtree_rs = { git = "https://github.com/zhiburt/rtree.rs.git", rev = "654787dae883428a23de7d039e0b88b7d34790f7" }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true  }
 
