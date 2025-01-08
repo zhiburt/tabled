@@ -52,7 +52,7 @@ where
         }
 
         let is_intersect_horizontal_span = (0..=records.count_rows())
-            .any(|row| cfg.is_cell_covered_by_column_span((row, self.col)));
+            .any(|row| cfg.is_cell_covered_by_column_span((row, self.col).into()));
 
         if is_intersect_horizontal_span {
             return;
@@ -62,9 +62,9 @@ where
         move_column_spans(cfg, self.col);
 
         let text = self.text.as_ref().to_owned();
-        records.set((0, self.col), text);
+        records.set((0, self.col).into(), text);
 
-        cfg.set_row_span((0, self.col), count_rows);
+        cfg.set_row_span((0, self.col).into(), count_rows);
     }
 }
 
@@ -80,22 +80,22 @@ fn move_columns_aside<R: Records + Resizable>(records: &mut R, column: usize) {
 }
 
 fn move_column_spans(cfg: &mut SpannedConfig, target_column: usize) {
-    for ((row, col), span) in cfg.get_column_spans() {
-        if col < target_column {
+    for (p, span) in cfg.get_column_spans() {
+        if p.col() < target_column {
             continue;
         }
 
-        cfg.set_column_span((row, col), 1);
-        cfg.set_column_span((row, col + 1), span);
+        cfg.set_column_span(p, 1);
+        cfg.set_column_span(p + (0, 1), span);
     }
 
-    for ((row, col), span) in cfg.get_row_spans() {
-        if col < target_column {
+    for (p, span) in cfg.get_row_spans() {
+        if p.col() < target_column {
             continue;
         }
 
-        cfg.set_row_span((row, col), 1);
-        cfg.set_row_span((row, col + 1), span);
+        cfg.set_row_span(p, 1);
+        cfg.set_row_span(p + (0, 1), span);
     }
 }
 

@@ -77,7 +77,7 @@ where
 
         for (row, &height) in heights.iter().enumerate() {
             for col in 0..count_cols {
-                let text = records.get_text((row, col));
+                let text = records.get_text((row, col).into());
                 let count_lines = count_lines(text);
 
                 if count_lines <= height {
@@ -86,7 +86,7 @@ where
 
                 let text = limit_lines(text, height);
 
-                records.set((row, col), text);
+                records.set((row, col).into(), text);
             }
         }
 

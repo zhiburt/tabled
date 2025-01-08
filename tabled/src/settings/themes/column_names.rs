@@ -287,7 +287,7 @@ fn set_column_text(
     for (column, (width, name)) in widths.into_iter().zip(names).enumerate() {
         let color = get_color(&colors, column);
         let alignment = alignments.get(column).unwrap_or(AlignmentHorizontal::Left);
-        let left_vertical = get_vertical_width(cfg, (target_line, column), count_columns);
+        let left_vertical = get_vertical_width(cfg, (target_line, column).into(), count_columns);
         let grid_offset =
             total_width + left_vertical + get_horizontal_indent(&name, alignment, width);
         let line = Row::from(target_line);
@@ -323,7 +323,7 @@ fn set_row_text(
     for (row, (row_height, name)) in heights.into_iter().zip(names).enumerate() {
         let color = get_color(&colors, row);
         let alignment = alignments.get(row).unwrap_or(AlignmentVertical::Top);
-        let top_horizontal = get_horizontal_width(cfg, (row, target_line), count_rows);
+        let top_horizontal = get_horizontal_width(cfg, (row, target_line).into(), count_rows);
         let cell_indent = get_vertical_indent(&name, alignment, row_height);
         let grid_offset = total_height + top_horizontal + cell_indent;
         let line = Column::from(target_line);
@@ -369,7 +369,7 @@ fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
     }
 
     let names = (0..records.count_columns())
-        .map(|column| records.get_line((0, column), 0))
+        .map(|column| records.get_line((0, column).into(), 0))
         .map(ToString::to_string)
         .collect();
 

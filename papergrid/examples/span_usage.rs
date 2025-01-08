@@ -1,8 +1,8 @@
 use papergrid::{
     colors::NoColors,
     config::{
-        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity, Indent,
-        Sides,
+        pos, spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity,
+        Indent, Sides,
     },
     dimension::{spanned::SpannedGridDimension, Estimate},
     grid::peekable::PeekableGrid,
@@ -28,8 +28,8 @@ fn main() {
         right: Some('|'),
         intersection: Some('+'),
     });
-    cfg.set_column_span((1, 1), 3);
-    cfg.set_row_span((0, 0), 2);
+    cfg.set_column_span(pos(1, 1), 3);
+    cfg.set_row_span(pos(0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Entity::Global, AlignmentVertical::Center);
     cfg.set_padding(

@@ -1,5 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
+use papergrid::config::Position;
+
 use crate::grid::{
     ansi::ANSIBuf,
     config::{Entity, EntityMap, SpannedConfig},
@@ -106,7 +108,7 @@ impl ColorMap {
 impl crate::grid::colors::Colors for ColorMap {
     type Color = ANSIBuf;
 
-    fn get_color(&self, pos: (usize, usize)) -> Option<&Self::Color> {
+    fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         self.0.as_ref().map(|map| map.get(pos))
     }
 

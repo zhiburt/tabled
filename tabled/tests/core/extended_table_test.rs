@@ -247,7 +247,7 @@ fn display_multiline_record_value() {
 test_table!(
     display_with_truncate,
     {
-        let data = Matrix::new(3, 3).insert((1, 0), "a long string").to_vec();
+        let data = Matrix::new(3, 3).insert((1, 0).into(), "a long string").to_vec();
         let mut table = ExtendedTable::from(data);
         table.truncate(14, "");
         table.to_string()
@@ -272,7 +272,7 @@ test_table!(
 test_table!(
     truncate_with_suffix,
     {
-        let data = Matrix::new(3, 3).insert((1, 0), "a long string").to_vec();
+        let data = Matrix::new(3, 3).insert((1, 0).into(), "a long string").to_vec();
         let mut table = ExtendedTable::from(data);
         table.truncate(15, "..");
         table.to_string()
@@ -380,7 +380,7 @@ fn truncate_big_fields() {
 test_table!(
     truncate_too_small,
     {
-        let data = Matrix::new(3, 3).insert((1, 0), "a long string").to_vec();
+        let data = Matrix::new(3, 3).insert((1, 0).into(), "a long string").to_vec();
         let mut table = ExtendedTable::from(data);
         let success = table.truncate(2, "");
         assert!(!success);

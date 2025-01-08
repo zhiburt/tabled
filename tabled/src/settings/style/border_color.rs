@@ -184,13 +184,13 @@ where
         let color = self.inner.clone().convert();
 
         for col in 0..count_columns {
-            let pos = (0, col);
+            let pos = (0, col).into();
             let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
             b.top = color.top.clone();
             b.right_top_corner = color.top.clone();
             cfg.set_border_color(pos, b);
 
-            let pos = (count_rows - 1, col);
+            let pos = (count_rows - 1, col).into();
             let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
             b.bottom = color.bottom.clone();
             b.right_bottom_corner = color.bottom.clone();
@@ -198,38 +198,38 @@ where
         }
 
         for row in 0..count_rows {
-            let pos = (row, 0);
+            let pos = (row, 0).into();
             let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
             b.left = color.left.clone();
             b.left_bottom_corner = color.left.clone();
             cfg.set_border_color(pos, b);
 
-            let pos = (row, count_columns - 1);
+            let pos = (row, count_columns - 1).into();
             let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
             b.right = color.right.clone();
             b.right_bottom_corner = color.right.clone();
             cfg.set_border_color(pos, b);
         }
 
-        let pos = (0, 0);
+        let pos = (0, 0).into();
         let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
         b.left_top_corner = color.left_top_corner.clone();
         cfg.remove_border_color(pos, shape);
         cfg.set_border_color(pos, b);
 
-        let pos = (0, count_columns - 1);
+        let pos = (0, count_columns - 1).into();
         let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
         b.right_top_corner = color.right_top_corner.clone();
         cfg.remove_border_color(pos, shape);
         cfg.set_border_color(pos, b);
 
-        let pos = (count_rows - 1, 0);
+        let pos = (count_rows - 1, 0).into();
         let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
         b.left_bottom_corner = color.left_bottom_corner.clone();
         cfg.remove_border_color(pos, shape);
         cfg.set_border_color(pos, b);
 
-        let pos = (count_rows - 1, count_columns - 1);
+        let pos = (count_rows - 1, count_columns - 1).into();
         let mut b = GridBorder::cloned(&cfg.get_border_color(pos, shape));
         b.right_bottom_corner = color.right_bottom_corner.clone();
         cfg.remove_border_color(pos, shape);

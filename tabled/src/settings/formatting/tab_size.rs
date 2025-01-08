@@ -1,3 +1,5 @@
+use papergrid::config::pos;
+
 use crate::{
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::TableOption,
@@ -50,7 +52,7 @@ where
 
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let pos = (row, col);
+                let pos = pos(row, col);
                 let text = records.get_text(pos);
                 let text = text.replace('\t', &" ".repeat(tab_size));
                 records.set(pos, text);

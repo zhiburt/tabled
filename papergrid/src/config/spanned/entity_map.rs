@@ -32,7 +32,7 @@ impl<T> EntityMap<T> {
     }
 
     /// Get a value for an [`Entity`].
-    pub fn get(&self, (row, col): Position) -> &T {
+    pub fn get(&self, pos: Position) -> &T {
         // todo: optimize;
         //
         // Cause we can change rows/columns/cells separately we need to check them separately.
@@ -51,9 +51,9 @@ impl<T> EntityMap<T> {
         // ref: https://users.rust-lang.org/t/make-hash-return-same-value-whather-the-order-of-element-of-a-tuple/69932/13
 
         self.cells
-            .get(&(row, col))
-            .or_else(|| self.columns.get(&col))
-            .or_else(|| self.rows.get(&row))
+            .get(&pos)
+            .or_else(|| self.columns.get(&pos.col()))
+            .or_else(|| self.rows.get(&pos.row()))
             .unwrap_or(&self.global)
     }
 
@@ -65,10 +65,10 @@ impl<T> EntityMap<T> {
                 self.rows.clear();
                 self.columns.clear();
             }
-            Entity::Column(col) => self.cells.retain(|&(_, c), _| c != col),
-            Entity::Row(row) => self.cells.retain(|&(r, _), _| r != row),
+            Entity::Column(col) => self.cells.retain(|pos, _| pos.col() != col),
+            Entity::Row(row) => self.cells.retain(|pos, _| pos.row() != row),
             Entity::Cell(row, col) => {
-                self.cells.remove(&(row, col));
+                self.cells.remove(&Position::new(row, col));
             }
         }
     }
@@ -80,20 +80,20 @@ impl<T: Clone> EntityMap<T> {
         match entity {
             Entity::Column(col) => {
                 for &row in self.rows.keys() {
-                    self.cells.insert((row, col), value.clone());
+                    self.cells.insert(Position::new(row, col), value.clone());
                 }
 
                 self.columns.insert(col, value);
             }
             Entity::Row(row) => {
                 for &col in self.columns.keys() {
-                    self.cells.insert((row, col), value.clone());
+                    self.cells.insert(Position::new(row, col), value.clone());
                 }
 
                 self.rows.insert(row, value);
             }
             Entity::Cell(row, col) => {
-                self.cells.insert((row, col), value);
+                self.cells.insert(Position::new(row, col), value);
             }
             Entity::Global => {
                 self.remove(Entity::Global);
@@ -108,8 +108,8 @@ impl<T> From<EntityMap<T>> for HashMap<Entity, T> {
         let mut m = HashMap::new();
         m.insert(Entity::Global, value.global);
 
-        for ((row, col), value) in value.cells {
-            m.insert(Entity::Cell(row, col), value);
+        for (pos, value) in value.cells {
+            m.insert(Entity::from(pos), value);
         }
 
         for (row, value) in value.rows {

@@ -87,19 +87,19 @@ where
 }
 
 fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
-    for ((row, c), span) in cfg.get_column_spans() {
-        for col in c..c + span {
+    for (p, span) in cfg.get_column_spans() {
+        for col in p.col()..p.col() + span {
             if col == 0 {
                 continue;
             }
 
-            let is_first = col == c;
-            let has_up = row > 0 && has_left(cfg, (row - 1, col), shape);
-            let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col), shape);
+            let is_first = col == p.col();
+            let has_up = p.row() > 0 && has_left(cfg, (p.row() - 1, col).into(), shape);
+            let has_down = p.row() + 1 < shape.0 && has_left(cfg, (p.row() + 1, col).into(), shape);
 
             let borders = cfg.get_borders();
 
-            let mut border = cfg.get_border((row, col), shape);
+            let mut border = cfg.get_border((p.row(), col).into(), shape);
 
             let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
             if has_top_border {
@@ -127,18 +127,20 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
                 }
             }
 
-            cfg.set_border((row, col), border);
+            cfg.set_border((p.row(), col).into(), border);
         }
     }
 
-    for ((r, col), span) in cfg.get_row_spans() {
+    for (p, span) in cfg.get_row_spans() {
+        let (r, col) = p.into();
+
         for row in r + 1..r + span {
-            let mut border = cfg.get_border((row, col), shape);
+            let mut border = cfg.get_border((row, col).into(), shape);
             let borders = cfg.get_borders();
 
             let has_left_border = border.left_top_corner.is_some();
             if has_left_border {
-                let has_left = col > 0 && has_top(cfg, (row, col - 1), shape);
+                let has_left = col > 0 && has_top(cfg, (row, col - 1).into(), shape);
                 if has_left {
                     border.left_top_corner = borders.right_intersection;
                 } else {
@@ -148,7 +150,7 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
 
             let has_right_border = border.right_top_corner.is_some();
             if has_right_border {
-                let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1), shape);
+                let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1).into(), shape);
                 if has_right {
                     border.right_top_corner = borders.left_intersection;
                 } else {
@@ -156,21 +158,23 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
                 }
             }
 
-            cfg.set_border((row, col), border);
+            cfg.set_border((row, col).into(), border);
         }
     }
 
     let cells = iter_totally_spanned_cells(cfg, shape).collect::<Vec<_>>();
-    for (row, col) in cells {
+    for p in cells {
+        let (row, col) = p.into();
+
         if row == 0 {
             continue;
         }
 
-        let mut border = cfg.get_border((row, col), shape);
+        let mut border = cfg.get_border((row, col).into(), shape);
         let borders = cfg.get_borders();
 
-        let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1), shape);
-        let has_up = has_left(cfg, (row - 1, col), shape);
+        let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1).into(), shape);
+        let has_up = has_left(cfg, (row - 1, col).into(), shape);
 
         if has_up && !has_right {
             border.right_top_corner = borders.right_intersection;
@@ -180,12 +184,12 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
             border.right_top_corner = borders.left_intersection;
         }
 
-        let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col), shape);
+        let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col).into(), shape);
         if has_down {
             border.left_bottom_corner = borders.top_intersection;
         }
 
-        cfg.set_border((row, col), border);
+        cfg.set_border((row, col).into(), border);
     }
 }
 
@@ -215,7 +219,7 @@ fn iter_totally_spanned_cells(
     let (count_rows, count_cols) = shape;
     (0..count_rows).flat_map(move |row| {
         (0..count_cols)
-            .map(move |col| (row, col))
-            .filter(move |&p| cfg.is_cell_covered_by_both_spans(p))
+            .map(move |col| (row, col).into())
+            .filter(move |p| cfg.is_cell_covered_by_both_spans(*p))
     })
 }

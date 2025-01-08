@@ -37,7 +37,7 @@ test_table!(
 
 test_table!(
     full_alignment_multiline,
-    Matrix::new(3, 3).insert((3, 2), "https://\nwww\n.\nredhat\n.com\n/en")
+    Matrix::new(3, 3).insert((3, 2).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left())),
     " N | column 0 | column 1 | column 2 "
@@ -55,9 +55,9 @@ test_table!(
 test_table!(
     vertical_alignment_test,
     Matrix::new(3, 3)
-        .insert((2, 2), "E\nnde\navou\nros")
-        .insert((3, 2), "Red\nHat")
-        .insert((3, 3), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((2, 2).into(), "E\nnde\navou\nros")
+        .insert((3, 2).into(), "Red\nHat")
+        .insert((3, 3).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Columns::new(1..)).with(Alignment::bottom())),
     " N | column 0 | column 1 | column 2 "

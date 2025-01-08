@@ -28,14 +28,20 @@ impl Cell {
 }
 
 impl From<Position> for Cell {
-    fn from((row, col): Position) -> Self {
-        Self(row, col)
+    fn from(pos: Position) -> Self {
+        Self(pos.row(), pos.col())
+    }
+}
+
+impl From<(usize, usize)> for Cell {
+    fn from(pos: (usize, usize)) -> Self {
+        Self(pos.0, pos.1)
     }
 }
 
 impl From<Cell> for Position {
     fn from(Cell(row, col): Cell) -> Self {
-        (row, col)
+        Position::new(row, col)
     }
 }
 
@@ -48,6 +54,14 @@ impl<I> Object<I> for Cell {
 }
 
 impl<I> Object<I> for Position {
+    type Iter = EntityOnce;
+
+    fn cells(&self, _: &I) -> Self::Iter {
+        EntityOnce::new(Some(Entity::Cell(self.row(), self.col())))
+    }
+}
+
+impl<I> Object<I> for (usize, usize) {
     type Iter = EntityOnce;
 
     fn cells(&self, _: &I) -> Self::Iter {

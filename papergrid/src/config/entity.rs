@@ -42,8 +42,14 @@ impl Entity {
 }
 
 impl From<Position> for Entity {
-    fn from((row, col): Position) -> Self {
-        Self::Cell(row, col)
+    fn from(pos: Position) -> Self {
+        Self::Cell(pos.row(), pos.col())
+    }
+}
+
+impl From<(usize, usize)> for Entity {
+    fn from(pos: (usize, usize)) -> Self {
+        Self::Cell(pos.0, pos.1)
     }
 }
 
@@ -84,7 +90,7 @@ impl Iterator for EntityIterator {
                 self.count_cols = 0;
                 self.count_rows = 0;
 
-                Some((row, col))
+                Some(Position::new(row, col))
             }
             Entity::Column(col) => {
                 if self.i >= self.count_rows {
@@ -94,7 +100,7 @@ impl Iterator for EntityIterator {
                 let i = self.i;
                 self.i += 1;
 
-                Some((i, col))
+                Some(Position::new(i, col))
             }
             Entity::Row(row) => {
                 if self.j >= self.count_cols {
@@ -104,7 +110,7 @@ impl Iterator for EntityIterator {
                 let j = self.j;
                 self.j += 1;
 
-                Some((row, j))
+                Some(Position::new(row, j))
             }
             Entity::Global => {
                 if self.j >= self.count_cols {
@@ -119,7 +125,7 @@ impl Iterator for EntityIterator {
                 let j = self.j;
                 self.j += 1;
 
-                Some((self.i, j))
+                Some(Position::new(self.i, j))
             }
         }
     }
@@ -134,106 +140,106 @@ mod tests {
         assert_eq!(
             Entity::Global.iter(10, 10).collect::<Vec<_>>(),
             vec![
-                (0, 0),
-                (0, 1),
-                (0, 2),
-                (0, 3),
-                (0, 4),
-                (0, 5),
-                (0, 6),
-                (0, 7),
-                (0, 8),
-                (0, 9),
-                (1, 0),
-                (1, 1),
-                (1, 2),
-                (1, 3),
-                (1, 4),
-                (1, 5),
-                (1, 6),
-                (1, 7),
-                (1, 8),
-                (1, 9),
-                (2, 0),
-                (2, 1),
-                (2, 2),
-                (2, 3),
-                (2, 4),
-                (2, 5),
-                (2, 6),
-                (2, 7),
-                (2, 8),
-                (2, 9),
-                (3, 0),
-                (3, 1),
-                (3, 2),
-                (3, 3),
-                (3, 4),
-                (3, 5),
-                (3, 6),
-                (3, 7),
-                (3, 8),
-                (3, 9),
-                (4, 0),
-                (4, 1),
-                (4, 2),
-                (4, 3),
-                (4, 4),
-                (4, 5),
-                (4, 6),
-                (4, 7),
-                (4, 8),
-                (4, 9),
-                (5, 0),
-                (5, 1),
-                (5, 2),
-                (5, 3),
-                (5, 4),
-                (5, 5),
-                (5, 6),
-                (5, 7),
-                (5, 8),
-                (5, 9),
-                (6, 0),
-                (6, 1),
-                (6, 2),
-                (6, 3),
-                (6, 4),
-                (6, 5),
-                (6, 6),
-                (6, 7),
-                (6, 8),
-                (6, 9),
-                (7, 0),
-                (7, 1),
-                (7, 2),
-                (7, 3),
-                (7, 4),
-                (7, 5),
-                (7, 6),
-                (7, 7),
-                (7, 8),
-                (7, 9),
-                (8, 0),
-                (8, 1),
-                (8, 2),
-                (8, 3),
-                (8, 4),
-                (8, 5),
-                (8, 6),
-                (8, 7),
-                (8, 8),
-                (8, 9),
-                (9, 0),
-                (9, 1),
-                (9, 2),
-                (9, 3),
-                (9, 4),
-                (9, 5),
-                (9, 6),
-                (9, 7),
-                (9, 8),
-                (9, 9)
+                Position::new(0, 0),
+                Position::new(0, 1),
+                Position::new(0, 2),
+                Position::new(0, 3),
+                Position::new(0, 4),
+                Position::new(0, 5),
+                Position::new(0, 6),
+                Position::new(0, 7),
+                Position::new(0, 8),
+                Position::new(0, 9),
+                Position::new(1, 0),
+                Position::new(1, 1),
+                Position::new(1, 2),
+                Position::new(1, 3),
+                Position::new(1, 4),
+                Position::new(1, 5),
+                Position::new(1, 6),
+                Position::new(1, 7),
+                Position::new(1, 8),
+                Position::new(1, 9),
+                Position::new(2, 0),
+                Position::new(2, 1),
+                Position::new(2, 2),
+                Position::new(2, 3),
+                Position::new(2, 4),
+                Position::new(2, 5),
+                Position::new(2, 6),
+                Position::new(2, 7),
+                Position::new(2, 8),
+                Position::new(2, 9),
+                Position::new(3, 0),
+                Position::new(3, 1),
+                Position::new(3, 2),
+                Position::new(3, 3),
+                Position::new(3, 4),
+                Position::new(3, 5),
+                Position::new(3, 6),
+                Position::new(3, 7),
+                Position::new(3, 8),
+                Position::new(3, 9),
+                Position::new(4, 0),
+                Position::new(4, 1),
+                Position::new(4, 2),
+                Position::new(4, 3),
+                Position::new(4, 4),
+                Position::new(4, 5),
+                Position::new(4, 6),
+                Position::new(4, 7),
+                Position::new(4, 8),
+                Position::new(4, 9),
+                Position::new(5, 0),
+                Position::new(5, 1),
+                Position::new(5, 2),
+                Position::new(5, 3),
+                Position::new(5, 4),
+                Position::new(5, 5),
+                Position::new(5, 6),
+                Position::new(5, 7),
+                Position::new(5, 8),
+                Position::new(5, 9),
+                Position::new(6, 0),
+                Position::new(6, 1),
+                Position::new(6, 2),
+                Position::new(6, 3),
+                Position::new(6, 4),
+                Position::new(6, 5),
+                Position::new(6, 6),
+                Position::new(6, 7),
+                Position::new(6, 8),
+                Position::new(6, 9),
+                Position::new(7, 0),
+                Position::new(7, 1),
+                Position::new(7, 2),
+                Position::new(7, 3),
+                Position::new(7, 4),
+                Position::new(7, 5),
+                Position::new(7, 6),
+                Position::new(7, 7),
+                Position::new(7, 8),
+                Position::new(7, 9),
+                Position::new(8, 0),
+                Position::new(8, 1),
+                Position::new(8, 2),
+                Position::new(8, 3),
+                Position::new(8, 4),
+                Position::new(8, 5),
+                Position::new(8, 6),
+                Position::new(8, 7),
+                Position::new(8, 8),
+                Position::new(8, 9),
+                Position::new(9, 0),
+                Position::new(9, 1),
+                Position::new(9, 2),
+                Position::new(9, 3),
+                Position::new(9, 4),
+                Position::new(9, 5),
+                Position::new(9, 6),
+                Position::new(9, 7),
+                Position::new(9, 8),
+                Position::new(9, 9)
             ]
         );
     }

@@ -71,6 +71,8 @@ impl CompactConfig {
         &self.border_colors
     }
 
+    // todo: IT seems like we can easily do &mut self + const
+
     /// Set a padding to a given cells.
     pub const fn set_padding(mut self, padding: Sides<Indent>) -> Self {
         self.padding = padding;

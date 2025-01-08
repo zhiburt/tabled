@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 
 use papergrid::ansi::ANSIBuf;
-use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
+use papergrid::config::{pos, AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
 
 use crate::util::grid;
 use testing_table::test_table;
@@ -38,7 +38,7 @@ test_table!(
         .config(|cfg| {
             cfg.set_borders(Borders::default());
             cfg.set_border(
-                (0, 0),
+                pos(0, 0),
                 Border {
                     top: Some('x'),
                     bottom: Some('o'),
@@ -47,7 +47,7 @@ test_table!(
                 },
             );
 
-            cfg.remove_border((0, 0), (2, 2));
+            cfg.remove_border(pos(0, 0), (2, 2));
         })
         .build(),
     "0-00-1\n1-01-1"

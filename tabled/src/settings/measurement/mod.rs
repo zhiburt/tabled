@@ -119,7 +119,7 @@ where
 {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
-        (0..count_cols).map(move |col| get_text_width(records.get_text((row, col))))
+        (0..count_cols).map(move |col| get_text_width(records.get_text((row, col).into())))
     })
 }
 
@@ -129,6 +129,6 @@ where
 {
     (0..records.count_rows()).map(move |row| {
         (0..records.count_columns())
-            .map(move |col| string::count_lines(records.get_text((row, col))))
+            .map(move |col| string::count_lines(records.get_text((row, col).into())))
     })
 }

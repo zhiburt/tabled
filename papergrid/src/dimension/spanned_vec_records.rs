@@ -85,7 +85,7 @@ fn build_dimensions<T: Cell + AsRef<str>>(
     for (row, columns) in records.iter_rows().enumerate() {
         let mut row_height = 0;
         for (col, cell) in columns.iter().enumerate() {
-            let pos = (row, col);
+            let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
@@ -132,17 +132,14 @@ fn adjust_hspans(
         return;
     }
 
-    let mut spans_ordered = spans
-        .iter()
-        .map(|(k, v)| ((k.0, k.1), *v))
-        .collect::<Vec<_>>();
+    let mut spans_ordered = spans.iter().map(|(k, v)| (*k, *v)).collect::<Vec<_>>();
     spans_ordered.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
     });
 
-    for ((row, _), (span, height)) in spans_ordered {
-        adjust_row_range(cfg, height, len, row, row + span, heights);
+    for (pos, (span, height)) in spans_ordered {
+        adjust_row_range(cfg, height, len, pos.row(), pos.row() + span, heights);
     }
 }
 
@@ -215,17 +212,14 @@ fn adjust_vspans(
     // The overall width distribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans_ordered = spans
-        .iter()
-        .map(|(k, v)| ((k.0, k.1), *v))
-        .collect::<Vec<_>>();
+    let mut spans_ordered = spans.iter().map(|(k, v)| (*k, *v)).collect::<Vec<_>>();
     spans_ordered.sort_unstable_by(|a, b| match a.1 .0.cmp(&b.1 .0) {
         Ordering::Equal => a.0.cmp(&b.0),
         o => o,
     });
 
-    for ((_, col), (span, width)) in spans_ordered {
-        adjust_column_range(cfg, width, len, col, col + span, widths);
+    for (pos, (span, width)) in spans_ordered {
+        adjust_column_range(cfg, width, len, pos.col(), pos.col() + span, widths);
     }
 }
 
@@ -281,7 +275,7 @@ fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConf
     for (row, columns) in records.iter_rows().enumerate() {
         let mut row_height = 0;
         for (col, cell) in columns.iter().enumerate() {
-            let pos = (row, col);
+            let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
@@ -303,7 +297,10 @@ fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConf
     heights
 }
 
-fn build_width<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize> {
+fn build_width<T>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize>
+where
+    T: Cell + AsRef<str>,
+{
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
@@ -311,12 +308,12 @@ fn build_width<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfi
 
     for (row, columns) in records.iter_rows().enumerate() {
         for (col, cell) in columns.iter().enumerate() {
-            let pos = (row, col);
+            let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let width = cell.width() + get_cell_padding_horizontal(cfg, (row, col));
+            let width = cell.width() + get_cell_padding_horizontal(cfg, pos);
             match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));

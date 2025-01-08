@@ -13,6 +13,8 @@
 
 use std::borrow::Cow;
 
+use papergrid::config::pos;
+
 use crate::{
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
@@ -136,15 +138,15 @@ where
                     records.push_row();
 
                     for col in 0..records.count_columns() {
-                        records.set((row, col), self.default_cell.to_string());
+                        records.set(pos(row, col), self.default_cell.to_string());
                     }
                 }
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text((row, col)).to_string();
+                        let text = rhs.get_records().get_text(pos(row, col)).to_string();
                         let col = col + count_cols;
-                        records.set((row, col), text);
+                        records.set((row, col).into(), text);
                     }
                 }
             }
@@ -157,15 +159,15 @@ where
                     records.push_column();
 
                     for row in 0..records.count_rows() {
-                        records.set((row, col), self.default_cell.to_string());
+                        records.set(pos(row, col), self.default_cell.to_string());
                     }
                 }
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text((row, col)).to_string();
+                        let text = rhs.get_records().get_text(pos(row, col)).to_string();
                         let row = row + count_rows;
-                        records.set((row, col), text);
+                        records.set(pos(row, col), text);
                     }
                 }
             }

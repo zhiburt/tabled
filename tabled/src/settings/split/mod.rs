@@ -528,8 +528,8 @@ fn compute_range_variables(
 /// utility for arguments of a position easily
 fn format_position(direction: Direction, primary_index: usize, secondary_index: usize) -> Position {
     match direction {
-        Direction::Column => (secondary_index, primary_index),
-        Direction::Row => (primary_index, secondary_index),
+        Direction::Column => (secondary_index, primary_index).into(),
+        Direction::Row => (primary_index, secondary_index).into(),
     }
 }
 

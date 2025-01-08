@@ -9,6 +9,7 @@ mod format_positioned;
 pub use format_config::FormatConfig;
 pub use format_content::FormatContent;
 pub use format_positioned::FormatContentPositioned;
+use papergrid::config::Position;
 
 /// A formatting function of particular cells on a [`Table`].
 ///
@@ -76,7 +77,7 @@ impl Format {
     /// ];
     ///
     /// let table = Table::new(&data)
-    ///                .with(Modify::new(Rows::single(0)).with(Format::positioned(|_, (_, col)| col.to_string())))
+    ///                .modify(Rows::single(0), Format::positioned(|_, p| p.col().to_string()))
     ///                .to_string();
     ///
     /// assert_eq!(
@@ -96,7 +97,7 @@ impl Format {
     /// ```
     pub fn positioned<F>(f: F) -> FormatContentPositioned<F>
     where
-        F: FnMut(&str, (usize, usize)) -> String,
+        F: FnMut(&str, Position) -> String,
     {
         FormatContentPositioned::new(f)
     }
@@ -142,3 +143,5 @@ impl Format {
         FormatConfig(f)
     }
 }
+
+// todo: Add a lambda with all arguments

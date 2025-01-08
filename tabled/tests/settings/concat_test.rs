@@ -7,7 +7,7 @@ use testing_table::test_table;
 
 test_table!(
     join_vertical_0,
-    Matrix::new(2, 3).insert((1, 0), "123").with(Style::psql())
+    Matrix::new(2, 3).insert((1, 0).into(), "123").with(Style::psql())
         .with(Concat::vertical(Matrix::new(2, 3).to_table()))
         .to_string(),
     "  N  | column 0 | column 1 | column 2 "
@@ -22,7 +22,7 @@ test_table!(
 test_table!(
     join_vertical_1,
     Matrix::new(2, 3)
-        .with(Concat::vertical(Matrix::new(2, 3).insert((1, 0), "123").with(Style::psql()))),
+        .with(Concat::vertical(Matrix::new(2, 3).insert((1, 0).into(), "123").with(Style::psql()))),
     "+-----+----------+----------+----------+"
     "|  N  | column 0 | column 1 | column 2 |"
     "+-----+----------+----------+----------+"

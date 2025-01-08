@@ -18,10 +18,8 @@ use owo_colors::{
 
 use papergrid::{
     ansi::ANSIFmt,
-    config::spanned::SpannedConfig,
-    config::{Borders, Position},
-    dimension::spanned::SpannedGridDimension,
-    dimension::Estimate,
+    config::{pos, spanned::SpannedConfig, Borders, Position},
+    dimension::{spanned::SpannedGridDimension, Estimate},
     grid::iterable::Grid,
     records::IterRecords,
 };
@@ -45,8 +43,11 @@ fn main() {
 
 fn generate_colors() -> HashMap<Position, Style> {
     HashMap::from([
-        ((0, 0), Style(OStyle::default().bg::<Red>().fg::<Black>())),
-        ((1, 1), Style(OStyle::default().bg::<Blue>())),
+        (
+            pos(0, 0),
+            Style(OStyle::default().bg::<Red>().fg::<Black>()),
+        ),
+        (pos(1, 1), Style(OStyle::default().bg::<Blue>())),
     ])
 }
 

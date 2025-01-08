@@ -37,9 +37,9 @@ where
         let mut out = vec![];
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let cell = records.get_text((row, col));
+                let cell = records.get_text((row, col).into());
                 if cell.eq(text) {
-                    out.push((row, col));
+                    out.push((row, col).into());
                 }
             }
         }
@@ -62,7 +62,7 @@ where
         let mut out = vec![];
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let cell = records.get_text((row, col));
+                let cell = records.get_text((row, col).into());
                 if cell.eq(text) {
                     out.push(Entity::Cell(row, col));
                 }

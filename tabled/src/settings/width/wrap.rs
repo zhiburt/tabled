@@ -148,8 +148,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let is_valid_pos = pos.0 < records.count_rows() && pos.1 < records.count_columns();
-            if !is_valid_pos {
+            if !pos.is_covered((count_rows, count_columns).into()) {
                 continue;
             }
 
@@ -858,9 +857,9 @@ fn get_decrease_cell_list(
     let mut points = Vec::new();
     (0..shape.1).for_each(|col| {
         (0..shape.0)
-            .filter(|&row| cfg.is_cell_visible((row, col)))
+            .filter(|&row| cfg.is_cell_visible((row, col).into()))
             .for_each(|row| {
-                let (width, width_min) = match cfg.get_column_span((row, col)) {
+                let (width, width_min) = match cfg.get_column_span((row, col).into()) {
                     Some(span) => {
                         let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
                         let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
@@ -871,7 +870,7 @@ fn get_decrease_cell_list(
                 };
 
                 if width >= width_min {
-                    let padding = cfg.get_padding((row, col));
+                    let padding = cfg.get_padding((row, col).into());
                     let width = width.saturating_sub(padding.left.size + padding.right.size);
 
                     points.push(((row, col), width));

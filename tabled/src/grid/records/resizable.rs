@@ -76,9 +76,9 @@ where
             return;
         }
 
-        let t = std::mem::take(&mut self[lhs.0][lhs.1]);
-        let t = std::mem::replace(&mut self[rhs.0][rhs.1], t);
-        let _ = std::mem::replace(&mut self[lhs.0][lhs.1], t);
+        let t = std::mem::take(&mut self[lhs.row()][lhs.col()]);
+        let t = std::mem::replace(&mut self[rhs.row()][rhs.col()], t);
+        let _ = std::mem::replace(&mut self[lhs.row()][lhs.col()], t);
     }
 
     fn swap_row(&mut self, lhs: usize, rhs: usize) {
@@ -136,9 +136,9 @@ where
             return;
         }
 
-        let t = std::mem::take(&mut self[lhs.0][lhs.1]);
-        let t = std::mem::replace(&mut self[rhs.0][rhs.1], t);
-        let _ = std::mem::replace(&mut self[lhs.0][lhs.1], t);
+        let t = std::mem::take(&mut self[lhs.row()][lhs.col()]);
+        let t = std::mem::replace(&mut self[rhs.row()][rhs.col()], t);
+        let _ = std::mem::replace(&mut self[lhs.row()][lhs.col()], t);
     }
 
     fn swap_row(&mut self, lhs: usize, rhs: usize) {

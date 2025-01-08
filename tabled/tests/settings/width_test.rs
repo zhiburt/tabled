@@ -1173,7 +1173,7 @@ fn total_width_wrapping() {
     assert_width!(table, 20);
 
     let table = Matrix::new(3, 3)
-        .insert((3, 2), "some loong string")
+        .insert((3, 2).into(), "some loong string")
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20).keep_words(true))
@@ -1298,7 +1298,9 @@ fn total_width_small_with_panel_using_wrapping() {
 
 #[test]
 fn max_width_with_span() {
-    let mut table = Matrix::new(3, 3).insert((1, 1), "a long string").to_table();
+    let mut table = Matrix::new(3, 3)
+        .insert((1, 1).into(), "a long string")
+        .to_table();
     table
         .with(Style::psql())
         .with(Modify::new((1, 1)).with(Span::column(2)))
@@ -1588,8 +1590,8 @@ fn justify_width_constant_test() {
 #[test]
 fn justify_width_constant_different_sizes_test() {
     let table = Matrix::new(3, 3)
-        .insert((1, 1), "Hello World")
-        .insert((3, 2), "multi\nline string\n")
+        .insert((1, 1).into(), "Hello World")
+        .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(Justify::new(3))
         .to_string();
@@ -1668,7 +1670,7 @@ fn justify_width_max_test() {
 #[test]
 fn max_width_when_cell_has_tabs() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "\tHello\tWorld\t")
+        .insert((2, 1).into(), "\tHello\tWorld\t")
         .with(TabSize::new(4))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
@@ -1689,7 +1691,7 @@ fn max_width_when_cell_has_tabs() {
 #[test]
 fn max_width_table_when_cell_has_tabs() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "\tHello\tWorld\t")
+        .insert((2, 1).into(), "\tHello\tWorld\t")
         .with(TabSize::new(4))
         .with(Style::markdown())
         .with(Width::truncate(15))
@@ -1722,7 +1724,7 @@ fn max_width_table_when_cell_has_tabs() {
 #[test]
 fn max_width_truncate_with_big_span() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line; Here we gooooooo")
+        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Width::truncate(40))
@@ -1741,8 +1743,8 @@ fn max_width_truncate_with_big_span() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line; Here we gooooooo")
-        .insert((3, 2), "Hello World With Big Line; Here")
+        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
+        .insert((3, 2).into(), "Hello World With Big Line; Here")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
@@ -1760,8 +1762,8 @@ fn max_width_truncate_with_big_span() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line; Here we gooooooo")
-        .insert((3, 2), "Hello World With Big Line; Here")
+        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
+        .insert((3, 2).into(), "Hello World With Big Line; Here")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
@@ -1781,8 +1783,8 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(get_text_width(&table), 40);
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line; Here we gooooooo")
-        .insert((3, 2), "Hello World With Big Line; Here")
+        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
+        .insert((3, 2).into(), "Hello World With Big Line; Here")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
@@ -1802,8 +1804,8 @@ fn max_width_truncate_with_big_span() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line; Here w")
-        .insert((3, 2), "Hello World With Big L")
+        .insert((2, 1).into(), "Hello World With Big Line; Here w")
+        .insert((3, 2).into(), "Hello World With Big L")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
@@ -1824,7 +1826,7 @@ fn max_width_truncate_with_big_span() {
 #[test]
 fn max_width_truncate_priority_max() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(35).priority(PriorityMax::right()))
         .to_string();
@@ -1842,7 +1844,7 @@ fn max_width_truncate_priority_max() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(20).priority(PriorityMax::right()))
         .to_string();
@@ -1860,7 +1862,7 @@ fn max_width_truncate_priority_max() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(0).priority(PriorityMax::right()))
         .to_string();
@@ -1881,7 +1883,7 @@ fn max_width_truncate_priority_max() {
 #[test]
 fn max_width_truncate_priority_max_with_span() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority(PriorityMax::right()))
@@ -1903,7 +1905,7 @@ fn max_width_truncate_priority_max_with_span() {
 #[test]
 fn max_width_wrap_priority_max() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(35).priority(PriorityMax::right()))
         .to_string();
@@ -1925,7 +1927,7 @@ fn max_width_wrap_priority_max() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(20).priority(PriorityMax::right()))
         .to_string();
@@ -1960,7 +1962,7 @@ fn max_width_wrap_priority_max() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(0).priority(PriorityMax::right()))
         .to_string();
@@ -1981,7 +1983,7 @@ fn max_width_wrap_priority_max() {
 #[test]
 fn max_width_wrap_priority_max_with_span() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority(PriorityMax::right()))
@@ -2020,7 +2022,7 @@ fn max_width_wrap_priority_max_with_span() {
 #[test]
 fn max_width_truncate_priority_min() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(35).priority(PriorityMin::right()))
         .to_string();
@@ -2038,7 +2040,7 @@ fn max_width_truncate_priority_min() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(20).priority(PriorityMin::right()))
         .to_string();
@@ -2056,7 +2058,7 @@ fn max_width_truncate_priority_min() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(0).priority(PriorityMin::right()))
         .to_string();
@@ -2077,7 +2079,7 @@ fn max_width_truncate_priority_min() {
 #[test]
 fn max_width_truncate_priority_min_with_span() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority(PriorityMin::right()))
@@ -2096,7 +2098,7 @@ fn max_width_truncate_priority_min_with_span() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(17).priority(PriorityMin::right()))
@@ -2118,7 +2120,7 @@ fn max_width_truncate_priority_min_with_span() {
 #[test]
 fn max_width_wrap_priority_min() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(35).priority(PriorityMin::right()))
         .to_string();
@@ -2137,7 +2139,7 @@ fn max_width_wrap_priority_min() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(20).priority(PriorityMin::right()))
         .to_string();
@@ -2159,7 +2161,7 @@ fn max_width_wrap_priority_min() {
     );
 
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::wrap(0).priority(PriorityMin::right()))
         .to_string();
@@ -2180,7 +2182,7 @@ fn max_width_wrap_priority_min() {
 #[test]
 fn max_width_wrap_priority_min_with_span() {
     let table = Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority(PriorityMin::right()))
@@ -2339,8 +2341,8 @@ fn wrap_keeping_words_0() {
 #[test]
 fn cell_truncate_multiline() {
     let table = Matrix::new(3, 3)
-        .insert((1, 1), "H\nel\nlo World")
-        .insert((3, 2), "multi\nline string\n")
+        .insert((1, 1).into(), "H\nel\nlo World")
+        .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..2).not(Rows::single(0)))
@@ -2367,8 +2369,8 @@ fn cell_truncate_multiline() {
 #[test]
 fn cell_truncate_multiline_with_suffix() {
     let table = Matrix::new(3, 3)
-        .insert((1, 1), "H\nel\nlo World")
-        .insert((3, 2), "multi\nline string\n")
+        .insert((1, 1).into(), "H\nel\nlo World")
+        .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..2).not(Rows::single(0)))
@@ -2395,8 +2397,8 @@ fn cell_truncate_multiline_with_suffix() {
 #[test]
 fn table_truncate_multiline() {
     let table = Matrix::new(3, 3)
-        .insert((1, 1), "H\nel\nlo World")
-        .insert((3, 2), "multi\nline string\n")
+        .insert((1, 1).into(), "H\nel\nlo World")
+        .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(Width::truncate(20).multiline(true))
         .to_string();
@@ -2420,8 +2422,8 @@ fn table_truncate_multiline() {
 #[test]
 fn table_truncate_multiline_with_suffix() {
     let table = Matrix::new(3, 3)
-        .insert((1, 1), "H\nel\nlo World")
-        .insert((3, 2), "multi\nline string\n")
+        .insert((1, 1).into(), "H\nel\nlo World")
+        .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(Width::truncate(20).suffix(".").multiline(true))
         .to_string();
@@ -2488,8 +2490,8 @@ test_table!(
 test_table!(
     priority_max_left,
     Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
-        .insert((2, 2), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
+        .insert((2, 2).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(37).priority(PriorityMax::left())),
     "| N | column  | column 1 | column 2 |"
@@ -2502,8 +2504,8 @@ test_table!(
 test_table!(
     priority_max_right,
     Matrix::new(3, 3)
-        .insert((2, 1), "Hello World With Big Line")
-        .insert((2, 2), "Hello World With Big Line")
+        .insert((2, 1).into(), "Hello World With Big Line")
+        .insert((2, 2).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Width::truncate(37).priority(PriorityMax::right())),
     "| N | column 0 | column 1 | column  |"
