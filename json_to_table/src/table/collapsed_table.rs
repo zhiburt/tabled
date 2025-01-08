@@ -9,8 +9,6 @@ use tabled::{
     builder::Builder,
     grid::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset},
-        dimension::{Dimension, Estimate},
-        records::Records,
         util::string::{count_lines, get_line_width, get_lines, get_text_dimension},
     },
     settings::{Padding, TableOption},
@@ -585,21 +583,6 @@ fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData
     CellData::new(table, vec![ctx.size.width], vec![ctx.size.height])
 }
 
-#[allow(dead_code)]
-struct NoTopBorders;
-
-impl<R, D> TableOption<R, ColoredConfig, D> for NoTopBorders {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut borders = *cfg.get_borders();
-        borders.top = None;
-        borders.top_intersection = None;
-        borders.top_left = None;
-        borders.top_right = None;
-
-        cfg.set_borders(borders);
-    }
-}
-
 struct NoBottomBorders;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for NoBottomBorders {
@@ -623,21 +606,6 @@ impl<R, D> TableOption<R, ColoredConfig, D> for NoRightBorders {
         borders.bottom_right = None;
         borders.right = None;
         borders.right_intersection = None;
-
-        cfg.set_borders(borders);
-    }
-}
-
-#[allow(dead_code)]
-struct NoLeftBorders;
-
-impl<R, D> TableOption<R, ColoredConfig, D> for NoLeftBorders {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut borders = *cfg.get_borders();
-        borders.top_left = None;
-        borders.bottom_left = None;
-        borders.left = None;
-        borders.left_intersection = None;
 
         cfg.set_borders(borders);
     }
@@ -687,42 +655,6 @@ impl<R, D> TableOption<R, ColoredConfig, D> for TopRightChangeToRight {
     }
 }
 
-#[allow(dead_code)]
-struct BottomLeftChangeSplit;
-
-impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplit {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut borders = *cfg.get_borders();
-        borders.bottom_left = borders.left_intersection;
-
-        cfg.set_borders(borders);
-    }
-}
-
-#[allow(dead_code)]
-struct BottomLeftChangeSplitToIntersection;
-
-impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeSplitToIntersection {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut borders = *cfg.get_borders();
-        borders.bottom_left = borders.intersection;
-
-        cfg.set_borders(borders);
-    }
-}
-
-#[allow(dead_code)]
-struct BottomRightChangeToRight;
-
-impl<R, D> TableOption<R, ColoredConfig, D> for BottomRightChangeToRight {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut borders = *cfg.get_borders();
-        borders.bottom_right = borders.right_intersection;
-
-        cfg.set_borders(borders);
-    }
-}
-
 struct BottomLeftChangeToBottomIntersection;
 
 impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeToBottomIntersection {
@@ -731,38 +663,6 @@ impl<R, D> TableOption<R, ColoredConfig, D> for BottomLeftChangeToBottomIntersec
         borders.bottom_left = borders.bottom_intersection;
 
         cfg.set_borders(borders);
-    }
-}
-
-#[allow(dead_code)]
-struct SetBottomChars<'a>(&'a [usize], char);
-
-impl<R, D> TableOption<R, ColoredConfig, D> for SetBottomChars<'_>
-where
-    R: Records,
-    for<'a> &'a R: Records,
-    for<'a> D: Dimension + Estimate<&'a R, SpannedConfig>,
-{
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        dims.estimate(&*records, cfg);
-
-        let table_width = (0..records.count_columns())
-            .map(|col| dims.get_width(col))
-            .sum::<usize>()
-            + cfg.count_vertical(records.count_columns());
-        let mut current_width = 0;
-
-        for pos in self.0 {
-            current_width += pos;
-            if current_width > table_width {
-                break;
-            }
-
-            let split_char = self.1;
-            cfg.set_horizontal_char((1, 0), split_char, Offset::Begin(current_width));
-
-            current_width += 1;
-        }
     }
 }
 

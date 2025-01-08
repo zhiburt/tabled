@@ -244,8 +244,8 @@ mod print {
         grid::{
             ansi::ANSIStr,
             config::{
-                AlignmentHorizontal, AlignmentVertical, Border, Borders, ColoredConfig,
-                CompactMultilineConfig, Indent, Sides,
+                AlignmentHorizontal, AlignmentVertical, Border, Borders, CompactMultilineConfig,
+                Indent, Sides,
             },
             dimension::{DimensionPriority, PoolTableDimension},
             util::string::{
@@ -1288,15 +1288,5 @@ mod print {
             (!pad_color.top.is_empty()).then_some(pad_color.top),
             (!pad_color.bottom.is_empty()).then_some(pad_color.bottom),
         )
-    }
-
-    #[allow(dead_code)]
-    fn cfg_clear_borders(cfg: &mut ColoredConfig) {
-        cfg.remove_borders();
-        cfg.remove_borders_colors();
-        cfg.remove_vertical_chars();
-        cfg.remove_horizontal_chars();
-        cfg.remove_color_line_horizontal();
-        cfg.remove_color_line_vertical();
     }
 }

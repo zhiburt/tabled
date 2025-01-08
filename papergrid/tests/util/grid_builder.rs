@@ -1,5 +1,5 @@
 #![cfg(feature = "std")]
-#![allow(dead_code, unused_macros, unused_imports)]
+#![allow(unused_macros, unused_imports)]
 
 use std::collections::HashMap;
 
