@@ -301,15 +301,16 @@ where
 }
 
 const fn create_config() -> CompactConfig {
-    CompactConfig::new()
-        .set_padding(Sides::new(
-            Indent::spaced(1),
-            Indent::spaced(1),
-            Indent::zero(),
-            Indent::zero(),
-        ))
-        .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(Style::ascii().get_borders())
+    let mut cfg = CompactConfig::new();
+    cfg.set_padding(Sides::new(
+        Indent::spaced(1),
+        Indent::spaced(1),
+        Indent::zero(),
+        Indent::zero(),
+    ));
+    cfg.set_alignment_horizontal(AlignmentHorizontal::Left);
+    cfg.set_borders(Style::ascii().get_borders());
+    cfg
 }
 
 impl<R, D> TableOption<R, CompactConfig, D> for CompactConfig {

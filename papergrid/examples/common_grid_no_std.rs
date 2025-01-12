@@ -30,7 +30,7 @@ fn main() {
     println!("{grid}");
 }
 
-fn generate_table_config() -> CompactConfig {
+const fn generate_table_config() -> CompactConfig {
     const STYLE: Borders<char> = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -49,15 +49,17 @@ fn generate_table_config() -> CompactConfig {
         intersection: Some('+'),
     };
 
-    CompactConfig::default()
-        .set_borders(STYLE)
-        .set_alignment_horizontal(AlignmentHorizontal::Center)
-        .set_padding(Sides::new(
-            Indent::spaced(1),
-            Indent::spaced(1),
-            Indent::spaced(3),
-            Indent::spaced(0),
-        ))
+    let mut cfg = CompactConfig::new();
+    cfg.set_borders(STYLE);
+    cfg.set_alignment_horizontal(AlignmentHorizontal::Center);
+    cfg.set_padding(Sides::new(
+        Indent::spaced(1),
+        Indent::spaced(1),
+        Indent::spaced(3),
+        Indent::spaced(0),
+    ));
+
+    cfg
 }
 
 struct ConstDims<'a>(&'a [usize], usize);

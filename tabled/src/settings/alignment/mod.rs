@@ -195,7 +195,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for Alignment {
 impl<R, D> TableOption<R, CompactConfig, D> for Alignment {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         if let Horizontal(a) = self.inner {
-            *cfg = cfg.set_alignment_horizontal(a)
+            cfg.set_alignment_horizontal(a)
         }
     }
 
