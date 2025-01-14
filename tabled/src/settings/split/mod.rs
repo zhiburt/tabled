@@ -477,7 +477,7 @@ where
         if from_primary_index < primary_length {
             let from_position =
                 format_position(direction, from_primary_index, from_secondary_index);
-            if records.get_text(from_position) != "" {
+            if !records.get_text(from_position).is_empty() {
                 section_is_empty = false;
             }
             records.swap(

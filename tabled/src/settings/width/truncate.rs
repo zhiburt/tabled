@@ -278,7 +278,7 @@ fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool 
     }
     #[cfg(feature = "ansi")]
     {
-        _suffix.as_ref().map_or(false, |s| s.try_color)
+        _suffix.as_ref().is_some_and(|s| s.try_color)
     }
 }
 
