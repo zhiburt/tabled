@@ -209,12 +209,12 @@ mod grid_basic {
         D: Dimension,
     {
         for col in 0..shape.count_columns {
-            let pos = (row, col);
+            let pos = (row, col).into();
             print_vertical_char(f, ctx.cfg, pos, shape.count_columns)?;
             print_cell_line(f, ctx, height, pos, line)?;
         }
 
-        let pos = (row, shape.count_columns);
+        let pos = (row, shape.count_columns).into();
         print_vertical_char(f, ctx.cfg, pos, shape.count_columns)?;
 
         Ok(())
@@ -231,14 +231,14 @@ mod grid_basic {
         F: Write,
         D: Dimension,
     {
-        print_vertical_intersection(f, cfg, (row, 0), shape)?;
+        print_vertical_intersection(f, cfg, (row, 0).into(), shape)?;
 
         for col in 0..shape.count_columns {
             let width = dimension.get_width(col);
 
             // general case
             if width > 0 {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 let main = cfg.get_horizontal(pos, shape.count_rows);
                 match main {
                     Some(c) => repeat_char(f, c, width)?,
@@ -246,7 +246,7 @@ mod grid_basic {
                 }
             }
 
-            let pos = (row, col + 1);
+            let pos = (row, col + 1).into();
             print_vertical_intersection(f, cfg, pos, shape)?;
         }
 
@@ -273,7 +273,7 @@ mod grid_basic {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.1, shape.count_columns) {
+        if !cfg.has_vertical(pos.col(), shape.count_columns) {
             return Ok(());
         }
 
@@ -313,7 +313,7 @@ mod grid_basic {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.1);
+        let width = ctx.dims.get_width(pos.col());
 
         let pad = ctx.cfg.get_padding(pos);
         let valignment = *ctx.cfg.get_alignment_vertical(pos);
@@ -591,12 +591,13 @@ mod grid_not_spanned {
                 print_margin_left(f, ctx.cfg, table_line, total_height)?;
 
                 for col in 0..shape.count_columns {
-                    print_vertical_char(f, ctx.cfg, (row, col), i, height, shape.count_columns)?;
-                    print_cell_line(f, &ctx, height, (row, col), i)?;
+                    let pos = (row, col).into();
+                    print_vertical_char(f, ctx.cfg, pos, i, height, shape.count_columns)?;
+                    print_cell_line(f, &ctx, height, pos, i)?;
 
                     let is_last_column = col + 1 == shape.count_columns;
                     if is_last_column {
-                        let pos = (row, col + 1);
+                        let pos = (row, col + 1).into();
                         print_vertical_char(f, ctx.cfg, pos, i, height, shape.count_columns)?;
                     }
                 }
@@ -640,14 +641,14 @@ mod grid_not_spanned {
         D: Dimension,
     {
         let mut used_color = None;
-        print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
+        print_vertical_intersection(f, cfg, (row, 0).into(), shape, &mut used_color)?;
 
         for col in 0..shape.count_columns {
             let width = dimension.get_width(col);
 
             // general case
             if width > 0 {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 let main = cfg.get_horizontal(pos, shape.count_rows);
                 match main {
                     Some(c) => {
@@ -659,7 +660,7 @@ mod grid_not_spanned {
                 }
             }
 
-            let pos = (row, col + 1);
+            let pos = (row, col + 1).into();
             print_vertical_intersection(f, cfg, pos, shape, &mut used_color)?;
         }
 
@@ -691,7 +692,7 @@ mod grid_not_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.1, shape.count_columns) {
+        if !cfg.has_vertical(pos.col(), shape.count_columns) {
             return Ok(());
         }
 
@@ -822,7 +823,7 @@ mod grid_not_spanned {
         C: Colors,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.1);
+        let width = ctx.dims.get_width(pos.col());
 
         let formatting = ctx.cfg.get_formatting(pos);
         let text_cfg = TextCfg {
@@ -1327,7 +1328,7 @@ mod grid_spanned {
                 print_margin_left(f, ctx.cfg, table_line, total_height)?;
 
                 for col in 0..shape.count_columns {
-                    let pos = (row, col);
+                    let pos = (row, col).into();
 
                     if ctx.cfg.is_cell_covered_by_both_spans(pos) {
                         continue;
@@ -1336,7 +1337,7 @@ mod grid_spanned {
                     if ctx.cfg.is_cell_covered_by_column_span(pos) {
                         let is_last_column = col + 1 == shape.count_columns;
                         if is_last_column {
-                            let pos = (row, col + 1);
+                            let pos = (row, col + 1).into();
                             let count_columns = shape.count_columns;
                             print_vertical_char(f, ctx.cfg, pos, i, count_lines, count_columns)?;
                         }
@@ -1361,7 +1362,7 @@ mod grid_spanned {
                             .sum::<usize>();
 
                         let line = i + skip_lines;
-                        let pos = (original_row, col);
+                        let pos = (original_row, col).into();
 
                         let width = get_cell_width(ctx.cfg, ctx.dims, pos, shape.count_columns);
                         let height = get_cell_height(ctx.cfg, ctx.dims, pos, shape.count_rows);
@@ -1375,7 +1376,7 @@ mod grid_spanned {
 
                     let is_last_column = col + 1 == shape.count_columns;
                     if is_last_column {
-                        let pos = (row, col + 1);
+                        let pos = (row, col + 1).into();
                         print_vertical_char(f, ctx.cfg, pos, i, count_lines, shape.count_columns)?;
                     }
                 }
@@ -1421,11 +1422,11 @@ mod grid_spanned {
     {
         let mut used_color = None;
 
-        let pos = (row, 0);
+        let pos = (row, 0).into();
         print_vertical_intersection(f, ctx.cfg, pos, shape, &mut used_color)?;
 
         for col in 0..shape.count_columns {
-            let pos = (row, col);
+            let pos = (row, col).into();
             if ctx.cfg.is_cell_covered_by_both_spans(pos) {
                 continue;
             }
@@ -1448,7 +1449,7 @@ mod grid_spanned {
                         .sum::<usize>();
                 }
 
-                let pos = (original_row, col);
+                let pos = (original_row, col).into();
                 let height = get_cell_height(ctx.cfg, ctx.dims, pos, shape.count_rows);
                 let width = get_cell_width(ctx.cfg, ctx.dims, pos, shape.count_columns);
                 let line = skip_lines;
@@ -1461,7 +1462,7 @@ mod grid_spanned {
                     col += span - 1;
                 }
 
-                let pos = (row, col + 1);
+                let pos = (row, col + 1).into();
                 print_vertical_intersection(f, ctx.cfg, pos, shape, &mut used_color)?;
 
                 continue;
@@ -1481,7 +1482,7 @@ mod grid_spanned {
                 }
             }
 
-            let pos = (row, col + 1);
+            let pos = (row, col + 1).into();
             print_vertical_intersection(f, ctx.cfg, pos, shape, &mut used_color)?;
         }
 
@@ -1549,7 +1550,7 @@ mod grid_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.1, shape.count_columns) {
+        if !cfg.has_vertical(pos.col(), shape.count_columns) {
             return Ok(());
         }
 
@@ -1604,14 +1605,14 @@ mod grid_spanned {
         D: Dimension,
     {
         let mut used_color = None;
-        print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
+        print_vertical_intersection(f, cfg, (row, 0).into(), shape, &mut used_color)?;
 
         for col in 0..shape.count_columns {
             let width = dimension.get_width(col);
 
             // general case
             if width > 0 {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 let main = cfg.get_horizontal(pos, shape.count_rows);
                 match main {
                     Some(c) => {
@@ -1623,7 +1624,7 @@ mod grid_spanned {
                 }
             }
 
-            let pos = (row, col + 1);
+            let pos = (row, col + 1).into();
             print_vertical_intersection(f, cfg, pos, shape, &mut used_color)?;
         }
 
@@ -2076,11 +2077,11 @@ mod grid_spanned {
     {
         match cfg.get_column_span(pos) {
             Some(span) => {
-                let start = pos.1;
+                let start = pos.col();
                 let end = start + span;
                 range_width(dims, start, end) + count_verticals_range(cfg, start, end, max)
             }
-            None => dims.get_width(pos.1),
+            None => dims.get_width(pos.col()),
         }
     }
 
@@ -2103,11 +2104,11 @@ mod grid_spanned {
     {
         match cfg.get_row_span(pos) {
             Some(span) => {
-                let start = pos.0;
-                let end = pos.0 + span;
+                let start = pos.row();
+                let end = pos.row() + span;
                 range_height(dims, start, end) + count_horizontals_range(cfg, start, end, max)
             }
-            None => dims.get_height(pos.0),
+            None => dims.get_height(pos.row()),
         }
     }
 
@@ -2127,14 +2128,14 @@ mod grid_spanned {
     fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
         loop {
             if cfg.is_cell_visible(pos) {
-                return Some(pos.0);
+                return Some(pos.row());
             }
 
-            if pos.0 == 0 {
+            if pos.row() == 0 {
                 return None;
             }
 
-            pos.0 -= 1;
+            pos -= (1, 0);
         }
     }
 

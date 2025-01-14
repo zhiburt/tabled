@@ -28,6 +28,7 @@ pub use iterator::{
     FilterObject, FilterObjectIter, ObjectIterator, SkipObject, SkipObjectIter, StepByObject,
     StepByObjectIter,
 };
+use papergrid::config::Position;
 pub use rows::{FirstRow, LastRow, LastRowOffset, Row, Rows, RowsIter};
 pub use segment::{SectorIter, Segment, SegmentAll};
 
@@ -224,7 +225,7 @@ where
 pub struct UnionIter<L, R> {
     lhs: Option<L>,
     rhs: R,
-    seen: HashSet<(usize, usize)>,
+    seen: HashSet<Position>,
     current: Option<EntityIterator>,
     count_rows: usize,
     count_cols: usize,
@@ -267,7 +268,8 @@ where
                 }
 
                 let _ = self.seen.insert(p);
-                return Some(Entity::Cell(p.0, p.1));
+
+                return Some(p.into());
             }
         }
 
@@ -277,7 +279,8 @@ where
                 if let Some(p) = iter.by_ref().next() {
                     let _ = self.seen.insert(p);
                     self.current = Some(iter);
-                    return Some(Entity::Cell(p.0, p.1));
+
+                    return Some(p.into());
                 }
             }
 
@@ -291,7 +294,8 @@ where
                 if !self.seen.contains(&p) {
                     let _ = self.seen.insert(p);
                     self.current = Some(iter);
-                    return Some(Entity::Cell(p.0, p.1));
+
+                    return Some(p.into());
                 }
             }
         }
@@ -304,7 +308,7 @@ where
 #[derive(Debug)]
 pub struct DiffIter<L> {
     lhs: L,
-    seen: HashSet<(usize, usize)>,
+    seen: HashSet<Position>,
     count_rows: usize,
     count_cols: usize,
     current: Option<EntityIterator>,
@@ -348,7 +352,7 @@ where
         if let Some(iter) = self.current.as_mut() {
             for p in iter.by_ref() {
                 if !self.seen.contains(&p) {
-                    return Some(Entity::Cell(p.0, p.1));
+                    return Some(p.into());
                 }
             }
         }
@@ -359,7 +363,7 @@ where
             for p in iter.by_ref() {
                 if !self.seen.contains(&p) {
                     self.current = Some(iter);
-                    return Some(Entity::Cell(p.0, p.1));
+                    return Some(p.into());
                 }
             }
         }
@@ -372,7 +376,7 @@ where
 #[derive(Debug)]
 pub struct IntersectIter<L> {
     lhs: L,
-    seen: HashSet<(usize, usize)>,
+    seen: HashSet<Position>,
     count_rows: usize,
     count_cols: usize,
     current: Option<EntityIterator>,
@@ -416,7 +420,7 @@ where
         if let Some(iter) = self.current.as_mut() {
             for p in iter.by_ref() {
                 if self.seen.contains(&p) {
-                    return Some(Entity::Cell(p.0, p.1));
+                    return Some(p.into());
                 }
             }
         }
@@ -427,7 +431,7 @@ where
             for p in iter.by_ref() {
                 if self.seen.contains(&p) {
                     self.current = Some(iter);
-                    return Some(Entity::Cell(p.0, p.1));
+                    return Some(p.into());
                 }
             }
         }
@@ -440,7 +444,7 @@ where
 #[derive(Debug)]
 pub struct InversionIter {
     all: SectorCellsIter,
-    seen: HashSet<(usize, usize)>,
+    seen: HashSet<Position>,
 }
 
 impl InversionIter {
@@ -470,7 +474,7 @@ impl Iterator for InversionIter {
     fn next(&mut self) -> Option<Self::Item> {
         for p in self.all.by_ref() {
             if !self.seen.contains(&p) {
-                return Some(Entity::Cell(p.0, p.1));
+                return Some(p.into());
             }
         }
 

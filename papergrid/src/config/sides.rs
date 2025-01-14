@@ -55,6 +55,22 @@ impl<T> Sides<T> {
             (f)(self.bottom),
         )
     }
+
+    /// Converts all sides with a given function.
+    pub fn fold<B, F>(self, acc: B, f: F) -> B
+    where
+        F: FnMut(B, T) -> B,
+    {
+        let mut f = f;
+        let mut acc = acc;
+
+        acc = (f)(acc, self.left);
+        acc = (f)(acc, self.right);
+        acc = (f)(acc, self.top);
+        acc = (f)(acc, self.bottom);
+
+        acc
+    }
 }
 
 impl<T> Sides<Option<T>> {

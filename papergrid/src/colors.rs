@@ -8,7 +8,7 @@ pub trait Colors {
     type Color: ANSIFmt;
 
     /// Returns a color for a given position.
-    fn get_color(&self, pos: (usize, usize)) -> Option<&Self::Color>;
+    fn get_color(&self, pos: Position) -> Option<&Self::Color>;
 
     /// Verifies whether a map is empty or not.
     fn is_empty(&self) -> bool;

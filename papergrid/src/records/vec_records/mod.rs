@@ -76,24 +76,24 @@ impl<T> PeekableRecords for VecRecords<T>
 where
     T: Cell,
 {
-    fn get_text(&self, (row, col): Position) -> &str {
-        self[row][col].text()
+    fn get_text(&self, pos: Position) -> &str {
+        self[pos.row()][pos.col()].text()
     }
 
-    fn count_lines(&self, (row, col): Position) -> usize {
-        self[row][col].count_lines()
+    fn count_lines(&self, pos: Position) -> usize {
+        self[pos.row()][pos.col()].count_lines()
     }
 
-    fn get_line(&self, (row, col): Position, line: usize) -> &str {
-        self[row][col].line(line)
+    fn get_line(&self, pos: Position, line: usize) -> &str {
+        self[pos.row()][pos.col()].line(line)
     }
 
-    fn get_line_width(&self, (row, col): Position, line: usize) -> usize {
-        self[row][col].line_width(line)
+    fn get_line_width(&self, pos: Position, line: usize) -> usize {
+        self[pos.row()][pos.col()].line_width(line)
     }
 
-    fn get_width(&self, (row, col): Position) -> usize {
-        self[row][col].width()
+    fn get_width(&self, pos: Position) -> usize {
+        self[pos.row()][pos.col()].width()
     }
 }
 

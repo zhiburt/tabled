@@ -75,7 +75,7 @@ mod estimation {
         for (row, columns) in records.iter_rows().enumerate() {
             let mut row_height = 0;
             for (col, cell) in columns.iter().enumerate() {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 if !cfg.is_cell_visible(pos) {
                     continue;
                 }
@@ -123,17 +123,14 @@ mod estimation {
             return;
         }
 
-        let mut spans_ordered = spans
-            .iter()
-            .map(|(k, v)| ((k.0, k.1), *v))
-            .collect::<Vec<_>>();
+        let mut spans_ordered = spans.iter().map(|(k, v)| (k, *v)).collect::<Vec<_>>();
         spans_ordered.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
             Ordering::Equal => acol.cmp(bcol),
             ord => ord,
         });
 
-        for ((row, _), (span, height)) in spans_ordered {
-            adjust_row_range(cfg, height, len, row, row + span, heights);
+        for (p, (span, height)) in spans_ordered {
+            adjust_row_range(cfg, height, len, p.row(), p.row() + span, heights);
         }
     }
 
@@ -211,17 +208,14 @@ mod estimation {
         // The overall width distribution will be different depend on the order.
         //
         // We sort spans in order to prioritize the smaller spans first.
-        let mut spans_ordered = spans
-            .iter()
-            .map(|(k, v)| ((k.0, k.1), *v))
-            .collect::<Vec<_>>();
+        let mut spans_ordered = spans.iter().map(|(k, v)| (k, *v)).collect::<Vec<_>>();
         spans_ordered.sort_unstable_by(|a, b| match a.1 .0.cmp(&b.1 .0) {
-            Ordering::Equal => a.0.cmp(&b.0),
+            Ordering::Equal => a.0.cmp(b.0),
             o => o,
         });
 
-        for ((_, col), (span, width)) in spans_ordered {
-            adjust_column_range(cfg, width, len, col, col + span, widths);
+        for (p, (span, width)) in spans_ordered {
+            adjust_column_range(cfg, width, len, p.col(), p.col() + span, widths);
         }
     }
 
@@ -270,7 +264,7 @@ mod estimation {
         for (row, columns) in records.iter_rows().enumerate() {
             let mut row_height = 0;
             for (col, cell) in columns.iter().enumerate() {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 if !cfg.is_cell_visible(pos) {
                     continue;
                 }
@@ -303,7 +297,7 @@ mod estimation {
 
         for (row, columns) in records.iter_rows().enumerate() {
             for (col, cell) in columns.iter().enumerate() {
-                let pos = (row, col);
+                let pos = (row, col).into();
                 if !cfg.is_cell_visible(pos) {
                     continue;
                 }

@@ -210,7 +210,7 @@ test_table!(
 test_table!(
     span_multiline,
     Matrix::new(3, 3)
-        .insert((3, 2), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((3, 2).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new((3, 2)).with(Span::column(2))),
     " N | column 0 | column 1 | column 2 "
@@ -1256,5 +1256,5 @@ test_table!(
 );
 
 fn create_span_list(count_rows: usize, count_cols: usize) -> impl Iterator<Item = Position> {
-    (0..count_rows).flat_map(move |r| (0..count_cols).map(move |c| (r, c)))
+    (0..count_rows).flat_map(move |r| (0..count_cols).map(move |c| (r, c).into()))
 }

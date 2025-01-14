@@ -1,3 +1,5 @@
+use papergrid::config::Position;
+
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
@@ -20,7 +22,7 @@ impl<F> FormatContentPositioned<F> {
 
 impl<F, R, D, C> TableOption<R, C, D> for FormatContentPositioned<F>
 where
-    F: FnMut(&str, (usize, usize)) -> String,
+    F: FnMut(&str, Position) -> String,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     fn change(self, records: &mut R, cfg: &mut C, _: &mut D) {
@@ -30,7 +32,7 @@ where
 
 impl<F, R, C> CellOption<R, C> for FormatContentPositioned<F>
 where
-    F: FnMut(&str, (usize, usize)) -> String,
+    F: FnMut(&str, Position) -> String,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     fn change(mut self, records: &mut R, _: &mut C, entity: Entity) {
@@ -38,8 +40,7 @@ where
         let count_cols = records.count_columns();
 
         for pos in entity.iter(count_rows, count_cols) {
-            let is_valid_pos = pos.0 < count_rows && pos.1 < count_cols;
-            if !is_valid_pos {
+            if !pos.is_covered((count_rows, count_cols).into()) {
                 continue;
             }
 

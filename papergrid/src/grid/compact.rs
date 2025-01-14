@@ -466,7 +466,7 @@ where
         .next()
         .expect("we check in the beginning that size must be at least 1 column");
     let width = dims.get_width(0);
-    let color = colors.get_color((row, 0));
+    let color = colors.get_color((row, 0).into());
 
     let text = text.as_ref();
     let text = text.lines().next().unwrap_or("");
@@ -478,7 +478,7 @@ where
                 let col = col + 1;
 
                 let width = dims.get_width(col);
-                let color = colors.get_color((row, col));
+                let color = colors.get_color((row, col).into());
                 let text = text.as_ref();
                 let text = text.lines().next().unwrap_or("");
 
@@ -491,7 +491,7 @@ where
                 let col = col + 1;
 
                 let width = dims.get_width(col);
-                let color = colors.get_color((row, col));
+                let color = colors.get_color((row, col).into());
                 let text = text.as_ref();
                 let text = text.lines().next().unwrap_or("");
 

@@ -32,7 +32,7 @@ test_table!(
 test_table!(
     margin_without_table_based_on_grid_borders,
     Matrix::new(3, 3)
-        .insert((3, 2), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((3, 2).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Cell::new(3, 2)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^')),
@@ -53,7 +53,7 @@ test_table!(
 test_table!(
     table_with_empty_margin,
     Matrix::new(3, 3)
-        .insert((3, 2), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((3, 2).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Cell::new(3, 2)).with(Span::column(2)))
         .with(Margin::new(0, 0, 0, 0).fill('>', '<', 'V', '^')),

@@ -1,14 +1,12 @@
 #![cfg(feature = "std")]
-#![allow(dead_code, unused_macros, unused_imports)]
+#![allow(unused_macros, unused_imports)]
 
 use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
-    config::spanned::SpannedConfig,
-    config::{Borders, Position},
-    dimension::spanned::SpannedGridDimension,
-    dimension::{Dimension, Estimate},
+    config::{pos, spanned::SpannedConfig, Borders, Position},
+    dimension::{spanned::SpannedGridDimension, Dimension, Estimate},
     grid::iterable::Grid,
     records::{IterRecords, Records},
 };
@@ -48,7 +46,7 @@ impl GridBuilder {
         for (i, rows) in data.into_iter().enumerate() {
             for (j, text) in rows.into_iter().enumerate() {
                 let text = text.into();
-                self.data.insert((i, j), text);
+                self.data.insert(pos(i, j), text);
             }
         }
 
@@ -62,8 +60,8 @@ impl GridBuilder {
 
     pub fn build(self) -> String {
         let mut data = records(self.size.0, self.size.1);
-        for ((row, col), text) in self.data {
-            data[row][col] = text;
+        for (p, text) in self.data {
+            data[p.row()][p.col()] = text;
         }
 
         let grid = build_grid(data, self.cfg, self.size);

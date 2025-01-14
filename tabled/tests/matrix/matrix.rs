@@ -77,7 +77,7 @@ impl Matrix {
     }
 
     pub fn insert<V: ToString>(mut self, pos: tabled::grid::config::Position, value: V) -> Self {
-        self.data[pos.0][pos.1] = value.to_string();
+        self.data[pos.row()][pos.col()] = value.to_string();
         self
     }
 

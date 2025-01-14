@@ -16,8 +16,9 @@ use std::vec;
 
 use papergrid::{
     colors::NoColors,
-    config::spanned::SpannedConfig,
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
+    config::{
+        pos, spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity,
+    },
     grid::iterable::Grid,
     records::IterRecords,
 };
@@ -29,7 +30,7 @@ test_table!(render_0x0, grid(0, 0).build(), "");
 
 test_table!(
     render_1x1,
-    grid(1, 1).change_cell((0, 0), "one line").build(),
+    grid(1, 1).change_cell(pos(0, 0), "one line").build(),
     "+--------+"
     "|one line|"
     "+--------+"
@@ -37,7 +38,7 @@ test_table!(
 
 test_table!(
     render_1x1_empty,
-    grid(1, 1).change_cell((0, 0), "").build(),
+    grid(1, 1).change_cell(pos(0, 0), "").build(),
     "++"
     "||"
     "++"
@@ -190,7 +191,7 @@ test_table!(
 
 test_table!(
     render_empty_cell,
-    grid(2, 2).change_cell((0, 1), "").build(),
+    grid(2, 2).change_cell(pos(0, 1), "").build(),
     "+---+---+"
     "|0-0|   |"
     "+---+---+"
@@ -237,7 +238,7 @@ test_table!(
 
 test_table!(
     doesnt_render_return_carige_0,
-    grid(2, 2).change_cell((0, 1), "123\r\r\r567").build(),
+    grid(2, 2).change_cell(pos(0, 1), "123\r\r\r567").build(),
     "+---+---------+"
     "|0-0|123\r\r\r567|"
     "+---+---------+"
@@ -247,7 +248,7 @@ test_table!(
 
 test_table!(
     doesnt_render_return_carige_1,
-    grid(2, 2).change_cell((1, 1), "12345678").change_cell((0, 1), "123\r\r\r567").build(),
+    grid(2, 2).change_cell(pos(1, 1), "12345678").change_cell(pos(0, 1), "123\r\r\r567").build(),
     "+---+---------+"
     "|0-0|123\r\r\r567|"
     "+---+---------+"

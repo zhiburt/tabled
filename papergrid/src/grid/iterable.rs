@@ -272,14 +272,14 @@ where
     print_margin_left(f, cfg, line, totalh)?;
 
     for (col, cell) in columns.enumerate() {
-        let pos = (row, col);
+        let pos = (row, col).into();
         let width = dims.get_width(col);
         let color = colors.get_color(pos);
         print_vertical_char(f, cfg, pos, 0, 1, shape.1)?;
         print_single_line_column(f, cell.as_ref(), cfg, width, color, pos)?;
     }
 
-    print_vertical_char(f, cfg, (row, shape.1), 0, 1, shape.1)?;
+    print_vertical_char(f, cfg, (row, shape.1).into(), 0, 1, shape.1)?;
 
     print_margin_right(f, cfg, line, totalh)?;
 
@@ -344,11 +344,11 @@ fn print_columns_lines<T, F: Write, C: ANSIFmt>(
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (col, cell) in buf.iter_mut().enumerate() {
-            print_vertical_char(f, cfg, (row, col), i, height, shape.1)?;
+            print_vertical_char(f, cfg, (row, col).into(), i, height, shape.1)?;
             cell.display(f)?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), i, height, shape.1)?;
+        print_vertical_char(f, cfg, (row, shape.1).into(), i, height, shape.1)?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -375,7 +375,7 @@ fn collect_columns<'a, I, D, C>(
     D: Dimension,
 {
     let iter = iter.enumerate().map(|(col, cell)| {
-        let pos = (row, col);
+        let pos = (row, col).into();
         let width = dimension.get_width(col);
         let color = colors.get_color(pos);
         Cell::new(cell, width, height, cfg, color, pos)
@@ -392,14 +392,14 @@ fn print_split_line<F: Write, D: Dimension>(
     shape: (usize, usize),
 ) -> fmt::Result {
     let mut used_color = None;
-    print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
+    print_vertical_intersection(f, cfg, (row, 0).into(), shape, &mut used_color)?;
 
     for col in 0..shape.1 {
         let width = dimension.get_width(col);
 
         // general case
         if width > 0 {
-            let pos = (row, col);
+            let pos = (row, col).into();
             let main = cfg.get_horizontal(pos, shape.0);
             match main {
                 Some(c) => {
@@ -411,7 +411,7 @@ fn print_split_line<F: Write, D: Dimension>(
             }
         }
 
-        print_vertical_intersection(f, cfg, (row, col + 1), shape, &mut used_color)?;
+        print_vertical_intersection(f, cfg, (row, col + 1).into(), shape, &mut used_color)?;
     }
 
     if let Some(clr) = used_color.take() {
@@ -522,10 +522,10 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
     shape: (usize, usize),
 ) -> fmt::Result {
     let mut used_color = None;
-    print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
+    print_vertical_intersection(f, cfg, (row, 0).into(), shape, &mut used_color)?;
 
     for col in 0..shape.1 {
-        let pos = (row, col);
+        let pos = (row, col).into();
         if cfg.is_cell_covered_by_both_spans(pos) {
             continue;
         }
@@ -541,7 +541,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
 
             // We need to use a correct right split char.
             let original_row = closest_visible_row(cfg, pos).unwrap();
-            if let Some(span) = cfg.get_column_span((original_row, col)) {
+            if let Some(span) = cfg.get_column_span((original_row, col).into()) {
                 col += span - 1;
             }
         } else if width > 0 {
@@ -557,7 +557,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
             }
         }
 
-        print_vertical_intersection(f, cfg, (row, col + 1), shape, &mut used_color)?;
+        print_vertical_intersection(f, cfg, (row, col + 1).into(), shape, &mut used_color)?;
     }
 
     if let Some(clr) = used_color.take() {
@@ -574,7 +574,7 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     shape: (usize, usize),
     used_color: &mut Option<&'a ANSIBuf>,
 ) -> fmt::Result {
-    if !cfg.has_vertical(pos.1, shape.1) {
+    if !cfg.has_vertical(pos.col(), shape.1) {
         return Ok(());
     }
 
@@ -625,7 +625,7 @@ where
                 continue;
             }
 
-            let pos = (row, col);
+            let pos = (row, col).into();
             let rowspan = cfg.get_row_span(pos).unwrap_or(1);
             if rowspan < 2 {
                 continue;
@@ -671,7 +671,7 @@ where
             continue;
         }
 
-        let pos = (row, col);
+        let pos = (row, col).into();
         let colspan = cfg.get_column_span(pos).unwrap_or(1);
         skip = colspan - 1;
 
@@ -701,11 +701,18 @@ where
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (&col, (cell, _, _)) in buf.iter_mut() {
-            print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape.1)?;
+            print_vertical_char(f, cfg, (row, col).into(), cell_line, this_height, shape.1)?;
             cell.display(f)?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), cell_line, this_height, shape.1)?;
+        print_vertical_char(
+            f,
+            cfg,
+            (row, shape.1).into(),
+            cell_line,
+            this_height,
+            shape.1,
+        )?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -1225,14 +1232,14 @@ fn count_verticals_in_range(cfg: &SpannedConfig, start: usize, end: usize, max: 
 fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return Some(pos.0);
+            return Some(pos.row());
         }
 
-        if pos.0 == 0 {
+        if pos.row() == 0 {
             return None;
         }
 
-        pos.0 -= 1;
+        pos -= (1, 0);
     }
 }
 

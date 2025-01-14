@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use papergrid::config::pos;
+
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
@@ -101,7 +103,7 @@ where
     fn change(self, records: &mut R, _: &mut C, _: &mut D) {
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let pos = (row, col);
+                let pos = pos(row, col);
                 let text = records.get_text(pos);
                 let text = clean_charset(text);
                 records.set(pos, text);

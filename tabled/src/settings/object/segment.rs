@@ -1,5 +1,7 @@
 use std::ops::{RangeBounds, RangeFull};
 
+use papergrid::config::Position;
+
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, Records},
@@ -92,8 +94,7 @@ impl Iterator for SectorIter {
     type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (row, col) = self.iter.next()?;
-        Some(Entity::Cell(row, col))
+        self.iter.next().map(Into::into)
     }
 }
 
@@ -125,7 +126,7 @@ impl SectorCellsIter {
 }
 
 impl Iterator for SectorCellsIter {
-    type Item = (usize, usize);
+    type Item = Position;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.row >= self.rows_end {
@@ -146,6 +147,6 @@ impl Iterator for SectorCellsIter {
             self.col = self.cols_start;
         }
 
-        Some((row, col))
+        Some((row, col).into())
     }
 }

@@ -172,9 +172,9 @@ fn set_border_color(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border:
         return;
     }
     let color = border.clone();
-    for &(row, col) in sector {
-        let border = build_cell_border(sector, (row, col), &color);
-        cfg.set_border_color((row, col), border);
+    for &p in sector {
+        let border = build_cell_border(sector, p, &color);
+        cfg.set_border_color(p, border);
     }
 }
 
@@ -223,21 +223,23 @@ fn split_segments(
     squashed_segments
 }
 
-fn is_cell_connected((row1, col1): Position, (row2, col2): Position) -> bool {
-    if col1 == col2 && row1 == row2 + 1 {
-        return true;
+fn is_cell_connected(p1: Position, p2: Position) -> bool {
+    if p1.col() == p2.col() {
+        let up = p1.row() == p2.row() + 1;
+        let down = p2.row() > 0 && p1.row() == p2.row() - 1;
+
+        if up || down {
+            return true;
+        }
     }
 
-    if col1 == col2 && (row2 > 0 && row1 == row2 - 1) {
-        return true;
-    }
+    if p1.row() == p2.row() {
+        let left = p2.col() > 0 && p1.col() == p2.col() - 1;
+        let right = p1.col() == p2.col() + 1;
 
-    if row1 == row2 && col1 == col2 + 1 {
-        return true;
-    }
-
-    if row1 == row2 && (col2 > 0 && col1 == col2 - 1) {
-        return true;
+        if left || right {
+            return true;
+        }
     }
 
     false
@@ -266,188 +268,194 @@ fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: Borde
     }
 }
 
-fn build_cell_border<T>(
-    sector: &HashSet<Position>,
-    (row, col): Position,
-    border: &Border<T>,
-) -> Border<T>
+fn build_cell_border<T>(sector: &HashSet<Position>, p: Position, border: &Border<T>) -> Border<T>
 where
     T: Default + Clone,
 {
-    let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
-    let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
-    let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
-    let cell_has_right_neighbor = cell_has_right_neighbor(sector, row, col);
+    let has_top_neighbor = has_top_neighbor(sector, p);
+    let has_bottom_neighbor = has_bottom_neighbor(sector, p);
+    let has_left_neighbor = has_left_neighbor(sector, p);
+    let has_right_neighbor = has_right_neighbor(sector, p);
+    let has_left_top_neighbor = has_left_top_neighbor(sector, p);
+    let has_right_top_neighbor = has_right_top_neighbor(sector, p);
+    let has_left_bottom_neighbor = has_left_bottom_neighbor(sector, p);
+    let has_right_bottom_neighbor = has_right_bottom_neighbor(sector, p);
 
-    let this_has_left_top_neighbor = is_there_left_top_cell(sector, row, col);
-    let this_has_right_top_neighbor = is_there_right_top_cell(sector, row, col);
-    let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
-    let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
+    let mut b = Border::default();
 
-    let mut cell_border = Border::default();
     if let Some(c) = border.top.clone() {
-        if !cell_has_top_neighbor {
-            cell_border.top = Some(c.clone());
+        if !has_top_neighbor {
+            b.top = Some(c.clone());
 
-            if cell_has_right_neighbor && !this_has_right_top_neighbor {
-                cell_border.right_top_corner = Some(c);
+            if has_right_neighbor && !has_right_top_neighbor {
+                b.right_top_corner = Some(c);
             }
         }
     }
+
     if let Some(c) = border.bottom.clone() {
-        if !cell_has_bottom_neighbor {
-            cell_border.bottom = Some(c.clone());
+        if !has_bottom_neighbor {
+            b.bottom = Some(c.clone());
 
-            if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
-                cell_border.right_bottom_corner = Some(c);
+            if has_right_neighbor && !has_right_bottom_neighbor {
+                b.right_bottom_corner = Some(c);
             }
         }
     }
+
     if let Some(c) = border.left.clone() {
-        if !cell_has_left_neighbor {
-            cell_border.left = Some(c.clone());
+        if !has_left_neighbor {
+            b.left = Some(c.clone());
 
-            if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
-                cell_border.left_bottom_corner = Some(c);
+            if has_bottom_neighbor && !has_left_bottom_neighbor {
+                b.left_bottom_corner = Some(c);
             }
         }
     }
+
     if let Some(c) = border.right.clone() {
-        if !cell_has_right_neighbor {
-            cell_border.right = Some(c.clone());
+        if !has_right_neighbor {
+            b.right = Some(c.clone());
 
-            if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
-                cell_border.right_bottom_corner = Some(c);
+            if has_bottom_neighbor && !has_right_bottom_neighbor {
+                b.right_bottom_corner = Some(c);
             }
         }
     }
+
     if let Some(c) = border.left_top_corner.clone() {
-        if !cell_has_left_neighbor && !cell_has_top_neighbor {
-            cell_border.left_top_corner = Some(c);
+        if !has_left_neighbor && !has_top_neighbor {
+            b.left_top_corner = Some(c);
         }
     }
+
     if let Some(c) = border.left_bottom_corner.clone() {
-        if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
-            cell_border.left_bottom_corner = Some(c);
+        if !has_left_neighbor && !has_bottom_neighbor {
+            b.left_bottom_corner = Some(c);
         }
     }
+
     if let Some(c) = border.right_top_corner.clone() {
-        if !cell_has_right_neighbor && !cell_has_top_neighbor {
-            cell_border.right_top_corner = Some(c);
+        if !has_right_neighbor && !has_top_neighbor {
+            b.right_top_corner = Some(c);
         }
     }
+
     if let Some(c) = border.right_bottom_corner.clone() {
-        if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
-            cell_border.right_bottom_corner = Some(c);
+        if !has_right_neighbor && !has_bottom_neighbor {
+            b.right_bottom_corner = Some(c);
         }
     }
+
     {
-        if !cell_has_bottom_neighbor {
-            if !cell_has_left_neighbor && this_has_left_top_neighbor {
+        if !has_bottom_neighbor {
+            if !has_left_neighbor && has_left_top_neighbor {
                 if let Some(c) = border.right_top_corner.clone() {
-                    cell_border.left_top_corner = Some(c);
+                    b.left_top_corner = Some(c);
                 }
             }
 
-            if cell_has_left_neighbor && this_has_left_bottom_neighbor {
+            if has_left_neighbor && has_left_bottom_neighbor {
                 if let Some(c) = border.left_top_corner.clone() {
-                    cell_border.left_bottom_corner = Some(c);
+                    b.left_bottom_corner = Some(c);
                 }
             }
 
-            if !cell_has_right_neighbor && this_has_right_top_neighbor {
+            if !has_right_neighbor && has_right_top_neighbor {
                 if let Some(c) = border.left_top_corner.clone() {
-                    cell_border.right_top_corner = Some(c);
+                    b.right_top_corner = Some(c);
                 }
             }
 
-            if cell_has_right_neighbor && this_has_right_bottom_neighbor {
+            if has_right_neighbor && has_right_bottom_neighbor {
                 if let Some(c) = border.right_top_corner.clone() {
-                    cell_border.right_bottom_corner = Some(c);
+                    b.right_bottom_corner = Some(c);
                 }
             }
         }
 
-        if !cell_has_top_neighbor {
-            if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
+        if !has_top_neighbor {
+            if !has_left_neighbor && has_left_bottom_neighbor {
                 if let Some(c) = border.right_bottom_corner.clone() {
-                    cell_border.left_bottom_corner = Some(c);
+                    b.left_bottom_corner = Some(c);
                 }
             }
 
-            if cell_has_left_neighbor && this_has_left_top_neighbor {
+            if has_left_neighbor && has_left_top_neighbor {
                 if let Some(c) = border.left_bottom_corner.clone() {
-                    cell_border.left_top_corner = Some(c);
+                    b.left_top_corner = Some(c);
                 }
             }
 
-            if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
+            if !has_right_neighbor && has_right_bottom_neighbor {
                 if let Some(c) = border.left_bottom_corner.clone() {
-                    cell_border.right_bottom_corner = Some(c);
+                    b.right_bottom_corner = Some(c);
                 }
             }
 
-            if cell_has_right_neighbor && this_has_right_top_neighbor {
+            if has_right_neighbor && has_right_top_neighbor {
                 if let Some(c) = border.right_bottom_corner.clone() {
-                    cell_border.right_top_corner = Some(c);
+                    b.right_top_corner = Some(c);
                 }
             }
         }
     }
 
-    cell_border
+    b
 }
 
-fn cell_has_top_neighbor(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    row > 0 && sector.contains(&(row - 1, col))
+fn has_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    p.row() > 0 && sector.contains(&(p - (1, 0)))
 }
 
-fn cell_has_bottom_neighbor(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    sector.contains(&(row + 1, col))
+fn has_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    sector.contains(&(p + (1, 0)))
 }
 
-fn cell_has_left_neighbor(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    col > 0 && sector.contains(&(row, col - 1))
+fn has_left_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    p.col() > 0 && sector.contains(&(p - (0, 1)))
 }
 
-fn cell_has_right_neighbor(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    sector.contains(&(row, col + 1))
+fn has_right_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    sector.contains(&(p + (0, 1)))
 }
 
-fn is_there_left_top_cell(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    row > 0 && col > 0 && sector.contains(&(row - 1, col - 1))
+fn has_left_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    p.row() > 0 && p.col() > 0 && sector.contains(&(p - (1, 1)))
 }
 
-fn is_there_right_top_cell(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    row > 0 && sector.contains(&(row - 1, col + 1))
+fn has_right_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    p.row() > 0 && sector.contains(&(p - (1, 0) + (0, 1)))
 }
 
-fn is_there_left_bottom_cell(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    col > 0 && sector.contains(&(row + 1, col - 1))
+fn has_left_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    p.col() > 0 && sector.contains(&(p + (1, 0) - (0, 1)))
 }
 
-fn is_there_right_bottom_cell(sector: &HashSet<Position>, row: usize, col: usize) -> bool {
-    sector.contains(&(row + 1, col + 1))
+fn has_right_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
+    sector.contains(&(p + (1, 1)))
 }
 
 #[cfg(test)]
 mod tests {
+    use papergrid::config::pos;
+
     use super::*;
 
     #[test]
     fn test_is_connected() {
-        assert!(is_cell_connected((0, 0), (0, 1)));
-        assert!(is_cell_connected((0, 0), (1, 0)));
-        assert!(!is_cell_connected((0, 0), (1, 1)));
+        assert!(is_cell_connected(pos(0, 0), pos(0, 1)));
+        assert!(is_cell_connected(pos(0, 0), pos(1, 0)));
+        assert!(!is_cell_connected(pos(0, 0), pos(1, 1)));
 
-        assert!(is_cell_connected((0, 1), (0, 0)));
-        assert!(is_cell_connected((1, 0), (0, 0)));
-        assert!(!is_cell_connected((1, 1), (0, 0)));
+        assert!(is_cell_connected(pos(0, 1), pos(0, 0)));
+        assert!(is_cell_connected(pos(1, 0), pos(0, 0)));
+        assert!(!is_cell_connected(pos(1, 1), pos(0, 0)));
 
-        assert!(is_cell_connected((1, 1), (0, 1)));
-        assert!(is_cell_connected((1, 1), (1, 0)));
-        assert!(is_cell_connected((1, 1), (2, 1)));
-        assert!(is_cell_connected((1, 1), (1, 2)));
-        assert!(!is_cell_connected((1, 1), (1, 1)));
+        assert!(is_cell_connected(pos(1, 1), pos(0, 1)));
+        assert!(is_cell_connected(pos(1, 1), pos(1, 0)));
+        assert!(is_cell_connected(pos(1, 1), pos(2, 1)));
+        assert!(is_cell_connected(pos(1, 1), pos(1, 2)));
+        assert!(!is_cell_connected(pos(1, 1), pos(1, 1)));
     }
 }

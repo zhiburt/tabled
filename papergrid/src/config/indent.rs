@@ -22,6 +22,11 @@ impl Indent {
     pub const fn zero() -> Self {
         Self::new(0, ' ')
     }
+
+    /// Verifies whether an indent is set to 0.
+    pub const fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 }
 
 impl Default for Indent {

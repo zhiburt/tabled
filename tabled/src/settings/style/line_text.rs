@@ -216,14 +216,14 @@ fn set_horizontal_chars<D: Dimension>(
             None => return,
         };
 
-        let mut b = cfg.get_border((line, 0), shape);
+        let mut b = cfg.get_border((line, 0).into(), shape);
         b.left_top_corner = b.left_top_corner.map(|_| c);
-        cfg.set_border((line, 0), b);
+        cfg.set_border((line, 0).into(), b);
 
         if let Some(color) = color.as_ref() {
-            let mut b = cfg.get_border_color((line, 0), shape).cloned();
+            let mut b = cfg.get_border_color((line, 0).into(), shape).cloned();
             b.left_top_corner = Some(color.clone());
-            cfg.set_border_color((line, 0), b);
+            cfg.set_border_color((line, 0).into(), b);
         }
     }
 
@@ -240,10 +240,10 @@ fn set_horizontal_chars<D: Dimension>(
                     None => return,
                 };
 
-                cfg.set_horizontal_char((line, col), c, config::Offset::Begin(off));
+                cfg.set_horizontal_char((line, col).into(), c, config::Offset::Begin(off));
                 if let Some(color) = color.as_ref() {
                     cfg.set_horizontal_color(
-                        (line, col),
+                        (line, col).into(),
                         color.clone(),
                         config::Offset::Begin(off),
                     );
@@ -262,14 +262,14 @@ fn set_horizontal_chars<D: Dimension>(
                     None => return,
                 };
 
-                let mut b = cfg.get_border((line, col), shape);
+                let mut b = cfg.get_border((line, col).into(), shape);
                 b.right_top_corner = b.right_top_corner.map(|_| c);
-                cfg.set_border((line, col), b);
+                cfg.set_border((line, col).into(), b);
 
                 if let Some(color) = color.as_ref() {
-                    let mut b = cfg.get_border_color((line, col), shape).cloned();
+                    let mut b = cfg.get_border_color((line, col).into(), shape).cloned();
                     b.right_top_corner = Some(color.clone());
-                    cfg.set_border_color((line, col), b);
+                    cfg.set_border_color((line, col).into(), b);
                 }
             }
         }
@@ -304,14 +304,14 @@ fn set_vertical_chars<D>(
             None => return,
         };
 
-        let mut b = cfg.get_border((0, line), shape);
+        let mut b = cfg.get_border((0, line).into(), shape);
         b.left_top_corner = b.left_top_corner.map(|_| c);
-        cfg.set_border((0, line), b);
+        cfg.set_border((0, line).into(), b);
 
         if let Some(color) = color.as_ref() {
-            let mut b = cfg.get_border_color((0, line), shape).cloned();
+            let mut b = cfg.get_border_color((0, line).into(), shape).cloned();
             b.left_top_corner = Some(color.clone());
-            cfg.set_border_color((0, line), b);
+            cfg.set_border_color((0, line).into(), b);
         }
     }
 
@@ -328,10 +328,14 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line), c, config::Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
+                cfg.set_vertical_char((row, line).into(), c, config::Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
-                    cfg.set_vertical_color((row, line), color.clone(), config::Offset::Begin(off));
+                    cfg.set_vertical_color(
+                        (row, line).into(),
+                        color.clone(),
+                        config::Offset::Begin(off),
+                    );
                 }
             }
         }
@@ -347,14 +351,14 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                let mut b = cfg.get_border((row, line), shape);
+                let mut b = cfg.get_border((row, line).into(), shape);
                 b.left_bottom_corner = b.left_bottom_corner.map(|_| c);
-                cfg.set_border((row, line), b);
+                cfg.set_border((row, line).into(), b);
 
                 if let Some(color) = color.as_ref() {
-                    let mut b = cfg.get_border_color((row, line), shape).cloned();
+                    let mut b = cfg.get_border_color((row, line).into(), shape).cloned();
                     b.left_bottom_corner = Some(color.clone());
-                    cfg.set_border_color((row, line), b);
+                    cfg.set_border_color((row, line).into(), b);
                 }
             }
         }

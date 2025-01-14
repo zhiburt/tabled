@@ -61,8 +61,8 @@ where
                 }
 
                 // we need to mitigate messing existing spans
-                let is_cell_visible = cfg.is_cell_visible((row, column));
-                let is_row_span_cell = cfg.get_column_span((row, column)).is_some();
+                let is_cell_visible = cfg.is_cell_visible((row, column).into());
+                let is_row_span_cell = cfg.get_column_span((row, column).into()).is_some();
 
                 if !repeat_is_set {
                     if !is_cell_visible {
@@ -74,7 +74,7 @@ where
                     }
 
                     repeat_length = 1;
-                    repeat_value = records.get_text((row, column)).to_owned();
+                    repeat_value = records.get_text((row, column).into()).to_owned();
                     repeat_is_set = true;
                     continue;
                 }
@@ -90,7 +90,7 @@ where
                     continue;
                 }
 
-                let text = records.get_text((row, column));
+                let text = records.get_text((row, column).into());
                 let is_duplicate = text == repeat_value;
 
                 if is_duplicate {
@@ -99,15 +99,15 @@ where
                 }
 
                 if repeat_length > 1 {
-                    cfg.set_row_span((row + 1, column), repeat_length);
+                    cfg.set_row_span((row + 1, column).into(), repeat_length);
                 }
 
                 repeat_length = 1;
-                repeat_value = records.get_text((row, column)).to_owned();
+                repeat_value = records.get_text((row, column).into()).to_owned();
             }
 
             if repeat_length > 1 {
-                cfg.set_row_span((0, column), repeat_length);
+                cfg.set_row_span((0, column).into(), repeat_length);
             }
         }
     }
@@ -149,8 +149,8 @@ where
                 }
 
                 // we need to mitigate messing existing spans
-                let is_cell_visible = cfg.is_cell_visible((row, column));
-                let is_col_span_cell = cfg.get_row_span((row, column)).is_some();
+                let is_cell_visible = cfg.is_cell_visible((row, column).into());
+                let is_col_span_cell = cfg.get_row_span((row, column).into()).is_some();
 
                 if !repeat_is_set {
                     if !is_cell_visible {
@@ -162,7 +162,7 @@ where
                     }
 
                     repeat_length = 1;
-                    repeat_value = records.get_text((row, column)).to_owned();
+                    repeat_value = records.get_text((row, column).into()).to_owned();
                     repeat_is_set = true;
                     continue;
                 }
@@ -178,7 +178,7 @@ where
                     continue;
                 }
 
-                let text = records.get_text((row, column));
+                let text = records.get_text((row, column).into());
                 let is_duplicate = text == repeat_value;
 
                 if is_duplicate {
@@ -187,15 +187,15 @@ where
                 }
 
                 if repeat_length > 1 {
-                    cfg.set_column_span((row, column + 1), repeat_length);
+                    cfg.set_column_span((row, column + 1).into(), repeat_length);
                 }
 
                 repeat_length = 1;
-                repeat_value = records.get_text((row, column)).to_owned();
+                repeat_value = records.get_text((row, column).into()).to_owned();
             }
 
             if repeat_length > 1 {
-                cfg.set_column_span((row, 0), repeat_length);
+                cfg.set_column_span((row, 0).into(), repeat_length);
             }
         }
     }

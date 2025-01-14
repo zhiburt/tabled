@@ -86,7 +86,7 @@ where
     for row in 0..count_rows / 2 {
         for col in 0..count_cols {
             let last_row = count_rows - row - 1;
-            records.swap((last_row, col), (row, col));
+            records.swap((last_row, col).into(), (row, col).into());
         }
     }
 }
@@ -111,7 +111,7 @@ where
 
     for col in 0..size {
         for row in col..size {
-            records.swap((col, row), (row, col));
+            records.swap((col, row).into(), (row, col).into());
         }
     }
 
@@ -152,7 +152,7 @@ where
 
     for col in 0..size {
         for row in col..size {
-            records.swap((col, row), (row, col));
+            records.swap((col, row).into(), (row, col).into());
         }
     }
 

@@ -94,7 +94,7 @@ where
     records.insert_row(pos);
 
     for (col, text) in row.into_iter().enumerate() {
-        records.set((pos, col), text);
+        records.set((pos, col).into(), text);
     }
 }
 
@@ -105,7 +105,7 @@ where
     records.insert_column(pos);
 
     for (row, text) in column.into_iter().enumerate() {
-        records.set((row, pos), text);
+        records.set((row, pos).into(), text);
     }
 }
 
@@ -135,7 +135,7 @@ where
     R: Records + PeekableRecords,
 {
     (0..records.count_columns())
-        .map(|column| records.get_text((row, column)))
+        .map(|column| records.get_text((row, column).into()))
         .map(ToString::to_string)
         .collect()
 }
@@ -145,7 +145,7 @@ where
     R: Records + PeekableRecords + ExactRecords,
 {
     (0..records.count_rows())
-        .map(|row| records.get_text((row, column)))
+        .map(|row| records.get_text((row, column).into()))
         .map(ToString::to_string)
         .collect()
 }
@@ -159,6 +159,6 @@ where
     let last_row = records.count_rows() - 1;
 
     for (col, text) in row.into_iter().enumerate() {
-        records.set((last_row, col), text);
+        records.set((last_row, col).into(), text);
     }
 }

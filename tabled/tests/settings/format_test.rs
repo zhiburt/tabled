@@ -64,9 +64,9 @@ test_table!(
 test_table!(
     formatting_multiline_test,
     Matrix::new(3, 3)
-        .insert((2, 2), "E\nnde\navou\nros")
-        .insert((3, 2), "Red\nHat")
-        .insert((3, 3), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((2, 2).into(), "E\nnde\navou\nros")
+        .insert((3, 2).into(), "Red\nHat")
+        .insert((3, 3).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Format::content(|s| format!("(x) {s}")).multiline())),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -183,11 +183,14 @@ test_table!(
     format_with_index,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::first()).with(Format::positioned(|a, (b, c)| match (b, c) {
-            (0, 0) => "(0, 0)".to_string(),
-            (0, 1) => "(0, 1)".to_string(),
-            (0, 2) => "(0, 2)".to_string(),
-            _ => a.to_string(),
+        .with(Modify::new(Rows::first()).with(Format::positioned(|a, p| {
+            let p: (_, _) = p.into();
+            match p {
+                (0, 0) => "(0, 0)".to_string(),
+                (0, 1) => "(0, 1)".to_string(),
+                (0, 2) => "(0, 2)".to_string(),
+                _ => a.to_string(),
+            }
         }))),
     "| (0, 0) | (0, 1) | (0, 2) | column 2 |"
     "|--------|--------|--------|----------|"
@@ -248,9 +251,9 @@ test_table!(
 test_table!(
     color_multiline_test,
     Matrix::new(3, 3)
-        .insert((2, 2), "E\nnde\navou\nros")
-        .insert((3, 2), "Red\nHat")
-        .insert((3, 3), "https://\nwww\n.\nredhat\n.com\n/en")
+        .insert((2, 2).into(), "E\nnde\navou\nros")
+        .insert((3, 2).into(), "Red\nHat")
+        .insert((3, 3).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
         .with(Modify::new(Columns::new(..1)).with(Format::content(|s| s.red().to_string()).multiline()))
         .with(Modify::new(Columns::new(1..2)).with(Format::content(|s| s.blue().to_string()).multiline()))

@@ -38,52 +38,51 @@ where
 }
 
 fn set_row_spans(cfg: &mut SpannedConfig, span: usize, entity: Entity, shape: (usize, usize)) {
-    for pos in entity.iter(shape.0, shape.1) {
-        if !is_valid_pos(pos, shape) {
+    for p in entity.iter(shape.0, shape.1) {
+        if !p.is_covered(shape.into()) {
             continue;
         }
 
         let mut span = span;
-        if !is_row_span_valid(pos.0, span, shape.0) {
-            span = shape.0 - pos.0;
+        if !is_row_span_valid(p.row(), span, shape.0) {
+            span = shape.0 - p.row();
         }
 
-        if span_has_intersections(cfg, pos, span) {
+        if span_has_intersections(cfg, p, span) {
             continue;
         }
 
-        set_span_row(cfg, pos, span);
+        set_span_row(cfg, p, span);
     }
 }
 
-fn set_span_row(cfg: &mut SpannedConfig, pos: (usize, usize), span: usize) {
+fn set_span_row(cfg: &mut SpannedConfig, p: Position, span: usize) {
     if span == 0 {
-        let (row, col) = pos;
-        if row == 0 {
+        if p.row() == 0 {
             return;
         }
 
-        if let Some(closerow) = closest_visible_row(cfg, (row - 1, col)) {
-            let span = row + 1 - closerow;
-            cfg.set_row_span((closerow, col), span);
+        if let Some(closerow) = closest_visible_row(cfg, p - (1, 0)) {
+            let span = p.row() + 1 - closerow;
+            cfg.set_row_span((closerow, p.col()).into(), span);
         }
     }
 
-    cfg.set_row_span(pos, span);
+    cfg.set_row_span(p, span);
 }
 
 fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return Some(pos.0);
+            return Some(pos.row());
         }
 
-        if pos.0 == 0 {
+        if pos.row() == 0 {
             // can happen if we have a above horizontal spanned cell
             return None;
         }
 
-        pos.0 -= 1;
+        pos -= (1, 0);
     }
 }
 
@@ -91,13 +90,9 @@ fn is_row_span_valid(row: usize, span: usize, count_rows: usize) -> bool {
     span + row <= count_rows
 }
 
-fn is_valid_pos((row, col): Position, (count_rows, count_cols): (usize, usize)) -> bool {
-    row < count_rows && col < count_cols
-}
-
-fn span_has_intersections(cfg: &SpannedConfig, (row, col): Position, span: usize) -> bool {
-    for row in row..row + span {
-        if !cfg.is_cell_visible((row, col)) {
+fn span_has_intersections(cfg: &SpannedConfig, p: Position, span: usize) -> bool {
+    for row in p.row()..p.row() + span {
+        if !cfg.is_cell_visible((row, p.col()).into()) {
             return true;
         }
     }

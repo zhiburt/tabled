@@ -708,7 +708,7 @@ test_table!(
 test_table!(
     style_settings_usage_test_0,
     Matrix::new(3, 3)
-        .insert((1, 1), "a longer string")
+        .insert((1, 1).into(), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
             style.set_borders_bottom('a');
@@ -734,7 +734,7 @@ test_table!(
 test_table!(
     style_settings_usage_test_1,
     Matrix::new(3, 3)
-        .insert((1, 1), "a longer string")
+        .insert((1, 1).into(), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
             style.remove_borders_bottom();
@@ -754,7 +754,7 @@ test_table!(
 test_table!(
     style_settings_usage_test_2,
     Matrix::new(3, 3)
-        .insert((1, 1), "a longer string")
+        .insert((1, 1).into(), "a longer string")
         .with({
             let mut style = Theme::from_style(Style::modern());
             style.remove_borders_bottom();
@@ -1652,7 +1652,7 @@ fn test_default_border_usage() {
     macro_rules! test_border {
         ($modify:expr, $expected:expr) => {
             let table = Matrix::new(3, 3)
-                .insert((1, 1), "a longer string")
+                .insert((1, 1).into(), "a longer string")
                 .with(Style::empty())
                 .with($modify)
                 .to_string();

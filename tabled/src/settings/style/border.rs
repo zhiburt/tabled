@@ -290,13 +290,13 @@ where
         let border = self;
 
         for col in 0..count_columns {
-            let pos = (0, col);
+            let pos = (0, col).into();
             let mut b = cfg.get_border(pos, shape);
             b.top = border.top;
             b.right_top_corner = border.top;
             cfg.set_border(pos, b);
 
-            let pos = (count_rows - 1, col);
+            let pos = (count_rows - 1, col).into();
             let mut b = cfg.get_border(pos, shape);
             b.bottom = border.bottom;
             b.right_bottom_corner = border.bottom;
@@ -304,38 +304,38 @@ where
         }
 
         for row in 0..count_rows {
-            let pos = (row, 0);
+            let pos = (row, 0).into();
             let mut b = cfg.get_border(pos, shape);
             b.left = border.left;
             b.left_bottom_corner = border.left;
             cfg.set_border(pos, b);
 
-            let pos = (row, count_columns - 1);
+            let pos = (row, count_columns - 1).into();
             let mut b = cfg.get_border(pos, shape);
             b.right = border.right;
             b.right_bottom_corner = border.right;
             cfg.set_border(pos, b);
         }
 
-        let pos = (0, 0);
+        let pos = (0, 0).into();
         let mut b = cfg.get_border(pos, shape);
         b.left_top_corner = border.left_top_corner;
         cfg.remove_border(pos, shape);
         cfg.set_border(pos, b);
 
-        let pos = (0, count_columns - 1);
+        let pos = (0, count_columns - 1).into();
         let mut b = cfg.get_border(pos, shape);
         b.right_top_corner = border.right_top_corner;
         cfg.remove_border(pos, shape);
         cfg.set_border(pos, b);
 
-        let pos = (count_rows - 1, 0);
+        let pos = (count_rows - 1, 0).into();
         let mut b = cfg.get_border(pos, shape);
         b.left_bottom_corner = border.left_bottom_corner;
         cfg.remove_border(pos, shape);
         cfg.set_border(pos, b);
 
-        let pos = (count_rows - 1, count_columns - 1);
+        let pos = (count_rows - 1, count_columns - 1).into();
         let mut b = cfg.get_border(pos, shape);
         b.right_bottom_corner = border.right_bottom_corner;
         cfg.remove_border(pos, shape);

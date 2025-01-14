@@ -45,9 +45,8 @@ impl CompactConfig {
     }
 
     /// Set grid margin.
-    pub const fn set_margin(mut self, margin: Sides<Indent>) -> Self {
+    pub const fn set_margin(&mut self, margin: Sides<Indent>) {
         self.margin = margin;
-        self
     }
 
     /// Returns a grid margin.
@@ -56,9 +55,8 @@ impl CompactConfig {
     }
 
     /// Set the [`Borders`] value as correct one.
-    pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
+    pub const fn set_borders(&mut self, borders: Borders<char>) {
         self.borders = borders;
-        self
     }
 
     /// Returns a current [`Borders`] structure.
@@ -72,9 +70,8 @@ impl CompactConfig {
     }
 
     /// Set a padding to a given cells.
-    pub const fn set_padding(mut self, padding: Sides<Indent>) -> Self {
+    pub const fn set_padding(&mut self, padding: Sides<Indent>) {
         self.padding = padding;
-        self
     }
 
     /// Get a padding for a given.
@@ -83,9 +80,8 @@ impl CompactConfig {
     }
 
     /// Set a horizontal alignment.
-    pub const fn set_alignment_horizontal(mut self, alignment: AlignmentHorizontal) -> Self {
+    pub const fn set_alignment_horizontal(&mut self, alignment: AlignmentHorizontal) {
         self.halignment = alignment;
-        self
     }
 
     /// Get a alignment horizontal.
@@ -94,15 +90,13 @@ impl CompactConfig {
     }
 
     /// Sets colors of border carcass on the grid.
-    pub const fn set_borders_color(mut self, borders: Borders<ANSIStr<'static>>) -> Self {
+    pub const fn set_borders_color(&mut self, borders: Borders<ANSIStr<'static>>) {
         self.border_colors = borders;
-        self
     }
 
     /// Set colors for a margin.
-    pub const fn set_margin_color(mut self, color: Sides<ANSIStr<'static>>) -> Self {
+    pub const fn set_margin_color(&mut self, color: Sides<ANSIStr<'static>>) {
         self.margin_color = color;
-        self
     }
 
     /// Returns a margin color.
@@ -111,9 +105,8 @@ impl CompactConfig {
     }
 
     /// Set a padding to a given cells.
-    pub const fn set_padding_color(mut self, color: Sides<ANSIStr<'static>>) -> Self {
+    pub const fn set_padding_color(&mut self, color: Sides<ANSIStr<'static>>) {
         self.padding_color = color;
-        self
     }
 
     /// Set a padding to a given cells.

@@ -33,7 +33,7 @@ where
     fn locate(&mut self, records: &R) -> Self::IntoIter {
         // todo: can be optimized by creating Iterator
         (0..records.count_columns())
-            .filter(|col| records.get_text((0, *col)) == self.0.as_ref())
+            .filter(|col| records.get_text((0, *col).into()) == self.0.as_ref())
             .collect::<Vec<_>>()
     }
 }
@@ -48,7 +48,7 @@ where
     fn cells(&self, records: &R) -> Self::Iter {
         // todo: can be optimized by creating Iterator
         (0..records.count_columns())
-            .filter(|col| records.get_text((0, *col)) == self.0.as_ref())
+            .filter(|col| records.get_text((0, *col).into()) == self.0.as_ref())
             .map(Entity::Column)
             .collect::<Vec<_>>()
             .into_iter()
