@@ -5,6 +5,7 @@ use crate::grid::config;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Offset {
     /// An offset from the start.
+    // todo: rename to start?
     Begin(usize),
     /// An offset from the end.
     End(usize),
@@ -20,6 +21,7 @@ impl From<Offset> for config::Offset {
     }
 }
 
+// todo: Add an example of usage
 impl From<isize> for Offset {
     fn from(value: isize) -> Self {
         if value > 0 {

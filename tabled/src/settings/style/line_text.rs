@@ -1,16 +1,19 @@
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical};
+
 use crate::{
     grid::{
         ansi::ANSIBuf,
         config::{self, ColoredConfig, Entity, SpannedConfig},
         dimension::{Dimension, Estimate},
         records::{ExactRecords, Records},
+        util::string::get_text_width,
     },
     settings::{
         object::{
             Column, FirstColumn, FirstRow, LastColumn, LastColumnOffset, LastRow, LastRowOffset,
             Object, Row,
         },
-        Color, TableOption,
+        Alignment, Color, TableOption,
     },
 };
 
@@ -36,49 +39,118 @@ use super::Offset;
 /// );
 /// ```
 #[derive(Debug)]
-pub struct LineText<L> {
+pub struct LineText<Line> {
     // todo: change to T and specify to be As<str>
     text: String,
     offset: Offset,
     color: Option<ANSIBuf>,
-    line: L,
+    alignment: Option<Alignment>,
+    line: Line,
 }
 
 impl<Line> LineText<Line> {
     /// Creates a [`LineText`] instance.
     ///
-    /// Lines are numbered from 0 to the `count_rows` included
-    /// (`line >= 0 && line <= count_rows`).
+    /// Line can be a column or a row.
+    /// Lines are numbered from 0 to the `count_rows`/`count_columns` included:
+    /// (`line >= 0 && line <= count_rows`)
+    /// (`line >= 0 && line <= count_columns`).
+    ///
+    /// ```
+    /// use tabled::{Table, settings::style::LineText, settings::object::Columns};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Columns::single(0)));
+    /// table.with(LineText::new("TABLE", Columns::single(1)));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "T-------------T\n\
+    ///      A &str        A\n\
+    ///      B-------------B\n\
+    ///      L Hello World L\n\
+    ///      E-------------E"
+    /// );
+    /// ```
     pub fn new<S>(text: S, line: Line) -> Self
     where
         S: Into<String>,
     {
         LineText {
-            text: text.into(),
             line,
+            text: text.into(),
             offset: Offset::Begin(0),
             color: None,
+            alignment: None,
         }
     }
 
     /// Set an offset from which the text will be started.
-    pub fn offset(self, offset: impl Into<Offset>) -> Self {
-        LineText {
-            offset: offset.into(),
-            text: self.text,
-            line: self.line,
-            color: self.color,
-        }
+    ///
+    /// ```
+    /// use tabled::Table;
+    /// use tabled::settings::{Alignment, style::LineText, object::Rows};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Rows::first()).align(Alignment::center()));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+----TABLE----+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
+    pub fn align(mut self, alignment: Alignment) -> Self {
+        self.alignment = Some(alignment);
+        self
+    }
+
+    /// Set an offset from which the text will be started.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::style::LineText, settings::object::Rows};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Rows::first()).offset(3));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+--TABLE------+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
+    pub fn offset(mut self, offset: impl Into<Offset>) -> Self {
+        self.offset = offset.into();
+        self
     }
 
     /// Set a color of the text.
-    pub fn color(self, color: Color) -> Self {
-        LineText {
-            color: Some(color.into()),
-            text: self.text,
-            line: self.line,
-            offset: self.offset,
-        }
+    ///
+    /// ```
+    /// use tabled::Table;
+    /// use tabled::settings::{object::Rows, Color, style::LineText};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Rows::first()).color(Color::FG_BLUE));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "\u{1b}[34mT\u{1b}[39m\u{1b}[34mA\u{1b}[39m\u{1b}[34mB\u{1b}[39m\u{1b}[34mL\u{1b}[39m\u{1b}[34mE\u{1b}[39m---------+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = Some(color.into());
+        self
     }
 }
 
@@ -91,7 +163,7 @@ where
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = self.line.into();
-        change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        change_horizontal_chars(records, dims, cfg, create_line(self, line))
     }
 }
 
@@ -103,7 +175,7 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        change_horizontal_chars(records, dims, cfg, 0, self.text, self.offset, self.color)
+        change_horizontal_chars(records, dims, cfg, create_line(self, 0))
     }
 }
 
@@ -117,7 +189,7 @@ where
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = self.line.cells(records).next();
         if let Some(Entity::Row(line)) = line {
-            change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+            change_horizontal_chars(records, dims, cfg, create_line(self, line))
         }
     }
 }
@@ -132,7 +204,7 @@ where
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = self.line.cells(records).next();
         if let Some(Entity::Row(line)) = line {
-            change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+            change_horizontal_chars(records, dims, cfg, create_line(self, line))
         }
     }
 }
@@ -146,7 +218,7 @@ where
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = self.line.into();
-        change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        change_vertical_chars(records, dims, cfg, create_line(self, line))
     }
 }
 
@@ -158,7 +230,7 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        change_vertical_chars(records, dims, cfg, 0, self.text, self.offset, self.color)
+        change_vertical_chars(records, dims, cfg, create_line(self, 0))
     }
 }
 
@@ -171,7 +243,7 @@ where
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = records.count_rows();
-        change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+        change_vertical_chars(records, dims, cfg, create_line(self, line))
     }
 }
 
@@ -185,22 +257,36 @@ where
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         let line = self.line.cells(records).next();
         if let Some(Entity::Column(line)) = line {
-            change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+            change_vertical_chars(records, dims, cfg, create_line(self, line))
         }
     }
 }
 
-fn set_horizontal_chars<D: Dimension>(
+fn set_horizontal_chars<D>(
     cfg: &mut SpannedConfig,
     dims: &D,
-    offset: Offset,
-    line: usize,
-    text: &str,
-    color: &Option<ANSIBuf>,
+    line: LineText<usize>,
     shape: (usize, usize),
-) {
+) where
+    D: Dimension,
+{
+    let alignment = line.alignment.and_then(|a| a.as_horizontal());
+    let offset = line.offset;
+    let text = &line.text;
+    let color = &line.color;
+    let line = line.line;
+
     let (_, count_columns) = shape;
     let total_width = total_width(cfg, dims, count_columns);
+
+    let offset = match alignment {
+        Some(alignment) => {
+            let off = get_horizontal_alignment_offset(text, alignment, total_width);
+            offset_sum(off, offset)
+        }
+        None => offset,
+    };
+
     let pos = get_start_pos(offset, total_width);
 
     let pos = match pos {
@@ -279,16 +365,28 @@ fn set_horizontal_chars<D: Dimension>(
 fn set_vertical_chars<D>(
     cfg: &mut SpannedConfig,
     dims: &D,
-    offset: Offset,
-    line: usize,
-    text: &str,
-    color: &Option<ANSIBuf>,
+    line: LineText<usize>,
     shape: (usize, usize),
 ) where
     D: Dimension,
 {
+    let alignment = line.alignment.and_then(|a| a.as_vertical());
+    let offset = line.offset;
+    let text = &line.text;
+    let color = &line.color;
+    let line = line.line;
+
     let (count_rows, _) = shape;
     let total_width = total_height(cfg, dims, count_rows);
+
+    let offset = match alignment {
+        Some(alignment) => {
+            let off = get_vertical_alignment_offset(text, alignment, total_width);
+            offset_sum(off, offset)
+        }
+        None => offset,
+    };
+
     let pos = get_start_pos(offset, total_width);
 
     let pos = match pos {
@@ -384,6 +482,56 @@ fn get_start_pos(offset: Offset, total: usize) -> Option<usize> {
     }
 }
 
+fn get_horizontal_alignment_offset(
+    text: &str,
+    alignment: AlignmentHorizontal,
+    total: usize,
+) -> Offset {
+    match alignment {
+        AlignmentHorizontal::Center => {
+            let width = get_text_width(text);
+            let mut off = 0;
+            if total > width {
+                let center = total / 2;
+                let text_center = width / 2;
+                off = center.saturating_sub(text_center);
+            }
+
+            Offset::Begin(off)
+        }
+        AlignmentHorizontal::Left => Offset::Begin(0),
+        AlignmentHorizontal::Right => Offset::End(0),
+    }
+}
+
+fn get_vertical_alignment_offset(text: &str, alignment: AlignmentVertical, total: usize) -> Offset {
+    match alignment {
+        AlignmentVertical::Center => {
+            let width = get_text_width(text);
+            let mut off = 0;
+            if total > width {
+                let center = total / 2;
+                let text_center = width / 2;
+                off = center.saturating_sub(text_center);
+            }
+
+            Offset::Begin(off)
+        }
+        AlignmentVertical::Top => Offset::Begin(0),
+        AlignmentVertical::Bottom => Offset::End(0),
+    }
+}
+
+fn offset_sum(orig: Offset, and: Offset) -> Offset {
+    match (orig, and) {
+        (Offset::Begin(a), Offset::Begin(b)) => Offset::Begin(a + b),
+        (Offset::Begin(a), Offset::End(b)) => Offset::Begin(a.saturating_sub(b)),
+        (Offset::End(a), Offset::Begin(b)) => Offset::End(a + b),
+        (Offset::End(a), Offset::End(b)) => Offset::End(a.saturating_sub(b)),
+    }
+}
+
+// todo: Can be move all the estimation function to util or somewhere cause I am sure it's not first place it's defined/used.
 fn total_width<D>(cfg: &SpannedConfig, dims: &D, count_columns: usize) -> usize
 where
     D: Dimension,
@@ -414,10 +562,7 @@ fn change_horizontal_chars<R, D>(
     records: &mut R,
     dims: &mut D,
     cfg: &mut ColoredConfig,
-    line: usize,
-    text: String,
-    offset: Offset,
-    color: Option<ANSIBuf>,
+    line: LineText<usize>,
 ) where
     R: Records + ExactRecords,
     for<'a> D: Estimate<&'a R, ColoredConfig>,
@@ -425,17 +570,14 @@ fn change_horizontal_chars<R, D>(
 {
     dims.estimate(records, cfg);
     let shape = (records.count_rows(), records.count_columns());
-    set_horizontal_chars(cfg, dims, offset, line, &text, &color, shape);
+    set_horizontal_chars(cfg, dims, line, shape);
 }
 
 fn change_vertical_chars<R, D>(
     records: &mut R,
     dims: &mut D,
     cfg: &mut ColoredConfig,
-    line: usize,
-    text: String,
-    offset: Offset,
-    color: Option<ANSIBuf>,
+    line: LineText<usize>,
 ) where
     R: Records + ExactRecords,
     for<'a> D: Estimate<&'a R, ColoredConfig>,
@@ -443,5 +585,15 @@ fn change_vertical_chars<R, D>(
 {
     dims.estimate(records, cfg);
     let shape = (records.count_rows(), records.count_columns());
-    set_vertical_chars(cfg, dims, offset, line, &text, &color, shape);
+    set_vertical_chars(cfg, dims, line, shape);
+}
+
+fn create_line<T>(orig: LineText<T>, line: usize) -> LineText<usize> {
+    LineText {
+        text: orig.text,
+        offset: orig.offset,
+        color: orig.color,
+        alignment: orig.alignment,
+        line,
+    }
 }

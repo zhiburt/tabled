@@ -12,7 +12,7 @@ use tabled::{
             On, Style, VerticalLine,
         },
         themes::Theme,
-        Color, Format, Highlight, Modify, Padding, Span,
+        Alignment, Color, Format, Highlight, Modify, Padding, Span,
     },
     Table,
 };
@@ -2768,4 +2768,64 @@ test_table!(
     "| |        |        |"
     "| |        |        |"
     "+-+--------+--------+"
+);
+
+test_table!(
+    border_text_alignment_test_0,
+    Matrix::table(2, 2).with(LineText::new("TABLE", Rows::first()).align(Alignment::center())),
+    "+---+------TABLE----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_alignment_test_1,
+    Matrix::table(2, 2).with(LineText::new("TABLE", Rows::first()).align(Alignment::right())),
+    "+---+----------+------TABLE"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_alignment_test_2,
+    Matrix::table(2, 2).with(LineText::new("TABLE", Rows::first()).align(Alignment::left())),
+    "TABLE----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_alignment_test_3,
+    Matrix::table(2, 2).with(LineText::new("TABLE", Rows::first()).align(Alignment::center()).offset(5)),
+    "+---+----------+TABLE-----+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_alignment_test_4,
+    Matrix::table(2, 2).with(LineText::new("TABLE", Rows::first()).align(Alignment::center()).offset(-5)),
+    "+---+-TABLE----+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
 );
