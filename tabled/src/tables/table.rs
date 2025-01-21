@@ -254,7 +254,7 @@ impl Table {
     ///     #[tabled(rename = "Pool Length")]
     ///     pool: u8,
     /// }
-    /// 
+    ///
     /// const POOL_25: u8 = 25;
     /// const POOL_50: u8 = 50;
     ///
@@ -296,14 +296,14 @@ impl Table {
     ///     "+-------------+------------------------+"
     /// );
     /// ```
-    /// 
+    ///
     /// A more complex example with a subtle style.
-    /// 
+    ///
     /// ```
     /// use tabled::{Table, Tabled, settings::Style};
     /// use tabled::settings::{style::HorizontalLine, Theme};
     /// use testing_table::assert_table;
-    /// 
+    ///
     /// #[derive(Tabled)]
     /// #[tabled(rename_all = "PascalCase")]
     /// struct Swim {
@@ -312,26 +312,26 @@ impl Table {
     ///     #[tabled(rename = "Pool Length")]
     ///     pool: u8,
     /// }
-    /// 
+    ///
     /// const POOL_25: u8 = 25;
     /// const POOL_50: u8 = 50;
-    /// 
+    ///
     /// let list = vec![
     ///     Swim { event: String::from("Men 100 Freestyle"), time: String::from("47.77"), pool: POOL_25 },
     ///     Swim { event: String::from("Men 400 Freestyle"), time: String::from("03:59.16"), pool: POOL_25 },
     ///     Swim { event: String::from("Men 800 Freestyle"), time: String::from("08:06.70"), pool: POOL_25 },
     ///     Swim { event: String::from("Men 4x100 Medley Relay"), time: String::from("03:27.28"), pool: POOL_50 },
     /// ];
-    /// 
+    ///
     /// let mut table = Table::kv(list);
-    /// 
+    ///
     /// let mut style = Theme::from_style(Style::rounded().remove_horizontals());
     /// for entry in 1 .. table.count_rows() / Swim::LENGTH {
     ///     style.insert_horizontal_line(entry * Swim::LENGTH, HorizontalLine::inherit(Style::modern()));
     /// }
-    /// 
+    ///
     /// table.with(style);
-    /// 
+    ///
     /// assert_table!(
     ///     table,
     ///     "╭─────────────┬────────────────────────╮"
