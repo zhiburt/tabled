@@ -47,8 +47,27 @@ pub struct LineText<L> {
 impl<Line> LineText<Line> {
     /// Creates a [`LineText`] instance.
     ///
-    /// Lines are numbered from 0 to the `count_rows` included
-    /// (`line >= 0 && line <= count_rows`).
+    /// Line can be a column or a row.
+    /// Lines are numbered from 0 to the `count_rows`/`count_columns` included:
+    /// (`line >= 0 && line <= count_rows`)
+    /// (`line >= 0 && line <= count_columns`).
+    ///
+    /// ```
+    /// use tabled::{Table, settings::style::LineText, settings::object::Columns};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Columns::single(0)));
+    /// table.with(LineText::new("TABLE", Columns::single(1)));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "T-------------T\n\
+    ///      A &str        A\n\
+    ///      B-------------B\n\
+    ///      L Hello World L\n\
+    ///      E-------------E"
+    /// );
+    /// ```
     pub fn new<S>(text: S, line: Line) -> Self
     where
         S: Into<String>,
@@ -62,6 +81,22 @@ impl<Line> LineText<Line> {
     }
 
     /// Set an offset from which the text will be started.
+    /// 
+    /// ```
+    /// use tabled::{Table, settings::style::LineText, settings::object::Rows};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Rows::first()).offset(3));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+--TABLE------+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
     pub fn offset(self, offset: impl Into<Offset>) -> Self {
         LineText {
             offset: offset.into(),
@@ -72,6 +107,23 @@ impl<Line> LineText<Line> {
     }
 
     /// Set a color of the text.
+    ///
+    /// ```
+    /// use tabled::Table;
+    /// use tabled::settings::{object::Rows, Color, style::LineText};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("TABLE", Rows::first()).color(Color::FG_BLUE));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "\u{1b}[34mT\u{1b}[39m\u{1b}[34mA\u{1b}[39m\u{1b}[34mB\u{1b}[39m\u{1b}[34mL\u{1b}[39m\u{1b}[34mE\u{1b}[39m---------+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
     pub fn color(self, color: Color) -> Self {
         LineText {
             color: Some(color.into()),
