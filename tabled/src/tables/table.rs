@@ -238,6 +238,147 @@ impl Table {
         }
     }
 
+    /// Creates a Key-Value [`Table`] instance, from a list of [`Tabled`] values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled};
+    /// use testing_table::assert_table;
+    ///
+    /// #[derive(Tabled)]
+    /// #[tabled(rename_all = "PascalCase")]
+    /// struct Swim {
+    ///     event: String,
+    ///     time: String,
+    ///     #[tabled(rename = "Pool Length")]
+    ///     pool: u8,
+    /// }
+    /// 
+    /// const POOL_25: u8 = 25;
+    /// const POOL_50: u8 = 50;
+    ///
+    /// let list = vec![
+    ///     Swim { event: String::from("Men 100 Freestyle"), time: String::from("47.77"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 400 Freestyle"), time: String::from("03:59.16"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 800 Freestyle"), time: String::from("08:06.70"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 4x100 Medley Relay"), time: String::from("03:27.28"), pool: POOL_50 },
+    /// ];
+    ///
+    /// let table = Table::kv(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+-------------+------------------------+"
+    ///     "| Event       | Men 100 Freestyle      |"
+    ///     "+-------------+------------------------+"
+    ///     "| Time        | 47.77                  |"
+    ///     "+-------------+------------------------+"
+    ///     "| Pool Length | 25                     |"
+    ///     "+-------------+------------------------+"
+    ///     "| Event       | Men 400 Freestyle      |"
+    ///     "+-------------+------------------------+"
+    ///     "| Time        | 03:59.16               |"
+    ///     "+-------------+------------------------+"
+    ///     "| Pool Length | 25                     |"
+    ///     "+-------------+------------------------+"
+    ///     "| Event       | Men 800 Freestyle      |"
+    ///     "+-------------+------------------------+"
+    ///     "| Time        | 08:06.70               |"
+    ///     "+-------------+------------------------+"
+    ///     "| Pool Length | 25                     |"
+    ///     "+-------------+------------------------+"
+    ///     "| Event       | Men 4x100 Medley Relay |"
+    ///     "+-------------+------------------------+"
+    ///     "| Time        | 03:27.28               |"
+    ///     "+-------------+------------------------+"
+    ///     "| Pool Length | 50                     |"
+    ///     "+-------------+------------------------+"
+    /// );
+    /// ```
+    /// 
+    /// A more complex example with a subtle style.
+    /// 
+    /// ```
+    /// use tabled::{Table, Tabled, settings::Style};
+    /// use tabled::settings::{style::HorizontalLine, Theme};
+    /// use testing_table::assert_table;
+    /// 
+    /// #[derive(Tabled)]
+    /// #[tabled(rename_all = "PascalCase")]
+    /// struct Swim {
+    ///     event: String,
+    ///     time: String,
+    ///     #[tabled(rename = "Pool Length")]
+    ///     pool: u8,
+    /// }
+    /// 
+    /// const POOL_25: u8 = 25;
+    /// const POOL_50: u8 = 50;
+    /// 
+    /// let list = vec![
+    ///     Swim { event: String::from("Men 100 Freestyle"), time: String::from("47.77"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 400 Freestyle"), time: String::from("03:59.16"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 800 Freestyle"), time: String::from("08:06.70"), pool: POOL_25 },
+    ///     Swim { event: String::from("Men 4x100 Medley Relay"), time: String::from("03:27.28"), pool: POOL_50 },
+    /// ];
+    /// 
+    /// let mut table = Table::kv(list);
+    /// 
+    /// let mut style = Theme::from_style(Style::rounded().remove_horizontals());
+    /// for entry in 1 .. table.count_rows() / Swim::LENGTH {
+    ///     style.insert_horizontal_line(entry * Swim::LENGTH, HorizontalLine::inherit(Style::modern()));
+    /// }
+    /// 
+    /// table.with(style);
+    /// 
+    /// assert_table!(
+    ///     table,
+    ///     "╭─────────────┬────────────────────────╮"
+    ///     "│ Event       │ Men 100 Freestyle      │"
+    ///     "│ Time        │ 47.77                  │"
+    ///     "│ Pool Length │ 25                     │"
+    ///     "├─────────────┼────────────────────────┤"
+    ///     "│ Event       │ Men 400 Freestyle      │"
+    ///     "│ Time        │ 03:59.16               │"
+    ///     "│ Pool Length │ 25                     │"
+    ///     "├─────────────┼────────────────────────┤"
+    ///     "│ Event       │ Men 800 Freestyle      │"
+    ///     "│ Time        │ 08:06.70               │"
+    ///     "│ Pool Length │ 25                     │"
+    ///     "├─────────────┼────────────────────────┤"
+    ///     "│ Event       │ Men 4x100 Medley Relay │"
+    ///     "│ Time        │ 03:27.28               │"
+    ///     "│ Pool Length │ 50                     │"
+    ///     "╰─────────────┴────────────────────────╯"
+    /// );
+    /// ```
+    pub fn kv<I, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Tabled,
+    {
+        let headers = T::headers();
+
+        let mut records = Vec::new();
+        for row in iter.into_iter() {
+            for (text, name) in row.fields().into_iter().zip(headers.iter()) {
+                let key = Text::new(name.clone().into_owned());
+                let value = Text::new(text.into_owned());
+
+                records.push(vec![key, value]);
+            }
+        }
+
+        let records = VecRecords::new(records);
+
+        Self {
+            records,
+            config: ColoredConfig::new(configure_grid()),
+            dimension: CompleteDimensionVecRecords::default(),
+        }
+    }
+
     /// Creates a builder from a data set given.
     ///
     /// # Example
