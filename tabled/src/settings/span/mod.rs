@@ -3,28 +3,11 @@
 //!
 //! # Example
 //!
-//! ```
-//! use tabled::{settings::{Span, Modify}, Table};
-//!
-//! let data = [[1, 2, 3], [4, 5, 6]];
-//!
-//! let table = Table::new(data)
-//!     .with(Modify::new((2, 0)).with(Span::column(2)))
-//!     .with(Modify::new((0, 1)).with(Span::column(2)))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         "+---+---+---+\n",
-//!         "| 0 | 1     |\n",
-//!         "+---+---+---+\n",
-//!         "| 1 | 2 | 3 |\n",
-//!         "+---+---+---+\n",
-//!         "| 4     | 6 |\n",
-//!         "+---+---+---+",
-//!     )
-//! )
+//! ```rust,no_run
+//! # use tabled::{Table, settings::{Style, Span, Modify, object::Columns}};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data)
+//!     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
 //! ```
 
 mod column;
@@ -40,11 +23,28 @@ pub use row::RowSpan;
 ///  - size is bigger then the total number of columns.
 ///  - size is bigger then the total number of rows.
 ///
-/// ```rust,no_run
-/// # use tabled::{Table, settings::{Style, Span, Modify, object::Columns}};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
+/// ```
+/// use tabled::{settings::{Span, Modify}, Table};
+///
+/// let data = [[1, 2, 3], [4, 5, 6]];
+///
+/// let table = Table::new(data)
+///     .with(Modify::new((2, 0)).with(Span::column(2)))
+///     .with(Modify::new((0, 1)).with(Span::column(2)))
+///     .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "+---+---+---+\n",
+///         "| 0 | 1     |\n",
+///         "+---+---+---+\n",
+///         "| 1 | 2 | 3 |\n",
+///         "+---+---+---+\n",
+///         "| 4     | 6 |\n",
+///         "+---+---+---+",
+///     )
+/// )
 /// ```
 ///
 /// [`Table`]: crate::Table
@@ -55,14 +55,14 @@ impl Span {
     /// New constructs a horizontal/column [`Span`].
     ///
     /// If size is bigger then the total number of columns it will be ignored.
-    pub fn column(size: usize) -> ColumnSpan {
+    pub fn column(size: isize) -> ColumnSpan {
         ColumnSpan::new(size)
     }
 
     /// New constructs a vertical/row [`Span`].
     ///
     /// If size is bigger then the total number of rows it will be ignored.
-    pub fn row(size: usize) -> RowSpan {
+    pub fn row(size: isize) -> RowSpan {
         RowSpan::new(size)
     }
 }

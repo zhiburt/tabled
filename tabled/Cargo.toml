@@ -184,6 +184,16 @@ path = "examples/span.rs"
 required-features = ["std"]
 
 [[example]]
+name = "span_column"
+path = "examples/span_column.rs"
+required-features = ["std"]
+
+[[example]]
+name = "span_row"
+path = "examples/span_row.rs"
+required-features = ["std"]
+
+[[example]]
 name = "nested_table"
 path = "examples/nested_table.rs"
 required-features = ["std"]

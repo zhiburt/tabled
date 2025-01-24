@@ -500,7 +500,10 @@ fn get_horizontal_alignment_offset(
             Offset::Begin(off)
         }
         AlignmentHorizontal::Left => Offset::Begin(0),
-        AlignmentHorizontal::Right => Offset::End(0),
+        AlignmentHorizontal::Right => {
+            let width = get_text_width(text);
+            Offset::End(width)
+        }
     }
 }
 
