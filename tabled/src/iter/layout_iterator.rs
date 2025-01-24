@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use crate::{Table, Tabled};
 
 /// [`LayoutIterator`] is a convient abstraction to iterate over rows/columns.
@@ -22,6 +23,7 @@ impl LayoutIterator {
 
     /// Creates a record iterator for KV table created by [`Table::kv`].
     /// So it basically skips all rows until next record starts.
+    #[cfg(feature = "std")]
     pub fn kv_batches<T>(t: &Table) -> Self
     where
         T: Tabled,
