@@ -289,6 +289,7 @@ mod tabled;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod builder;
 pub mod grid;
+pub mod iter;
 pub mod settings;
 pub mod tables;
 
