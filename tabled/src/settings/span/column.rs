@@ -1,58 +1,113 @@
+use std::cmp::{self, Ordering};
+
 use crate::{
     grid::{
         config::{ColoredConfig, Entity, Position, SpannedConfig},
-        records::{ExactRecords, Records},
+        records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     },
     settings::CellOption,
 };
 
-/// Columns (Vertical) span.
+/// Columns (horizontal) span.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ColumnSpan {
-    size: usize,
+    size: isize,
 }
 
 impl ColumnSpan {
-    /// Creates a new column (vertical) span.
-    pub fn new(size: usize) -> Self {
+    /// Creates a new column (horizontal) span.
+    pub fn new(size: isize) -> Self {
         Self { size }
     }
 
-    /// Creates a new column (vertical) span with a maximux value possible.
+    /// Creates a new column (horizontal) span with a maximux value possible.
     pub fn max() -> Self {
-        Self::new(usize::MAX)
+        Self::new(isize::MAX)
+    }
+
+    /// Creates a new column (horizontal) span with a min value possible.
+    pub fn min() -> Self {
+        Self::new(isize::MIN)
+    }
+
+    /// Creates a new column (horizontal) to spread all the columns.
+    pub fn spread() -> Self {
+        Self::new(0)
     }
 }
 
 impl<R> CellOption<R, ColoredConfig> for ColumnSpan
 where
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
+        let shape = (count_rows, count_cols).into();
 
-        set_col_spans(cfg, self.size, entity, (count_rows, count_cols));
+        for pos in entity.iter(count_rows, count_cols) {
+            set_col_span(records, cfg, self.size, pos, shape);
+        }
+
         remove_false_spans(cfg);
     }
 }
 
-fn set_col_spans(cfg: &mut SpannedConfig, span: usize, entity: Entity, shape: (usize, usize)) {
-    for pos in entity.iter(shape.0, shape.1) {
-        if !pos.is_covered(shape.into()) {
-            continue;
-        }
+fn set_col_span<R>(
+    recs: &mut R,
+    cfg: &mut SpannedConfig,
+    span: isize,
+    pos: Position,
+    shape: Position,
+) where
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    if !pos.is_covered(shape) {
+        return;
+    }
 
-        let mut span = span;
-        if !is_column_span_valid(pos.col(), span, shape.1) {
-            span = shape.1 - pos.col();
-        }
+    match span.cmp(&0) {
+        Ordering::Less => {
+            // * got correct value [span, col]
+            // * clean the route from col to pos.col()
+            // * set the (pos.row(), col) to content from pos
+            // * set span
 
-        if span_has_intersections(cfg, pos, span) {
-            continue;
-        }
+            let span = span.unsigned_abs();
+            let (col, span) = if span > pos.col() {
+                (0, pos.col())
+            } else {
+                (pos.col() - span, span)
+            };
 
-        set_span_column(cfg, pos, span);
+            let content = recs.get_text(pos).to_string();
+
+            for i in col..span + 1 {
+                recs.set(Position::new(pos.row(), i), String::new());
+            }
+
+            recs.set(Position::new(pos.row(), col), content);
+            cfg.set_column_span(Position::new(pos.row(), col), span + 1);
+        }
+        Ordering::Equal => {
+            let content = recs.get_text(pos).to_string();
+            let span = recs.count_columns();
+
+            for i in 0..recs.count_columns() {
+                recs.set(Position::new(pos.row(), i), String::new());
+            }
+
+            recs.set(Position::new(pos.row(), 0), content);
+            cfg.set_column_span(Position::new(pos.row(), 0), span);
+        }
+        Ordering::Greater => {
+            let span = cmp::min(span as usize, shape.col() - pos.col());
+            if span_has_intersections(cfg, pos, span) {
+                return;
+            }
+
+            set_span_column(cfg, pos, span);
+        }
     }
 }
 
@@ -83,10 +138,6 @@ fn closest_visible(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
 
         pos -= (0, 1);
     }
-}
-
-fn is_column_span_valid(col: usize, span: usize, count_cols: usize) -> bool {
-    span + col <= count_cols
 }
 
 fn span_has_intersections(cfg: &SpannedConfig, p: Position, span: usize) -> bool {
