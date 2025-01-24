@@ -147,7 +147,7 @@ fn set_span_hspan(table: &mut Table, list: &[u8]) {
             }
 
             let span = list[i];
-            table.with(Modify::new((r, c)).with(Span::column(span as usize)));
+            table.with(Modify::new((r, c)).with(Span::column(span as isize)));
 
             i += 1;
         }
@@ -163,7 +163,7 @@ fn set_span_vspan(table: &mut Table, list: &[u8]) {
             }
 
             let span = list[i];
-            table.with(Modify::new((r, c)).with(Span::row(span as usize)));
+            table.with(Modify::new((r, c)).with(Span::row(span as isize)));
 
             i += 1;
         }
