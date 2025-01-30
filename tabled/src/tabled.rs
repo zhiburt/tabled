@@ -48,6 +48,24 @@ where
     }
 }
 
+impl<T> Tabled for Option<T>
+where
+    T: Tabled,
+{
+    const LENGTH: usize = T::LENGTH;
+
+    fn fields(&self) -> Vec<Cow<'_, str>> {
+        match self {
+            Some(value) => Tabled::fields(value),
+            None => vec![Cow::Borrowed(""); Self::LENGTH],
+        }
+    }
+
+    fn headers() -> Vec<Cow<'static, str>> {
+        T::headers()
+    }
+}
+
 macro_rules! tuple_table {
     ( $($name:ident)+ ) => {
         impl<$($name: Tabled),+> Tabled for ($($name,)+){

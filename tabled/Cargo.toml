@@ -318,6 +318,10 @@ name = "interactive"
 path = "examples/interactive.rs"
 required-features = ["derive"]
 
+[[example]]
+name = "option"
+path = "examples/option.rs"
+required-features = ["derive"]
 
 [features]
 default = ["derive", "macros"]
