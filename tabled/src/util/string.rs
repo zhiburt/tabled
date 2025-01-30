@@ -190,9 +190,6 @@ mod tests {
 
     use crate::grid::util::string::get_line_width;
 
-    #[cfg(feature = "ansi")]
-    use owo_colors::{colors::Yellow, OwoColorize};
-
     #[test]
     fn strip_test() {
         assert_eq!(cut_str("123456", 0), "");
@@ -234,16 +231,19 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn strip_color_test() {
-        let numbers = "123456".red().on_bright_black().to_string();
+        let numbers = "\u{1b}[31;100m123456\u{1b}[39m\u{1b}[49m";
 
         assert_eq!(cut_str(&numbers, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
         assert_eq!(
             cut_str(&numbers, 3),
             "\u{1b}[31;100m123\u{1b}[39m\u{1b}[49m"
         );
-        assert_eq!(cut_str(&numbers, 10), "\u{1b}[31;100m123456\u{1b}[0m");
+        assert_eq!(
+            cut_str(&numbers, 10),
+            "\u{1b}[31;100m123456\u{1b}[39m\u{1b}[49m"
+        );
 
-        let emojies = "😳😳😳😳😳".red().on_bright_black().to_string();
+        let emojies = "\u{1b}[31;100m😳😳😳😳😳\u{1b}[39m\u{1b}[49m";
 
         assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
         assert_eq!(
@@ -254,9 +254,12 @@ mod tests {
             cut_str(&emojies, 4),
             "\u{1b}[31;100m😳😳\u{1b}[39m\u{1b}[49m"
         );
-        assert_eq!(cut_str(&emojies, 20), "\u{1b}[31;100m😳😳😳😳😳\u{1b}[0m");
+        assert_eq!(
+            cut_str(&emojies, 20),
+            "\u{1b}[31;100m😳😳😳😳😳\u{1b}[39m\u{1b}[49m"
+        );
 
-        let emojies = "🏳️🏳️".red().on_bright_black().to_string();
+        let emojies = "\u{1b}[31;100m🏳️🏳️\u{1b}[39m\u{1b}[49m";
 
         assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
         assert_eq!(cut_str(&emojies, 1), "\u{1b}[31;100m🏳\u{1b}[39m\u{1b}[49m");
@@ -273,14 +276,10 @@ mod tests {
     #[test]
     #[cfg(feature = "ansi")]
     fn test_color_strip() {
-        let s = "Collored string"
-            .fg::<Yellow>()
-            .on_truecolor(12, 200, 100)
-            .blink()
-            .to_string();
+        let s = "\u{1b}[5;33;48;2;12;200;100mCollored string\u{1b}[0m";
         assert_eq!(
             cut_str(&s, 1),
-            "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
+            "\u{1b}[5;33;48;2;12;200;100mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
         )
     }
 

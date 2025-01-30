@@ -6,10 +6,6 @@
 //! * Note how [`Format::content()`] is used to break out [`CellOption`]
 //!   specifications. This is helpful for organizing extensive [`Table`] configurations.
 
-use std::convert::TryFrom;
-
-use owo_colors::OwoColorize;
-
 use tabled::{
     settings::{
         object::{Columns, Rows},
@@ -45,24 +41,18 @@ fn main() {
         Bsd::new("OpenBSD", 1995, true),
     ];
 
-    let clr_red = Color::try_from(' '.red().to_string()).unwrap();
-    let clr_red_light = Color::try_from(' '.red().on_bright_white().to_string()).unwrap();
-    let clr_blue = Color::try_from(' '.blue().to_string()).unwrap();
-    let clr_green = Color::try_from(' '.green().to_string()).unwrap();
-    let clr_purple = Color::try_from(' '.purple().to_string()).unwrap();
-
     let border = BorderColor::new()
-        .bottom(clr_red)
-        .corner_bottom_left(clr_purple.clone())
-        .corner_bottom_right(clr_purple);
+        .bottom(Color::FG_RED)
+        .corner_bottom_left(Color::FG_MAGENTA)
+        .corner_bottom_right(Color::FG_MAGENTA);
 
     let mut table = Table::new(data);
     table
         .with(Style::psql())
         .modify(Rows::first(), border)
-        .modify(Columns::single(0), clr_red_light)
-        .modify(Columns::single(1), clr_green)
-        .modify(Columns::single(2), clr_blue);
+        .modify(Columns::single(0), Color::FG_RED | Color::BG_BRIGHT_WHITE)
+        .modify(Columns::single(1), Color::FG_GREEN)
+        .modify(Columns::single(2), Color::FG_BLUE);
 
     println!("{table}");
 }

@@ -9,7 +9,7 @@ use crate::matrix::Matrix;
 use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
-use owo_colors::OwoColorize;
+use tabled::settings::Color;
 
 test_table!(
     cell_height_increase,
@@ -203,14 +203,9 @@ test_table!(
     cell_height_limit_colored,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").red().to_string())))
-        .with(
-            Modify::new(Columns::first())
-                .with(Height::limit(1))
-        )
-        .with(Modify::new(Segment::all()).with(
-            Alignment::center_vertical()
-        )),
+        .modify(Columns::first(), Format::content(|s| Color::FG_RED.colorize(format!("xxxx\n{s}xxxx\nxxxx\n"))))
+        .modify(Columns::first(), Height::limit(1))
+        .with(Alignment::center_vertical()),
         "| \u{1b}[31mxxxx\u{1b}[39m | column 0 | column 1 | column 2 |"
         "|------|----------|----------|----------|"
         "| \u{1b}[31mxxxx\u{1b}[39m |   0-0    |   0-1    |   0-2    |"
@@ -223,19 +218,19 @@ test_table!(
     table_height_limit_colored,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").blue().on_green().to_string())))
-        .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
+        .modify(Columns::first(), Format::content(|s| (Color::FG_BLUE | Color::BG_GREEN).colorize(format!("xxxx\n{s}xxxx\nxxxx\n"))))
+        .modify(Columns::first(), Alignment::center_vertical())
         .with(Height::limit(10)),
-        "| \u{1b}[34;42mxxxx\u{1b}[39m\u{1b}[49m  | column 0 | column 1 | column 2 |"
-        "| \u{1b}[34m\u{1b}[42mNxxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
-        "|-------|----------|----------|----------|"
-        "| \u{1b}[34;42mxxxx\u{1b}[39m\u{1b}[49m  |   0-0    |   0-1    |   0-2    |"
-        "| \u{1b}[34m\u{1b}[42m0xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
-        "| \u{1b}[34;42mxxxx\u{1b}[39m\u{1b}[49m  |   1-0    |   1-1    |   1-2    |"
-        "| \u{1b}[34m\u{1b}[42m1xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
-        "| \u{1b}[34;42mxxxx\u{1b}[39m\u{1b}[49m  |   2-0    |   2-1    |   2-2    |"
-        "| \u{1b}[34m\u{1b}[42m2xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
-        "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |          |          |          |"
+    "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  | column 0 | column 1 | column 2 |"
+    "| \u{1b}[34m\u{1b}[42mNxxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
+    "|-------|----------|----------|----------|"
+    "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |   0-0    |   0-1    |   0-2    |"
+    "| \u{1b}[34m\u{1b}[42m0xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
+    "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |   1-0    |   1-1    |   1-2    |"
+    "| \u{1b}[34m\u{1b}[42m1xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
+    "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |   2-0    |   2-1    |   2-2    |"
+    "| \u{1b}[34m\u{1b}[42m2xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
+    "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |          |          |          |"
 );
 
 #[cfg(feature = "macros")]

@@ -20,7 +20,6 @@ ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true  }
 
 [dev-dependencies]
-owo-colors = "4.1.0"
 testing_table = { version = "0.2", features = ["ansi"] }
 
 [[example]]

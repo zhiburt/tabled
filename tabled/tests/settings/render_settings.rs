@@ -10,7 +10,7 @@ use crate::matrix::{Matrix, MatrixList};
 use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
-use owo_colors::OwoColorize;
+use tabled::settings::Color;
 
 test_table!(
     alignment_per_line,
@@ -183,9 +183,8 @@ test_table!(
     "         0 |      0-0 |      0-1 |      0-2 "
     " \u{1b}[31masd\u{1b}[39m       |      1-0 |      1-1 |      1-2 "
     " \u{1b}[31m21213123\u{1b}[39m  |          |          |          "
-    "           |          |          |          "
+    " \u{1b}[31m\u{1b}[39m          |          |          |          "
     " \u{1b}[31m   asdasd\u{1b}[39m |          |          |          "
-    "           |          |          |          "
     " \u{1b}[31m\u{1b}[39m          |          |          |          "
     "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
     "           |          | \u{1b}[44mwww\u{1b}[49m      |          "
@@ -211,9 +210,8 @@ test_table!(
     "         0 |      0-0 |      0-1 |      0-2 "
     "       \u{1b}[31masd\u{1b}[39m |      1-0 |      1-1 |      1-2 "
     "  \u{1b}[31m21213123\u{1b}[39m |          |          |          "
-    "           |          |          |          "
+    "          \u{1b}[31m\u{1b}[39m |          |          |          "
     "    \u{1b}[31masdasd\u{1b}[39m |          |          |          "
-    "           |          |          |          "
     "          \u{1b}[31m\u{1b}[39m |          |          |          "
     "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
     "           |          |      \u{1b}[44mwww\u{1b}[49m |          "
@@ -233,9 +231,8 @@ test_table!(
     "         0 |      0-0 |      0-1 |      0-2 "
     " \u{1b}[31masd\u{1b}[39m       |      1-0 |      1-1 |      1-2 "
     " \u{1b}[31m21213123\u{1b}[39m  |          |          |          "
-    "           |          |          |          "
+    " \u{1b}[31m\u{1b}[39m          |          |          |          "
     " \u{1b}[31masdasd\u{1b}[39m    |          |          |          "
-    "           |          |          |          "
     " \u{1b}[31m\u{1b}[39m          |          |          |          "
     "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
     "           |          | \u{1b}[44mwww\u{1b}[49m      |          "
@@ -277,7 +274,7 @@ fn tab_data2() -> Vec<MatrixList<3, true>> {
 #[cfg(feature = "ansi")]
 fn colored_data() -> Vec<MatrixList<3, true>> {
     let mut data = Matrix::list::<3, 3>();
-    data[1][0] = "asd\n21213123\n\n   asdasd\n\n".red().to_string();
-    data[2][2] = "https://\nwww\n.\nredhat\n.com\n/en".on_blue().to_string();
+    data[1][0] = Color::FG_RED.colorize("asd\n21213123\n\n   asdasd\n\n");
+    data[2][2] = Color::BG_BLUE.colorize("https://\nwww\n.\nredhat\n.com\n/en");
     data
 }

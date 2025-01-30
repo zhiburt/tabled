@@ -205,13 +205,6 @@ impl Color {
         Self::new_static("", "")
     }
 
-    const fn new_static(prefix: &'static str, suffix: &'static str) -> Self {
-        let color = StaticColor::new(prefix, suffix);
-        let inner = ColorInner::Static(color);
-
-        Self { inner }
-    }
-
     /// Return a prefix.
     pub fn get_prefix(&self) -> &str {
         match &self.inner {
@@ -270,6 +263,32 @@ impl Color {
                 "\u{1b}[49m",
             )),
         }
+    }
+
+    /// Colorize a string.
+    pub fn colorize<S>(&self, text: S) -> String
+    where
+        S: AsRef<str>,
+    {
+        let mut buf = String::new();
+        for (i, line) in text.as_ref().lines().enumerate() {
+            if i > 0 {
+                buf.push('\n');
+            }
+
+            buf.push_str(self.get_prefix());
+            buf.push_str(line);
+            buf.push_str(self.get_suffix());
+        }
+
+        buf
+    }
+
+    const fn new_static(prefix: &'static str, suffix: &'static str) -> Self {
+        let color = StaticColor::new(prefix, suffix);
+        let inner = ColorInner::Static(color);
+
+        Self { inner }
     }
 }
 
@@ -409,7 +428,7 @@ mod tests {
     use super::*;
 
     #[cfg(feature = "ansi")]
-    use ::{owo_colors::OwoColorize, std::convert::TryFrom};
+    use std::convert::TryFrom;
 
     #[test]
     fn test_xor_operation() {
@@ -435,15 +454,34 @@ mod tests {
     #[test]
     fn test_try_from() {
         assert_eq!(Color::try_from(""), Err(()));
-        assert_eq!(Color::try_from("".red().on_green().to_string()), Err(()));
+        assert_eq!(
+            Color::try_from("\u{1b}[31m\u{1b}[42m\u{1b}[39m\u{1b}[49m"),
+            Err(())
+        );
         assert_eq!(Color::try_from("."), Ok(Color::new("", "")));
         assert_eq!(Color::try_from("...."), Ok(Color::new("", "")));
         assert_eq!(
-            Color::try_from(".".red().on_green().to_string()),
+            Color::try_from(String::from("\u{1b}[31m\u{1b}[42m.\u{1b}[39m\u{1b}[49m")),
             Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
         );
         assert_eq!(
-            Color::try_from("....".red().on_green().to_string()),
+            Color::try_from(String::from("\u{1b}[31m\u{1b}[42m...\u{1b}[39m\u{1b}[49m")),
+            Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
+        );
+        assert_eq!(
+            Color::try_from(String::from(
+                "\u{1b}[31m\u{1b}[42m.\n.\n.\u{1b}[39m\u{1b}[49m"
+            )),
+            Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
+        );
+        assert_eq!(
+            Color::try_from(String::from(
+                "\u{1b}[31m\u{1b}[42m.\n.\n.\n\u{1b}[39m\u{1b}[49m"
+            )),
+            Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
+        );
+        assert_eq!(
+            Color::try_from(String::from("\u{1b}[31m\u{1b}[42m\n\u{1b}[39m\u{1b}[49m")),
             Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
         );
     }

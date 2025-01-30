@@ -8,8 +8,6 @@
 //!
 //! * Note how a unique color can be set for each direction.
 
-use owo_colors::OwoColorize;
-
 use tabled::{
     settings::{
         object::{Columns, Object, Rows, Segment},
@@ -50,9 +48,9 @@ fn main() {
         Fundamental::new("Faraday constant",    'F',    "9.648533289 × 10⁴",    "coulombs per mole"),
     ];
 
-    let pane_color = Color::parse(' '.bg_rgb::<220, 220, 220>().to_string());
-    let border_color = Color::parse(' '.bg_rgb::<200, 200, 220>().bold().to_string());
-    let data_color = Color::parse(' '.bg_rgb::<200, 200, 220>().to_string());
+    let pane_color = Color::rgb_bg(220, 220, 220);
+    let border_color = Color::rgb_bg(200, 200, 220);
+    let data_color = Color::rgb_bg(200, 200, 220);
 
     let header_settings = Modify::new(Rows::first())
         .with(Padding::new(1, 1, 2, 2))
@@ -64,7 +62,9 @@ fn main() {
         ))
         .with(Alignment::center())
         .with(Padding::expand(true))
-        .with(Format::content(|s| s.on_black().white().to_string()));
+        .with(Format::content(|s| {
+            (Color::FG_WHITE | Color::BG_BLACK).colorize(s)
+        }));
 
     let data_settings = Modify::new(Rows::first().inverse())
         .with(Alignment::center())
@@ -72,10 +72,10 @@ fn main() {
         .with(PaddingColor::filled(data_color.clone()));
 
     let symbol_settings = Modify::new(Columns::single(1).not(Rows::first()))
-        .with(Format::content(|s| s.bold().to_string()));
+        .with(Format::content(|s| Color::BOLD.colorize(s)));
 
     let unit_settings = Modify::new(Columns::single(3).not(Rows::first()))
-        .with(Format::content(|s| s.italic().to_string()));
+        .with(Format::content(|s| Color::UNDERLINE.colorize(s)));
 
     let table = Table::new(data)
         .with(Style::rounded())

@@ -9,7 +9,7 @@ use crate::matrix::Matrix;
 use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
-use owo_colors::OwoColorize;
+use tabled::settings::Color;
 
 test_table!(
     formatting_full_test,
@@ -235,11 +235,8 @@ test_table!(
     color_test,
     Matrix::new(3, 3)
         .with(Style::psql())
-        .with(
-            Modify::new(Columns::new(..1).and(Columns::new(2..)))
-                .with(Format::content(|s| s.red().to_string())),
-        )
-        .with(Modify::new(Columns::new(1..2)).with(Format::content(|s| s.blue().to_string()))),
+        .modify(Columns::new(..1).and(Columns::new(2..)), Format::content(|s| Color::FG_RED.colorize(s)))
+        .modify(Columns::new(1..2), Format::content(|s| Color::FG_BLUE.colorize(s))),
     " \u{1b}[31mN\u{1b}[39m | \u{1b}[34mcolumn 0\u{1b}[39m | \u{1b}[31mcolumn 1\u{1b}[39m | \u{1b}[31mcolumn 2\u{1b}[39m "
     "---+----------+----------+----------"
     " \u{1b}[31m0\u{1b}[39m |   \u{1b}[34m0-0\u{1b}[39m    |   \u{1b}[31m0-1\u{1b}[39m    |   \u{1b}[31m0-2\u{1b}[39m    "
@@ -255,9 +252,9 @@ test_table!(
         .insert((3, 2).into(), "Red\nHat")
         .insert((3, 3).into(), "https://\nwww\n.\nredhat\n.com\n/en")
         .with(Style::psql())
-        .with(Modify::new(Columns::new(..1)).with(Format::content(|s| s.red().to_string()).multiline()))
-        .with(Modify::new(Columns::new(1..2)).with(Format::content(|s| s.blue().to_string()).multiline()))
-        .with(Modify::new(Columns::new(2..)).with(Format::content(|s| s.green().to_string()).multiline())),
+        .modify(Columns::new(..1), Format::content(|s| Color::FG_RED.colorize(s)).multiline())
+        .modify(Columns::new(1..2), Format::content(|s| Color::FG_BLUE.colorize(s)).multiline())
+        .modify(Columns::new(2..), Format::content(|s| Color::FG_GREEN.colorize(s)).multiline()),
     " \u{1b}[31mN\u{1b}[39m | \u{1b}[34mcolumn 0\u{1b}[39m | \u{1b}[32mcolumn 1\u{1b}[39m | \u{1b}[32mcolumn 2\u{1b}[39m "
     "---+----------+----------+----------\n \u{1b}[31m0\u{1b}[39m |   \u{1b}[34m0-0\u{1b}[39m    |   \u{1b}[32m0-1\u{1b}[39m    |   \u{1b}[32m0-2\u{1b}[39m    "
     " \u{1b}[31m1\u{1b}[39m |   \u{1b}[34m1-0\u{1b}[39m    |   \u{1b}[32mE\u{1b}[39m      |   \u{1b}[32m1-2\u{1b}[39m    "

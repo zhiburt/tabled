@@ -15,10 +15,10 @@ use crate::matrix::Matrix;
 use testing_table::{assert_width, static_table, test_table};
 
 #[cfg(feature = "ansi")]
-use ::{ansi_str::AnsiStr, owo_colors::OwoColorize, tabled::settings::style::HorizontalLine};
-
-#[cfg(all(feature = "derive", feature = "ansi"))]
-use ::owo_colors::AnsiColors;
+use ::{
+    ansi_str::AnsiStr,
+    tabled::settings::{style::HorizontalLine, Color},
+};
 
 test_table!(
     max_width,
@@ -206,7 +206,7 @@ test_table!(
 test_table!(
     max_width_wrapped_keep_words_color_0,
     {
-        let table = Matrix::iter(vec!["this is a long sentence".on_black().green().to_string()])
+        let table = Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long sentence")])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
@@ -223,7 +223,7 @@ test_table!(
 #[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_0_1,
-    Matrix::iter(vec!["this is a long sentence".on_black().green().to_string()])
+    Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long sentence")])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
@@ -237,7 +237,7 @@ test_table!(
 test_table!(
     max_width_wrapped_keep_words_color_1,
     {
-        let table = Matrix::iter(vec!["this is a long  sentence".on_black().green().to_string()])
+        let table = Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long  sentence")])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
@@ -254,7 +254,7 @@ test_table!(
 #[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_1_1,
-    Matrix::iter(vec!["this is a long  sentence".on_black().green().to_string()])
+    Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long  sentence")])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
@@ -268,7 +268,7 @@ test_table!(
 test_table!(
     max_width_wrapped_keep_words_color_2,
     {
-        let table = Matrix::iter(vec!["this is a long   sentence".on_black().green().to_string()])
+        let table = Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long   sentence")])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
@@ -285,7 +285,7 @@ test_table!(
 #[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_2_1,
-    Matrix::iter(vec!["this is a long   sentence".on_black().green().to_string()])
+    Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long   sentence")])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
@@ -299,7 +299,7 @@ test_table!(
 test_table!(
     max_width_wrapped_keep_words_color_3,
     {
-        let table = Matrix::iter(vec!["this is a long    sentence".on_black().green().to_string()])
+        let table = Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long    sentence")])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
@@ -316,7 +316,7 @@ test_table!(
 #[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_3_1,
-    Matrix::iter(vec!["this is a long    sentence".on_black().green().to_string()])
+    Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long    sentence")])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
@@ -330,7 +330,7 @@ test_table!(
 test_table!(
     max_width_wrapped_keep_words_color_4,
     {
-        let table = Matrix::iter(vec!["this".on_black().green().to_string()])
+        let table = Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this")])
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true)))
             .to_string();
@@ -345,12 +345,12 @@ test_table!(
 #[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_color_4_1,
-    Matrix::iter(vec!["this".on_black().green().to_string()])
+    Matrix::iter(vec![(Color::BG_BLACK | Color::FG_GREEN).colorize("this")])
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words(true))),
     "| String |"
     "|--------|"
-    "|  \u{1b}[32;40mthis\u{1b}[0m  |"
+    "|  \u{1b}[40m\u{1b}[32mthis\u{1b}[49m\u{1b}[39m  |"
 );
 
 test_table!(
@@ -369,10 +369,9 @@ test_table!(
 #[cfg(feature = "ansi")]
 #[test]
 fn max_width_wrapped_keep_words_long_word_color() {
-    let data = vec!["this is a long sentencesentencesentence"
-        .on_black()
-        .green()
-        .to_string()];
+    let data = vec![
+        (Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long sentencesentencesentence")
+    ];
     let table = Matrix::iter(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
@@ -477,9 +476,9 @@ fn max_width_keep_words_1() {
 #[test]
 fn max_width_wrapped_collored() {
     let data = &[
-        "asd".red().to_string(),
-        "zxc2".blue().to_string(),
-        "asdasd".on_black().green().to_string(),
+        Color::FG_RED.colorize("asd"),
+        Color::FG_BLUE.colorize("zxc2"),
+        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
     ];
 
     let table = Matrix::iter(data)
@@ -537,9 +536,9 @@ fn max_width_with_emoji() {
 #[test]
 fn color_chars_are_stripped() {
     let data = &[
-        "asd".red().to_string(),
-        "zxc".blue().to_string(),
-        "asdasd".on_black().green().to_string(),
+        Color::FG_RED.colorize("asd"),
+        Color::FG_BLUE.colorize("zxc"),
+        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
     ];
 
     let table = Matrix::iter(data)
@@ -560,7 +559,7 @@ fn color_chars_are_stripped() {
 
     assert_eq!(
         table,
-        "| S... |\n|------|\n| \u{1b}[31masd\u{1b}[39m  |\n| \u{1b}[34mzxc\u{1b}[39m  |\n| \u{1b}[32;40ma\u{1b}[39m\u{1b}[49m... |",
+        "| S... |\n|------|\n| \u{1b}[31masd\u{1b}[39m  |\n| \u{1b}[34mzxc\u{1b}[39m  |\n| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m... |",
     );
 }
 
@@ -803,9 +802,9 @@ fn min_with_max_width_truncate_suffix_limit_ignore() {
 #[test]
 fn min_with_max_width_truncate_suffix_try_color() {
     let data = &[
-        "asd".red().to_string(),
-        "zxc".blue().to_string(),
-        "asdasd".on_black().green().to_string(),
+        Color::FG_RED.colorize("asd"),
+        Color::FG_BLUE.colorize("zxc2"),
+        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
     ];
 
     let table = Matrix::iter(data)
@@ -819,8 +818,8 @@ fn min_with_max_width_truncate_suffix_try_color() {
             "| S.. |"
             "|-----|"
             "| \u{1b}[31masd\u{1b}[39m |"
-            "| \u{1b}[34mzxc\u{1b}[39m |"
-            "| \u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m..\u{1b}[39m\u{1b}[49m |"
+            "| \u{1b}[34mz\u{1b}[39m\u{1b}[34m..\u{1b}[39m |"
+            "| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m..\u{1b}[39m\u{1b}[49m |"
         )
     );
 }
@@ -829,9 +828,9 @@ fn min_with_max_width_truncate_suffix_try_color() {
 #[test]
 fn min_width_color() {
     let data = &[
-        "asd".red().to_string(),
-        "zxc".blue().to_string(),
-        "asdasd".on_black().green().to_string(),
+        Color::FG_RED.colorize("asd"),
+        Color::FG_BLUE.colorize("zxc"),
+        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
     ];
 
     let table = Matrix::iter(data)
@@ -852,7 +851,7 @@ fn min_width_color() {
 
     assert_eq!(
         table,
-        "| String     |\n|------------|\n| \u{1b}[31masd\u{1b}[39m        |\n| \u{1b}[34mzxc\u{1b}[39m        |\n| \u{1b}[32;40masdasd\u{1b}[0m     |",
+        "| String     |\n|------------|\n| \u{1b}[31masd\u{1b}[39m        |\n| \u{1b}[34mzxc\u{1b}[39m        |\n| \u{1b}[32m\u{1b}[40masdasd\u{1b}[39m\u{1b}[49m     |",
     );
 }
 
@@ -860,9 +859,9 @@ fn min_width_color() {
 #[test]
 fn min_width_color_with_smaller_then_width() {
     let data = &[
-        "asd".red().to_string(),
-        "zxc".blue().to_string(),
-        "asdasd".on_black().green().to_string(),
+        Color::FG_RED.colorize("asd"),
+        Color::FG_BLUE.colorize("zxc2"),
+        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
     ];
 
     assert_eq!(
@@ -2615,6 +2614,8 @@ mod derived {
     #[cfg(feature = "ansi")]
     #[test]
     fn wrapping_as_total_multiline_color() {
+        use testing_table::assert_table;
+
         #[derive(Tabled)]
         struct D(
             #[tabled(rename = "version")] String,
@@ -2625,34 +2626,28 @@ mod derived {
 
         let data = vec![
             D(
-                "0.2.1".red().to_string(),
-                "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+                Color::FG_RED.colorize("0.2.1"),
+                (Color::FG_RED | Color::rgb_bg(8, 10, 30)).colorize("2021-06-23"),
                 "true".to_string(),
-                "#[header(inline)] attribute"
-                    .blue()
-                    .on_color(AnsiColors::Green)
-                    .to_string(),
+                (Color::FG_BLUE | Color::BG_GREEN).colorize("#[header(inline)] attribute"),
             ),
             D(
-                "0.2.0".red().to_string(),
-                "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+                Color::FG_RED.colorize("0.2.0"),
+                (Color::FG_GREEN | Color::rgb_bg(8, 100, 30)).colorize("2021-06-19"),
                 "false".to_string(),
-                "API changes".yellow().to_string(),
+                Color::FG_YELLOW.colorize("API changes"),
             ),
             D(
-                "0.1.4".white().to_string(),
-                "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+                Color::FG_WHITE.colorize("0.1.4"),
+                (Color::FG_RED | Color::rgb_bg(8, 10, 30)).colorize("2021-06-07"),
                 "false".to_string(),
-                "display_with attribute"
-                    .red()
-                    .on_color(AnsiColors::Black)
-                    .to_string(),
+                (Color::FG_RED | Color::BG_BLACK).colorize("display_with attribute"),
             ),
         ];
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Alignment::left())
             .with(Width::wrap(57))
             .to_string();
 
@@ -2663,11 +2658,11 @@ mod derived {
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
                 "|-----|-------------|--------|--------------------------|"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |"
+                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |"
                 "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
+                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
                 "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |"
-                "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
+                "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |"
                 "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
             )
         );
@@ -2679,20 +2674,18 @@ mod derived {
             .with(Width::wrap(57).keep_words(true))
             .to_string();
 
-        assert_eq!(
+        assert_table!(
             table,
-            static_table!(
-                "| ver | published_d | is_act | major_feature            |"
-                "| sio | ate         | ive    |                          |"
-                "| n   |             |        |                          |"
-                "|-----|-------------|--------|--------------------------|"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |"
-                "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattribute\u{1b}[39m\u{1b}[49m                |"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
-                "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |"
-                "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
-                "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
-            )
+            "| ver | published_d | is_act | major_feature            |"
+            "| sio | ate         | ive    |                          |"
+            "| n   |             |        |                          |"
+            "|-----|-------------|--------|--------------------------|"
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |"
+            "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattribute\u{1b}[39m\u{1b}[49m                |"
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
+            "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |"
+            "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |"
+            "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
         );
         assert_eq!(get_text_width(&table), 57);
     }
@@ -2710,28 +2703,22 @@ mod derived {
 
         let data = vec![
             D(
-                "0.2.1".red().to_string(),
-                "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+                Color::FG_RED.colorize("0.2.1"),
+                (Color::FG_RED | Color::rgb_bg(8, 10, 30)).colorize("2021-06-23"),
                 "true".to_string(),
-                "#[header(inline)] attribute"
-                    .blue()
-                    .on_color(AnsiColors::Green)
-                    .to_string(),
+                (Color::FG_BLUE | Color::BG_GREEN).colorize("#[header(inline)] attribute"),
             ),
             D(
-                "0.2.0".red().to_string(),
-                "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+                Color::FG_RED.colorize("0.2.0"),
+                (Color::FG_GREEN | Color::rgb_bg(8, 100, 30)).colorize("2021-06-19"),
                 "false".to_string(),
-                "API changes".yellow().to_string(),
+                Color::FG_YELLOW.colorize("API changes"),
             ),
             D(
-                "0.1.4".white().to_string(),
-                "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+                Color::FG_WHITE.colorize("0.1.4"),
+                (Color::FG_RED | Color::rgb_bg(8, 10, 30)).colorize("2021-06-07"),
                 "false".to_string(),
-                "display_with attribute"
-                    .red()
-                    .on_color(AnsiColors::Black)
-                    .to_string(),
+                (Color::FG_RED | Color::BG_BLACK).colorize("display_with attribute"),
             ),
         ];
 
@@ -2754,7 +2741,7 @@ mod derived {
 
         assert_eq!(
             table,
-            "| ver | published_d | is_act | major_feature            |\n|-----|-------------|--------|--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
+            "| ver | published_d | is_act | major_feature            |\n|-----|-------------|--------|--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |"
         );
         assert_eq!(get_text_width(&table), 57);
     }
@@ -2853,8 +2840,6 @@ mod derived {
     #[cfg(feature = "ansi")]
     #[test]
     fn hyperlinks_with_color() {
-        use owo_colors::OwoColorize;
-
         #[derive(Tabled)]
         struct Distribution {
             name: String,
@@ -2875,10 +2860,8 @@ mod derived {
                 .to_string()
         };
 
-        let text = format_osc8_hyperlink(
-            "https://www.debian.org/",
-            "Debian".red().to_string().as_str(),
-        );
+        let text =
+            format_osc8_hyperlink("https://www.debian.org/", &Color::FG_RED.colorize("Debian"));
         assert_eq!(
             table(&text),
             static_table!(

@@ -85,9 +85,6 @@ pub fn wrap(c: &mut Criterion) {
 }
 
 fn build_string(size: usize) -> String {
-    use owo_colors::OwoColorize;
-    use std::fmt::Write;
-
     let mut buf = String::new();
     for i in 0..size {
         writeln!(buf, "{}", i.red().on_bright_purple()).unwrap();
@@ -97,9 +94,6 @@ fn build_string(size: usize) -> String {
 }
 
 fn build_string_multiline(size: usize) -> String {
-    use owo_colors::OwoColorize;
-    use std::fmt::Write;
-
     let mut buf = String::new();
     for i in 0..size {
         writeln!(buf, "{}\n", i.red().on_bright_purple()).unwrap();

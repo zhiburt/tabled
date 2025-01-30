@@ -1,12 +1,12 @@
 #![cfg(feature = "std")]
 
-#[cfg(feature = "ansi")]
-use owo_colors::{AnsiColors, OwoColorize};
-
 use tabled::{tables::ExtendedTable, Tabled};
 
 use crate::matrix::Matrix;
 use testing_table::{static_table, test_table};
+
+#[cfg(feature = "ansi")]
+use tabled::settings::Color;
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {
@@ -407,15 +407,9 @@ test_table!(
 #[test]
 fn display_colored() {
     let mut data = Matrix::list::<3, 3>();
-    data[0][2] = "https://getfedora.org/"
-        .red()
-        .on_color(AnsiColors::Blue)
-        .to_string();
-    data[1][2] = "https://www.opensuse.org/"
-        .green()
-        .on_color(AnsiColors::Black)
-        .to_string();
-    data[2][2] = "https://endeavouros.com/".blue().underline().to_string();
+    data[0][2] = String::from("\u{1b}[31;44mhttps://getfedora.org/\u{1b}[0m");
+    data[1][2] = String::from("\u{1b}[32;40mhttps://www.opensuse.org/\u{1b}[0m");
+    data[2][2] = String::from("\u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[39m\u{1b}[0m");
 
     assert_expanded_display!(
         data,
@@ -443,11 +437,8 @@ fn display_colored() {
 #[test]
 fn display_with_truncate_colored() {
     let mut data = Matrix::list::<2, 3>();
-    data[0][2] = "https://getfedora.org/".red().to_string();
-    data[1][1] = "https://endeavouros.com/"
-        .white()
-        .on_color(AnsiColors::Black)
-        .to_string();
+    data[0][2] = Color::FG_RED.colorize("https://getfedora.org/");
+    data[1][1] = (Color::FG_WHITE | Color::BG_BLACK).colorize("https://endeavouros.com/");
     data[1][2] = "https://www.opensuse.org/".to_string();
 
     let mut table = ExtendedTable::new(&data);

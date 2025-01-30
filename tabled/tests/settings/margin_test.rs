@@ -6,7 +6,7 @@ use crate::matrix::Matrix;
 use testing_table::{assert_table, assert_width, test_table};
 
 #[cfg(feature = "ansi")]
-use ::{owo_colors::OwoColorize, std::convert::TryFrom, tabled::settings::Color};
+use tabled::settings::Color;
 
 test_table!(
     margin_with_table_based_on_grid_borders,
@@ -167,22 +167,22 @@ fn margin_color_test() {
         .with(Style::psql())
         .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
         .with(MarginColor::new(
-            Color::try_from(" ".red().bold().to_string()).unwrap(),
-            Color::try_from(" ".green().to_string()).unwrap(),
-            Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
-            Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),
+            Color::FG_RED | Color::BOLD,
+            Color::FG_GREEN,
+            Color::FG_RED | Color::BG_BLUE | Color::BOLD,
+            Color::FG_BLUE | Color::BG_YELLOW,
         ))
         .to_string();
 
     assert_table!(
         table,
-        "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
-        "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
-        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m N | column 0 | column 1 | column 2 \u{1b}[32m<<\u{1b}[39m"
-        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m---+----------+----------+----------\u{1b}[32m<<\u{1b}[39m"
-        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 0 |   0-0    |   0-1    |   0-2    \u{1b}[32m<<\u{1b}[39m"
-        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 1 |   1-0    |   1-1    |   1-2    \u{1b}[32m<<\u{1b}[39m"
-        "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 2 |   2-0    |   2-1    |   2-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[31m\u{1b}[44m\u{1b}[1mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[39m\u{1b}[49m\u{1b}[22m"
+        "\u{1b}[31m\u{1b}[44m\u{1b}[1mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[39m\u{1b}[49m\u{1b}[22m"
+        "\u{1b}[31m\u{1b}[1m>>\u{1b}[39m\u{1b}[22m N | column 0 | column 1 | column 2 \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[31m\u{1b}[1m>>\u{1b}[39m\u{1b}[22m---+----------+----------+----------\u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[31m\u{1b}[1m>>\u{1b}[39m\u{1b}[22m 0 |   0-0    |   0-1    |   0-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[31m\u{1b}[1m>>\u{1b}[39m\u{1b}[22m 1 |   1-0    |   1-1    |   1-2    \u{1b}[32m<<\u{1b}[39m"
+        "\u{1b}[31m\u{1b}[1m>>\u{1b}[39m\u{1b}[22m 2 |   2-0    |   2-1    |   2-2    \u{1b}[32m<<\u{1b}[39m"
         "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
         "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
     );

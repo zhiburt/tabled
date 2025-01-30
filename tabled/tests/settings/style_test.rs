@@ -20,9 +20,6 @@ use tabled::{
 use crate::matrix::Matrix;
 use testing_table::{static_table, test_table};
 
-#[cfg(feature = "ansi")]
-use ::{owo_colors::OwoColorize, std::convert::TryFrom};
-
 test_table!(
     default_style,
     Matrix::new(3, 3).with(Style::ascii()),
@@ -407,8 +404,8 @@ test_table!(
     Matrix::table(2, 2)
         .with(LineText::new("-Table", Rows::single(1)))
         .with(LineText::new("-Table213123", Rows::single(2)))
-        .with(Modify::new(Rows::single(1)).with(BorderColor::new().bottom(Color::FG_RED)))
-        .with(Modify::new(Rows::single(2)).with(BorderColor::new().bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
+        .modify(Rows::single(1), BorderColor::new().bottom(Color::FG_RED))
+        .modify(Rows::single(2), BorderColor::new().bottom(Color::FG_BLUE | Color::BG_GREEN)),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "-Table---------+----------+"
@@ -2126,14 +2123,11 @@ fn test_default_border_usage() {
 fn border_colored_test() {
     let table = Matrix::table(2, 2)
         .with(Style::ascii())
-        .with(
-            Modify::new(Rows::single(1))
-                .with(
-                    BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
-                )
-                .with(Border::filled('*').top('#')),
+        .modify(
+            Rows::single(1),
+            BorderColor::filled(Color::FG_BLUE).top(Color::rgb_fg(12, 220, 100)),
         )
+        .modify(Rows::single(1), Border::filled('*').top('#'))
         .to_string();
 
     assert_eq!(
@@ -2164,14 +2158,11 @@ fn border_colored_test() {
 
     let table = Matrix::table(2, 2)
         .with(Style::empty())
-        .with(
-            Modify::new(Rows::single(1))
-                .with(
-                    BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
-                )
-                .with(Border::filled('*').top('#')),
+        .modify(
+            Rows::single(1),
+            BorderColor::filled(Color::FG_BLUE).top(Color::rgb_fg(12, 220, 100)),
         )
+        .modify(Rows::single(1), Border::filled('*').top('#'))
         .to_string();
 
     assert_eq!(
@@ -2206,7 +2197,7 @@ fn style_with_color_test() {
     style.set_colors_top(Color::FG_BLUE);
     style.set_colors_bottom(Color::FG_BLUE);
     style.set_colors_vertical(Color::FG_YELLOW);
-    style.set_colors_intersection(Color::try_from(' '.purple().to_string()).unwrap());
+    style.set_colors_intersection(Color::FG_MAGENTA);
 
     let table = Matrix::new(3, 3).with(style).to_string();
 

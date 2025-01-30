@@ -172,11 +172,16 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn colored_string_width_test() {
-        use owo_colors::OwoColorize;
-        assert_eq!(get_line_width(&"hello world".red().to_string()), 11);
-        assert_eq!(get_text_width(&"hello\nworld".blue().to_string()), 5);
+        assert_eq!(get_line_width("\u{1b}[34mhello world\u{1b}[0m"), 11);
+        assert_eq!(
+            get_text_width("\u{1b}[34mhello\u{1b}[0m\n\u{1b}[34mworld\u{1b}[0m",),
+            5
+        );
         assert_eq!(get_line_width("\u{1b}[34m0\u{1b}[0m"), 1);
-        assert_eq!(get_line_width(&"0".red().to_string()), 1);
+        assert_eq!(
+            get_line_width("\u{1b}[34m\u{1b}[34m\u{1b}[34m0\u{1b}[0m"),
+            1
+        );
     }
 
     #[test]

@@ -1,12 +1,12 @@
 #![cfg(feature = "std")]
 
 use papergrid::config::{pos, AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
-
-use crate::util::grid;
 use testing_table::test_table;
 
+use crate::util::grid;
+
 #[cfg(feature = "ansi")]
-use ::{owo_colors::OwoColorize, papergrid::ansi::ANSIBuf, std::convert::TryFrom};
+use ::{papergrid::ansi::ANSIBuf, std::convert::TryFrom};
 
 test_table!(
     grid_2x2_custom_frame_test,
@@ -283,25 +283,25 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             (0..2).for_each(|r| (0..2).for_each(|c| {
-                let top = ANSIBuf::try_from(" ".green().on_red().to_string()).unwrap();
-                let bottom = ANSIBuf::try_from(" ".on_green().blue().to_string()).unwrap();
-                let left = ANSIBuf::try_from(" ".on_red().white().to_string()).unwrap();
-                let right = ANSIBuf::try_from(" ".on_red().green().to_string()).unwrap();
-                let tl = ANSIBuf::try_from(" ".magenta().to_string()).unwrap();
-                let tr = ANSIBuf::try_from(" ".on_blue().to_string()).unwrap();
-                let bl = ANSIBuf::try_from(" ".yellow().to_string()).unwrap();
-                let br = ANSIBuf::try_from(" ".on_yellow().to_string()).unwrap();
+                let border = Border::full('*', '#', '~', '!', '@', '$', '%', '^');
+                let color = Border::full(
+                    ANSIBuf::new("\u{1b}[32m\u{1b}[41m", "\u{1b}[39m\u{1b}[49m"),
+                    ANSIBuf::new("\u{1b}[34m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"),
+                    ANSIBuf::new("\u{1b}[37m\u{1b}[41m", "\u{1b}[39m\u{1b}[49m"),
+                    ANSIBuf::new("\u{1b}[37m\u{1b}[41m", "\u{1b}[39m\u{1b}[49m"),
+                    ANSIBuf::new("\u{1b}[35m", "\u{1b}[39m"),
+                    ANSIBuf::new("\u{1b}[44m", "\u{1b}[49m"),
+                    ANSIBuf::new("\u{1b}[33m", "\u{1b}[39m"),
+                    ANSIBuf::new("\u{1b}[43m", "\u{1b}[49m"),
+                );
 
-                cfg.set_border((r, c).into(), Border::full('*', '#', '~', '!', '@', '$', '%', '^'));
-                cfg.set_border_color((r, c).into(), Border::full(top, bottom, left, right, tl, tr, bl, br));
+                let pos = (r, c).into();
+                cfg.set_border(pos, border);
+                cfg.set_border_color(pos, color);
             }))
         })
         .build(),
-    "\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[44m$\u{1b}[49m"
-    "\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m0-0\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m0-1\u{1b}[32m\u{1b}[41m!\u{1b}[39m\u{1b}[49m"
-    "\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[44m$\u{1b}[49m"
-    "\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m1-0\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m1-1\u{1b}[32m\u{1b}[41m!\u{1b}[39m\u{1b}[49m"
-    "\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[43m^\u{1b}[49m"
+    "\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[44m$\u{1b}[49m\n\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m0-0\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m0-1\u{1b}[37m\u{1b}[41m!\u{1b}[39m\u{1b}[49m\n\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[35m@\u{1b}[39m\u{1b}[32m\u{1b}[41m***\u{1b}[39m\u{1b}[49m\u{1b}[44m$\u{1b}[49m\n\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m1-0\u{1b}[37m\u{1b}[41m~\u{1b}[39m\u{1b}[49m1-1\u{1b}[37m\u{1b}[41m!\u{1b}[39m\u{1b}[49m\n\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[33m%\u{1b}[39m\u{1b}[34m\u{1b}[42m###\u{1b}[39m\u{1b}[49m\u{1b}[43m^\u{1b}[49m"
 );
 
 #[cfg(feature = "ansi")]
@@ -309,7 +309,7 @@ test_table!(
     grid_2x2_ansi_global_set_test,
     grid(2, 2)
         .config(|cfg| {
-            let color = " ".on_blue().red().bold().to_string();
+            let color = "\u{1b}[1m\u{1b}[31m\u{1b}[44m \u{1b}[0m";
             cfg.set_border_color_default(ANSIBuf::try_from(color).unwrap());
         })
         .build(),
@@ -325,10 +325,16 @@ test_table!(
 fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
     assert!(ANSIBuf::try_from("12").is_ok());
     assert!(ANSIBuf::try_from("123").is_ok());
+    assert!(ANSIBuf::try_from("1\n2").is_ok());
+    assert!(ANSIBuf::try_from("1\n2\n").is_ok());
+    assert!(ANSIBuf::try_from("\n1\n2").is_ok());
+    assert!(ANSIBuf::try_from("\n1\n2\n").is_ok());
     assert!(ANSIBuf::try_from("").is_err());
 
-    assert!(ANSIBuf::try_from("1").is_ok());
-    assert!(ANSIBuf::try_from("1".on_red().to_string()).is_ok());
-    assert!(ANSIBuf::try_from("1".on_red().blue().to_string()).is_ok());
-    assert!(ANSIBuf::try_from("1".truecolor(0, 1, 3).on_truecolor(1, 2, 3).to_string()).is_ok());
+    assert!(
+        ANSIBuf::try_from("\u{1b}[1m\u{1b}[31m\u{1b}[44m1\u{1b}[22m\u{1b}[39m\u{1b}[49m").is_ok()
+    );
+    assert!(ANSIBuf::try_from("\u{1b}[1m\u{1b}[31m\u{1b}[44m1\u{1b}[0m").is_ok());
+    assert!(ANSIBuf::try_from("\u{1b}[1;31;44m1\u{1b}[22m\u{1b}[39m\u{1b}[49m").is_ok());
+    assert!(ANSIBuf::try_from("\u{1b}[1;31;44m1\u{1b}[0m").is_ok());
 }
