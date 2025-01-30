@@ -7,14 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [0.18.0] - 2025-30-01
+## [0.18.0] - 2025-31-01
 
 ### Added
 
 - Added `Table::kv` - a new type of table layout.
 - Added new `Span` logic with negative and 0 spans.
 - Added `LineText::align` to stick text on border to specific location.
-- Added `LayoutIterator` to navigate Table::kv easier.
+- Added `LayoutIterator` to navigate `Table::kv` easier.
+- Added `Tabled` implementation for `Option<T>`.
 
 ### Changed
 
