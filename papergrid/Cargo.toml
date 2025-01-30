@@ -16,8 +16,8 @@ ansi = ["ansi-str", "ansitok"]
 unicode-width = "0.2"
 bytecount = "0.6"
 fnv = "1.0"
-ansi-str = { version = "0.8", optional = true }
-ansitok = { version = "0.2", optional = true  }
+ansi-str = { version = "0.9", optional = true }
+ansitok = { version = "0.3", optional = true  }
 
 [dev-dependencies]
 testing_table = { version = "0.2", features = ["ansi"] }
