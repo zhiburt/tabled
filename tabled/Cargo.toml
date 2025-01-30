@@ -69,6 +69,11 @@ path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
+name = "derive_display_with_option"
+path = "examples/derive/display_with_option.rs"
+required-features = ["derive"]
+
+[[example]]
 name = "derive_crate_override"
 path = "examples/derive/crate_override.rs"
 required-features = ["derive"]

@@ -12,6 +12,7 @@ pub struct TypeAttributes {
     pub inline: bool,
     pub inline_value: Option<String>,
     pub crate_name: Option<String>,
+    pub display_option_with: Option<String>,
 }
 
 impl TypeAttributes {
@@ -52,6 +53,9 @@ impl TypeAttributes {
             }
             TypeAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
+            }
+            TypeAttrKind::DisplayOptionWith(func) => {
+                self.display_option_with = Some(func.value());
             }
         }
 

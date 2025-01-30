@@ -29,6 +29,7 @@ pub enum TypeAttrKind {
     Inline(LitBool, Option<LitStr>),
     RenameAll(LitStr),
     Crate(LitStr),
+    DisplayOptionWith(LitStr),
 }
 
 impl Parse for TypeAttr {
@@ -52,8 +53,10 @@ impl Parse for TypeAttr {
             if input.peek(LitStr) {
                 let lit = input.parse::<LitStr>()?;
 
-                if let "rename_all" = name_str.as_str() {
-                    return Ok(Self::new(RenameAll(lit)));
+                match name_str.as_str() {
+                    "rename_all" => return Ok(Self::new(RenameAll(lit))),
+                    "display_option_with" => return Ok(Self::new(DisplayOptionWith(lit))),
+                    _ => {}
                 }
             }
 
