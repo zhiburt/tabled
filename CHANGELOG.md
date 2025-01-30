@@ -6,7 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-- Migrated syn to 2.0 (By [@wyatt-herkamp](https://github.com/wyatt-herkamp))
+
+## [0.18.0] - 2025-30-01
+
+### Added
+
+- Added `Table::kv` - a new type of table layout.
+- Added new `Span` logic with negative and 0 spans.
+- Added `LineText::align` to stick text on border to specific location.
+- Added `LayoutIterator` to navigate Table::kv easier.
+
+### Changed
+
+- Changed MSRV to the 1.83.
+- Removed owo-colors dependency.
+- Migrated owo-colors to 3.5 (by [@joshtriplett](https://github.com/joshtriplett)).
+- Migrated heck to 0.5 (by [@marxin](https://github.com/marxin)).
+- Migrated syn to 2.0 (By [@wyatt-herkamp](https://github.com/wyatt-herkamp)).
+
+### Fixed
+
+- Fixed `clippy` issues (by [@joshtriplett](https://github.com/joshtriplett)).
+
 ## [0.17.0] - 2024-23-11
 
 ### Added
