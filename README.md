@@ -86,6 +86,7 @@ you can find more examples in the **[examples](/tabled/examples/)** folder.
   - [`CompactTable`](#compacttable)
   - [`PoolTable`](#pooltable)
   - [`ExtendedTable`](#extendedtable)
+  - [`Table::kv`](#tablekv)
 - [Tips and Tricks](#tips-and-tricks)
   - [`std::fmt::*` options](#std::fmt::*-options)
   - [Tuple combination](#tuple-combination)
@@ -474,6 +475,28 @@ use tabled::settings::object::Rows;
 
 let mut table = Table::new(["Hello World"]);
 table.with(LineText::new(".table", Rows::first()).offset(2));
+
+assert_eq!(
+    table.to_string(),
+    "+-.table------+\n\
+     | &str        |\n\
+     +-------------+\n\
+     | Hello World |\n\
+     +-------------+"
+);
+```
+
+You can as well stick the text to a particular side using `Alignment`.
+
+```rust
+use tabled::settings::object::Rows;
+use tabled::{
+    settings::{style::LineText, Alignment},
+    Table,
+};
+
+let mut table = Table::new(["Hello World"]);
+table.with(LineText::new("TABLE NAME", Rows::first()).align(Alignment::center()));
 
 assert_eq!(
     table.to_string(),
@@ -1331,7 +1354,7 @@ let data = vec![["A", "B", "C"], ["D", "E", "F"]];
 
 let mut table = Table::new(data);
 table
-    .modify((0, 0), Span::column(3))
+    .modify((0, 0), Span::column(0))
     .modify((1, 0), Span::column(2))
     .with(Alignment::center());
 
@@ -1662,20 +1685,141 @@ Below you'll find a short list of existing ones. You can find descriptive inform
 Main table of the library.
 It's implemenentation requires that all data be stored on heap.
 
+No example is provided.
+Cause it must be somewhat apparent how to use it by now :).
+
 ### `IterTable`
 
-It's similar to main `Table`, it's only difference is that it does not require a the whole buffer.
-It only requires a buffer for 1 row at a time.
+It's similar to main `Table`, it's only difference is that it does not buffer data.\
+It only requires a buffer for 1 row at a time.\
+It's configuration is quite different to original table,\
+difference is focused on controll how many passes and memory allocation.
 
-It might be useful when you can't fit all your data in memory.
+It might be handy when you can't fit all your data in memory.
+
+Here's an example.
+
+```rust
+use std::borrow::Cow;
+use tabled::{settings::Style, tables::IterTable};
+    
+struct Language<'a> {
+    name: &'a str,
+    designed_by: &'a str,
+    year: usize,
+}
+    
+let languages = vec![
+    Language { name: "C", designed_by: "Dennis Ritchie", year: 1972 },
+    Language { name: "Go", designed_by: "Rob Pike", year: 2009 },
+    Language { name: "Rust", designed_by: "Graydon Hoare", year: 2010 },
+];
+    
+let iter = languages.iter().rev().map(|l| {
+    [
+        Cow::Borrowed(l.name),
+        Cow::Borrowed(l.designed_by),
+        Cow::Owned(l.year.to_string()),
+    ]
+});
+
+let head = [
+    Cow::Borrowed("lang"),
+    Cow::Borrowed("inventor"),
+    Cow::Borrowed("published year"),
+];
+let iter = std::iter::once(head).chain(iter);
+
+let table = IterTable::new(iter)
+    .sniff(2)
+    .with(Style::modern().remove_horizontal());
+    
+let output = table.to_string();
+    
+println!("{output}");
+```
+
+And the result.
+
+Notice that "Dennis Ritchie" name got truncated,\
+it's because we used only 2 rows for layout estimation.\
+No more additinal passes will be done.\
+But these 2 rows will be buffered because we can't do 2nd pass over already seen rows.
+
+```text
+┌──────┬───────────────┬────────────────┐
+│ lang │ inventor      │ published year │
+│ Rust │ Graydon Hoare │ 2010           │
+│ Go   │ Rob Pike      │ 2009           │
+│ C    │ Dennis Ritchi │ 1972           │
+└──────┴───────────────┴────────────────┘
+```
 
 ### `CompactTable`
 
-Similar to `IterTable` but it might not require any buffer.
-It also has capability for a sniffing logic, where we estimate data dimension on a small selection of data.
+Similar to `IterTable` but it does not use any buffer.\
+So we don't do any allocations with this type of table.\
+But we pay for it with a limited configuration and a nessasity to estimate column width on your own.
 
 It might be useful in a very constrain environments.
 It is the only table which supports `no-std`.
+
+Here's an example.\
+It's very simmilar to the previous one.\
+But notice that we set width manually.
+
+```rust
+use std::borrow::Cow;
+use tabled::settings::Style;
+use tabled::tables::CompactTable;
+    
+struct Language<'a> {
+    name: &'a str,
+    designed_by: &'a str,
+    year: usize,
+}
+    
+let languages = vec![
+    Language { name: "C", designed_by: "Dennis Ritchie", year: 1972 },
+    Language { name: "Go", designed_by: "Rob Pike", year: 2009 },
+    Language { name: "Rust", designed_by: "Graydon Hoare", year: 2010 },
+];
+    
+let iter = languages.iter().rev().map(|l| {
+    [
+        Cow::Borrowed(l.name),
+        Cow::Borrowed(l.designed_by),
+        Cow::Owned(l.year.to_string()),
+    ]
+});
+
+let head = [
+    Cow::Borrowed("lang"),
+    Cow::Borrowed("inventor"),
+    Cow::Borrowed("published year"),
+];
+let iter = std::iter::once(head).chain(iter);
+
+let table = CompactTable::new(iter)
+    .rows(languages.len())
+    .columns(3)
+    .width([10, 20, 20])
+    .with(Style::modern().remove_horizontal());
+
+let output = table.to_string();
+    
+println!("{output}");
+```
+
+And the result.
+
+```text
+┌──────────┬────────────────────┬────────────────────┐
+│ lang     │ inventor           │ published year     │
+│ Rust     │ Graydon Hoare      │ 2010               │
+│ Go       │ Rob Pike           │ 2009               │
+└──────────┴────────────────────┴────────────────────┘
+```
 
 ### `PoolTable`
 
@@ -1731,28 +1875,16 @@ Here's an example.
 use tabled::{tables::ExtendedTable, Tabled};
 
 #[derive(Tabled)]
-struct Distribution {
-    name: &'static str,
+struct Distribution<'a> {
+    name: &'a str,
     is_active: bool,
     is_cool: bool,
 }
 
 let data = [
-    Distribution {
-        name: "Manjaro",
-        is_cool: true,
-        is_active: true,
-    },
-    Distribution {
-        name: "Debian",
-        is_cool: true,
-        is_active: true,
-    },
-    Distribution {
-        name: "Debian",
-        is_cool: true,
-        is_active: true,
-    },
+    Distribution { name: "Manjaro", is_cool: true, is_active: true },
+    Distribution { name: "Debian", is_cool: true, is_active: true },
+    Distribution { name: "Debian", is_cool: true, is_active: true },
 ];
 
 let table = ExtendedTable::new(&data);
@@ -1775,6 +1907,52 @@ is_cool   | true
 name      | Debian
 is_active | true
 is_cool   | true
+```
+
+### `Table::kv`
+
+There's a special layout you can build for original `Table`.
+Which represents Key-Value pairs for your type.
+Notice that in essence there's nothing special in the build process, so it can be build for other table types as well.
+
+Here's an example.
+
+```rust
+use tabled::{Table, Tabled, settings::Style};
+    
+#[derive(Tabled)]
+struct Language<'a> {
+    name: &'a str,
+    designed_by: &'a str,
+    year: usize,
+}
+
+let languages = vec![
+    Language { name: "C", designed_by: "Dennis Ritchie", year: 1972 },
+    Language { name: "Go", designed_by: "Rob Pike", year: 2009 },
+    Language { name: "Rust", designed_by: "Graydon Hoare", year: 2010 },
+];
+    
+let mut table = Table::kv(languages);
+table.with(Style::modern().remove_horizontal());
+
+println!("{table}");
+```
+
+And the result.
+
+```text
+┌─────────────┬────────────────┐
+│ name        │ C              │
+│ designed_by │ Dennis Ritchie │
+│ year        │ 1972           │
+│ name        │ Go             │
+│ designed_by │ Rob Pike       │
+│ year        │ 2009           │
+│ name        │ Rust           │
+│ designed_by │ Graydon Hoare  │
+│ year        │ 2010           │
+└─────────────┴────────────────┘
 ```
 
 ## Tips and Tricks
@@ -1821,14 +1999,13 @@ Tuning our favorite example will result in the following:
 
 ```rust
 use tabled::{format::Format, object::Columns, Style, Table};
-use owo_colors::OwoColorize;
 
 let mut table = Table::new(&data);
 table
     .with(Style::psql())
-    .modify(Columns::single(0), Format::new(|s| s.red().to_string()))
-    .modify(Columns::single(1), Format::new(|s| s.blue().to_string()))
-    .modify(Columns::new(2..), Format::new(|s| s.green().to_string()));
+    .modify(Columns::single(0), Color::FG_RED)
+    .modify(Columns::single(1), Color::FG_BLUE)
+    .modify(Columns::new(2..), Color::FG_GREEN);
 ```
 
 ![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
