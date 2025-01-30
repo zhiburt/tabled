@@ -142,7 +142,7 @@ impl<I> IterTable<I> {
     }
 
     /// Limit an amount of rows will be read for dimension estimations.
-    /// 
+    ///
     /// By default it's 1000.
     pub fn sniff(mut self, count: usize) -> Self {
         self.table.sniff = count;
