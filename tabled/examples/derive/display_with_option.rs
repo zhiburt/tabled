@@ -14,7 +14,7 @@ fn display_option(opt: &Option<String>) -> String {
 }
 
 #[derive(Tabled)]
-#[tabled(display_option_with = "display_option")]
+#[tabled(display_type(Option<String>, "display_option"))]
 pub struct CountryDisplay {
     name: String,
     capital: Option<String>,

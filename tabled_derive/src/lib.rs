@@ -18,7 +18,7 @@ use std::{collections::HashMap, str};
 use syn::visit_mut::VisitMut;
 use syn::{
     parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, ExprPath, Field, Fields,
-    Ident, Index, PathSegment, Type, Variant,
+    Ident, Index, PathSegment, Type, TypePath, Variant,
 };
 
 use crate::attributes::{FieldAttributes, TypeAttributes};
@@ -551,23 +551,27 @@ fn get_field_fields(
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
     }
 
-    if is_option_type(field_type) {
-        if let Some(func) = &type_attrs.display_option_with {
-            let func = use_function(&quote!(&#field), func);
-            return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
-        }
+    if let Some(func) = find_display_type(field_type, &type_attrs.display_types) {
+        let func = use_function(&quote!(&#field), &func);
+        return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
 }
 
-fn is_option_type(ty: &Type) -> bool {
-    if let Type::Path(type_path) = ty {
-        if let Some(segment) = type_path.path.segments.last() {
-            return segment.ident == "Option";
+fn find_display_type(ty: &Type, types: &[(TypePath, String)]) -> Option<String> {
+    let path: &TypePath = match ty {
+        Type::Path(path) => path,
+        _ => return None,
+    };
+
+    for (display_type, display_func) in types {
+        if display_type.path == path.path {
+            return Some(display_func.clone());
         }
     }
-    false
+
+    None
 }
 
 fn use_function(args: &TokenStream, function: &str) -> TokenStream {
