@@ -510,16 +510,7 @@ fn get_field_fields(
     if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
             None => Some(quote!(&#field)),
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
+            Some(args) => args_to_tokens(fields, field_name, args),
         };
 
         let result = match args {
@@ -529,19 +520,10 @@ fn get_field_fields(
 
         return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
     } else if let Some(custom_format) = &attr.format {
-        let args = match &attr.format_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
-        };
+        let args = attr
+            .format_with_args
+            .as_ref()
+            .and_then(|args| args_to_tokens(fields, field_name, args));
 
         let call = match args {
             Some(args) => use_format(&args, custom_format),
@@ -551,23 +533,61 @@ fn get_field_fields(
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
     }
 
-    if let Some(func) = find_display_type(field_type, &type_attrs.display_types) {
-        let func = use_function(&quote!(&#field), &func);
+    if let Some(i) = find_display_type(field_type, &type_attrs.display_types) {
+        let (_, func, args) = &type_attrs.display_types[i];
+        let args = args_to_tokens_with(fields, field, field_name, args);
+        let func = use_function(&args, &func);
+
         return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
 }
 
-fn find_display_type(ty: &Type, types: &[(TypePath, String)]) -> Option<String> {
+fn args_to_tokens(
+    fields: &Fields,
+    field_name: fn(usize, &Field) -> TokenStream,
+    args: &[FormatArg],
+) -> Option<TokenStream> {
+    if args.is_empty() {
+        return None;
+    }
+
+    let args = args
+        .iter()
+        .map(|arg| fnarg_tokens(arg, fields, field_name))
+        .collect::<Vec<_>>();
+    Some(quote!( #(#args,)* ))
+}
+
+fn args_to_tokens_with(
+    fields: &Fields,
+    field: &TokenStream,
+    field_name: fn(usize, &Field) -> TokenStream,
+    args: &[FormatArg],
+) -> TokenStream {
+    if args.is_empty() {
+        return quote!(&#field);
+    }
+
+    let mut out = vec![quote!(&#field)];
+    for arg in args {
+        let arg = fnarg_tokens(arg, fields, field_name);
+        out.push(arg);
+    }
+
+    quote!( #(#out,)* )
+}
+
+fn find_display_type(ty: &Type, types: &[(TypePath, String, Vec<FormatArg>)]) -> Option<usize> {
     let path: &TypePath = match ty {
         Type::Path(path) => path,
         _ => return None,
     };
 
-    for (display_type, display_func) in types {
+    for (i, (display_type, _, _)) in types.iter().enumerate() {
         if display_type.path == path.path {
-            return Some(display_func.clone());
+            return Some(i);
         }
     }
 

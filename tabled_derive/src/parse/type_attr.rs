@@ -29,7 +29,7 @@ pub enum TypeAttrKind {
     Inline(LitBool, Option<LitStr>),
     RenameAll(LitStr),
     Crate(LitStr),
-    DisplayType(TypePath, LitStr),
+    DisplayType(TypePath, LitStr, Punctuated<syn::Expr, Token!(,)>),
 }
 
 impl Parse for TypeAttr {
@@ -92,7 +92,21 @@ impl Parse for TypeAttr {
                 let _comma = nested.parse::<Token![,]>()?;
                 let lit = nested.parse::<LitStr>()?;
 
-                return Ok(Self::new(DisplayType(path, lit)));
+                let mut args: Punctuated<syn::Expr, token::Comma> = Punctuated::new();
+                if nested.peek(Token![,]) {
+                    _ = nested.parse::<Token![,]>()?;
+                    while !nested.is_empty() {
+                        let val = nested.parse()?;
+                        args.push_value(val);
+                        if nested.is_empty() {
+                            break;
+                        }
+                        let punct = nested.parse()?;
+                        args.push_punct(punct);
+                    }
+                }
+
+                return Ok(Self::new(DisplayType(path, lit, args)));
             }
 
             return Err(syn::Error::new(
