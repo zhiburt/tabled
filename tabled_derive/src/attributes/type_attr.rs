@@ -1,17 +1,19 @@
-use syn::Attribute;
+use syn::{Attribute, TypePath};
 
 use crate::{
+    attributes::FormatArg,
     casing_style::CasingStyle,
     error::Error,
     parse::type_attr::{parse_type_attributes, TypeAttr, TypeAttrKind},
 };
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct TypeAttributes {
     pub rename_all: Option<CasingStyle>,
     pub inline: bool,
     pub inline_value: Option<String>,
     pub crate_name: Option<String>,
+    pub display_types: Vec<(TypePath, String, Vec<FormatArg>)>,
 }
 
 impl TypeAttributes {
@@ -52,6 +54,10 @@ impl TypeAttributes {
             }
             TypeAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
+            }
+            TypeAttrKind::DisplayType(type_name, func, args) => {
+                let args = args.into_iter().map(FormatArg::new).collect();
+                self.display_types.push((type_name, func.value(), args));
             }
         }
 
