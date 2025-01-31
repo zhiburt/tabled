@@ -223,7 +223,14 @@ fn info_from_fields(
         headers.push(header);
 
         let field_name_result = field_name(i, field);
-        let value = get_field_fields(&field_name_result, &attributes, fields, field_name);
+        let value = get_field_fields(
+            &field_name_result,
+            &field.ty,
+            &attributes,
+            fields,
+            field_name,
+            attrs,
+        );
         values.push(value);
     }
 
@@ -490,9 +497,11 @@ fn get_type_headers(
 
 fn get_field_fields(
     field: &TokenStream,
+    field_type: &Type,
     attr: &FieldAttributes,
     fields: &Fields,
     field_name: FieldNameFn,
+    type_attrs: &TypeAttributes,
 ) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
@@ -542,7 +551,23 @@ fn get_field_fields(
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
     }
 
+    if is_option_type(field_type) {
+        if let Some(func) = &type_attrs.display_option_with {
+            let func = use_function(&quote!(&#field), func);
+            return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
+        }
+    }
+
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
+}
+
+fn is_option_type(ty: &Type) -> bool {
+    if let Type::Path(type_path) = ty {
+        if let Some(segment) = type_path.path.segments.last() {
+            return segment.ident == "Option";
+        }
+    }
+    false
 }
 
 fn use_function(args: &TokenStream, function: &str) -> TokenStream {
