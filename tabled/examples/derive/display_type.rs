@@ -1,9 +1,11 @@
 use tabled::Tabled;
 
-#[derive(Debug)]
+#[derive(Tabled)]
+#[tabled(display_type(Option, "display_option", "UNKNOWN"))]
 pub struct Country {
     name: String,
     capital: Option<String>,
+    currency: Option<String>,
 }
 
 fn display_option<T>(opt: &Option<T>, default: &str) -> String
@@ -16,39 +18,26 @@ where
     }
 }
 
-#[derive(Tabled)]
-#[tabled(display_type(Option, "display_option", "UNKNOWN"))]
-pub struct CountryDisplay {
-    name: String,
-    capital: Option<String>,
-}
-
-impl From<Country> for CountryDisplay {
-    fn from(country: Country) -> Self {
-        Self {
-            name: country.name,
-            capital: country.capital,
-        }
-    }
-}
-
 fn main() {
     let data = vec![
         Country {
-            name: "France".to_string(),
-            capital: Some("Paris".to_string()),
+            name: String::from("France"),
+            capital: Some(String::from("Paris")),
+            currency: Some(String::from("EUR")),
         },
         Country {
-            name: "Germany".to_string(),
-            capital: Some("Berlin".to_string()),
+            name: String::from("Germany"),
+            capital: Some(String::from("Berlin")),
+            currency: None,
         },
         Country {
-            name: "Unknown".to_string(),
+            name: String::from("Unknown"),
             capital: None,
+            currency: Some(String::from("01")),
         },
     ];
 
-    let table_data = data.into_iter().map(CountryDisplay::from);
-    let table = tabled::Table::new(table_data);
+    let table = tabled::Table::new(data);
+
     println!("{}", table);
 }
