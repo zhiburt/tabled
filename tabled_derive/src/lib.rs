@@ -580,14 +580,36 @@ fn args_to_tokens_with(
 }
 
 fn find_display_type(ty: &Type, types: &[(TypePath, String, Vec<FormatArg>)]) -> Option<usize> {
-    let path: &TypePath = match ty {
+    let p: &TypePath = match ty {
         Type::Path(path) => path,
         _ => return None,
     };
 
-    for (i, (display_type, _, _)) in types.iter().enumerate() {
-        if display_type.path == path.path {
+    // NOTICE:
+    // We do iteration in a back order to satisfy a later set argument first.
+    //
+    // TODO: Maybe we shall change the data structure for it rather then doing a reverse iteration?
+    // I am just saying it's dirty a little.
+    let args = types.iter().enumerate().rev();
+    for (i, (arg, _, _)) in args {
+        if arg.path == p.path {
             return Some(i);
+        }
+
+        // NOTICE:
+        // There's a specical case where we wanna match a type without a generic,
+        // e.g. 'Option' with which we wanna match all 'Option's.
+        //
+        // Because in the scope we can only have 1 type name, it's considered to be good,
+        // and nothing must be broken.
+        let arg_segment = arg.path.segments.last();
+        let type_segment = p.path.segments.last();
+        if let Some(arg) = arg_segment {
+            if let Some(p) = type_segment {
+                if p.ident == arg.ident {
+                    return Some(i);
+                }
+            }
         }
     }
 

@@ -6,15 +6,18 @@ pub struct Country {
     capital: Option<String>,
 }
 
-fn display_option(opt: &Option<String>, default: &str) -> String {
+fn display_option<T>(opt: &Option<T>, default: &str) -> String
+where
+    T: ToString,
+{
     match opt {
-        Some(val) => val.to_uppercase(),
+        Some(val) => val.to_string().to_uppercase(),
         None => default.to_string(),
     }
 }
 
 #[derive(Tabled)]
-#[tabled(display_type(Option<String>, "display_option", "UNKNOWN"))]
+#[tabled(display_type(Option, "display_option", "UNKNOWN"))]
 pub struct CountryDisplay {
     name: String,
     capital: Option<String>,
