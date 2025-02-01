@@ -276,18 +276,18 @@
 )]
 #![allow(clippy::uninlined_format_args)]
 
-mod util;
-
-#[cfg(feature = "derive")]
-mod derive;
 #[cfg(feature = "macros")]
 mod macros;
 #[cfg(feature = "std")]
 mod tabled;
+mod util;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod builder;
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
+pub mod derive;
 pub mod grid;
 pub mod iter;
 pub mod settings;

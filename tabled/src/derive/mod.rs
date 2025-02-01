@@ -1,3 +1,7 @@
+//! Module contains a list of helpers for work with derive.
+
+pub mod display;
+
 /// A derive macro to implement a [`Tabled`] trait.
 ///
 /// The macro available only when `derive` feature in turned on (and it is by default).
