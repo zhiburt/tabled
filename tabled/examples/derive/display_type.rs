@@ -48,7 +48,7 @@ fn main() {
         },
     ];
 
-    let table_data: Vec<CountryDisplay> = data.into_iter().map(Into::into).collect();
+    let table_data = data.into_iter().map(CountryDisplay::from);
     let table = tabled::Table::new(table_data);
     println!("{}", table);
 }

@@ -69,8 +69,8 @@ path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "derive_display_with_option"
-path = "examples/derive/display_with_option.rs"
+name = "derive_display_type"
+path = "examples/derive/display_type.rs"
 required-features = ["derive"]
 
 [[example]]
