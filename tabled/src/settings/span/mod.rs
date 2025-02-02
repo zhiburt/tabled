@@ -18,19 +18,15 @@ pub use row::RowSpan;
 
 /// Span represent a horizontal/column span setting for any cell on a [`Table`].
 ///
-/// It will be ignored if:
-///  - cell position is out of scope
-///  - size is bigger then the total number of columns.
-///  - size is bigger then the total number of rows.
-///
 /// ```
 /// use tabled::{settings::{Span, Modify}, Table};
 ///
 /// let data = [[1, 2, 3], [4, 5, 6]];
 ///
 /// let table = Table::new(data)
-///     .with(Modify::new((2, 0)).with(Span::column(2)))
-///     .with(Modify::new((0, 1)).with(Span::column(2)))
+///     .modify((0, 0), Span::row(2))
+///     .modify((0, 1), Span::column(2))
+///     .modify((2, 0), Span::column(1000))
 ///     .to_string();
 ///
 /// assert_eq!(
@@ -38,10 +34,10 @@ pub use row::RowSpan;
 ///     concat!(
 ///         "+---+---+---+\n",
 ///         "| 0 | 1     |\n",
+///         "+   +---+---+\n",
+///         "|   | 2 | 3 |\n",
 ///         "+---+---+---+\n",
-///         "| 1 | 2 | 3 |\n",
-///         "+---+---+---+\n",
-///         "| 4     | 6 |\n",
+///         "| 4         |\n",
 ///         "+---+---+---+",
 ///     )
 /// )
@@ -54,14 +50,74 @@ pub struct Span;
 impl Span {
     /// New constructs a horizontal/column [`Span`].
     ///
-    /// If size is bigger then the total number of columns it will be ignored.
+    /// Value can be:
+    ///     * == 0 - which means spread the cell on the whole line
+    ///     * == 1 - which is a default span so can be used for removal of spans
+    ///     * > 1 - which means to spread a cell by given number of columns right
+    ///     * < 0 - which means to spread a cell by given number of columns left
+    /// 
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{settings::{Span, Modify}, Table};
+    ///
+    /// let data = [[1, 2, 3], [4, 5, 6]];
+    ///
+    /// let table = Table::new(data)
+    ///     .modify((0, 0), Span::column(100))
+    ///     .modify((1, 1), Span::column(2))
+    ///     .modify((2, 1), Span::column(-1))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "+---++---+\n",
+    ///         "| 0      |\n",
+    ///         "+---++---+\n",
+    ///         "| 1 | 2  |\n",
+    ///         "+---++---+\n",
+    ///         "| 5  | 6 |\n",
+    ///         "+---++---+",
+    ///     )
+    /// )
+    /// ```
     pub fn column(size: isize) -> ColumnSpan {
         ColumnSpan::new(size)
     }
 
     /// New constructs a vertical/row [`Span`].
     ///
-    /// If size is bigger then the total number of rows it will be ignored.
+    /// Value can be:
+    ///     * == 0 - which means spread the cell on the whole line
+    ///     * == 1 - which is a default span so can be used for removal of spans
+    ///     * > 1 - which means to spread a cell by given number of rows bottom
+    ///     * < 0 - which means to spread a cell by given number of rows top
+    /// 
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{settings::{Span, Modify}, Table};
+    ///
+    /// let data = [[1, 2, 3], [4, 5, 6]];
+    ///
+    /// let table = Table::new(data)
+    ///     .modify((0, 0), Span::row(100))
+    ///     .modify((1, 1), Span::row(2))
+    ///     .modify((2, 2), Span::row(-1))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "+---+---+---+\n",
+    ///         "| 0 | 1 | 2 |\n",
+    ///         "+   +---+---+\n",
+    ///         "+   + 2 + 6 +\n",
+    ///         "+---+---+---+",
+    ///     )
+    /// )
+    /// ```
     pub fn row(size: isize) -> RowSpan {
         RowSpan::new(size)
     }
