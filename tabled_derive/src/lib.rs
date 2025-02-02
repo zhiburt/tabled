@@ -851,7 +851,7 @@ impl syn::visit_mut::VisitMut for ExprSelfReplace<'_> {
                 // ```
                 // some_macro! {
                 //     struct Something {
-                //         #[tabled(display_with("_", format!("", self.f1)))]
+                //         #[tabled(display("_", format!("", self.f1)))]
                 //         field: Option<sstr>,
                 //         f1: usize,
                 //     }

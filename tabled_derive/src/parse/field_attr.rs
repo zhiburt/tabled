@@ -51,9 +51,7 @@ impl Parse for FieldAttr {
                 match name_str.as_str() {
                     "rename" => return Ok(Self::new(Rename(lit))),
                     "rename_all" => return Ok(Self::new(RenameAll(lit))),
-                    "display_with" => {
-                        return Ok(Self::new(DisplayWith(lit, None, Punctuated::new())))
-                    }
+                    "display" => return Ok(Self::new(DisplayWith(lit, None, Punctuated::new()))),
                     "format" => return Ok(Self::new(FormatWith(lit, None, Punctuated::new()))),
                     _ => {}
                 }
@@ -91,7 +89,7 @@ impl Parse for FieldAttr {
                 let lit = nested.parse::<LitStr>()?;
 
                 match name_str.as_str() {
-                    "format" | "display_with" => {
+                    "format" | "display" => {
                         let mut args = Punctuated::new();
                         let mut comma = None;
                         if nested.peek(Token![,]) {

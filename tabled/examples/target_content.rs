@@ -8,7 +8,7 @@ use tabled::{
 #[derive(Tabled)]
 struct Job {
     title: String,
-    #[tabled(display_with = "JobStatus::as_string")]
+    #[tabled(display = "JobStatus::as_string")]
     status: JobStatus,
 }
 

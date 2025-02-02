@@ -155,7 +155,7 @@ mod tuple {
 
     test_tuple!(
         display_option,
-        { { u8 #[tabled(display_with = "display_option")] Option<sstr> } },
+        { { u8 #[tabled(display = "display_option")] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -170,7 +170,7 @@ mod tuple {
 
     test_tuple!(
         display_option_args,
-        { { u8 #[tabled(display_with("display_option", 1, "234"))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", 1, "234"))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 1 234"] },
         pre: {
@@ -182,7 +182,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self,
-        { { u8 #[tabled(display_with = "Self::display_option")] Option<sstr> } },
+        { { u8 #[tabled(display = "Self::display_option")] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -199,7 +199,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self_2,
-        { { u8 #[tabled(display_with("Self::display_option", self))] Option<sstr> } },
+        { { u8 #[tabled(display("Self::display_option", self))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -216,7 +216,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self_3,
-        { { u8 #[tabled(display_with("display_option", self))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", self))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -231,7 +231,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self_4,
-        { { u8 #[tabled(display_with("display_option", self.0, self.0))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", self.0, self.0))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 0.0"] },
         pre: {
@@ -332,7 +332,7 @@ mod enum_ {
             {
                 #[tabled(inline("backend::"))]
                 Backend {
-                    #[tabled(display_with = "display", rename = "name")]
+                    #[tabled(display = "display", rename = "name")]
                     value: sstr
                 }
                 Frontend
@@ -357,7 +357,7 @@ mod enum_ {
                 #[tabled(inline("backend::"))]
                 Backend {
                     #[tabled()]
-                    #[tabled(display_with("display", self), rename = "name")]
+                    #[tabled(display("display", self), rename = "name")]
                     value: sstr
                 }
                 Frontend
@@ -381,7 +381,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with = "format::<4>")]
+                    #[tabled(display = "format::<4>")]
                     sstr
                 )
                 B
@@ -405,7 +405,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with("Self::format::<4>", self))]
+                    #[tabled(display("Self::format::<4>", self))]
                     sstr
                 )
                 B
@@ -431,7 +431,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with("Self::format::<4>", self, self.0))]
+                    #[tabled(display("Self::format::<4>", self, self.0))]
                     sstr
                 )
                 B
@@ -457,7 +457,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A{
-                    #[tabled(display_with("Self::format::<4>", self, self.asd))]
+                    #[tabled(display("Self::format::<4>", self, self.asd))]
                     asd: sstr
                 }
                 B
@@ -709,11 +709,11 @@ mod enum_ {
         enum_display_with_variant,
         {
             {
-                #[tabled(display_with = "display_variant1")]
+                #[tabled(display = "display_variant1")]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with = "display_variant2::<200>")]
+                #[tabled(display = "display_variant2::<200>")]
                 B(String)
-                #[tabled(display_with = "some::bar::display_variant1")]
+                #[tabled(display = "some::bar::display_variant1")]
                 K
             }
         },
@@ -746,11 +746,11 @@ mod enum_ {
         enum_display_with_self_variant,
         {
             {
-                #[tabled(display_with("display_variant1", self))]
+                #[tabled(display("display_variant1", self))]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with("display_variant2::<200, _>", self))]
+                #[tabled(display("display_variant2::<200, _>", self))]
                 B(String)
-                #[tabled(display_with("some::bar::display_variant1", self))]
+                #[tabled(display("some::bar::display_variant1", self))]
                 K
             }
         },
@@ -783,11 +783,11 @@ mod enum_ {
         enum_display_with_arguments,
         {
             {
-                #[tabled(display_with("display1", 1, 2, self))]
+                #[tabled(display("display1", 1, 2, self))]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with("display2::<200>", "Hello World"))]
+                #[tabled(display("display2::<200>", "Hello World"))]
                 B(String)
-                #[tabled(display_with("display1", 100, 200, self))]
+                #[tabled(display("display1", 100, 200, self))]
                 K
             }
         },
@@ -1039,7 +1039,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with = "display_option")]
+                #[tabled(display = "display_option")]
                 f2: Option<sstr>,
             }
         }
@@ -1059,7 +1059,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", 1, 2, 3))]
+                #[tabled(display("display_option", 1, 2, 3))]
                 f2: Option<sstr>,
             }
         }
@@ -1076,7 +1076,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", &self.f1, 2, 3))]
+                #[tabled(display("display_option", &self.f1, 2, 3))]
                 f2: Option<sstr>,
             }
         }
@@ -1093,7 +1093,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with = "Self::display_option")]
+                #[tabled(display = "Self::display_option")]
                 f2: Option<sstr>,
             }
         }
@@ -1115,7 +1115,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("Self::display_option", self))]
+                #[tabled(display("Self::display_option", self))]
                 f2: Option<sstr>,
             }
         }
@@ -1137,7 +1137,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("Self::display_option", self))]
+                #[tabled(display("Self::display_option", self))]
                 f2: Option<sstr>,
             }
         }
@@ -1159,7 +1159,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", self))]
+                #[tabled(display("display_option", self))]
                 f2: Option<sstr>,
             }
         }
@@ -1180,7 +1180,7 @@ mod structure {
             {
                 #[tabled(skip)]
                 f1: [u8; 4],
-                #[tabled(display_with("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
+                #[tabled(display("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
                 f2: Option<sstr>,
                 f3: usize,
             }
@@ -1331,35 +1331,35 @@ test_enum!(
 
 test_struct!(
     ignore_display_with_when_used_with_inline,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", inline)] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", inline)] f3: usize } }
     {}
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "usize"], ["123", "456", "789"], }
 );
 test_struct!(
     ignore_display_with_when_used_with_inline_2,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", )] #[tabled(inline)] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", )] #[tabled(inline)] f3: usize } }
     {}
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "usize"], ["123", "456", "789"], }
 );
 test_struct!(
     display_with_and_rename,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", rename = "asd")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename = "asd")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "asd"], ["123", "456", ""], }
 );
 test_struct!(
     display_with_and_rename_2,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print")] #[tabled(rename = "asd")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print")] #[tabled(rename = "asd")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "asd"], ["123", "456", ""], }
 );
 test_struct!(
     display_with_and_rename_all,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", rename_all = "UPPERCASE")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename_all = "UPPERCASE")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "F3"], ["123", "456", ""], }
@@ -1530,7 +1530,7 @@ fn test_reimport_trait_by_crate_attribute() {
 //     #[derive(Tabled)]
 //     #[allow(dead_code)]
 //     struct Struct<'a> {
-//         #[tabled(display_with("std::path::Path::display"))]
+//         #[tabled(display("std::path::Path::display"))]
 //         path: &'a std::path::Path,
 //     }
 // }
@@ -1570,11 +1570,11 @@ fn test_macros_in_display_with() {
     #[tabled(rename_all = "camelCase")]
     struct Country {
         name: String,
-        #[tabled(display_with("display_capital", format!(".{}", self.capital)))]
+        #[tabled(display("display_capital", format!(".{}", self.capital)))]
         capital: String,
-        #[tabled(display_with("display_perimeter", self))]
+        #[tabled(display("display_perimeter", self))]
         area_km2: f32,
-        #[tabled(display_with = "str::to_lowercase")]
+        #[tabled(display = "str::to_lowercase")]
         national_currency: String,
         national_currency_short: String,
     }

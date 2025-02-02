@@ -3,7 +3,7 @@
 use core::fmt::Debug;
 
 /// A function which is usefull in conjuntion with
-/// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
+/// `#[tabled(display)]` and `#[tabled(display)]`.
 ///
 /// It can be used with any [`Option`] type.
 /// You must provide a second argument which represents a value be printed in case of [`None`].
@@ -16,7 +16,7 @@ use core::fmt::Debug;
 /// use testing_table::assert_table;
 ///
 /// #[derive(Tabled)]
-/// #[tabled(display_type(Option, "display::option", "Unknown"))]
+/// #[tabled(display(Option, "display::option", "Unknown"))]
 /// pub struct ZKP<'a> {
 ///     application: &'a str,
 ///     state: Option<&'a str>
@@ -54,7 +54,7 @@ where
 }
 
 /// A function which is usefull in conjuntion with
-/// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
+/// `#[tabled(display)]` and `#[tabled(display)]`.
 ///
 /// It can be used with any type which implements a [`Debug`].
 /// So rather then [`std::fmt::Display`] usage we will be using a debug implementation.
@@ -65,7 +65,7 @@ where
 /// use testing_table::assert_table;
 ///
 /// #[derive(Tabled)]
-/// #[tabled(display_type(Option, "display::debug"))]
+/// #[tabled(display(Option, "display::debug"))]
 /// pub struct ZKP<'a> {
 ///     application: &'a str,
 ///     state: Option<&'a str>
@@ -100,7 +100,7 @@ where
 }
 
 /// A function which is usefull in conjuntion with
-/// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
+/// `#[tabled(display)]` and `#[tabled(display)]`.
 ///
 /// It just returns an empty string.
 ///
@@ -112,7 +112,7 @@ where
 /// #[derive(Tabled)]
 /// pub struct ZKP<'a> {
 ///     application: &'a str,
-///     #[tabled(display_with = "display::empty")]
+///     #[tabled(display = "display::empty")]
 ///     state: Option<&'a str>
 /// }
 ///

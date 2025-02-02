@@ -80,7 +80,7 @@ pub mod display;
 /// - Implement `Tabled` trait manually for a type.
 /// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
 ///
-/// Alternatively, you can use the `#[tabled(display_with = "func")]` attribute for the field to specify a display function.
+/// Alternatively, you can use the `#[tabled(display = "func")]` attribute for the field to specify a display function.
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
@@ -88,7 +88,7 @@ pub mod display;
 /// #[derive(Tabled)]
 /// pub struct MyRecord {
 ///     pub id: i64,
-///     #[tabled(display_with = "display_option")]
+///     #[tabled(display = "display_option")]
 ///     pub valid: Option<bool>
 /// }
 ///
@@ -101,7 +101,7 @@ pub mod display;
 /// ```
 ///
 /// It's also possible to change function argument to be `&self`,
-/// using `#[tabled(display_with("some_function", self))]`
+/// using `#[tabled(display("some_function", self))]`
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
@@ -109,7 +109,7 @@ pub mod display;
 /// #[derive(Tabled)]
 /// pub struct MyRecord {
 ///     pub id: i64,
-///     #[tabled(display_with("Self::display_valid", self))]
+///     #[tabled(display("Self::display_valid", self))]
 ///     pub valid: Option<bool>
 /// }
 ///

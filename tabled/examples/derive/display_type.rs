@@ -1,7 +1,7 @@
 use tabled::Tabled;
 
 #[derive(Tabled)]
-#[tabled(display_type(Option, "display_option", "UNKNOWN"))]
+#[tabled(display(Option, "display_option", "UNKNOWN"))]
 pub struct Country {
     name: String,
     capital: Option<String>,

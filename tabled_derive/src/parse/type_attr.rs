@@ -87,7 +87,7 @@ impl Parse for TypeAttr {
                 }
             }
 
-            if name_str.as_str() == "display_type" {
+            if name_str.as_str() == "display" {
                 let path = nested.parse::<TypePath>()?;
                 let _comma = nested.parse::<Token![,]>()?;
                 let lit = nested.parse::<LitStr>()?;

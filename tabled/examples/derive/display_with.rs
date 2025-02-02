@@ -15,11 +15,11 @@ use tabled::{Table, Tabled};
 #[derive(Tabled)]
 struct Country {
     name: String,
-    #[tabled(display_with = "str::to_uppercase")]
+    #[tabled(display = "str::to_uppercase")]
     capital: String,
-    #[tabled(display_with("perimeter", self, false))]
+    #[tabled(display("perimeter", self, false))]
     area_km2: f32,
-    #[tabled(display_with("tabled::derive::display::option", "unknown"))]
+    #[tabled(display("tabled::derive::display::option", "unknown"))]
     currency: Option<String>,
 }
 

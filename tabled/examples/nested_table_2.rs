@@ -25,9 +25,9 @@ fn main() {
 #[derive(Tabled)]
 struct Vendor {
     name: String,
-    #[tabled(display_with = "display_distribution")]
+    #[tabled(display = "display_distribution")]
     main_os: Dist,
-    #[tabled(display_with = "display_distribution")]
+    #[tabled(display = "display_distribution")]
     switch_os: Dist,
 }
 
