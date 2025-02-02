@@ -55,7 +55,7 @@ impl Span {
     ///     * == 1 - which is a default span so can be used for removal of spans
     ///     * > 1 - which means to spread a cell by given number of columns right
     ///     * < 0 - which means to spread a cell by given number of columns left
-    /// 
+    ///
     /// # Example
     ///
     /// ```
@@ -93,7 +93,7 @@ impl Span {
     ///     * == 1 - which is a default span so can be used for removal of spans
     ///     * > 1 - which means to spread a cell by given number of rows bottom
     ///     * < 0 - which means to spread a cell by given number of rows top
-    /// 
+    ///
     /// # Example
     ///
     /// ```
