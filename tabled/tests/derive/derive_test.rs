@@ -1,7 +1,10 @@
 #![cfg(feature = "derive")]
 #![cfg(feature = "std")]
 
-use tabled::Tabled;
+use std::fmt::Display;
+
+use tabled::{Table, Tabled};
+use testing_table::test_table;
 
 // https://users.rust-lang.org/t/create-a-struct-from-macro-rules/19829
 macro_rules! test_tuple {
@@ -713,32 +716,23 @@ mod enum_ {
                 AbsdEgh { a: u8, b: i32 }
                 #[tabled(display = "display_variant2::<200>")]
                 B(String)
-                #[tabled(display = "some::bar::display_variant1")]
                 K
             }
         },
         {
-            fn display_variant1() -> &'static str {
+            fn display_variant1(_: &TestType) -> &'static str {
                 "Hello World"
             }
 
-            fn display_variant2<const VAL: usize>() -> String {
+            fn display_variant2<const VAL: usize>(_: &TestType) -> String {
                 format!("asd {VAL}")
-            }
-
-            pub mod some {
-                pub mod bar {
-                    pub fn display_variant1() -> &'static str {
-                        "Hello World 123"
-                    }
-                }
             }
         },
         { ["AbsdEgh", "B", "K"] },
         {
             AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
             B(String::new()) => ["", "asd 200", ""],
-            K => ["", "", "Hello World 123"],
+            K => ["", "", "+"],
         }
     );
 
@@ -750,32 +744,23 @@ mod enum_ {
                 AbsdEgh { a: u8, b: i32 }
                 #[tabled(display("display_variant2::<200, _>", self))]
                 B(String)
-                #[tabled(display("some::bar::display_variant1", self))]
                 K
             }
         },
         {
-            fn display_variant1<D>(_: &D) -> &'static str {
+            fn display_variant1<D>(_: &TestType, _: &D) -> &'static str {
                 "Hello World"
             }
 
-            fn display_variant2<const VAL: usize, D>(_: &D) -> String {
+            fn display_variant2<const VAL: usize, D>(_: &TestType, _: &D) -> String {
                 format!("asd {VAL}")
-            }
-
-            pub mod some {
-                pub mod bar {
-                    pub fn display_variant1<D>(_: &D) -> &'static str {
-                        "Hello World 123"
-                    }
-                }
             }
         },
         { ["AbsdEgh", "B", "K"] },
         {
             AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
             B(String::new()) => ["", "asd 200", ""],
-            K => ["", "", "Hello World 123"],
+            K => ["", "", "+"],
         }
     );
 
@@ -792,11 +777,11 @@ mod enum_ {
             }
         },
         {
-            fn display1<D>(val: usize, val2: usize, _: &D) -> String {
+            fn display1<D>(_: &TestType, val: usize, val2: usize, _: &D) -> String {
                 format!("{val} {val2}")
             }
 
-            fn display2<const VAL: usize>(val: &str) -> String {
+            fn display2<const VAL: usize>(_: &TestType, val: &str) -> String {
                 format!("asd {VAL} {val}")
             }
         },
@@ -1637,3 +1622,278 @@ mod __ {
         struct __;
     }
 }
+
+test_table!(
+    test_display_type_0,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password,
+            mirrow: Password,
+        }
+
+        struct Password([u8; 4]);
+
+        fn password_fmt(p: &Password) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+test_table!(
+    test_display_type_args,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt", self, 0))]
+        struct User {
+            id: usize,
+            pass: Password,
+            mirrow: Password,
+        }
+
+        struct Password([u8; 4]);
+
+        fn password_fmt(p: &Password, _: &User, _: usize) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+test_table!(
+    test_display_type_generic,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password<usize>,
+            mirrow: Password<u8>,
+        }
+
+        struct Password<T>([T; 4]);
+
+        fn password_fmt<T>(p: &Password<T>) -> String where T: Display {
+            p.0.iter().map(|s| s.to_string()).collect::<Vec<_>>().join("-")
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+---------+---------+"
+    "| id | pass    | mirrow  |"
+    "+----+---------+---------+"
+    "| 0  | 0-1-2-3 | 1-1-1-1 |"
+    "+----+---------+---------+"
+    "| 1  | 1-1-2-3 | 2-2-1-1 |"
+    "+----+---------+---------+"
+);
+
+test_table!(
+    test_display_type_generic_use,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password<usize>, "password_usize_fmt"))]
+        #[tabled(display(Password<u8>, "password_u8_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password<usize>,
+            mirrow: Password<u8>,
+        }
+
+        struct Password<T>([T; 4]);
+
+        fn password_usize_fmt(p: &Password<usize>) -> String {
+            p.0.iter().sum::<usize>().to_string()
+        }
+
+        fn password_u8_fmt(p: &Password<u8>) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+#[cfg(test)]
+mod test_display_enum {
+    use super::*;
+
+    #[derive(Tabled)]
+    pub enum User {
+        #[tabled(display("some::bar::user_fmt"))]
+        Public { id: usize },
+        #[tabled(display("user_fmt"))]
+        Private { id: usize },
+    }
+
+    fn user_fmt(_: &User) -> String {
+        format!("...")
+    }
+
+    pub mod some {
+        pub mod bar {
+            pub fn user_fmt(_: &super::super::User) -> String {
+                format!("111")
+            }
+        }
+    }
+
+    test_table!(
+        test_display_enum,
+        {
+            let data = [
+                User::Public { id: 0 },
+                User::Private { id: 1 },
+            ];
+
+            Table::new(data)
+        },
+        "+--------+---------+"
+        "| Public | Private |"
+        "+--------+---------+"
+        "| 111    |         |"
+        "+--------+---------+"
+        "|        | ...     |"
+        "+--------+---------+"
+    );
+}
+
+// TODO: Shall we support a 'display_type' for #inlined structs??
+// Seems like we have to?
+// But there's a small issue currently - we treat enum variants as field currently in a parsing stage.
+// And this particular case have no scense applied to struct field.
+// Soooo
+// Yes..
+//
+// test_table!(
+//     test_display_type_enum,
+//     {
+//         #[derive(Tabled)]
+//         enum User {
+//             #[tabled(inline)]
+//             #[tabled(display(Password<usize>, "password_usize_fmt"))]
+//             #[tabled(display(Password<u8>, "password_u8_fmt"))]
+//             Public {
+//                 id: usize,
+//                 pass: Password<usize>,
+//                 mirrow: Password<u8>,
+//             },
+//             #[tabled(display("user_fmt"))]
+//             Private {
+//                 id: usize,
+//             }
+//         }
+
+//         struct Password<T>([T; 4]);
+
+//         fn password_usize_fmt(p: &Password<usize>) -> String {
+//             p.0.iter().sum::<usize>().to_string()
+//         }
+
+//         fn password_u8_fmt(p: &Password<u8>) -> String {
+//             p.0.iter().sum::<u8>().to_string()
+//         }
+
+//         fn user_fmt(p: &User) -> String {
+//             format!("...")
+//         }
+
+//         let data = [
+//             User::Public {
+//                 id: 0,
+//                 pass: Password([0, 1, 2, 3]),
+//                 mirrow: Password([1, 1, 1, 1]),
+//             },
+//             User::Private {
+//                 id: 1,
+//             },
+//         ];
+
+//         Table::new(data)
+//     },
+//     "+----+------+--------+"
+//     "| id | pass | mirrow |"
+//     "+----+------+--------+"
+//     "| 0  | 6    | 4      |"
+//     "+----+------+--------+"
+//     "| 1  | 7    | 6      |"
+//     "+----+------+--------+"
+// );

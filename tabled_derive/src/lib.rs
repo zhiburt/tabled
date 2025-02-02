@@ -417,43 +417,24 @@ fn info_from_variant(
     let variant_name = variant_name(variant, attr);
     let value = if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
+            Some(args) => {
+                args_to_tokens_with(&Fields::Unit, &quote!(self), struct_field_name, args)
+            }
+            None => quote!(&self),
         };
 
-        let result = match args {
-            Some(args) => use_function(&args, func),
-            None => use_function_no_args(func),
-        };
+        let result = use_function(&args, func);
 
         quote! { ::std::borrow::Cow::from(#result) }
-    } else if let Some(custom_format) = &attr.format {
-        let args = match &attr.format_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
-        };
+    } else if let Some(fmt) = &attr.format {
+        let args = attr
+            .format_with_args
+            .as_ref()
+            .and_then(|args| args_to_tokens(&Fields::Unit, struct_field_name, args));
 
         let call = match args {
-            Some(args) => quote!(format!(#custom_format, #args)),
-            None => quote!(format!(#custom_format)),
+            Some(args) => use_format(fmt, &args),
+            None => use_format_no_args(fmt),
         };
 
         quote! { ::std::borrow::Cow::from(#call) }
@@ -516,15 +497,15 @@ fn get_field_fields(
         let result = use_function(&args, func);
 
         return quote!(vec![::std::borrow::Cow::from(#result)]);
-    } else if let Some(custom_format) = &attr.format {
+    } else if let Some(fmt) = &attr.format {
         let args = attr
             .format_with_args
             .as_ref()
             .and_then(|args| args_to_tokens(fields, field_name, args));
 
         let call = match args {
-            Some(args) => use_format(&args, custom_format),
-            None => use_format_no_args(custom_format, field),
+            Some(args) => use_format(fmt, &args),
+            None => use_format_with_one_arg(fmt, field),
         };
 
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
@@ -628,25 +609,16 @@ fn use_function(args: &TokenStream, function: &str) -> TokenStream {
     }
 }
 
-fn use_function_no_args(function: &str) -> TokenStream {
-    let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
-    match path {
-        Ok(path) => {
-            quote! { #path() }
-        }
-        Err(_) => {
-            let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function() }
-        }
-    }
-}
-
-fn use_format(args: &TokenStream, custom_format: &str) -> TokenStream {
+fn use_format(custom_format: &str, args: &TokenStream) -> TokenStream {
     quote! { format!(#custom_format, #args) }
 }
 
-fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
+fn use_format_with_one_arg(custom_format: &str, field: &TokenStream) -> TokenStream {
     quote! { format!(#custom_format, #field) }
+}
+
+fn use_format_no_args(custom_format: &str) -> TokenStream {
+    quote! { format!(#custom_format) }
 }
 
 fn struct_field_name(index: usize, field: &Field) -> TokenStream {
