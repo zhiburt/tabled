@@ -503,20 +503,19 @@ fn get_field_fields(
     field_name: FieldNameFn,
     type_attrs: &TypeAttributes,
 ) -> TokenStream {
+    // TODO: Remove this `format!`?
+
     if attr.inline {
         return quote! { #field.fields() };
     }
 
     if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
-            None => Some(quote!(&#field)),
-            Some(args) => args_to_tokens(fields, field_name, args),
+            Some(args) => args_to_tokens_with(fields, field, field_name, args),
+            None => quote!(&#field),
         };
 
-        let result = match args {
-            Some(args) => use_function(&args, func),
-            None => use_function_no_args(func),
-        };
+        let result = use_function(&args, func);
 
         return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
     } else if let Some(custom_format) = &attr.format {
@@ -536,7 +535,7 @@ fn get_field_fields(
     if let Some(i) = find_display_type(field_type, &type_attrs.display_types) {
         let (_, func, args) = &type_attrs.display_types[i];
         let args = args_to_tokens_with(fields, field, field_name, args);
-        let func = use_function(&args, &func);
+        let func = use_function(&args, func);
 
         return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
     }

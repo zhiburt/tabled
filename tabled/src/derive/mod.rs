@@ -114,8 +114,8 @@ pub mod display;
 /// }
 ///
 /// impl MyRecord {
-///     fn display_valid(&self) -> String {
-///         match self.valid {
+///     fn display_valid(_: &Option<bool>, s: &Self) -> String {
+///         match s.valid {
 ///             Some(s) => format!("is valid thing = {}", s),
 ///             None => format!("is not valid"),
 ///         }

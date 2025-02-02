@@ -5,6 +5,11 @@ use core::fmt::Debug;
 /// A function which is usefull in conjuntion with
 /// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
 ///
+/// It can be used with any [`Option`] type.
+/// You must provide a second argument which represents a value be printed in case of [`None`].
+///
+/// # Example
+///
 /// ```
 /// use tabled::Tabled;
 /// use tabled::derive::display;
@@ -51,6 +56,9 @@ where
 /// A function which is usefull in conjuntion with
 /// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
 ///
+/// It can be used with any type which implements a [`Debug`].
+/// So rather then [`std::fmt::Display`] usage we will be using a debug implementation.
+///
 /// ```
 /// use tabled::Tabled;
 /// use tabled::derive::display;
@@ -61,12 +69,6 @@ where
 /// pub struct ZKP<'a> {
 ///     application: &'a str,
 ///     state: Option<&'a str>
-/// }
-///
-/// #[derive(Debug)]
-/// pub enum State {
-///     Proved,
-///     Investigation,
 /// }
 ///
 /// let data = vec![
@@ -95,4 +97,46 @@ where
     T: Debug,
 {
     format!("{:?}", value)
+}
+
+/// A function which is usefull in conjuntion with
+/// `#[tabled(display_with)]` and `#[tabled(display_type)]`.
+///
+/// It just returns an empty string.
+///
+/// ```
+/// use tabled::Tabled;
+/// use tabled::derive::display;
+/// use testing_table::assert_table;
+///
+/// #[derive(Tabled)]
+/// pub struct ZKP<'a> {
+///     application: &'a str,
+///     #[tabled(display_with = "display::empty")]
+///     state: Option<&'a str>
+/// }
+///
+/// let data = vec![
+///     ZKP { application: "Decentralized Identity", state: Some("Proved") },
+///     ZKP { application: "Voting Systems", state: Some("Investigation") },
+///     ZKP { application: "Privacy-Preserving Transactions", state: None },
+/// ];
+///
+/// let table = tabled::Table::new(data);
+///
+/// assert_table!(
+///     table,
+///     r#"+---------------------------------+-------+"#
+///     r#"| application                     | state |"#
+///     r#"+---------------------------------+-------+"#
+///     r#"| Decentralized Identity          |       |"#
+///     r#"+---------------------------------+-------+"#
+///     r#"| Voting Systems                  |       |"#
+///     r#"+---------------------------------+-------+"#
+///     r#"| Privacy-Preserving Transactions |       |"#
+///     r#"+---------------------------------+-------+"#
+/// );
+/// ```
+pub fn empty<T>(_value: &T) -> String {
+    String::new()
 }

@@ -174,7 +174,7 @@ mod tuple {
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 1 234"] },
         pre: {
-            fn display_option(val: usize, text: &str) -> String {
+            fn display_option(_opt: &Option<sstr>, val: usize, text: &str) -> String {
                 format!("some {val} {text}")
             }
         }
@@ -204,7 +204,7 @@ mod tuple {
         { ["0", "1"], ["0", "some v2"] },
         pre: {
             impl TestType {
-                fn display_option(o: &TestType) -> String {
+                fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                     match o.1 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
@@ -220,7 +220,7 @@ mod tuple {
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
-            fn display_option(o: &TestType) -> String {
+            fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                 match o.1 {
                     Some(s) => format!("some {s}"),
                     None => "none".to_string(),
@@ -235,7 +235,7 @@ mod tuple {
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 0.0"] },
         pre: {
-            fn display_option(o1: u8, o2: u8) -> String {
+            fn display_option(_opt: &Option<sstr>, o1: u8, o2: u8) -> String {
                 format!("some {o1}.{o2}")
             }
         }
@@ -364,7 +364,7 @@ mod enum_ {
             }
         },
         {
-            fn display<T>(_: &T) -> String {
+            fn display<T>(_opt: &sstr, _: &T) -> String {
                 "asd".to_string()
             }
         },
@@ -413,7 +413,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self) -> String {
                     ID.to_string()
                 }
             }
@@ -439,7 +439,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self, _: sstr) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
                     ID.to_string()
                 }
             }
@@ -465,7 +465,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self, _: sstr) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
                     ID.to_string()
                 }
             }
@@ -1064,7 +1064,7 @@ mod structure {
             }
         }
         {
-            fn display_option(v1: usize, v2: usize, v3: usize) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: usize, v2: usize, v3: usize) -> String {
                 format!("{v1} {v2} {v3}")
             }
         }
@@ -1081,7 +1081,7 @@ mod structure {
             }
         }
         {
-            fn display_option(v1: &u8, v2: usize, v3: usize) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: &u8, v2: usize, v3: usize) -> String {
                 format!("{v1} {v2} {v3}")
             }
         }
@@ -1121,7 +1121,7 @@ mod structure {
         }
         {
             impl TestType {
-                fn display_option(o: &TestType) -> String {
+                fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                     match o.f2 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
@@ -1143,8 +1143,8 @@ mod structure {
         }
         {
             impl TestType {
-                fn display_option(&self) -> String {
-                    match self.f2 {
+                fn display_option(_opt: &Option<sstr>, s: &Self) -> String {
+                    match s.f2 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
@@ -1164,7 +1164,7 @@ mod structure {
             }
         }
         {
-            fn display_option(o: &TestType) -> String {
+            fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                 match o.f2 {
                     Some(s) => format!("some {s}"),
                     None => "none".to_string(),
@@ -1186,7 +1186,7 @@ mod structure {
             }
         }
         {
-            fn display_option(v1: &[u8; 2], v4: String) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: &[u8; 2], v4: String) -> String {
                 format!("{} {} {v4}", v1[0], v1[1])
             }
         }
@@ -1579,15 +1579,15 @@ fn test_macros_in_display_with() {
         national_currency_short: String,
     }
 
-    fn display_perimeter(country: &Country) -> std::borrow::Cow<'_, str> {
+    fn display_perimeter(_area: &f32, country: &Country) -> sstr {
         if country.area_km2 > 1_000_000.0 {
-            "Very Big Land".into()
+            "Very Big Land"
         } else {
-            "Big Land".into()
+            "Big Land"
         }
     }
 
-    fn display_capital(country: String) -> std::borrow::Cow<'static, str> {
+    fn display_capital(_capital: &str, country: String) -> std::borrow::Cow<'static, str> {
         format!("{country}!").into()
     }
 }
