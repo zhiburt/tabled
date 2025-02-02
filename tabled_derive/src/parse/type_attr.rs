@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span};
 use syn::{
     parenthesized, parse::Parse, punctuated::Punctuated, spanned::Spanned, token, Attribute,
-    LitBool, LitStr, Token,
+    LitBool, LitStr, Token, TypePath,
 };
 
 pub fn parse_type_attributes(
@@ -29,6 +29,7 @@ pub enum TypeAttrKind {
     Inline(LitBool, Option<LitStr>),
     RenameAll(LitStr),
     Crate(LitStr),
+    DisplayType(TypePath, LitStr, Punctuated<syn::Expr, Token!(,)>),
 }
 
 impl Parse for TypeAttr {
@@ -52,7 +53,7 @@ impl Parse for TypeAttr {
             if input.peek(LitStr) {
                 let lit = input.parse::<LitStr>()?;
 
-                if let "rename_all" = name_str.as_str() {
+                if name_str.as_str() == "rename_all" {
                     return Ok(Self::new(RenameAll(lit)));
                 }
             }
@@ -60,7 +61,7 @@ impl Parse for TypeAttr {
             if input.peek(LitBool) {
                 let lit = input.parse::<LitBool>()?;
 
-                if let "inline" = name_str.as_str() {
+                if name_str.as_str() == "inline" {
                     return Ok(Self::new(Inline(lit, None)));
                 }
             }
@@ -78,12 +79,34 @@ impl Parse for TypeAttr {
             if nested.peek(LitStr) {
                 let lit = nested.parse::<LitStr>()?;
 
-                if let "inline" = name_str.as_str() {
+                if name_str.as_str() == "inline" {
                     return Ok(Self::new(Inline(
                         LitBool::new(true, Span::call_site()),
                         Some(lit),
                     )));
                 }
+            }
+
+            if name_str.as_str() == "display" {
+                let path = nested.parse::<TypePath>()?;
+                let _comma = nested.parse::<Token![,]>()?;
+                let lit = nested.parse::<LitStr>()?;
+
+                let mut args: Punctuated<syn::Expr, token::Comma> = Punctuated::new();
+                if nested.peek(Token![,]) {
+                    _ = nested.parse::<Token![,]>()?;
+                    while !nested.is_empty() {
+                        let val = nested.parse()?;
+                        args.push_value(val);
+                        if nested.is_empty() {
+                            break;
+                        }
+                        let punct = nested.parse()?;
+                        args.push_punct(punct);
+                    }
+                }
+
+                return Ok(Self::new(DisplayType(path, lit, args)));
             }
 
             return Err(syn::Error::new(
@@ -92,7 +115,7 @@ impl Parse for TypeAttr {
             ));
         }
 
-        if let "inline" = name_str.as_str() {
+        if name_str.as_str() == "inline" {
             return Ok(Self::new(Inline(
                 LitBool::new(true, Span::call_site()),
                 None,

@@ -1,3 +1,7 @@
+//! Module contains a list of helpers for work with derive.
+
+pub mod display;
+
 /// A derive macro to implement a [`Tabled`] trait.
 ///
 /// The macro available only when `derive` feature in turned on (and it is by default).
@@ -76,7 +80,7 @@
 /// - Implement `Tabled` trait manually for a type.
 /// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
 ///
-/// Alternatively, you can use the `#[tabled(display_with = "func")]` attribute for the field to specify a display function.
+/// Alternatively, you can use the `#[tabled(display = "func")]` attribute for the field to specify a display function.
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
@@ -84,7 +88,7 @@
 /// #[derive(Tabled)]
 /// pub struct MyRecord {
 ///     pub id: i64,
-///     #[tabled(display_with = "display_option")]
+///     #[tabled(display = "display_option")]
 ///     pub valid: Option<bool>
 /// }
 ///
@@ -97,7 +101,7 @@
 /// ```
 ///
 /// It's also possible to change function argument to be `&self`,
-/// using `#[tabled(display_with("some_function", self))]`
+/// using `#[tabled(display("some_function", self))]`
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
@@ -105,13 +109,13 @@
 /// #[derive(Tabled)]
 /// pub struct MyRecord {
 ///     pub id: i64,
-///     #[tabled(display_with("Self::display_valid", self))]
+///     #[tabled(display("Self::display_valid", self))]
 ///     pub valid: Option<bool>
 /// }
 ///
 /// impl MyRecord {
-///     fn display_valid(&self) -> String {
-///         match self.valid {
+///     fn display_valid(_: &Option<bool>, s: &Self) -> String {
+///         match s.valid {
 ///             Some(s) => format!("is valid thing = {}", s),
 ///             None => format!("is not valid"),
 ///         }

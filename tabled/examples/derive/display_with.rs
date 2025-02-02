@@ -10,42 +10,45 @@
 //! * Attribute arguments can be directly overridden with static values, effectively ignoring the
 //!   augmented fields natural value entirely. Even an entire object can be passed as context with `self`.
 
-use std::borrow::Cow;
-
 use tabled::{Table, Tabled};
 
 #[derive(Tabled)]
 struct Country {
     name: String,
-    #[tabled(display_with = "str::to_uppercase")]
+    #[tabled(display = "str::to_uppercase")]
     capital: String,
-    #[tabled(display_with("display_perimeter", self))]
+    #[tabled(display("perimeter", self, false))]
     area_km2: f32,
+    #[tabled(display("tabled::derive::display::option", "unknown"))]
+    currency: Option<String>,
 }
 
-impl Country {
-    fn new(name: &str, capital: &str, area_km2: f32) -> Self {
-        Self {
-            name: name.to_string(),
-            capital: capital.to_string(),
-            area_km2,
-        }
-    }
-}
-
-fn display_perimeter(country: &Country) -> Cow<'_, str> {
-    if country.area_km2 > 1_000_000.0 {
-        "BIG".into()
-    } else {
-        "small".into()
-    }
+fn perimeter<'a>(area: &f32, country: &Country, _milies: bool) -> String {
+    let is_big = *area > 1_000_000.0f32;
+    let big_sign = if is_big { "B" } else { "" };
+    format!("{} {}", country.area_km2, big_sign)
 }
 
 fn main() {
     let data = [
-        Country::new("Afghanistan", "Kabul", 652867.0),
-        Country::new("Angola", "Luanda", 1246700.0),
-        Country::new("Canada", "Ottawa", 9984670.0),
+        Country {
+            name: String::from("Afghanistan"),
+            capital: String::from("Kabul"),
+            area_km2: 652867.0,
+            currency: Some(String::from("Afghan afghani (AFN)")),
+        },
+        Country {
+            name: String::from("Angola"),
+            capital: String::from("Luanda"),
+            area_km2: 1246700.0,
+            currency: None,
+        },
+        Country {
+            name: String::from("Canada"),
+            capital: String::from("Ottawa"),
+            area_km2: 9984670.0,
+            currency: None,
+        },
     ];
 
     let table = Table::new(data);

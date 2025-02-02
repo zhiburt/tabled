@@ -1,7 +1,10 @@
 #![cfg(feature = "derive")]
 #![cfg(feature = "std")]
 
-use tabled::Tabled;
+use std::fmt::Display;
+
+use tabled::{Table, Tabled};
+use testing_table::test_table;
 
 // https://users.rust-lang.org/t/create-a-struct-from-macro-rules/19829
 macro_rules! test_tuple {
@@ -155,7 +158,7 @@ mod tuple {
 
     test_tuple!(
         display_option,
-        { { u8 #[tabled(display_with = "display_option")] Option<sstr> } },
+        { { u8 #[tabled(display = "display_option")] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -170,11 +173,11 @@ mod tuple {
 
     test_tuple!(
         display_option_args,
-        { { u8 #[tabled(display_with("display_option", 1, "234"))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", 1, "234"))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 1 234"] },
         pre: {
-            fn display_option(val: usize, text: &str) -> String {
+            fn display_option(_opt: &Option<sstr>, val: usize, text: &str) -> String {
                 format!("some {val} {text}")
             }
         }
@@ -182,7 +185,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self,
-        { { u8 #[tabled(display_with = "Self::display_option")] Option<sstr> } },
+        { { u8 #[tabled(display = "Self::display_option")] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
@@ -199,12 +202,12 @@ mod tuple {
 
     test_tuple!(
         display_option_self_2,
-        { { u8 #[tabled(display_with("Self::display_option", self))] Option<sstr> } },
+        { { u8 #[tabled(display("Self::display_option", self))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
             impl TestType {
-                fn display_option(o: &TestType) -> String {
+                fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                     match o.1 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
@@ -216,11 +219,11 @@ mod tuple {
 
     test_tuple!(
         display_option_self_3,
-        { { u8 #[tabled(display_with("display_option", self))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", self))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some v2"] },
         pre: {
-            fn display_option(o: &TestType) -> String {
+            fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                 match o.1 {
                     Some(s) => format!("some {s}"),
                     None => "none".to_string(),
@@ -231,11 +234,11 @@ mod tuple {
 
     test_tuple!(
         display_option_self_4,
-        { { u8 #[tabled(display_with("display_option", self.0, self.0))] Option<sstr> } },
+        { { u8 #[tabled(display("display_option", self.0, self.0))] Option<sstr> } },
         { 0 Some("v2") },
         { ["0", "1"], ["0", "some 0.0"] },
         pre: {
-            fn display_option(o1: u8, o2: u8) -> String {
+            fn display_option(_opt: &Option<sstr>, o1: u8, o2: u8) -> String {
                 format!("some {o1}.{o2}")
             }
         }
@@ -332,7 +335,7 @@ mod enum_ {
             {
                 #[tabled(inline("backend::"))]
                 Backend {
-                    #[tabled(display_with = "display", rename = "name")]
+                    #[tabled(display = "display", rename = "name")]
                     value: sstr
                 }
                 Frontend
@@ -357,14 +360,14 @@ mod enum_ {
                 #[tabled(inline("backend::"))]
                 Backend {
                     #[tabled()]
-                    #[tabled(display_with("display", self), rename = "name")]
+                    #[tabled(display("display", self), rename = "name")]
                     value: sstr
                 }
                 Frontend
             }
         },
         {
-            fn display<T>(_: &T) -> String {
+            fn display<T>(_opt: &sstr, _: &T) -> String {
                 "asd".to_string()
             }
         },
@@ -381,7 +384,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with = "format::<4>")]
+                    #[tabled(display = "format::<4>")]
                     sstr
                 )
                 B
@@ -405,7 +408,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with("Self::format::<4>", self))]
+                    #[tabled(display("Self::format::<4>", self))]
                     sstr
                 )
                 B
@@ -413,7 +416,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self) -> String {
                     ID.to_string()
                 }
             }
@@ -431,7 +434,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A(
-                    #[tabled(display_with("Self::format::<4>", self, self.0))]
+                    #[tabled(display("Self::format::<4>", self, self.0))]
                     sstr
                 )
                 B
@@ -439,7 +442,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self, _: sstr) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
                     ID.to_string()
                 }
             }
@@ -457,7 +460,7 @@ mod enum_ {
             {
                 #[tabled(inline)]
                 A{
-                    #[tabled(display_with("Self::format::<4>", self, self.asd))]
+                    #[tabled(display("Self::format::<4>", self, self.asd))]
                     asd: sstr
                 }
                 B
@@ -465,7 +468,7 @@ mod enum_ {
         },
         {
             impl TestType {
-                fn format<const ID: usize>(&self, _: sstr) -> String {
+                fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
                     ID.to_string()
                 }
             }
@@ -709,36 +712,27 @@ mod enum_ {
         enum_display_with_variant,
         {
             {
-                #[tabled(display_with = "display_variant1")]
+                #[tabled(display = "display_variant1")]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with = "display_variant2::<200>")]
+                #[tabled(display = "display_variant2::<200>")]
                 B(String)
-                #[tabled(display_with = "some::bar::display_variant1")]
                 K
             }
         },
         {
-            fn display_variant1() -> &'static str {
+            fn display_variant1(_: &TestType) -> &'static str {
                 "Hello World"
             }
 
-            fn display_variant2<const VAL: usize>() -> String {
+            fn display_variant2<const VAL: usize>(_: &TestType) -> String {
                 format!("asd {VAL}")
-            }
-
-            pub mod some {
-                pub mod bar {
-                    pub fn display_variant1() -> &'static str {
-                        "Hello World 123"
-                    }
-                }
             }
         },
         { ["AbsdEgh", "B", "K"] },
         {
             AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
             B(String::new()) => ["", "asd 200", ""],
-            K => ["", "", "Hello World 123"],
+            K => ["", "", "+"],
         }
     );
 
@@ -746,36 +740,27 @@ mod enum_ {
         enum_display_with_self_variant,
         {
             {
-                #[tabled(display_with("display_variant1", self))]
+                #[tabled(display("display_variant1", self))]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with("display_variant2::<200, _>", self))]
+                #[tabled(display("display_variant2::<200, _>", self))]
                 B(String)
-                #[tabled(display_with("some::bar::display_variant1", self))]
                 K
             }
         },
         {
-            fn display_variant1<D>(_: &D) -> &'static str {
+            fn display_variant1<D>(_: &TestType, _: &D) -> &'static str {
                 "Hello World"
             }
 
-            fn display_variant2<const VAL: usize, D>(_: &D) -> String {
+            fn display_variant2<const VAL: usize, D>(_: &TestType, _: &D) -> String {
                 format!("asd {VAL}")
-            }
-
-            pub mod some {
-                pub mod bar {
-                    pub fn display_variant1<D>(_: &D) -> &'static str {
-                        "Hello World 123"
-                    }
-                }
             }
         },
         { ["AbsdEgh", "B", "K"] },
         {
             AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
             B(String::new()) => ["", "asd 200", ""],
-            K => ["", "", "Hello World 123"],
+            K => ["", "", "+"],
         }
     );
 
@@ -783,20 +768,20 @@ mod enum_ {
         enum_display_with_arguments,
         {
             {
-                #[tabled(display_with("display1", 1, 2, self))]
+                #[tabled(display("display1", 1, 2, self))]
                 AbsdEgh { a: u8, b: i32 }
-                #[tabled(display_with("display2::<200>", "Hello World"))]
+                #[tabled(display("display2::<200>", "Hello World"))]
                 B(String)
-                #[tabled(display_with("display1", 100, 200, self))]
+                #[tabled(display("display1", 100, 200, self))]
                 K
             }
         },
         {
-            fn display1<D>(val: usize, val2: usize, _: &D) -> String {
+            fn display1<D>(_: &TestType, val: usize, val2: usize, _: &D) -> String {
                 format!("{val} {val2}")
             }
 
-            fn display2<const VAL: usize>(val: &str) -> String {
+            fn display2<const VAL: usize>(_: &TestType, val: &str) -> String {
                 format!("asd {VAL} {val}")
             }
         },
@@ -1039,7 +1024,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with = "display_option")]
+                #[tabled(display = "display_option")]
                 f2: Option<sstr>,
             }
         }
@@ -1059,12 +1044,12 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", 1, 2, 3))]
+                #[tabled(display("display_option", 1, 2, 3))]
                 f2: Option<sstr>,
             }
         }
         {
-            fn display_option(v1: usize, v2: usize, v3: usize) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: usize, v2: usize, v3: usize) -> String {
                 format!("{v1} {v2} {v3}")
             }
         }
@@ -1076,12 +1061,12 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", &self.f1, 2, 3))]
+                #[tabled(display("display_option", &self.f1, 2, 3))]
                 f2: Option<sstr>,
             }
         }
         {
-            fn display_option(v1: &u8, v2: usize, v3: usize) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: &u8, v2: usize, v3: usize) -> String {
                 format!("{v1} {v2} {v3}")
             }
         }
@@ -1093,7 +1078,7 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with = "Self::display_option")]
+                #[tabled(display = "Self::display_option")]
                 f2: Option<sstr>,
             }
         }
@@ -1115,13 +1100,13 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("Self::display_option", self))]
+                #[tabled(display("Self::display_option", self))]
                 f2: Option<sstr>,
             }
         }
         {
             impl TestType {
-                fn display_option(o: &TestType) -> String {
+                fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                     match o.f2 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
@@ -1137,14 +1122,14 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("Self::display_option", self))]
+                #[tabled(display("Self::display_option", self))]
                 f2: Option<sstr>,
             }
         }
         {
             impl TestType {
-                fn display_option(&self) -> String {
-                    match self.f2 {
+                fn display_option(_opt: &Option<sstr>, s: &Self) -> String {
+                    match s.f2 {
                         Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
@@ -1159,12 +1144,12 @@ mod structure {
         {
             {
                 f1: u8,
-                #[tabled(display_with("display_option", self))]
+                #[tabled(display("display_option", self))]
                 f2: Option<sstr>,
             }
         }
         {
-            fn display_option(o: &TestType) -> String {
+            fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
                 match o.f2 {
                     Some(s) => format!("some {s}"),
                     None => "none".to_string(),
@@ -1180,13 +1165,13 @@ mod structure {
             {
                 #[tabled(skip)]
                 f1: [u8; 4],
-                #[tabled(display_with("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
+                #[tabled(display("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
                 f2: Option<sstr>,
                 f3: usize,
             }
         }
         {
-            fn display_option(v1: &[u8; 2], v4: String) -> String {
+            fn display_option(_opt: &Option<sstr>, v1: &[u8; 2], v4: String) -> String {
                 format!("{} {} {v4}", v1[0], v1[1])
             }
         }
@@ -1331,35 +1316,35 @@ test_enum!(
 
 test_struct!(
     ignore_display_with_when_used_with_inline,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", inline)] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", inline)] f3: usize } }
     {}
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "usize"], ["123", "456", "789"], }
 );
 test_struct!(
     ignore_display_with_when_used_with_inline_2,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", )] #[tabled(inline)] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", )] #[tabled(inline)] f3: usize } }
     {}
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "usize"], ["123", "456", "789"], }
 );
 test_struct!(
     display_with_and_rename,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", rename = "asd")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename = "asd")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "asd"], ["123", "456", ""], }
 );
 test_struct!(
     display_with_and_rename_2,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print")] #[tabled(rename = "asd")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print")] #[tabled(rename = "asd")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "asd"], ["123", "456", ""], }
 );
 test_struct!(
     display_with_and_rename_all,
-    { { f1: sstr, f2: sstr, #[tabled(display_with = "print", rename_all = "UPPERCASE")] f3: usize } }
+    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename_all = "UPPERCASE")] f3: usize } }
     { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
     { f1: "123", f2: "456", f3: 789 }
     { ["f1", "f2", "F3"], ["123", "456", ""], }
@@ -1525,15 +1510,15 @@ fn test_reimport_trait_by_crate_attribute() {
     );
 }
 
-#[test]
-fn test_display_with_2() {
-    #[derive(tabled::Tabled)]
-    #[allow(dead_code)]
-    struct Struct<'a> {
-        #[tabled(display_with("std::path::Path::display"))]
-        path: &'a std::path::Path,
-    }
-}
+// #[test]
+// fn test_display_with_2() {
+//     #[derive(Tabled)]
+//     #[allow(dead_code)]
+//     struct Struct<'a> {
+//         #[tabled(display("std::path::Path::display"))]
+//         path: &'a std::path::Path,
+//     }
+// }
 
 #[test]
 fn test_format_enum_inline() {
@@ -1570,24 +1555,24 @@ fn test_macros_in_display_with() {
     #[tabled(rename_all = "camelCase")]
     struct Country {
         name: String,
-        #[tabled(display_with("display_capital", format!(".{}", self.capital)))]
+        #[tabled(display("display_capital", format!(".{}", self.capital)))]
         capital: String,
-        #[tabled(display_with("display_perimeter", self))]
+        #[tabled(display("display_perimeter", self))]
         area_km2: f32,
-        #[tabled(display_with = "str::to_lowercase")]
+        #[tabled(display = "str::to_lowercase")]
         national_currency: String,
         national_currency_short: String,
     }
 
-    fn display_perimeter(country: &Country) -> std::borrow::Cow<'_, str> {
+    fn display_perimeter(_area: &f32, country: &Country) -> sstr {
         if country.area_km2 > 1_000_000.0 {
-            "Very Big Land".into()
+            "Very Big Land"
         } else {
-            "Big Land".into()
+            "Big Land"
         }
     }
 
-    fn display_capital(country: String) -> std::borrow::Cow<'static, str> {
+    fn display_capital(_capital: &str, country: String) -> std::borrow::Cow<'static, str> {
         format!("{country}!").into()
     }
 }
@@ -1637,3 +1622,278 @@ mod __ {
         struct __;
     }
 }
+
+test_table!(
+    test_display_type_0,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password,
+            mirrow: Password,
+        }
+
+        struct Password([u8; 4]);
+
+        fn password_fmt(p: &Password) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+test_table!(
+    test_display_type_args,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt", self, 0))]
+        struct User {
+            id: usize,
+            pass: Password,
+            mirrow: Password,
+        }
+
+        struct Password([u8; 4]);
+
+        fn password_fmt(p: &Password, _: &User, _: usize) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+test_table!(
+    test_display_type_generic,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password, "password_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password<usize>,
+            mirrow: Password<u8>,
+        }
+
+        struct Password<T>([T; 4]);
+
+        fn password_fmt<T>(p: &Password<T>) -> String where T: Display {
+            p.0.iter().map(|s| s.to_string()).collect::<Vec<_>>().join("-")
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+---------+---------+"
+    "| id | pass    | mirrow  |"
+    "+----+---------+---------+"
+    "| 0  | 0-1-2-3 | 1-1-1-1 |"
+    "+----+---------+---------+"
+    "| 1  | 1-1-2-3 | 2-2-1-1 |"
+    "+----+---------+---------+"
+);
+
+test_table!(
+    test_display_type_generic_use,
+    {
+        #[derive(Tabled)]
+        #[tabled(display(Password<usize>, "password_usize_fmt"))]
+        #[tabled(display(Password<u8>, "password_u8_fmt"))]
+        struct User {
+            id: usize,
+            pass: Password<usize>,
+            mirrow: Password<u8>,
+        }
+
+        struct Password<T>([T; 4]);
+
+        fn password_usize_fmt(p: &Password<usize>) -> String {
+            p.0.iter().sum::<usize>().to_string()
+        }
+
+        fn password_u8_fmt(p: &Password<u8>) -> String {
+            p.0.iter().sum::<u8>().to_string()
+        }
+
+        let data = [
+            User {
+                id: 0,
+                pass: Password([0, 1, 2, 3]),
+                mirrow: Password([1, 1, 1, 1]),
+            },
+            User {
+                id: 1,
+                pass: Password([1, 1, 2, 3]),
+                mirrow: Password([2, 2, 1, 1]),
+            },
+        ];
+
+        Table::new(data)
+    },
+    "+----+------+--------+"
+    "| id | pass | mirrow |"
+    "+----+------+--------+"
+    "| 0  | 6    | 4      |"
+    "+----+------+--------+"
+    "| 1  | 7    | 6      |"
+    "+----+------+--------+"
+);
+
+#[cfg(test)]
+mod test_display_enum {
+    use super::*;
+
+    #[derive(Tabled)]
+    pub enum User {
+        #[tabled(display("some::bar::user_fmt"))]
+        Public { id: usize },
+        #[tabled(display("user_fmt"))]
+        Private { id: usize },
+    }
+
+    fn user_fmt(_: &User) -> String {
+        format!("...")
+    }
+
+    pub mod some {
+        pub mod bar {
+            pub fn user_fmt(_: &super::super::User) -> String {
+                format!("111")
+            }
+        }
+    }
+
+    test_table!(
+        test_display_enum,
+        {
+            let data = [
+                User::Public { id: 0 },
+                User::Private { id: 1 },
+            ];
+
+            Table::new(data)
+        },
+        "+--------+---------+"
+        "| Public | Private |"
+        "+--------+---------+"
+        "| 111    |         |"
+        "+--------+---------+"
+        "|        | ...     |"
+        "+--------+---------+"
+    );
+}
+
+// TODO: Shall we support a 'display_type' for #inlined structs??
+// Seems like we have to?
+// But there's a small issue currently - we treat enum variants as field currently in a parsing stage.
+// And this particular case have no scense applied to struct field.
+// Soooo
+// Yes..
+//
+// test_table!(
+//     test_display_type_enum,
+//     {
+//         #[derive(Tabled)]
+//         enum User {
+//             #[tabled(inline)]
+//             #[tabled(display(Password<usize>, "password_usize_fmt"))]
+//             #[tabled(display(Password<u8>, "password_u8_fmt"))]
+//             Public {
+//                 id: usize,
+//                 pass: Password<usize>,
+//                 mirrow: Password<u8>,
+//             },
+//             #[tabled(display("user_fmt"))]
+//             Private {
+//                 id: usize,
+//             }
+//         }
+
+//         struct Password<T>([T; 4]);
+
+//         fn password_usize_fmt(p: &Password<usize>) -> String {
+//             p.0.iter().sum::<usize>().to_string()
+//         }
+
+//         fn password_u8_fmt(p: &Password<u8>) -> String {
+//             p.0.iter().sum::<u8>().to_string()
+//         }
+
+//         fn user_fmt(p: &User) -> String {
+//             format!("...")
+//         }
+
+//         let data = [
+//             User::Public {
+//                 id: 0,
+//                 pass: Password([0, 1, 2, 3]),
+//                 mirrow: Password([1, 1, 1, 1]),
+//             },
+//             User::Private {
+//                 id: 1,
+//             },
+//         ];
+
+//         Table::new(data)
+//     },
+//     "+----+------+--------+"
+//     "| id | pass | mirrow |"
+//     "+----+------+--------+"
+//     "| 0  | 6    | 4      |"
+//     "+----+------+--------+"
+//     "| 1  | 7    | 6      |"
+//     "+----+------+--------+"
+// );

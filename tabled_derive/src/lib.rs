@@ -18,7 +18,7 @@ use std::{collections::HashMap, str};
 use syn::visit_mut::VisitMut;
 use syn::{
     parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, ExprPath, Field, Fields,
-    Ident, Index, PathSegment, Type, Variant,
+    Ident, Index, PathSegment, Type, TypePath, Variant,
 };
 
 use crate::attributes::{FieldAttributes, TypeAttributes};
@@ -223,7 +223,14 @@ fn info_from_fields(
         headers.push(header);
 
         let field_name_result = field_name(i, field);
-        let value = get_field_fields(&field_name_result, &attributes, fields, field_name);
+        let value = get_field_fields(
+            &field_name_result,
+            &field.ty,
+            &attributes,
+            fields,
+            field_name,
+            attrs,
+        );
         values.push(value);
     }
 
@@ -410,43 +417,24 @@ fn info_from_variant(
     let variant_name = variant_name(variant, attr);
     let value = if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
+            Some(args) => {
+                args_to_tokens_with(&Fields::Unit, &quote!(self), struct_field_name, args)
+            }
+            None => quote!(&self),
         };
 
-        let result = match args {
-            Some(args) => use_function(&args, func),
-            None => use_function_no_args(func),
-        };
+        let result = use_function(&args, func);
 
-        quote! { ::std::borrow::Cow::from(format!("{}", #result)) }
-    } else if let Some(custom_format) = &attr.format {
-        let args = match &attr.format_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, &Fields::Unit, struct_field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
-        };
+        quote! { ::std::borrow::Cow::from(#result) }
+    } else if let Some(fmt) = &attr.format {
+        let args = attr
+            .format_with_args
+            .as_ref()
+            .and_then(|args| args_to_tokens(&Fields::Unit, struct_field_name, args));
 
         let call = match args {
-            Some(args) => quote!(format!(#custom_format, #args)),
-            None => quote!(format!(#custom_format)),
+            Some(args) => use_format(fmt, &args),
+            None => use_format_no_args(fmt),
         };
 
         quote! { ::std::borrow::Cow::from(#call) }
@@ -490,9 +478,11 @@ fn get_type_headers(
 
 fn get_field_fields(
     field: &TokenStream,
+    field_type: &Type,
     attr: &FieldAttributes,
     fields: &Fields,
     field_name: FieldNameFn,
+    type_attrs: &TypeAttributes,
 ) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
@@ -500,49 +490,110 @@ fn get_field_fields(
 
     if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
-            None => Some(quote!(&#field)),
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
+            Some(args) => args_to_tokens_with(fields, field, field_name, args),
+            None => quote!(&#field),
         };
 
-        let result = match args {
-            Some(args) => use_function(&args, func),
-            None => use_function_no_args(func),
-        };
+        let result = use_function(&args, func);
 
-        return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
-    } else if let Some(custom_format) = &attr.format {
-        let args = match &attr.format_with_args {
-            None => None,
-            Some(args) => match args.is_empty() {
-                true => None,
-                false => {
-                    let args = args
-                        .iter()
-                        .map(|arg| fnarg_tokens(arg, fields, field_name))
-                        .collect::<Vec<_>>();
-                    Some(quote!( #(#args,)* ))
-                }
-            },
-        };
+        return quote!(vec![::std::borrow::Cow::from(#result)]);
+    } else if let Some(fmt) = &attr.format {
+        let args = attr
+            .format_with_args
+            .as_ref()
+            .and_then(|args| args_to_tokens(fields, field_name, args));
 
         let call = match args {
-            Some(args) => use_format(&args, custom_format),
-            None => use_format_no_args(custom_format, field),
+            Some(args) => use_format(fmt, &args),
+            None => use_format_with_one_arg(fmt, field),
         };
 
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
     }
 
+    if let Some(i) = find_display_type(field_type, &type_attrs.display_types) {
+        let (_, func, args) = &type_attrs.display_types[i];
+        let args = args_to_tokens_with(fields, field, field_name, args);
+        let func = use_function(&args, func);
+
+        return quote!(vec![::std::borrow::Cow::from(#func)]);
+    }
+
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
+}
+
+fn args_to_tokens(
+    fields: &Fields,
+    field_name: fn(usize, &Field) -> TokenStream,
+    args: &[FormatArg],
+) -> Option<TokenStream> {
+    if args.is_empty() {
+        return None;
+    }
+
+    let args = args
+        .iter()
+        .map(|arg| fnarg_tokens(arg, fields, field_name))
+        .collect::<Vec<_>>();
+    Some(quote!( #(#args,)* ))
+}
+
+fn args_to_tokens_with(
+    fields: &Fields,
+    field: &TokenStream,
+    field_name: fn(usize, &Field) -> TokenStream,
+    args: &[FormatArg],
+) -> TokenStream {
+    if args.is_empty() {
+        return quote!(&#field);
+    }
+
+    let mut out = vec![quote!(&#field)];
+    for arg in args {
+        let arg = fnarg_tokens(arg, fields, field_name);
+        out.push(arg);
+    }
+
+    quote!( #(#out,)* )
+}
+
+fn find_display_type(ty: &Type, types: &[(TypePath, String, Vec<FormatArg>)]) -> Option<usize> {
+    let p: &TypePath = match ty {
+        Type::Path(path) => path,
+        _ => return None,
+    };
+
+    // NOTICE:
+    // We do iteration in a back order to satisfy a later set argument first.
+    //
+    // TODO: Maybe we shall change the data structure for it rather then doing a reverse iteration?
+    // I am just saying it's dirty a little.
+    let args = types.iter().enumerate().rev();
+    for (i, (arg, _, _)) in args {
+        if arg.path == p.path {
+            return Some(i);
+        }
+
+        // NOTICE:
+        // There's a specical case where we wanna match a type without a generic,
+        // e.g. 'Option' with which we wanna match all 'Option's.
+        //
+        // Because in the scope we can only have 1 type name, it's considered to be good,
+        // and nothing must be broken.
+        let arg_segment = arg.path.segments.last();
+        let type_segment = p.path.segments.last();
+        if let Some(arg) = arg_segment {
+            if arg.arguments.is_empty() {
+                if let Some(p) = type_segment {
+                    if p.ident == arg.ident {
+                        return Some(i);
+                    }
+                }
+            }
+        }
+    }
+
+    None
 }
 
 fn use_function(args: &TokenStream, function: &str) -> TokenStream {
@@ -558,25 +609,16 @@ fn use_function(args: &TokenStream, function: &str) -> TokenStream {
     }
 }
 
-fn use_function_no_args(function: &str) -> TokenStream {
-    let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
-    match path {
-        Ok(path) => {
-            quote! { #path() }
-        }
-        Err(_) => {
-            let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function() }
-        }
-    }
-}
-
-fn use_format(args: &TokenStream, custom_format: &str) -> TokenStream {
+fn use_format(custom_format: &str, args: &TokenStream) -> TokenStream {
     quote! { format!(#custom_format, #args) }
 }
 
-fn use_format_no_args(custom_format: &str, field: &TokenStream) -> TokenStream {
+fn use_format_with_one_arg(custom_format: &str, field: &TokenStream) -> TokenStream {
     quote! { format!(#custom_format, #field) }
+}
+
+fn use_format_no_args(custom_format: &str) -> TokenStream {
+    quote! { format!(#custom_format) }
 }
 
 fn struct_field_name(index: usize, field: &Field) -> TokenStream {
@@ -783,7 +825,7 @@ impl syn::visit_mut::VisitMut for ExprSelfReplace<'_> {
                 // ```
                 // some_macro! {
                 //     struct Something {
-                //         #[tabled(display_with("_", format!("", self.f1)))]
+                //         #[tabled(display("_", format!("", self.f1)))]
                 //         field: Option<sstr>,
                 //         f1: usize,
                 //     }

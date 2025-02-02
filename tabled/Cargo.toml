@@ -69,6 +69,11 @@ path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
+name = "derive_display_type"
+path = "examples/derive/display_type.rs"
+required-features = ["derive"]
+
+[[example]]
 name = "derive_crate_override"
 path = "examples/derive/crate_override.rs"
 required-features = ["derive"]
@@ -332,7 +337,7 @@ macros = ["std"]
 
 [dependencies]
 papergrid = { path = "../papergrid", default-features = false }
-tabled_derive = { version = "0.9", optional = true }
+tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true }
 
