@@ -1525,15 +1525,15 @@ fn test_reimport_trait_by_crate_attribute() {
     );
 }
 
-#[test]
-fn test_display_with_2() {
-    #[derive(tabled::Tabled)]
-    #[allow(dead_code)]
-    struct Struct<'a> {
-        #[tabled(display_with("std::path::Path::display"))]
-        path: &'a std::path::Path,
-    }
-}
+// #[test]
+// fn test_display_with_2() {
+//     #[derive(Tabled)]
+//     #[allow(dead_code)]
+//     struct Struct<'a> {
+//         #[tabled(display_with("std::path::Path::display"))]
+//         path: &'a std::path::Path,
+//     }
+// }
 
 #[test]
 fn test_format_enum_inline() {

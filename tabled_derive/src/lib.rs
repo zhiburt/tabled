@@ -435,7 +435,7 @@ fn info_from_variant(
             None => use_function_no_args(func),
         };
 
-        quote! { ::std::borrow::Cow::from(format!("{}", #result)) }
+        quote! { ::std::borrow::Cow::from(#result) }
     } else if let Some(custom_format) = &attr.format {
         let args = match &attr.format_with_args {
             None => None,
@@ -503,8 +503,6 @@ fn get_field_fields(
     field_name: FieldNameFn,
     type_attrs: &TypeAttributes,
 ) -> TokenStream {
-    // TODO: Remove this `format!`?
-
     if attr.inline {
         return quote! { #field.fields() };
     }
@@ -517,7 +515,7 @@ fn get_field_fields(
 
         let result = use_function(&args, func);
 
-        return quote!(vec![::std::borrow::Cow::from(format!("{}", #result))]);
+        return quote!(vec![::std::borrow::Cow::from(#result)]);
     } else if let Some(custom_format) = &attr.format {
         let args = attr
             .format_with_args
@@ -537,7 +535,7 @@ fn get_field_fields(
         let args = args_to_tokens_with(fields, field, field_name, args);
         let func = use_function(&args, func);
 
-        return quote!(vec![::std::borrow::Cow::from(format!("{}", #func))]);
+        return quote!(vec![::std::borrow::Cow::from(#func)]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
