@@ -602,9 +602,11 @@ fn find_display_type(ty: &Type, types: &[(TypePath, String, Vec<FormatArg>)]) ->
         let arg_segment = arg.path.segments.last();
         let type_segment = p.path.segments.last();
         if let Some(arg) = arg_segment {
-            if let Some(p) = type_segment {
-                if p.ident == arg.ident {
-                    return Some(i);
+            if arg.arguments.is_empty() {
+                if let Some(p) = type_segment {
+                    if p.ident == arg.ident {
+                        return Some(i);
+                    }
                 }
             }
         }
