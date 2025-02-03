@@ -1453,7 +1453,7 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
     TableOption<Data, CompactConfig, Dims> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
-        cfg.set_borders(self.borders);
+        *cfg = cfg.set_borders(self.borders);
     }
 }
 

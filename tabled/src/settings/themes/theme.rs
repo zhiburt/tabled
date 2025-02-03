@@ -371,7 +371,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for Theme {
 
 impl<R, D> TableOption<R, CompactConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        cfg.set_borders(self.chars);
+        *cfg = cfg.set_borders(self.chars);
     }
 }
 

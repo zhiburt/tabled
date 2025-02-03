@@ -1,19 +1,25 @@
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
-//! The library supports different approaches of table building.
-//! You can use [`Tabled`] trait if the data type is known.
-//! Or you can use [`Builder`] to construct the table from scratch.
+//! There's two approaches to construct a table.
 //!
-//! ## Derive
+//! 1. When the type of data is known.
+//! 2. When it's unknown.
 //!
-//! If you want to build a table for your custom type.
-//! A starting point is to a annotate your type with `#[derive(Tabled)]`.
+//! Here you can work with both.\
+//! For first approach you shall find [`derive::Tabled`] macros being very helpfull.\
+//! For a later one you shall take a look at [`Builder`].
 //!
-//! Then to provide your collection to [`Table::new`] and you will be set to render table.
+//! There are a number of [`settings`] you can use\
+//! to change table appearance, layout and data itself.
+//!
+//! Beside a default [`Table`] type there are more,\
+//! more specific table which works best when there are some constraints.
 //!
 #![cfg_attr(all(feature = "derive", feature = "std"), doc = "```")]
 #![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
+//! use tabled::settings::{Style, Alignment, object::Columns};
+//! use testing_table::assert_table;
 //!
 //! #[derive(Tabled)]
 //! struct Language {
@@ -28,112 +34,164 @@
 //!     Language{ name: "Go", designed_by: "Rob Pike", invented_year: 2009 },
 //! ];
 //!
-//! let table = Table::new(languages).to_string();
+//! let mut table = Table::new(languages);
+//! table.with(Style::modern());
+//! table.modify(Columns::first(), Alignment::right());
 //!
-//! let expected = "+------+----------------+---------------+\n\
-//!                 | name | designed_by    | invented_year |\n\
-//!                 +------+----------------+---------------+\n\
-//!                 | C    | Dennis Ritchie | 1972          |\n\
-//!                 +------+----------------+---------------+\n\
-//!                 | Rust | Graydon Hoare  | 2010          |\n\
-//!                 +------+----------------+---------------+\n\
-//!                 | Go   | Rob Pike       | 2009          |\n\
-//!                 +------+----------------+---------------+";
-//!
-//! assert_eq!(table, expected);
+//! assert_table!(
+//!     table,
+//!     "┌──────┬────────────────┬───────────────┐"
+//!     "│ name │ designed_by    │ invented_year │"
+//!     "├──────┼────────────────┼───────────────┤"
+//!     "│    C │ Dennis Ritchie │ 1972          │"
+//!     "├──────┼────────────────┼───────────────┤"
+//!     "│ Rust │ Graydon Hoare  │ 2010          │"
+//!     "├──────┼────────────────┼───────────────┤"
+//!     "│   Go │ Rob Pike       │ 2009          │"
+//!     "└──────┴────────────────┴───────────────┘"
+//! );
 //! ```
 //!
-//! BEWARE not all types can derive [`Tabled`] trait.
-//! The example below can't be compiled.
+//! ## Building table step by step
 //!
-//! Because `tabled` must know what we're up to print as a field, so
-//! each field must implement [`std::fmt::Display`].
+//! When you data scheme is not known at compile time.\
+//! You most likely will not able to relay on [`Table`].\
+//! One option would be is to use [`Builder`].
 //!
-//! ```rust,compile_fail
-//!   # use tabled::Tabled;
-//!     #[derive(Tabled)]
-//!     struct SomeType {
-//!         field1: SomeOtherType,
-//!     }
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
+//! use std::iter::once;
+//! use tabled::{builder::Builder, settings::Style};
+//! use testing_table::assert_table;
 //!
-//!     struct SomeOtherType;
+//! const X: usize = 3;
+//! const Y: usize = 5;
+//!
+//! let mut builder = Builder::default();
+//!
+//! for i in 0..X {
+//!     let row = (0..Y).map(|j| (i * j).to_string());
+//!     builder.push_record(row);
+//! }
+//!
+//! builder.insert_record(0, (0..Y).map(|i| i.to_string()));
+//! builder.insert_column(0, once(String::new()).chain((0..X).map(|i| i.to_string())));
+//!
+//! let mut table = builder.build();
+//! table.with(Style::rounded());
+//!
+//! assert_table!(
+//!     table,
+//!     "╭───┬───┬───┬───┬───┬───╮"
+//!     "│   │ 0 │ 1 │ 2 │ 3 │ 4 │"
+//!     "├───┼───┼───┼───┼───┼───┤"
+//!     "│ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │"
+//!     "│ 1 │ 0 │ 1 │ 2 │ 3 │ 4 │"
+//!     "│ 2 │ 0 │ 2 │ 4 │ 6 │ 8 │"
+//!     "╰───┴───┴───┴───┴───┴───╯"
+//! );
 //! ```
 //!
-//! You can tweak it by derive options.
+//! ## Settings
 //!
-//! ### Default implementations
+//! You can find lots of settings in [`tabled::settings`].
 //!
-//! [`Table`] can be build from vast majority of Rust's standard types.
+//! ## Hints
+//!
+//! [`Table`] can be build from vast majority of Rust's standard types.\
 //! This allows you to run the following code.
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Tabled, Table};
+//! use tabled::Table;
+//! use testing_table::assert_table;
+//!
 //! let table = Table::new(&[1, 2, 3]);
-//! # let expected = "+-----+\n\
-//! #                 | i32 |\n\
-//! #                 +-----+\n\
-//! #                 | 1   |\n\
-//! #                 +-----+\n\
-//! #                 | 2   |\n\
-//! #                 +-----+\n\
-//! #                 | 3   |\n\
-//! #                 +-----+";
-//! # assert_eq!(table.to_string(), expected);
-//! ```
 //!
-//! ### Builder
-//!
-//! When you data scheme is not known at compile time.
-//! You most likely will not able to relay on [`Tabled`] trait.
-//!
-//! So one option would be is to use [`Builder`].
-//!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use std::iter;
-//!
-//! use tabled::{
-//!     builder::Builder,
-//!     settings::{Modify, object::Rows, Alignment, Style}
-//! };
-//!
-//! let (x, y) = (3, 10);
-//!
-//! let mut builder = Builder::default();
-//!
-//! let header = iter::once(String::from("i")).chain((0..y).map(|i| i.to_string()));
-//! builder.push_record(header);
-//!
-//! for i in 0..x {
-//!     let row = iter::once(i).chain((0..y).map(|j| i * j)).map(|i| i.to_string());
-//!     builder.push_record(row);
-//! }
-//!
-//! let table = builder.build()
-//!     .with(Style::rounded())
-//!     .modify(Rows::new(1..), Alignment::left())
-//!     .to_string();
-//!
-//! assert_eq!(
+//! assert_table!(
 //!     table,
-//!     concat!(
-//!         "╭───┬───┬───┬───┬───┬───┬────┬────┬────┬────┬────╮\n",
-//!         "│ i │ 0 │ 1 │ 2 │ 3 │ 4 │ 5  │ 6  │ 7  │ 8  │ 9  │\n",
-//!         "├───┼───┼───┼───┼───┼───┼────┼────┼────┼────┼────┤\n",
-//!         "│ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │ 0  │ 0  │ 0  │ 0  │ 0  │\n",
-//!         "│ 1 │ 0 │ 1 │ 2 │ 3 │ 4 │ 5  │ 6  │ 7  │ 8  │ 9  │\n",
-//!         "│ 2 │ 0 │ 2 │ 4 │ 6 │ 8 │ 10 │ 12 │ 14 │ 16 │ 18 │\n",
-//!         "╰───┴───┴───┴───┴───┴───┴────┴────┴────┴────┴────╯",
-//!     )
+//!     "+-----+"
+//!     "| i32 |"
+//!     "+-----+"
+//!     "| 1   |"
+//!     "+-----+"
+//!     "| 2   |"
+//!     "+-----+"
+//!     "| 3   |"
+//!     "+-----+"
 //! );
 //! ```
 //!
-//! ### Build table using [`row!`] and [`col!`] macros.
+//! You can compine types, and settings together using a tupples.\
+//! And achive magical results.
+//!
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
+//! use tabled::Table;
+//! use tabled::settings::{style::{Style, HorizontalLine}, Alignment, Padding};
+//! use testing_table::assert_table;
+//!
+//! let data = &[(1, 2, "Hello"), (1, 3, "World")];
+//!
+//! let mut table = Table::new(data);
+//! table.with(
+//!     Style::modern()
+//!         .remove_horizontal()
+//!         .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
+//! );
+//! table.with((Alignment::right(), Padding::new(2, 0, 2, 1)));
+//!
+//! assert_table!(
+//!     table,
+//!     "┌─────┬─────┬───────┐"
+//!     "│     │     │       │"
+//!     "│     │     │       │"
+//!     "│  i32│  i32│   &str│"
+//!     "│     │     │       │"
+//!     "├─────┼─────┼───────┤"
+//!     "│     │     │       │"
+//!     "│     │     │       │"
+//!     "│    1│    2│  Hello│"
+//!     "│     │     │       │"
+//!     "│     │     │       │"
+//!     "│     │     │       │"
+//!     "│    1│    3│  World│"
+//!     "│     │     │       │"
+//!     "└─────┴─────┴───────┘"
+//! );
+//! ```
+//!
+//! Be ware you don't obligated to `collect` your data before building.
+//!
+#![cfg_attr(all(feature = "derive", feature = "std"), doc = "```")]
+#![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
+//! use tabled::{Tabled, Table};
+//! use testing_table::assert_table;
+//!
+//! let data = (0..3).map(|i| [i, i * 2, i * 3]);
+//!
+//! let mut table = Table::new(data);
+//!
+//! assert_table!(
+//!     table,
+//!     "+---+---+---+"
+//!     "| 0 | 1 | 2 |"
+//!     "+---+---+---+"
+//!     "| 0 | 0 | 0 |"
+//!     "+---+---+---+"
+//!     "| 1 | 2 | 3 |"
+//!     "+---+---+---+"
+//!     "| 2 | 4 | 6 |"
+//!     "+---+---+---+"
+//! );
+//! ```
+//!
+//! Build table using [`row!`] and [`col!`] macros.
 //!
 #![cfg_attr(all(feature = "macros", feature = "std"), doc = "```")]
 #![cfg_attr(not(all(feature = "macros", feature = "std")), doc = "```ignore")]
 //! use tabled::{row, col};
+//! use testing_table::assert_table;
 //!
 //! let table = row![
 //!     col!["Hello", "World", "!"],
@@ -141,25 +199,23 @@
 //!     col!["World"; 3],
 //! ];
 //!
-//! assert_eq!(
-//!     table.to_string(),
-//!     concat!(
-//!         "+-----------+-----------+-----------+\n",
-//!         "| +-------+ | +-------+ | +-------+ |\n",
-//!         "| | Hello | | | Hello | | | World | |\n",
-//!         "| +-------+ | +-------+ | +-------+ |\n",
-//!         "| | World | | | Hello | | | World | |\n",
-//!         "| +-------+ | +-------+ | +-------+ |\n",
-//!         "| | !     | | | Hello | | | World | |\n",
-//!         "| +-------+ | +-------+ | +-------+ |\n",
-//!         "+-----------+-----------+-----------+",
-//!     )
+//! assert_table!(
+//!     table,
+//!     "+-----------+-----------+-----------+"
+//!     "| +-------+ | +-------+ | +-------+ |"
+//!     "| | Hello | | | Hello | | | World | |"
+//!     "| +-------+ | +-------+ | +-------+ |"
+//!     "| | World | | | Hello | | | World | |"
+//!     "| +-------+ | +-------+ | +-------+ |"
+//!     "| | !     | | | Hello | | | World | |"
+//!     "| +-------+ | +-------+ | +-------+ |"
+//!     "+-----------+-----------+-----------+"
 //! );
 //! ```
 //!
-//! ### Settings
+//! # `no_std`
 //!
-//! You can use many settings which is found in [`tabled::settings`] module.
+//! Only [`CompactTable`] can be used in `no_std` context.
 //!
 //! # Features
 //!
@@ -167,76 +223,6 @@
 //! - `derive`  - Used by default. A support for `Tabled` derive macro.
 //! - `ansi`    - A support for ANSI sequences.
 //! - `macros`  - A support for `row!`, `col!` macro.
-//!
-//! # Advanced
-//!
-//! ## Table types
-//!
-//! [`Table`] keeps data buffered, which sometimes not ideal choice.
-//! For such reason there is [`IterTable`] and [`CompactTable`].
-//!
-//! ### [`IterTable`]
-//!
-//! [`IterTable`] stands on a middle ground between [`Table`] and [`CompactTable`].
-//!
-//! It does allocate memory but in a much smaller chunks that a [`Table`] does.
-//! The benefit is that it can be used interchangeably with [`Table`].
-//!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::tables::IterTable;
-//!
-//! let iterator = (0..3).map(|row| (0..4).map(move |col| format!("{}-{}", row, col)));
-//!
-//! let table = IterTable::new(iterator).to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     "+-----+-----+-----+-----+\n\
-//!      | 0-0 | 0-1 | 0-2 | 0-3 |\n\
-//!      +-----+-----+-----+-----+\n\
-//!      | 1-0 | 1-1 | 1-2 | 1-3 |\n\
-//!      +-----+-----+-----+-----+\n\
-//!      | 2-0 | 2-1 | 2-2 | 2-3 |\n\
-//!      +-----+-----+-----+-----+",
-//! );
-//! ```
-//!
-//! ### [`CompactTable`]
-//!
-//! Alloc free can be configured ('1) to not make any allocations.
-//! But the price is that the set of settings which can be applied to it is limited.  
-//!
-//! It also can be printed directly to [`fmt::Write`] to not have any intermidiaries.
-//!
-//! '1. It does not make any allocations in case you provide it with `width` and `count_rows`.
-//!
-//! ```
-//! use tabled::{settings::Style, tables::CompactTable};
-//! use core::fmt::{Write, Result};
-//!
-//! struct StubWriter;
-//!
-//! impl Write for StubWriter {
-//!     fn write_str(&mut self, _: &str) -> Result {
-//!         Ok(())
-//!     }
-//! }
-//!
-//! let data = [
-//!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
-//!     ["OpenBSD", "1995", "Theo de Raadt", ""],
-//!     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
-//! ];
-//!
-//! let table = CompactTable::from(data).with(Style::psql());
-//!
-//! table.fmt(StubWriter);
-//! ```
-//!
-//! ## `no_std`
-//!
-//! [`CompactTable`] can be used in `no_std` context.
 //!
 //! ## More information
 //!

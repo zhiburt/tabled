@@ -1,5 +1,40 @@
-//! This module contains a list of primitives that implement a [`Object`] trait.
+//! This module contains a list of primitives that implement a [`Object`] trait.\
 //! They help to locate a necessary segment on a [`Table`].
+//!
+//! # Example
+//!
+//! ```
+//! use tabled::{
+//!     settings::{
+//!         object::{Columns, Object, Rows},
+//!         Alignment,
+//!     },
+//!     Table,
+//! };
+//! use testing_table::assert_table;
+//!
+//! let data = [
+//!     [1, 2, 3, 4, 5],
+//!     [10, 20, 30, 40, 50],
+//!     [100, 200, 300, 400, 500],
+//! ];
+//!
+//! let mut table = Table::new(data);
+//! table.modify(Rows::first().not(Columns::first()), Alignment::right());
+//!
+//! assert_table!(
+//!     table,
+//!     "+-----+-----+-----+-----+-----+"
+//!     "| 0   |   1 |   2 |   3 |   4 |"
+//!     "+-----+-----+-----+-----+-----+"
+//!     "| 1   | 2   | 3   | 4   | 5   |"
+//!     "+-----+-----+-----+-----+-----+"
+//!     "| 10  | 20  | 30  | 40  | 50  |"
+//!     "+-----+-----+-----+-----+-----+"
+//!     "| 100 | 200 | 300 | 400 | 500 |"
+//!     "+-----+-----+-----+-----+-----+"
+//! );
+//! ```
 //!
 //! [`Table`]: crate::Table
 

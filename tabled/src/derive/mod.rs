@@ -6,26 +6,36 @@ pub mod display;
 ///
 /// The macro available only when `derive` feature in turned on (and it is by default).
 ///
-/// To be able to use the derive each field must implement `std::fmt::Display`.
-/// The following example will cause an error because of that.
-///
-/// ```rust,compile_fail
+/// ```
 /// use tabled::Tabled;
+///
 /// #[derive(Tabled)]
 /// struct SomeType {
-///     field1: SomeOtherType,
+///     field0: &'static str,
+///     field1: String,
+///     field2: usize,
 /// }
+/// ```
 ///
-/// struct SomeOtherType;
+/// To be able to use the derive each field must implement `std::fmt::Display`.\
+/// The following example will cause an error because of that.
+///
+/// ```,compile_fail
+/// use tabled::Tabled;
+///
+/// #[derive(Tabled)]
+/// struct SomeType {
+///     field1: Vec<usize>,
+/// }
 /// ```
 ///
 /// Bellow you'll find available options for it.
 ///
-/// ### Override a column name
+/// ## Rename a column name
 ///
 /// You can use a `#[tabled(rename = "")]` attribute to override a column name.
 ///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -37,13 +47,11 @@ pub mod display;
 /// }
 /// ```
 ///
-/// ### Hide a column
+/// ## Hide a column
 ///
 /// You can mark fields as hidden in which case they fill be ignored and not be present on a sheet.
 ///
-/// A similar affect could be achieved by the means of a `Remove`.
-///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -55,11 +63,11 @@ pub mod display;
 /// }
 /// ```
 ///
-/// ### Set column order
+/// ## Set column order
 ///
 /// You can change the order in which they will be displayed in table.
 ///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -72,59 +80,59 @@ pub mod display;
 /// }
 /// ```
 ///
-/// ### Format fields
+/// ## Format fields
 ///
-/// As was said already, using `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
-/// However, this may be often not the case for example when a field uses the `Option` type. There's 2 common ways how to solve this:
+/// Using `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.\
+/// However, this may be not convinient for example when a field uses the `Option` type.\
+/// There's 2 common ways how to solve this:
 ///
 /// - Implement `Tabled` trait manually for a type.
 /// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
 ///
-/// Alternatively, you can use the `#[tabled(display = "func")]` attribute for the field to specify a display function.
+/// But, it's not quite convient either.
 ///
-/// ```rust,no_run
+/// So alternatively, we provide the next solutions.
+///
+/// - Use the `#[tabled(display = "func")]` - attribute to set a display function.
+/// - Use the `#[tabled(format = "{}")]` - attribute to format field.
+///
+/// ### `#[tabled(display)]`
+///
+/// A poverfull helper, the set function must have a first argument as a reference to a field.\
+/// It supports custom arguments as well (including `self`).
+///
+/// You can set it right on the whole type,\
+/// In which case all fields which are matching a set type will be using the given function.
+///
+/// We also provide a set of commonly used function for your types.\
+/// You can find them in [`tabled::derive::display`].
+///
+/// ```
 /// use tabled::Tabled;
+/// use tabled::derive::display;
 ///
 /// #[derive(Tabled)]
-/// pub struct MyRecord {
+/// #[tabled(display(i64, "display_i64"))]
+/// pub struct Record {
 ///     pub id: i64,
-///     #[tabled(display = "display_option")]
-///     pub valid: Option<bool>
+///     #[tabled(display("display::option", "unvalidated"))]
+///     pub valid: Option<bool>,
+///     #[tabled(display("display_private", self))]
+///     pub private: (),
 /// }
 ///
-/// fn display_option(o: &Option<bool>) -> String {
-///     match o {
-///         Some(s) => format!("is valid thing = {}", s),
-///         None => format!("is not valid"),
-///     }
+/// fn display_private(_: &(), rec: &Record) -> String {
+///     todo!()
+/// }
+///
+/// fn display_i64(val: &i64) -> String {
+///     todo!()
 /// }
 /// ```
 ///
-/// It's also possible to change function argument to be `&self`,
-/// using `#[tabled(display("some_function", self))]`
+/// ### `#[tabled(format)]`
 ///
-/// ```rust,no_run
-/// use tabled::Tabled;
-///
-/// #[derive(Tabled)]
-/// pub struct MyRecord {
-///     pub id: i64,
-///     #[tabled(display("Self::display_valid", self))]
-///     pub valid: Option<bool>
-/// }
-///
-/// impl MyRecord {
-///     fn display_valid(_: &Option<bool>, s: &Self) -> String {
-///         match s.valid {
-///             Some(s) => format!("is valid thing = {}", s),
-///             None => format!("is not valid"),
-///         }
-///     }
-/// }
-/// ```
-///
-/// There's also a probably more suitable way for formatting, if your format is constant.
-/// Using `#[tabled(format = "{}")]` and `#[tabled(format("{}"))]` and proving a general formatting string.
+/// An analogue to [`format!`], which can be used right on the field.\
 ///
 /// ```
 /// use tabled::Tabled;
@@ -133,17 +141,17 @@ pub mod display;
 /// struct Record {
 ///     #[tabled(skip)]
 ///     id: u8,
-///     #[tabled(format("{}.{}", self.id, self.name))]
+///     #[tabled(format("{}.{}-{}", self.id, self.name, 123))]
 ///     name: String,
 /// }
 /// ```
 ///
-/// ### Format headers
+/// ## Format headers
 ///
-/// Beside `#[tabled(rename = "")]` you can change a format of a column name using
+/// Beside `#[tabled(rename = "")]` you can change a format of a column name using\
 /// `#[tabled(rename_all = "UPPERCASE")]`.
 ///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -157,12 +165,14 @@ pub mod display;
 /// }
 /// ```
 ///
-/// ### Inline
+/// ## Embeding a field
 ///
-/// It's possible to inline internal data if it implements the `Tabled` trait using `#[tabled(inline)]`.
-/// You can also set a prefix which will be used for all inlined elements by `#[tabled(inline("prefix>>"))]`.
+/// You can inline a field or a variant if it implements `Tabled` trait\
+/// using `#[tabled(inline)]`.
+/// You can also set a prefix for inlined elements by given it as a argument\
+/// `#[tabled(inline("::::"))]`.
 ///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -182,7 +192,7 @@ pub mod display;
 ///
 /// And it works for enums as well.
 ///
-/// ```rust,no_run
+/// ```
 /// use tabled::Tabled;
 ///
 /// #[derive(Tabled)]
@@ -205,4 +215,6 @@ pub mod display;
 ///     price: f32,
 /// }
 /// ```
+///
+/// [`tabled::derive::display`]: crate::tabled::derive::display
 pub use tabled_derive::Tabled;

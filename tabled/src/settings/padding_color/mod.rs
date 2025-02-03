@@ -142,7 +142,7 @@ where
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         let c = self.colors.clone();
         let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
-        cfg.set_padding_color(colors);
+        *cfg = cfg.set_padding_color(colors);
     }
 }
 

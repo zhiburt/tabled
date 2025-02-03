@@ -55,15 +55,13 @@ const fn generate_table_config() -> CompactConfig {
         intersection: Some('+'),
     };
 
-    let mut cfg = CompactConfig::new();
-    cfg.set_borders(STYLE);
-    cfg.set_alignment_horizontal(AlignmentHorizontal::Center);
-    cfg.set_padding(Sides::new(
-        Indent::spaced(1),
-        Indent::spaced(1),
-        Indent::spaced(0),
-        Indent::spaced(0),
-    ));
-
-    cfg
+    CompactConfig::new()
+        .set_borders(STYLE)
+        .set_alignment_horizontal(AlignmentHorizontal::Center)
+        .set_padding(Sides::new(
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::spaced(0),
+            Indent::spaced(0),
+        ))
 }
