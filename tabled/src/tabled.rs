@@ -16,6 +16,7 @@ pub trait Tabled {
     ///
     /// The cells will be placed in the same row, preserving the order.
     fn fields(&self) -> Vec<Cow<'_, str>>;
+
     /// Headers must return a list of column names.
     fn headers() -> Vec<Cow<'static, str>>;
 }
@@ -29,6 +30,7 @@ where
     fn fields(&self) -> Vec<Cow<'_, str>> {
         T::fields(self)
     }
+
     fn headers() -> Vec<Cow<'static, str>> {
         T::headers()
     }
@@ -43,6 +45,7 @@ where
     fn fields(&self) -> Vec<Cow<'_, str>> {
         T::fields(self)
     }
+
     fn headers() -> Vec<Cow<'static, str>> {
         T::headers()
     }
