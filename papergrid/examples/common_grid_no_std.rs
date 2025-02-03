@@ -49,7 +49,7 @@ const fn generate_table_config() -> CompactConfig {
         intersection: Some('+'),
     };
 
-    let cfg = CompactConfig::new()
+    CompactConfig::new()
         .set_borders(STYLE)
         .set_alignment_horizontal(AlignmentHorizontal::Center)
         .set_padding(Sides::new(
@@ -57,9 +57,7 @@ const fn generate_table_config() -> CompactConfig {
             Indent::spaced(1),
             Indent::spaced(3),
             Indent::spaced(0),
-        ));
-
-    cfg
+        ))
 }
 
 struct ConstDims<'a>(&'a [usize], usize);
