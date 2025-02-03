@@ -167,33 +167,22 @@
 #![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
 //! use testing_table::assert_table;
-//! use std::iter::once;
 //!
-//! #[derive(Tabled)]
-//! struct Data(
-//!     #[tabled(rename = "word")]
-//!     String,
-//!     #[tabled(rename = "id")]
-//!     usize,
-//! );
-//!
-//! let data = once(Data(String::from("Hello"), 0))
-//!     .chain(once(Data(String::from("World"), 1)))
-//!     .chain(once(Data(String::from("!!!"), 2)));
+//! let data = (0..3).map(|i| [i, i * 2, i * 3]);
 //!
 //! let mut table = Table::new(data);
 //!
 //! assert_table!(
 //!     table,
-//!     "+-------+----+"
-//!     "| word  | id |"
-//!     "+-------+----+"
-//!     "| Hello | 0  |"
-//!     "+-------+----+"
-//!     "| World | 1  |"
-//!     "+-------+----+"
-//!     "| !!!   | 2  |"
-//!     "+-------+----+"
+//!     "+---+---+---+"
+//!     "| 0 | 1 | 2 |"
+//!     "+---+---+---+"
+//!     "| 0 | 0 | 0 |"
+//!     "+---+---+---+"
+//!     "| 1 | 2 | 3 |"
+//!     "+---+---+---+"
+//!     "| 2 | 4 | 6 |"
+//!     "+---+---+---+"
 //! );
 //! ```
 //!

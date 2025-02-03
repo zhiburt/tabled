@@ -44,7 +44,7 @@ impl CompactMultilineConfig {
 
     /// Set grid margin.
     pub fn set_margin(&mut self, margin: Sides<Indent>) {
-        self.config.set_margin(margin);
+        self.config = self.config.set_margin(margin);
     }
 
     /// Returns a grid margin.
@@ -54,7 +54,7 @@ impl CompactMultilineConfig {
 
     /// Set the [`Borders`] value as correct one.
     pub fn set_borders(&mut self, borders: Borders<char>) {
-        self.config.set_borders(borders)
+        self.config = self.config.set_borders(borders);
     }
 
     /// Returns a current [`Borders`] structure.
@@ -69,7 +69,7 @@ impl CompactMultilineConfig {
 
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, padding: Sides<Indent>) {
-        self.config.set_padding(padding)
+        self.config = self.config.set_padding(padding)
     }
 
     /// Get a padding for a given.
@@ -79,7 +79,7 @@ impl CompactMultilineConfig {
 
     /// Set a horizontal alignment.
     pub fn set_alignment_horizontal(&mut self, alignment: AlignmentHorizontal) {
-        self.config.set_alignment_horizontal(alignment)
+        self.config = self.config.set_alignment_horizontal(alignment)
     }
 
     /// Get a alignment horizontal.
@@ -89,12 +89,12 @@ impl CompactMultilineConfig {
 
     /// Sets colors of border carcass on the grid.
     pub fn set_borders_color(&mut self, borders: Borders<ANSIStr<'static>>) {
-        self.config.set_borders_color(borders)
+        self.config = self.config.set_borders_color(borders)
     }
 
     /// Set colors for a margin.
     pub fn set_margin_color(&mut self, color: Sides<ANSIStr<'static>>) {
-        self.config.set_margin_color(color)
+        self.config = self.config.set_margin_color(color)
     }
 
     /// Returns a margin color.
@@ -104,7 +104,7 @@ impl CompactMultilineConfig {
 
     /// Set a padding color to all cells.
     pub fn set_padding_color(&mut self, color: Sides<ANSIStr<'static>>) {
-        self.config.set_padding_color(color)
+        self.config = self.config.set_padding_color(color)
     }
 
     /// get a padding color.

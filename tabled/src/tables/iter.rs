@@ -352,16 +352,15 @@ fn get_count_columns<T>(opts: &Settings, buf: &[Vec<T>]) -> usize {
 }
 
 const fn create_config() -> CompactConfig {
-    let mut cfg = CompactConfig::new();
-    cfg.set_padding(Sides::new(
-        Indent::spaced(1),
-        Indent::spaced(1),
-        Indent::zero(),
-        Indent::zero(),
-    ));
-    cfg.set_alignment_horizontal(AlignmentHorizontal::Left);
-    cfg.set_borders(Style::ascii().get_borders());
-    cfg
+    CompactConfig::new()
+        .set_padding(Sides::new(
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::zero(),
+            Indent::zero(),
+        ))
+        .set_alignment_horizontal(AlignmentHorizontal::Left)
+        .set_borders(Style::ascii().get_borders())
 }
 
 fn build_records<I>(

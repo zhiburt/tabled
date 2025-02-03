@@ -104,7 +104,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for Margin {
 
 impl<R, D> TableOption<R, CompactConfig, D> for Margin {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        cfg.set_margin(self.indent);
+        *cfg = cfg.set_margin(self.indent);
     }
 }
 

@@ -103,7 +103,7 @@ where
 {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         let colors = self.colors.convert_into();
-        cfg.set_margin_color(colors);
+        *cfg = cfg.set_margin_color(colors);
     }
 }
 
