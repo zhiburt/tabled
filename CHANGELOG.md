@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [0.18.0] - 2025-31-01
+## [0.18.0] - 2025-07-02
 
 ### Added
 
+- Added `#[tabled(display(Type, "function", arg1, arg2))]` - a derive helper (propoused by [@georgewhewell](https://github.com/georgewhewell)).
 - Added `Table::kv` - a new type of table layout.
 - Added new `Span` logic with negative and 0 spans.
 - Added `LineText::align` to stick text on border to specific location.
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Renamed `#[tabled(display_with)]` into `#[tabled(display)]`.
 - Changed MSRV to the 1.83.
 - Removed owo-colors dependency.
 - Migrated owo-colors to 3.5 (by [@joshtriplett](https://github.com/joshtriplett)).

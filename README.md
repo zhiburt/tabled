@@ -604,18 +604,16 @@ let data = vec![
     vec!["World", "Welt", "DE"],
 ];
 
-let color_col1 = Color::BG_GREEN | Color::FG_BLACK;
-let color_col2 = Color::BG_MAGENTA | Color::FG_BLACK;
-let color_col3 = Color::BG_YELLOW | Color::FG_BLACK;
-let color_head = Color::BG_WHITE | Color::FG_BLACK;
-let color_head_text = Color::BG_BLUE | Color::FG_BLACK;
-
 let mut table = Builder::from_iter(data).build();
 table
     .with(Style::empty())
-    .with(Colorization::columns([color_col1, color_col2, color_col3]))
-    .with(Colorization::exact([color_head], Rows::first()))
-    .modify(Rows::first(), color_head_text);
+    .with(Colorization::columns([
+        Color::BG_GREEN | Color::FG_BLACK,
+        Color::BG_MAGENTA | Color::FG_BLACK,
+        Color::BG_YELLOW | Color::FG_BLACK,
+    ]))
+    .with(Colorization::exact([Color::BG_WHITE | Color::FG_BLACK], Rows::first()))
+    .modify(Rows::first(), Color::BG_BLUE | Color::FG_BLACK);
 
 println!("{table}");
 ```
@@ -1555,7 +1553,7 @@ Alternatively, you can use the `#[tabled(display = "func")]` attribute for the f
 use tabled::Tabled;
 
 #[derive(Tabled)]
-pub struct MyRecord {
+pub struct Record {
     pub id: i64,
     #[tabled(display = "display_option")]
     pub valid: Option<bool>
@@ -1576,19 +1574,37 @@ using `#[tabled(display("some_function", "arg1", 2, self))]`
 use tabled::Tabled;
 
 #[derive(Tabled)]
-pub struct MyRecord {
+pub struct Record {
     pub id: i64,
     #[tabled(display("Self::display_valid", self, 1))]
     pub valid: Option<bool>
 }
 
-impl MyRecord {
+impl Record {
     fn display_valid(&self, arg: usize) -> String {
         match self.valid {
             Some(s) => format!("is valid thing = {} {}", s, arg),
             None => format!("is not valid {}", arg),
         }
     }
+}
+```
+
+There's one more case for `display` usage.
+Is a situation where you have many fields with similar types.
+You could set a `display` function agains the whole type.
+See next example.
+
+```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+#[tabled(display(Option, "tabled::derive::display::option", ""))]
+pub struct Record {
+    pub id: i64,
+    pub name: Option<String>,
+    pub birthdate: Option<usize>,
+    pub valid: Option<bool>,
 }
 ```
 
