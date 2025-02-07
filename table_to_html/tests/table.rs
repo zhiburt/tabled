@@ -1,4 +1,4 @@
-use table_to_html::{Alignment, Entity, HtmlTable, Margin, Padding};
+use table_to_html::{Alignment, Entity, HtmlTable, Margin, Padding, Position};
 
 use tabled::Table;
 use testing_table::test_table;
@@ -709,7 +709,7 @@ test_table!(
     table_span_column,
     {
         let mut html = HtmlTable::with_header(Vec::<Vec<String>>::from(Table::builder([["123", "324", "zxc"], ["123", "324", "zxc"]])));
-        html.set_column_span((0, 0), 3);
+        html.set_column_span(Position::new(0, 0), 3);
         html
     },
     "<table>"
@@ -793,7 +793,7 @@ test_table!(
     table_span_row,
     {
         let mut html = HtmlTable::with_header(Vec::<Vec<String>>::from(Table::builder([["123", "324", "zxc"], ["123", "324", "zxc"]])));
-        html.set_row_span((1, 1), 2);
+        html.set_row_span(Position::new(1, 1), 2);
         html
     },
     "<table>"
@@ -877,8 +877,8 @@ test_table!(
     table_span_row_and_span_col,
     {
         let mut html = HtmlTable::with_header(Vec::<Vec<String>>::from(Table::builder([["123", "324", "zxc"], ["123", "324", "zxc"]])));
-        html.set_row_span((2, 1), 2);
-        html.set_column_span((2, 1), 2);
+        html.set_row_span(Position::new(2, 1), 2);
+        html.set_column_span(Position::new(2, 1), 2);
         html
     },
     "<table>"

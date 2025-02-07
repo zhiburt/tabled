@@ -538,11 +538,11 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
 
     impl HtmlVisitorMut for Setter {
         fn visit_element_mut(&mut self, e: &mut HtmlElement) -> bool {
-            if self.cursor.0 != self.pos.0 {
+            if self.cursor.row() != self.pos.row() {
                 // looking for a row
                 if e.tag() == "tr" {
                     if self.is_started {
-                        self.cursor.0 += 1;
+                        self.cursor += (1, 0);
                     } else {
                         self.is_started = true;
                     }
@@ -566,7 +566,7 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
                         return false;
                     }
 
-                    self.cursor.1 += 1;
+                    self.cursor += (0, 1);
                 }
             }
 
@@ -577,7 +577,7 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
     table.visit_mut(&mut Setter {
         attr,
         pos,
-        cursor: (0, 0),
+        cursor: Position::new(0, 0),
         is_started: false,
     });
 }
