@@ -1,6 +1,6 @@
 [package]
 name = "static_table"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Library creates pretty tables at compiler time"
@@ -20,7 +20,7 @@ derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
 [dependencies]
-tabled = { version = "0.17", features = ["std"], default-features = false }
+tabled = { version = "0.18", features = ["std"], default-features = false }
 syn = { version = "2", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"

@@ -716,11 +716,11 @@ fn create_table(mat: &MatrixInput) -> Result<Table> {
     let mut table = builder.build();
 
     for (pos, span) in vspan {
-        table.with(Modify::new(pos).with(Span::column(span)));
+        table.with(Modify::new(pos).with(Span::column(span as isize)));
     }
 
     for (pos, span) in hspan {
-        table.with(Modify::new(pos).with(Span::row(span)));
+        table.with(Modify::new(pos).with(Span::row(span as isize)));
     }
 
     Ok(table)
