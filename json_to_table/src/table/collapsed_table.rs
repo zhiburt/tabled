@@ -8,7 +8,7 @@ use serde_json::Map;
 use tabled::{
     builder::Builder,
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
         util::string::{count_lines, get_line_width, get_lines, get_text_dimension},
     },
     settings::{Padding, TableOption},
@@ -672,7 +672,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for SetTopChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &split in self.0 {
             let offset = split;
-            cfg.set_horizontal_char((0, 0), self.1, Offset::Begin(offset));
+            cfg.set_horizontal_char(Position::new(0, 0), self.1, Offset::Begin(offset));
         }
     }
 }
@@ -682,7 +682,7 @@ struct SetLeftChars<'a>(&'a [usize], char);
 impl<R, D> TableOption<R, ColoredConfig, D> for SetLeftChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &offset in self.0 {
-            cfg.set_vertical_char((0, 0), self.1, Offset::Begin(offset));
+            cfg.set_vertical_char(Position::new(0, 0), self.1, Offset::Begin(offset));
         }
     }
 }
@@ -896,12 +896,12 @@ fn str_dimension(text: &str, cfg: &Config) -> Dim {
 }
 
 fn get_padding_horizontal(cfg: &Config) -> usize {
-    let pad = cfg.cfg.get_padding(Entity::Global);
+    let pad = cfg.cfg.get_padding(Position::new(0, 0));
     pad.left.size + pad.right.size
 }
 
 fn get_padding_vertical(cfg: &Config) -> usize {
-    let pad = cfg.cfg.get_padding(Entity::Global);
+    let pad = cfg.cfg.get_padding(Position::new(0, 0));
     pad.top.size + pad.bottom.size
 }
 
@@ -912,11 +912,11 @@ fn split_value(value: usize, by: usize) -> (usize, usize) {
 }
 
 fn config_string(value: &str, cfg: &ColoredConfig, width: usize, height: usize) -> String {
-    let pad = cfg.get_padding(Entity::Global);
+    let pad = cfg.get_padding(Position::new(0, 0));
     let width = width - pad.left.size - pad.right.size;
     let height = height - pad.bottom.size - pad.top.size;
-    let ah = *cfg.get_alignment_horizontal(Entity::Global);
-    let av = *cfg.get_alignment_vertical(Entity::Global);
+    let ah = *cfg.get_alignment_horizontal(Position::new(0, 0));
+    let av = *cfg.get_alignment_vertical(Position::new(0, 0));
     set_string_dimension(value, width, height, ah, av)
 }
 
