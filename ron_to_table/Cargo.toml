@@ -19,7 +19,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 ron = "0.8"
-tabled = { version = "0.17", features = ["std"], default-features = false }
+tabled = { version = "0.18", features = ["std"], default-features = false }
 
 [dev-dependencies]
 testing_table = { version = "0.2", features = ["ansi"] }
