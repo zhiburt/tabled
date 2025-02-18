@@ -2542,6 +2542,28 @@ test_table!(
     "+--+---+----------+----------+"
 );
 
+#[cfg(feature = "ansi")]
+test_table!(
+    wrap_issue_0,
+    {
+        tabled::Table::new(vec![
+            ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
+        ])
+        .with(Width::wrap(40).keep_words(true))
+        .to_string()
+    },
+    "+--------------------------------------+"
+    "| &str                                 |"
+    "+--------------------------------------+"
+    "| x xxx xx xxxxxxx xxxxxxxx xx xxxx    |"
+    "| xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx |"
+    "|  xx xxxxxxx x xx xxxxxx x xxxxxx     |"
+    "| xxxxxxxxxxxx xx xxxxxx xxx xxx       |"
+    "| xxxxxx xxxxxxx. xx xxxxxxxx xx xx    |"
+    "| xxxxxxxxxx                           |"
+    "+--------------------------------------+"
+);
+
 #[cfg(feature = "derive")]
 mod derived {
     use super::*;

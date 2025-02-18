@@ -483,7 +483,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                 word_width = 0;
             }
             _ => {
-                word_width += get_char_width(c);
+                word_width += std::cmp::max(1, get_char_width(c));
                 word_chars += 1;
             }
         }
@@ -547,11 +547,11 @@ mod parsing {
     }
 
     pub(super) struct MultilineBuffer<'a> {
-        buf: String,
-        width_last: usize,
-        width: usize,
-        prefix: &'a str,
-        suffix: &'a str,
+        pub buf: String,
+        pub width_last: usize,
+        pub width: usize,
+        pub prefix: &'a str,
+        pub suffix: &'a str,
     }
 
     impl<'a> MultilineBuffer<'a> {
@@ -642,7 +642,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = get_char_width(c);
+                let cwidth = std::cmp::max(1, get_char_width(c));
 
                 let available_space = self.width - self.width_last;
                 if available_space == 0 {
@@ -690,7 +690,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = get_char_width(c);
+                let cwidth = std::cmp::max(1, get_char_width(c));
                 self.width_last += cwidth;
 
                 self.buf.push(c);
