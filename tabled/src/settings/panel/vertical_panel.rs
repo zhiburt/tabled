@@ -140,7 +140,7 @@ mod tests {
             {
                 #[cfg(feature = "ansi")]
                 {
-                    "\u{1b}[31m\u{1b}[100m😳\u{1b}[39m\u{1b}[49m�\n\u{1b}[31m\u{1b}[100m🏳\u{fe0f}\u{1b}[39m\u{1b}[49m😳\n🏳\u{fe0f}"
+                    "\u{1b}[31m\u{1b}[100m😳\u{1b}[39m\u{1b}[49m�\n\u{1b}[31m\u{1b}[100m🏳\u{fe0f}\u{1b}[39m\u{1b}[49m�\n🏳\u{fe0f}"
                 }
                 #[cfg(not(feature = "ansi"))]
                 {
