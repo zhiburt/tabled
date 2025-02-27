@@ -1487,8 +1487,8 @@ struct Person {
 
 ### Format headers
 
-Beside `#[tabled(rename = "")]` you can change a format of a column name using
-`#[tabled(rename_all = "UPPERCASE")]`.
+Using `#[tabled(rename_all = "")]` you can change a format of a column name.
+Supported values are [`camelCase`, `kebab-case`, `PascalCase`, `SCREAMING_SNAKE_CASE`, `snake_case`, `lowercase`, `UPPERCASE`, `lower title case`, `Upper Title Case`, `verbatim`]
 
 ```rust
 use tabled::Tabled;
@@ -1499,7 +1499,7 @@ struct Person {
     id: u8,
     number: &'static str,
     name: &'static str,
-    #[tabled(rename_all = "snake_case")]
+    #[tabled(rename_all = "UPPERCASE")]
     middle_name: &'static str,
 }
 ```

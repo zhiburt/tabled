@@ -337,7 +337,7 @@ macros = ["std"]
 
 [dependencies]
 papergrid = { version = "0.14", default-features = false }
-tabled_derive = { version = "0.10", optional = true }
+tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true }
 

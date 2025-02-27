@@ -14,7 +14,7 @@
 use tabled::{Table, Tabled};
 
 #[derive(Tabled)]
-#[tabled(rename_all = "camelCase")]
+#[tabled(rename_all = "UPPERCASE")]
 struct Country {
     name: String,
     #[tabled(rename_all = "kebab-case")]
