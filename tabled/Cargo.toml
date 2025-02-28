@@ -329,7 +329,7 @@ path = "examples/option.rs"
 required-features = ["derive"]
 
 [features]
-default = ["derive", "macros"]
+default = ["derive", "macros", "ansi"]
 std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
 ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
