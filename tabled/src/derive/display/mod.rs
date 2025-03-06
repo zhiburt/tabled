@@ -5,8 +5,9 @@ use core::fmt::Debug;
 /// A function which is usefull in conjuntion with
 /// `#[tabled(display)]` and `#[tabled(display)]`.
 ///
-/// It can be used with any [`Option`] type.
-/// You must provide a second argument which represents a value be printed in case of [`None`].
+/// It can be used with a [`bool`] type.
+/// You must provide 2 argumnts which will be display
+/// for true and false case correspondingly.
 ///
 /// # Example
 ///
