@@ -105,7 +105,7 @@ pub(crate) fn split_at_width(s: &str, at_width: usize) -> (usize, usize, usize) 
             continue;
         }
 
-        let c_width = get_char_width(c);
+        let c_width = std::cmp::max(1, get_char_width(c));
         let c_length = c.len_utf8();
 
         // We cut the chars which takes more then 1 symbol to display,
@@ -205,7 +205,7 @@ mod tests {
 
         assert_eq!(cut_str("🏳️🏳️", 0), "");
         assert_eq!(cut_str("🏳️🏳️", 1), "🏳");
-        assert_eq!(cut_str("🏳️🏳️", 2), "🏳\u{fe0f}🏳");
+        assert_eq!(cut_str("🏳️🏳️", 2), "🏳\u{fe0f}");
         assert_eq!(get_line_width("🏳️🏳️"), get_line_width("🏳\u{fe0f}🏳\u{fe0f}"));
 
         assert_eq!(cut_str("🎓", 1), "�");
@@ -259,7 +259,7 @@ mod tests {
         assert_eq!(cut_str(emojies, 1), "\u{1b}[31;100m🏳\u{1b}[39m\u{1b}[49m");
         assert_eq!(
             cut_str(emojies, 2),
-            "\u{1b}[31;100m🏳\u{fe0f}🏳\u{1b}[39m\u{1b}[49m"
+            "\u{1b}[31;100m🏳\u{fe0f}\u{1b}[39m\u{1b}[49m"
         );
         assert_eq!(
             get_line_width(emojies),
