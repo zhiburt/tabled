@@ -1599,7 +1599,7 @@ See next example.
 use tabled::Tabled;
 
 #[derive(Tabled)]
-#[tabled(display(Option, "tabled::derive::display::option", ""))]
+#[tabled(display(Option, "tabled::derive::display::option", "undefined"))]
 pub struct Record {
     pub id: i64,
     pub name: Option<String>,
