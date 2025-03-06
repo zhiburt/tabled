@@ -16,6 +16,59 @@ use core::fmt::Debug;
 /// use testing_table::assert_table;
 ///
 /// #[derive(Tabled)]
+/// #[tabled(display(bool, "display::bool", "Got", 0))]
+/// pub struct State {
+///     name: &'static str,
+///     working: bool,
+///     closed: bool,
+/// }
+///
+/// let data = vec![
+///     State { name: "work", working: true, closed: false },
+///     State { name: "stop", working: false, closed: false },
+///     State { name: "closed", working: false, closed: true },
+/// ];
+///
+/// let table = tabled::Table::new(data);
+///
+/// assert_table!(
+///     table,
+///     "+--------+---------+--------+"
+///     "| name   | working | closed |"
+///     "+--------+---------+--------+"
+///     "| work   | Got     | 0      |"
+///     "+--------+---------+--------+"
+///     "| stop   | 0       | 0      |"
+///     "+--------+---------+--------+"
+///     "| closed | 0       | Got    |"
+///     "+--------+---------+--------+"
+/// );
+/// ```
+pub fn bool<T, F>(value: &bool, on_true: T, on_false: F) -> String
+where
+    T: ToString,
+    F: ToString,
+{
+    match value {
+        true => on_true.to_string(),
+        false => on_false.to_string(),
+    }
+}
+
+/// A function which is usefull in conjuntion with
+/// `#[tabled(display)]` and `#[tabled(display)]`.
+///
+/// It can be used with any [`Option`] type.
+/// You must provide a second argument which represents a value be printed in case of [`None`].
+///
+/// # Example
+///
+/// ```
+/// use tabled::Tabled;
+/// use tabled::derive::display;
+/// use testing_table::assert_table;
+///
+/// #[derive(Tabled)]
 /// #[tabled(display(Option, "display::option", "Unknown"))]
 /// pub struct ZKP<'a> {
 ///     application: &'a str,
