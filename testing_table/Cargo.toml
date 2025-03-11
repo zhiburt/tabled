@@ -13,6 +13,7 @@ categories = ["text-processing", "development-tools", "development-tools::testin
 readme = "README.md"
 
 [features]
+std = []
 ansi = ["ansitok"]
 
 [dependencies]
