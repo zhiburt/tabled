@@ -328,21 +328,27 @@ name = "option"
 path = "examples/option.rs"
 required-features = ["derive"]
 
+[[example]]
+name = "no_std"
+path = "examples/no_std.rs"
+required-features = []
+no-default-features = true
+
 [features]
 default = ["derive", "macros"]
-std = ["papergrid/std"]
+std = ["papergrid/std", "testing_table/std"]
 derive = ["tabled_derive", "std"]
 ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { version = "0.14", default-features = false }
+papergrid = { path = "../papergrid", default-features = false }
 tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true }
 
 [dev-dependencies]
-testing_table = { version = "0.2", features = ["ansi"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
