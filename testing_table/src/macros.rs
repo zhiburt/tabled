@@ -32,7 +32,7 @@ macro_rules! static_table {
 ///     "|--|--|"
 /// )
 /// ```
-/// 
+///
 /// ```text
 /// test_table!(
 ///     test_name,
