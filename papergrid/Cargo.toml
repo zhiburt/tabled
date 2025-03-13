@@ -9,13 +9,13 @@ license = "MIT"
 
 [features]
 default = ["std"]
-std = ["fnv/std"]
+std = ["fnv"]
 ansi = ["ansi-str", "ansitok"]
 
 [dependencies]
 unicode-width = "0.2"
 bytecount = "0.6"
-fnv = { version = "1.0", default-features = false }
+fnv = { version = "1.0", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true  }
 
