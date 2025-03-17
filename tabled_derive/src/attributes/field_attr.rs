@@ -1,4 +1,4 @@
-use syn::{Attribute, LitInt};
+use syn::{Attribute, LitInt, Type};
 
 use crate::{
     casing_style::CasingStyle,
@@ -15,9 +15,11 @@ pub struct FieldAttributes {
     pub rename_all: Option<CasingStyle>,
     pub display_with: Option<String>,
     pub display_with_args: Option<Vec<FormatArg>>,
-    pub order: Option<usize>,
     pub format: Option<String>,
     pub format_with_args: Option<Vec<FormatArg>>,
+    pub map: Option<String>,
+    pub map_type: Option<Type>,
+    pub order: Option<usize>,
 }
 
 pub struct FormatArg {
@@ -81,6 +83,12 @@ impl FieldAttributes {
                 if comma.is_some() {
                     let args = args.into_iter().map(FormatArg::new).collect();
                     self.format_with_args = Some(args);
+                }
+            }
+            FieldAttrKind::Map(foo, ret_type) => {
+                self.map = Some(foo.value());
+                if let Some((_, ret_type)) = ret_type {
+                    self.map_type = Some(ret_type);
                 }
             }
             FieldAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),

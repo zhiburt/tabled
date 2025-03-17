@@ -15,6 +15,7 @@ use proc_macro2::TokenStream;
 use proc_macro_error2::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
+use syn::spanned::Spanned;
 use syn::visit_mut::VisitMut;
 use syn::{
     parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, ExprPath, Field, Fields,
@@ -100,12 +101,25 @@ fn get_fields_length(fields: &Fields, tabled_trait: &ExprPath) -> Result<TokenSt
         .filter(|(_, attr)| !attr.is_ignored)
         .map(|(field, attr)| {
             if attr.inline {
-                let field_type = &field.ty;
-                quote!({<#field_type as #tabled_trait>::LENGTH})
+                if attr.map.is_some() {
+                    match attr.map_type {
+                        Some(map_type) => Ok(quote!({ <#map_type as #tabled_trait>::LENGTH })),
+                        None => Err(Error::new(
+                            "map type was not given",
+                            field.span(),
+                            Some(String::from("provide a type to map attribute")),
+                        )),
+                    }
+                } else {
+                    let field_type = &field.ty;
+                    Ok(quote!({<#field_type as #tabled_trait>::LENGTH}))
+                }
             } else {
-                quote!({ 1 })
+                Ok(quote!({ 1 }))
             }
-        });
+        })
+        .collect::<Result<Vec<_>, Error>>()?
+        .into_iter();
 
     let size_components = std::iter::once(quote!(0)).chain(size_components);
 
@@ -285,19 +299,29 @@ fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: &[T]) -> Ve
 fn field_headers(
     field: &Field,
     index: usize,
-    attributes: &FieldAttributes,
+    attrs: &FieldAttributes,
     prefix: &str,
     trait_path: &ExprPath,
 ) -> TokenStream {
-    if attributes.inline {
-        let prefix = attributes
+    if attrs.inline {
+        let prefix = attrs
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
+
+        if attrs.map.is_some() {
+            if let Some(map_type) = &attrs.map_type {
+                return get_type_headers(map_type, prefix, "", trait_path);
+            } else {
+                // NOTE: A panic already must have been raised
+                unreachable!();
+            }
+        }
+
         return get_type_headers(&field.ty, prefix, "", trait_path);
     }
 
-    let header_name = field_header_name(field, attributes, index);
+    let header_name = field_header_name(field, attrs, index);
     if prefix.is_empty() {
         quote!(vec![::std::borrow::Cow::Borrowed(#header_name)])
     } else {
@@ -484,13 +508,34 @@ fn get_field_fields(
     field_name: FieldNameFn,
     type_attrs: &TypeAttributes,
 ) -> TokenStream {
+    let mut field = std::borrow::Cow::Borrowed(field);
+    if let Some(map_fn) = &attr.map {
+        let arg = quote!(&#field);
+        let result = use_function(&arg, map_fn);
+        field = std::borrow::Cow::Owned(result);
+
+        if attr.inline {
+            return quote! {
+                {
+                    let field = #field;
+                    let fields = field.fields();
+                    let fields = fields.into_iter()
+                        .map(|f| f.into_owned())
+                        .map(std::borrow::Cow::Owned)
+                        .collect::<Vec<_>>();
+                    fields
+                }
+            };
+        }
+    }
+
     if attr.inline {
         return quote! { #field.fields() };
     }
 
     if let Some(func) = &attr.display_with {
         let args = match &attr.display_with_args {
-            Some(args) => args_to_tokens_with(fields, field, field_name, args),
+            Some(args) => args_to_tokens_with(fields, &field, field_name, args),
             None => quote!(&#field),
         };
 
@@ -505,7 +550,7 @@ fn get_field_fields(
 
         let call = match args {
             Some(args) => use_format(fmt, &args),
-            None => use_format_with_one_arg(fmt, field),
+            None => use_format_with_one_arg(fmt, &field),
         };
 
         return quote!(vec![::std::borrow::Cow::Owned(#call)]);
@@ -513,7 +558,7 @@ fn get_field_fields(
 
     if let Some(i) = find_display_type(field_type, &type_attrs.display_types) {
         let (_, func, args) = &type_attrs.display_types[i];
-        let args = args_to_tokens_with(fields, field, field_name, args);
+        let args = args_to_tokens_with(fields, &field, field_name, args);
         let func = use_function(&args, func);
 
         return quote!(vec![::std::borrow::Cow::from(#func)]);

@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span};
 use syn::{
     parenthesized, parse::Parse, punctuated::Punctuated, spanned::Spanned, token, Attribute,
-    LitBool, LitInt, LitStr, Token,
+    LitBool, LitInt, LitStr, Token, Type,
 };
 
 pub fn parse_field_attributes(
@@ -31,8 +31,9 @@ pub enum FieldAttrKind {
     Rename(LitStr),
     RenameAll(LitStr),
     DisplayWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
-    Order(LitInt),
     FormatWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
+    Map(LitStr, Option<(Token!(,), Type)>),
+    Order(LitInt),
 }
 
 impl Parse for FieldAttr {
@@ -53,6 +54,7 @@ impl Parse for FieldAttr {
                     "rename_all" => return Ok(Self::new(RenameAll(lit))),
                     "display" => return Ok(Self::new(DisplayWith(lit, None, Punctuated::new()))),
                     "format" => return Ok(Self::new(FormatWith(lit, None, Punctuated::new()))),
+                    "map" => return Ok(Self::new(Map(lit, None))),
                     _ => {}
                 }
             }
@@ -89,6 +91,19 @@ impl Parse for FieldAttr {
                 let lit = nested.parse::<LitStr>()?;
 
                 match name_str.as_str() {
+                    "map" => {
+                        let comma = nested.parse::<Token![,]>().map_err(|_| {
+                            syn::Error::new(_paren.span.span(), "expected to get a comma")
+                        })?;
+                        let path = nested.parse::<Type>().map_err(|_| {
+                            syn::Error::new(
+                                _paren.span.span(),
+                                "expected to get a return type of map function",
+                            )
+                        })?;
+
+                        return Ok(Self::new(Map(lit, Some((comma, path)))));
+                    }
                     "format" | "display" => {
                         let mut args = Punctuated::new();
                         let mut comma = None;
