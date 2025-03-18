@@ -87,53 +87,54 @@ impl Parse for FieldAttr {
             let nested;
             let _paren = parenthesized!(nested in input);
 
-            if nested.peek(LitStr) {
-                let lit = nested.parse::<LitStr>()?;
+            match name_str.as_str() {
+                "map" => {
+                    let path = nested.parse::<Type>().map_err(|_| {
+                        syn::Error::new(
+                            _paren.span.span(),
+                            "expected to get a return type of map function",
+                        )
+                    })?;
+                    let comma = nested.parse::<Token![,]>().map_err(|_| {
+                        syn::Error::new(_paren.span.span(), "expected to get a comma")
+                    })?;
+                    let lit = nested.parse::<LitStr>()?;
 
-                match name_str.as_str() {
-                    "map" => {
-                        let comma = nested.parse::<Token![,]>().map_err(|_| {
-                            syn::Error::new(_paren.span.span(), "expected to get a comma")
-                        })?;
-                        let path = nested.parse::<Type>().map_err(|_| {
-                            syn::Error::new(
-                                _paren.span.span(),
-                                "expected to get a return type of map function",
-                            )
-                        })?;
-
-                        return Ok(Self::new(Map(lit, Some((comma, path)))));
-                    }
-                    "format" | "display" => {
-                        let mut args = Punctuated::new();
-                        let mut comma = None;
-                        if nested.peek(Token![,]) {
-                            comma = Some(nested.parse::<Token![,]>()?);
-                            while !nested.is_empty() {
-                                let val = nested.parse()?;
-                                args.push_value(val);
-                                if nested.is_empty() {
-                                    break;
-                                }
-                                let punct = nested.parse()?;
-                                args.push_punct(punct);
-                            }
-                        };
-
-                        if name_str.as_str() == "format" {
-                            return Ok(Self::new(FormatWith(lit, comma, args)));
-                        }
-
-                        return Ok(Self::new(DisplayWith(lit, comma, args)));
-                    }
-                    "inline" => {
-                        return Ok(Self::new(Inline(
-                            LitBool::new(true, Span::call_site()),
-                            Some(lit),
-                        )))
-                    }
-                    _ => {}
+                    return Ok(Self::new(Map(lit, Some((comma, path)))));
                 }
+                "format" | "display" => {
+                    let lit = nested.parse::<LitStr>()?;
+
+                    let mut args = Punctuated::new();
+                    let mut comma = None;
+                    if nested.peek(Token![,]) {
+                        comma = Some(nested.parse::<Token![,]>()?);
+                        while !nested.is_empty() {
+                            let val = nested.parse()?;
+                            args.push_value(val);
+                            if nested.is_empty() {
+                                break;
+                            }
+                            let punct = nested.parse()?;
+                            args.push_punct(punct);
+                        }
+                    };
+
+                    if name_str.as_str() == "format" {
+                        return Ok(Self::new(FormatWith(lit, comma, args)));
+                    }
+
+                    return Ok(Self::new(DisplayWith(lit, comma, args)));
+                }
+                "inline" => {
+                    let lit = nested.parse::<LitStr>()?;
+
+                    return Ok(Self::new(Inline(
+                        LitBool::new(true, Span::call_site()),
+                        Some(lit),
+                    )));
+                }
+                _ => {}
             }
 
             return Err(syn::Error::new(

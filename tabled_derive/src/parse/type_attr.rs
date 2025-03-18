@@ -28,7 +28,6 @@ impl TypeAttr {
 pub enum TypeAttrKind {
     Inline(LitBool, Option<LitStr>),
     RenameAll(LitStr),
-    Map(LitStr, Option<(Token!(,), TypePath)>),
     Crate(LitStr),
     DisplayType(TypePath, LitStr, Punctuated<syn::Expr, Token!(,)>),
 }
@@ -76,15 +75,6 @@ impl Parse for TypeAttr {
         if input.peek(token::Paren) {
             let nested;
             let _paren = parenthesized!(nested in input);
-
-            if name_str.as_str() == "map" {
-                if nested.peek(LitStr) {
-                    let lit = nested.parse::<LitStr>()?;
-                    let comma = nested.parse::<Token![,]>()?;
-                    let path = nested.parse::<TypePath>()?;
-                    return Ok(Self::new(Map(lit, Some((comma, path)))));
-                }
-            }
 
             if name_str.as_str() == "inline" {
                 if nested.peek(LitStr) {

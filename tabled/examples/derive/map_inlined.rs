@@ -3,7 +3,7 @@ use tabled::{Table, Tabled};
 #[derive(Tabled)]
 struct Vehicle {
     vtype: String,
-    #[tabled(inline("engine->"), map("Engine::parse", Engine))]
+    #[tabled(inline("engine->"), map(Engine, "Self::parse_engine"))]
     engine: String,
 }
 
@@ -14,14 +14,21 @@ struct Engine {
     disel: bool,
 }
 
-impl Engine {
-    fn parse(text: &str) -> Self {
+impl Vehicle {
+    fn new(vtype: &str, engine: &str) -> Self {
+        Self {
+            vtype: vtype.to_string(),
+            engine: engine.to_string(),
+        }
+    }
+
+    fn parse_engine(text: &str) -> Engine {
         let mut settings = text.split(";");
         let cylinder_amount = settings.next().unwrap().parse().unwrap();
         let oil_change_cycle = settings.next().unwrap().parse().unwrap();
         let disel = settings.next().unwrap().parse().unwrap();
 
-        Self {
+        Engine {
             cylinder_amount,
             oil_change_cycle,
             disel,
@@ -31,14 +38,8 @@ impl Engine {
 
 fn main() {
     let data = [
-        Vehicle {
-            vtype: String::from("limousine"),
-            engine: String::from("3;12;false"),
-        },
-        Vehicle {
-            vtype: String::from("sport"),
-            engine: String::from("12;4;true"),
-        },
+        Vehicle::new("limousine", "3;12;false"),
+        Vehicle::new("sport", "12;4;true"),
     ];
 
     let table = Table::new(data);

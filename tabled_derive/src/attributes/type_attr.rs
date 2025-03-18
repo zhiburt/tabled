@@ -9,7 +9,6 @@ use crate::{
 
 #[derive(Default)]
 pub struct TypeAttributes {
-    pub map: Option<String>,
     pub rename_all: Option<CasingStyle>,
     pub inline: bool,
     pub inline_value: Option<String>,
@@ -55,9 +54,6 @@ impl TypeAttributes {
             }
             TypeAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
-            }
-            TypeAttrKind::Map(lit, _) => {
-                self.map = Some(lit.value());
             }
             TypeAttrKind::DisplayType(type_name, func, args) => {
                 let args = args.into_iter().map(FormatArg::new).collect();
