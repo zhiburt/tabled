@@ -1,12 +1,12 @@
 mod derive_test;
 mod display_test;
-// mod format_test;
-// mod inline_test;
-// mod map_test;
-// mod order_test;
-// mod rename_all_test;
-// mod rename_test;
-// mod skip_test;
+mod format_test;
+mod inline_test;
+mod map_test;
+mod order_test;
+mod rename_all_test;
+mod rename_test;
+mod skip_test;
 
 // https://users.rust-lang.org/t/create-a-struct-from-macro-rules/19829
 macro_rules! test_tuple {
