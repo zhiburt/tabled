@@ -39,8 +39,10 @@ test_tuple!(
     declare: {
         {
             #[tabled(skip)]
+            #[allow(dead_code)]
             u8
             #[tabled(rename = "...", skip)]
+            #[allow(dead_code)]
             sstr
             sstr
         }
@@ -56,9 +58,11 @@ test_tuple!(
     declare: {
         {
             #[tabled(skip)]
+            #[allow(dead_code)]
             u8
             #[tabled(skip)]
             #[tabled(rename = "...")]
+            #[allow(dead_code)]
             sstr
             sstr
         }
@@ -69,24 +73,24 @@ test_tuple!(
     assert_fields: { ["123"] }
 );
 
-test_tuple!(order_0,  declare: { { #[tabled(order = 0)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
-test_tuple!(order_1,  declare: { { #[tabled(order = 1)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "0", "2"] } assert_fields: { ["1", "0", "2"] });
-test_tuple!(order_2,  declare: { { #[tabled(order = 2)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "2", "0"] } assert_fields: { ["1", "2", "0"] });
-test_tuple!(order_3,  declare: { { u8 #[tabled(order = 0)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "0", "2"] } assert_fields: { ["1", "0", "2"] });
-test_tuple!(order_4,  declare: { { u8 #[tabled(order = 1)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
-test_tuple!(order_5,  declare: { { u8 #[tabled(order = 2)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
-test_tuple!(order_6,  declare: { { u8 u8 #[tabled(order = 0)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["2", "0", "1"] } assert_fields: { ["2", "0", "1"] });
-test_tuple!(order_7,  declare: { { u8 u8 #[tabled(order = 1)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
-test_tuple!(order_8,  declare: { { u8 u8 #[tabled(order = 2)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
-test_tuple!(order_9,  declare: { { #[tabled(order = 2)] u8 u8 #[tabled(order = 0)] u8} }                      init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
-test_tuple!(order_10, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 u8} }                      init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
-test_tuple!(order_11, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 1)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
-test_tuple!(order_12, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 2)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
-test_tuple!(order_13, declare: { { #[tabled(order = 1)] u8 #[tabled(order = 1)] u8 #[tabled(order = 1)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
-test_tuple!(order_14, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 #[tabled(order = 0)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
+test_tuple!(tuple_order_0,  declare: { { #[tabled(order = 0)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
+test_tuple!(tuple_order_1,  declare: { { #[tabled(order = 1)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "0", "2"] } assert_fields: { ["1", "0", "2"] });
+test_tuple!(tuple_order_2,  declare: { { #[tabled(order = 2)] u8 u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "2", "0"] } assert_fields: { ["1", "2", "0"] });
+test_tuple!(tuple_order_3,  declare: { { u8 #[tabled(order = 0)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["1", "0", "2"] } assert_fields: { ["1", "0", "2"] });
+test_tuple!(tuple_order_4,  declare: { { u8 #[tabled(order = 1)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
+test_tuple!(tuple_order_5,  declare: { { u8 #[tabled(order = 2)] u8 u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
+test_tuple!(tuple_order_6,  declare: { { u8 u8 #[tabled(order = 0)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["2", "0", "1"] } assert_fields: { ["2", "0", "1"] });
+test_tuple!(tuple_order_7,  declare: { { u8 u8 #[tabled(order = 1)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
+test_tuple!(tuple_order_8,  declare: { { u8 u8 #[tabled(order = 2)] u8} }                                           init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
+test_tuple!(tuple_order_9,  declare: { { #[tabled(order = 2)] u8 u8 #[tabled(order = 0)] u8} }                      init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
+test_tuple!(tuple_order_10, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 u8} }                      init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
+test_tuple!(tuple_order_11, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 1)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
+test_tuple!(tuple_order_12, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 2)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "1", "2"] } assert_fields: { ["0", "1", "2"] });
+test_tuple!(tuple_order_13, declare: { { #[tabled(order = 1)] u8 #[tabled(order = 1)] u8 #[tabled(order = 1)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["0", "2", "1"] } assert_fields: { ["0", "2", "1"] });
+test_tuple!(tuple_order_14, declare: { { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 #[tabled(order = 0)] u8} } init: {} define: { 0 1 2 } assert_headers: { ["2", "1", "0"] } assert_fields: { ["2", "1", "0"] });
 
 test_tuple!(
-    rename_all,
+    tuple_rename_all,
     declare: { #[tabled(rename_all = "UPPERCASE")] { u8 sstr } }
     init: {}
     define: { 0 "123" }
@@ -95,7 +99,7 @@ test_tuple!(
 );
 
 test_tuple!(
-    rename_all_field,
+    tuple_rename_all_field,
     declare: { { u8 #[tabled(rename_all = "UPPERCASE")] sstr } }
     init: { }
     define: { 0 "123" }
@@ -104,7 +108,7 @@ test_tuple!(
 );
 
 test_tuple!(
-    rename_all_field_with_rename_0,
+    tuple_rename_all_field_with_rename_0,
     declare: { { u8 #[tabled(rename_all = "UPPERCASE", rename = "Something")] sstr } }
     init: {}
     define: { 0 "123" }
@@ -113,7 +117,7 @@ test_tuple!(
 );
 
 test_tuple!(
-    rename_all_field_with_rename_1,
+    tuple_rename_all_field_with_rename_1,
     declare: { { u8 #[tabled(rename = "Something")] #[tabled(rename_all = "UPPERCASE")] sstr } }
     init: { }
     define: { 0 "123" }
@@ -122,7 +126,7 @@ test_tuple!(
 );
 
 test_tuple!(
-    format_1,
+    tuple_format_1,
     declare: { { u8 #[tabled(format = "foo {}")] sstr } }
     init: {}
     define: { 0 "v2" }
@@ -131,7 +135,7 @@ test_tuple!(
 );
 
 test_tuple!(
-    format_2,
+    tuple_format_2,
     declare: { { u8 #[tabled(format = "foo {:?}")] sstr } }
     init: {}
     define: { 0 "v2" }
@@ -141,12 +145,20 @@ test_tuple!(
 
 // todo : self represents the tuple here. It should be the sstr element instead.
 test_tuple!(
-    format_3,
-    declare: { #[derive(Debug)] { u8 #[tabled(format("foo {} {:?}", 2, self))] String } }
+    tuple_format_3,
+    declare: {
+        #[allow(dead_code)]
+        #[derive(Debug)]
+        {
+            u8
+            #[tabled(format("foo {} {:?}", 2, self))]
+            String
+        }
+    }
     init: {}
     define: { 0 String::from("string") }
     assert_headers: { ["0", "1"] }
-    assert_fields: { ["0", "foo 2 TestType(0, \"string\")"] }
+    assert_fields: { ["0", "foo 2 Test(0, \"string\")"] }
 );
 
 test_enum!(
@@ -188,7 +200,15 @@ test_enum!(
 
 test_enum!(
     enum_skip_variant,
-    declare: { { A { a: u8, b: i32 } #[tabled(skip)] B(sstr) K } }
+    declare: {
+        #[allow(dead_code)]
+        {
+            A { a: u8, b: i32 }
+            #[tabled(skip)]
+            B(sstr)
+            K
+        }
+    }
     init: {}
     assert_headers: { ["A", "K"] }
     assert: {
@@ -200,19 +220,30 @@ test_enum!(
 
 test_enum!(
     inline_variant,
-    {
+    declare: {
         {
-        #[tabled(inline("Auto::"))] Auto { #[tabled(rename = "mod")] model: sstr, engine: sstr }
-        #[tabled(inline)] Bikecycle( #[tabled(rename = "name")] sstr, #[tabled(inline)] Bike )
-        Skateboard
+            #[tabled(inline("Auto::"))]
+            Auto {
+                #[tabled(rename = "mod")]
+                model: sstr,
+                engine: sstr
+            }
+            #[tabled(inline)]
+            Bikecycle(
+                #[tabled(rename = "name")]
+                sstr,
+                #[tabled(inline)]
+                Bike
+            )
+            Skateboard
         }
-    },
-    {
+    }
+    init: {
         #[derive(Tabled)]
         struct Bike { brand: sstr, price: f32 }
-    },
-    { ["Auto::mod", "Auto::engine", "name", "brand", "price", "Skateboard"] },
-    {
+    }
+    assert_headers: { ["Auto::mod", "Auto::engine", "name", "brand", "price", "Skateboard"] }
+    assert: {
         Skateboard => ["", "", "", "", "", "+"],
         Auto { model: "Mini", engine: "v8" } => ["Mini", "v8", "", "", "", ""],
         Bikecycle("A bike", Bike { brand: "Canyon", price: 2000.0 })=> ["", "", "A bike", "Canyon", "2000", ""],
@@ -220,8 +251,8 @@ test_enum!(
 );
 
 test_enum!(
-    inline_field_with_display_function,
-    {
+    enum_inline_field_with_display_function,
+    declare: {
         {
             #[tabled(inline("backend::"))]
             Backend {
@@ -230,22 +261,22 @@ test_enum!(
             }
             Frontend
         }
-    },
-    {
+    }
+    init: {
         fn display(_: sstr) -> String {
             "asd".to_string()
         }
-    },
-    { ["backend::name", "Frontend"] },
-    {
+    }
+    assert_headers: { ["backend::name", "Frontend"] }
+    assert: {
         Backend { value: "123" } => ["asd", ""],
         Frontend => ["", "+"],
     }
 );
 
 test_enum!(
-    inline_field_with_display_self_function,
-    {
+    enum_inline_field_with_display_self_function,
+    declare: {
         {
             #[tabled(inline("backend::"))]
             Backend {
@@ -255,171 +286,81 @@ test_enum!(
             }
             Frontend
         }
-    },
-    {
+    }
+    init: {
         fn display<T>(_opt: &sstr, _: &T) -> String {
             "asd".to_string()
         }
-    },
-    { ["backend::name", "Frontend"] },
-    {
+    }
+    assert_headers: { ["backend::name", "Frontend"] }
+    assert: {
         Backend { value: "123" } => ["asd", ""],
         Frontend => ["", "+"],
     }
 );
 
 test_enum!(
-    with_display,
-    {
-        {
-            #[tabled(inline)]
-            A(
-                #[tabled(display = "format::<4>")]
-                sstr
-            )
-            B
-        }
-    },
-    {
-        fn format<const ID: usize>(_: sstr) -> String {
-            ID.to_string()
-        }
-    },
-    { ["0", "B"] },
-    {
-        A("") => ["4", ""],
-        B => ["", "+"],
-    }
-);
-
-test_enum!(
-    with_display_self,
-    {
-        {
-            #[tabled(inline)]
-            A(
-                #[tabled(display("Self::format::<4>", self))]
-                sstr
-            )
-            B
-        }
-    },
-    {
-        impl TestType {
-            fn format<const ID: usize>(_opt: &sstr, _: &Self) -> String {
-                ID.to_string()
-            }
-        }
-    },
-    { ["0", "B"] },
-    {
-        A("") => ["4", ""],
-        B => ["", "+"],
-    }
-);
-
-test_enum!(
-    with_display_self_complex_0,
-    {
-        {
-            #[tabled(inline)]
-            A(
-                #[tabled(display("Self::format::<4>", self, self.0))]
-                sstr
-            )
-            B
-        }
-    },
-    {
-        impl TestType {
-            fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
-                ID.to_string()
-            }
-        }
-    },
-    { ["0", "B"] },
-    {
-        A("") => ["4", ""],
-        B => ["", "+"],
-    }
-);
-
-test_enum!(
-    with_display_self_complex_1,
-    {
-        {
-            #[tabled(inline)]
-            A{
-                #[tabled(display("Self::format::<4>", self, self.asd))]
-                asd: sstr
-            }
-            B
-        }
-    },
-    {
-        impl TestType {
-            fn format<const ID: usize>(_opt: &sstr, _: &Self, _: sstr) -> String {
-                ID.to_string()
-            }
-        }
-    },
-    { ["asd", "B"] },
-    {
-        A { asd: "" } => ["4", ""],
-        B => ["", "+"],
-    }
-);
-
-test_enum!(
     rename_all_variant,
-    {
+    declare: {
         {
             #[tabled(rename_all = "snake_case")]
             VariantName1 { a: u8, b: i32 }
             #[tabled(rename_all = "UPPERCASE")]
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["variant_name1", "VARIANTNAME2", "K"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["variant_name1", "VARIANTNAME2", "VariantName3"] }
+    assert: {
+        VariantName1 { a: 0, b: -1 } => ["+", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "+", ""],
+        VariantName3 => ["", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             VariantName1 { a: u8, b: i32 }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["variant_name1", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["variant_name1", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { a: 0, b: -1 } => ["+", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "+", ""],
+        VariantName3 => ["", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_enum_inherited_inside_struct_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(inline)]
             VariantName1 { some_field_1: u8, some_field_2: i32 }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["some_field_1", "some_field_2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["some_field_1", "some_field_2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_enum_inherited_inside_struct_override_by_rename_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(inline)]
@@ -430,17 +371,21 @@ test_enum!(
                 some_field_2: i32,
             }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["f1", "f2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["f1", "f2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_enum_inherited_inside_struct_override_by_rename_all_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(inline)]
@@ -451,17 +396,21 @@ test_enum!(
                 some_field_2: i32,
             }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["SOMEFIELD1", "someField2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["SOMEFIELD1", "someField2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_variant_inherited_inside_struct_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(inline)]
@@ -471,17 +420,21 @@ test_enum!(
                 some_field_2: i32,
             }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["some_field_1", "some_field_2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["some_field_1", "some_field_2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_variant_inherited_inside_struct_enum_overridden_by_rename,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(inline, rename_all = "snake_case")]
@@ -492,17 +445,21 @@ test_enum!(
                 some_field_2: i32,
             }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["f1", "f2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["f1", "f2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     rename_all_variant_inherited_inside_struct_override_by_rename_all_enum,
-    {
+    declare: {
         #[tabled(rename_all = "snake_case")]
         {
             #[tabled(rename_all = "snake_case", inline)]
@@ -513,26 +470,30 @@ test_enum!(
                 some_field_2: i32,
             }
             VariantName2(String)
-            K
+            VariantName3
         }
-    },
-    {},
-    { ["SOMEFIELD1", "someField2", "variant_name2", "k"] },
-    {}
+    }
+    init: {}
+    assert_headers: { ["SOMEFIELD1", "someField2", "variant_name2", "variant_name3"] }
+    assert: {
+        VariantName1 { some_field_1: 0, some_field_2: -1 } => ["0", "-1", "", ""],
+        VariantName2(String::from("Hello World")) => ["", "", "+", ""],
+        VariantName3 => ["", "", "", "+"],
+    }
 );
 
 test_enum!(
     inline_enum_as_whole,
-    {
+    declare: {
         #[tabled(inline)] {
             AbsdEgh { a: u8, b: i32 }
             B(String)
             K
         }
-    },
-    {},
-    { ["TestType"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["Test"] }
+    assert: {
         AbsdEgh { a: 0, b: 0 }  => ["AbsdEgh"],
         B(String::new()) => ["B"],
         K => ["K"],
@@ -541,17 +502,17 @@ test_enum!(
 
 test_enum!(
     inline_enum_as_whole_and_rename,
-    {
+    declare: {
         #[tabled(inline, rename_all = "snake_case")]
         {
             AbsdEgh { a: u8, b: i32 }
             B(String)
             K
         }
-    },
-    {},
-    { ["TestType"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["Test"] }
+    assert: {
         AbsdEgh { a: 0, b: 0 }  => ["absd_egh"],
         B(String::new()) => ["b"],
         K => ["k"],
@@ -560,7 +521,7 @@ test_enum!(
 
 test_enum!(
     inline_enum_as_whole_and_rename_inner,
-    {
+    declare: {
         #[tabled(inline)]
         {
             #[tabled(rename_all = "snake_case")]
@@ -569,10 +530,10 @@ test_enum!(
             B(String)
             K
         }
-    },
-    {},
-    { ["TestType"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["Test"] }
+    assert: {
         AbsdEgh { a: 0, b: 0 }  => ["absd_egh"],
         B(String::new()) => ["b"],
         K => ["K"],
@@ -581,130 +542,63 @@ test_enum!(
 
 test_enum!(
     inline_enum_name,
-    {
+    declare: {
         #[tabled(inline("A struct name"))]
         {
             AbsdEgh { a: u8, b: i32 }
             B(String)
             K
         }
-    },
-    {},
-    { ["A struct name"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["A struct name"] }
+    assert: {
         AbsdEgh { a: 0, b: 0 }  => ["AbsdEgh"],
         B(String::new()) => ["B"],
         K => ["K"],
     }
 );
 
-test_enum!(
-    enum_display_with_variant,
-    {
-        {
-            #[tabled(display = "display_variant1")]
-            AbsdEgh { a: u8, b: i32 }
-            #[tabled(display = "display_variant2::<200>")]
-            B(String)
-            K
-        }
-    },
-    {
-        fn display_variant1(_: &TestType) -> &'static str {
-            "Hello World"
-        }
+test_enum!(enum_order_0,  declare: { { #[tabled(order = 0)] V1(u8) V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V1", "V2", "V3"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
+test_enum!(enum_order_1,  declare: { { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V2", "V1", "V3"] } assert: { V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],});
+test_enum!(enum_order_2,  declare: { { #[tabled(order = 2)] V1(u8) V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V2", "V3", "V1"] } assert: { V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_3,  declare: { { V1(u8) #[tabled(order = 0)] V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V2", "V1", "V3"] } assert: { V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],});
+test_enum!(enum_order_4,  declare: { { V1(u8) #[tabled(order = 1)] V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V1", "V2", "V3"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
+test_enum!(enum_order_5,  declare: { { V1(u8) #[tabled(order = 2)] V2(u8) V3(u8) } }                                           init: {} assert_headers: { ["V1", "V3", "V2"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_6,  declare: { { V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) } }                                           init: {} assert_headers: { ["V3", "V1", "V2"] } assert: { V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],});
+test_enum!(enum_order_7,  declare: { { V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) } }                                           init: {} assert_headers: { ["V1", "V3", "V2"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_8,  declare: { { V1(u8) V2(u8) #[tabled(order = 2)] V3(u8) } }                                           init: {} assert_headers: { ["V1", "V2", "V3"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
+test_enum!(enum_order_9,  declare: { { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) } }                      init: {} assert_headers: { ["V3", "V2", "V1"] } assert: { V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],});
+test_enum!(enum_order_10, declare: { { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) } }                      init: {} assert_headers: { ["V2", "V3", "V1"] } assert: { V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_11, declare: { { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 1)] V3(u8) } } init: {} assert_headers: { ["V1", "V3", "V2"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_12, declare: { { #[tabled(order = 2)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 0)] V3(u8) } } init: {} assert_headers: { ["V3", "V2", "V1"] } assert: { V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],});
+test_enum!(enum_order_13, declare: { { #[tabled(order = 0)] V1(u8) #[tabled(order = 0)] V2(u8) #[tabled(order = 0)] V3(u8) } } init: {} assert_headers: { ["V3", "V1", "V2"] } assert: { V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],});
+test_enum!(enum_order_14, declare: { { #[tabled(order = 1)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 1)] V3(u8) } } init: {} assert_headers: { ["V1", "V3", "V2"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
+test_enum!(enum_order_15, declare: { { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 2)] V3(u8) } } init: {} assert_headers: { ["V1", "V2", "V3"] } assert: { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
 
-        fn display_variant2<const VAL: usize>(_: &TestType) -> String {
-            format!("asd {VAL}")
+test_enum!(
+    enum_order_0_inlined,
+    declare: {
+        #[tabled(inline)]
+        {
+            #[tabled(order = 1)]
+            V1(u8)
+            V2(u8)
+            V3(u8)
         }
-    },
-    { ["AbsdEgh", "B", "K"] },
-    {
-        AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
-        B(String::new()) => ["", "asd 200", ""],
-        K => ["", "", "+"],
+    }
+    init: {}
+    assert_headers: { ["Test"] }
+    assert: {
+        V1(0) => ["V1"],
+        V2(0) => ["V2"],
+        V3(0) => ["V3"],
     }
 );
 
 test_enum!(
-    enum_display_with_self_variant,
-    {
-        {
-            #[tabled(display("display_variant1", self))]
-            AbsdEgh { a: u8, b: i32 }
-            #[tabled(display("display_variant2::<200, _>", self))]
-            B(String)
-            K
-        }
-    },
-    {
-        fn display_variant1<D>(_: &TestType, _: &D) -> &'static str {
-            "Hello World"
-        }
-
-        fn display_variant2<const VAL: usize, D>(_: &TestType, _: &D) -> String {
-            format!("asd {VAL}")
-        }
-    },
-    { ["AbsdEgh", "B", "K"] },
-    {
-        AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
-        B(String::new()) => ["", "asd 200", ""],
-        K => ["", "", "+"],
-    }
-);
-
-test_enum!(
-    enum_display_with_arguments,
-    {
-        {
-            #[tabled(display("display1", 1, 2, self))]
-            AbsdEgh { a: u8, b: i32 }
-            #[tabled(display("display2::<200>", "Hello World"))]
-            B(String)
-            #[tabled(display("display1", 100, 200, self))]
-            K
-        }
-    },
-    {
-        fn display1<D>(_: &TestType, val: usize, val2: usize, _: &D) -> String {
-            format!("{val} {val2}")
-        }
-
-        fn display2<const VAL: usize>(_: &TestType, val: &str) -> String {
-            format!("asd {VAL} {val}")
-        }
-    },
-    { ["AbsdEgh", "B", "K"] },
-    {
-        AbsdEgh { a: 0, b: 0 }  => ["1 2", "", ""],
-        B(String::new()) => ["", "asd 200 Hello World", ""],
-        K => ["", "", "100 200"],
-    }
-);
-
-test_enum!(order_0,  { { #[tabled(order = 0)] V1(u8) V2(u8) V3(u8) } },                                               {}, { ["V1", "V2", "V3"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
-test_enum!(order_1,  { { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) } },                                               {}, { ["V2", "V1", "V3"] }, { V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],});
-test_enum!(order_2,  { { #[tabled(order = 2)] V1(u8) V2(u8) V3(u8) } },                                               {}, { ["V2", "V3", "V1"] }, { V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],});
-test_enum!(order_3,  { { V1(u8) #[tabled(order = 0)] V2(u8) V3(u8) } },                                               {}, { ["V2", "V1", "V3"] }, { V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],});
-test_enum!(order_4,  { { V1(u8) #[tabled(order = 1)] V2(u8) V3(u8) } },                                               {}, { ["V1", "V2", "V3"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
-test_enum!(order_5,  { { V1(u8) #[tabled(order = 2)] V2(u8) V3(u8) } },                                               {}, { ["V1", "V3", "V2"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
-test_enum!(order_6,  { { V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) } },                                               {}, { ["V3", "V1", "V2"] }, { V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],});
-test_enum!(order_7,  { { V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) } },                                               {}, { ["V1", "V3", "V2"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
-test_enum!(order_8,  { { V1(u8) V2(u8) #[tabled(order = 2)] V3(u8) } },                                               {}, { ["V1", "V2", "V3"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
-test_enum!(order_9,  { { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) } },                          {}, { ["V3", "V2", "V1"] }, { V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],});
-test_enum!(order_10, { { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) } },                          {}, { ["V2", "V3", "V1"] }, { V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],});
-test_enum!(order_11, { { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 1)] V3(u8) } },     {}, { ["V1", "V3", "V2"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
-test_enum!(order_12, { { #[tabled(order = 2)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 0)] V3(u8) } },     {}, { ["V3", "V2", "V1"] }, { V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],});
-test_enum!(order_13, { { #[tabled(order = 0)] V1(u8) #[tabled(order = 0)] V2(u8) #[tabled(order = 0)] V3(u8) } },     {}, { ["V3", "V1", "V2"] }, { V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],});
-test_enum!(order_14, { { #[tabled(order = 1)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 1)] V3(u8) } },     {}, { ["V1", "V3", "V2"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],});
-test_enum!(order_15, { { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 2)] V3(u8) } },     {}, { ["V1", "V2", "V3"] }, { V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],});
-
-test_enum!(order_0_inlined, { #[tabled(inline)] { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) } }, {}, { ["TestType"] }, { V1(0) => ["V1"], V2(0) => ["V2"], V3(0) => ["V3"], });
-
-test_enum!(
-    format,
-    {
+    enum_format,
+    declare: {
         {
             #[tabled(inline)]
             AbsdEgh {
@@ -722,10 +616,10 @@ test_enum!(
             #[tabled(format = "k.")]
             K
         }
-    },
-    {},
-    { ["a", "b", "B", "C", "K"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["a", "b", "B", "C", "K"] }
+    assert: {
         AbsdEgh { a: 0, b: 1 }  => ["0-1", "1", "", "", ""],
         B(String::new()) => ["",  "", "4 s", "", ""],
         C(String::new()) => ["", "",  "", "4 ss", ""],
@@ -734,8 +628,8 @@ test_enum!(
 );
 
 test_enum!(
-    format_complex,
-    {
+    enum_format_complex,
+    declare: {
         {
             #[tabled(inline)]
             AbsdEgh {
@@ -757,8 +651,8 @@ test_enum!(
             #[tabled(format = "k.")]
             K
         }
-    },
-    {
+    }
+    init: {
         fn foo(a: usize) -> String {
             if a > 100 {
                 String::from(">100")
@@ -766,9 +660,9 @@ test_enum!(
                 String::from("<100")
             }
         }
-    },
-    { ["a", "b", "B", "C", "K"] },
-    {
+    }
+    assert_headers: { ["a", "b", "B", "C", "K"] }
+    assert: {
         AbsdEgh { a: 0, b: 1, c: vec![1, 2, 3] }  => ["<100-<100-3", "1", "", "", ""],
         B(String::new()) => ["",  "", "<100 s", "", ""],
         C(String::new(), vec![1, 2, 3]) => ["", "",  "", "<100 ss 3", ""],
@@ -787,25 +681,32 @@ fn basic() {
     assert_eq!(St::LENGTH, 0);
 }
 
-test_struct!(empty, { {} } {} { } { [], [] });
 test_struct!(
-    general,
-    {
+    struct_empty,
+    declare: { {} }
+    init: {}
+    define: { }
+    assert_headers: { [] }
+    assert_fields: { [] }
+);
+
+test_struct!(
+    struct_general,
+    declare: {
         {
             f1: u8,
             f2: sstr,
         }
     }
-    {}
-    { f1: 0, f2: "v2" }
-    {
-        ["f1", "f2"],
-        ["0", "v2"],
-    }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["f1", "f2"] }
+    assert_fields: { ["0", "v2"] }
 );
+
 test_struct!(
-    rename,
-    {
+    struct_rename,
+    declare: {
         {
             #[tabled(rename = "field 1")]
             f1: u8,
@@ -813,52 +714,53 @@ test_struct!(
             f2: sstr,
         }
     }
-    {}
-    { f1: 0, f2: "v2" }
-    {
-        ["field 1", "field 2"],
-        ["0", "v2"],
-    }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["field 1", "field 2"] }
+    assert_fields: { ["0", "v2"] }
 );
+
 test_struct!(
-    skip,
-    {
+    struct_skip,
+    declare: {
         {
             #[tabled(skip)]
+            #[allow(dead_code)]
             f1: u8,
             #[tabled(rename = "field 2", skip)]
+            #[allow(dead_code)]
             f2: sstr,
             f3: sstr,
         }
     }
-    {}
-    { f1: 0, f2: "v2", f3: "123" }
-    {
-        ["f3"],
-        ["123"],
-    }
+    init: {}
+    define: { f1: 0, f2: "v2", f3: "123" }
+    assert_headers: { ["f3"] }
+    assert_fields: { ["123"] }
 );
+
 test_struct!(
-    skip_true,
-    {
+    struct_skip_true,
+    declare: {
         {
             #[tabled(skip = true)]
+            #[allow(dead_code)]
             f1: u8,
             #[tabled(rename = "field 2", skip = true)]
+            #[allow(dead_code)]
             f2: sstr,
             f3: sstr,
         }
     }
-    {}
-    { f1: 0, f2: "v2", f3: "123" }
-    {
-        ["f3"],
-        ["123"],
-    }
+    init: {}
+    define: { f1: 0, f2: "v2", f3: "123" }
+    assert_headers: { ["f3"] }
+    assert_fields: { ["123"] }
 );
+
 test_struct!(
-    inline,
-    {
+    struct_inline,
+    declare: {
         {
             #[tabled(inline = true)]
             id: u8,
@@ -867,21 +769,19 @@ test_struct!(
             ed: Education
         }
     }
-    {
+    init: {
         #[derive(Tabled)]
         struct Education { uni: sstr, graduated: bool }
     }
-    {
+    define: {
         id: 0, name: "Maxim", ed: Education { uni: "BNTU", graduated: true }
     }
-    {
-        ["u8", "name","uni","graduated"],
-        ["0", "Maxim", "BNTU", "true"]
-    }
+    assert_headers: { ["u8", "name","uni","graduated"] }
+    assert_fields: { ["0", "Maxim", "BNTU", "true"] }
 );
 test_struct!(
-    inline_with_prefix,
-    {
+    struct_inline_with_prefix,
+    declare: {
         {
             #[tabled(rename = "it's an ignored option", inline)]
             id: u8,
@@ -890,260 +790,127 @@ test_struct!(
             ed: Education,
         }
     }
-    {
+    init: {
         #[derive(Tabled)]
         struct Education { uni: sstr, graduated: bool }
     }
-    {
+    define: {
         id: 0, name: "Maxim", ed: Education { uni: "BNTU", graduated: true }}
-    {
-        ["u8", "name","education::uni","education::graduated"],
-        ["0", "Maxim", "BNTU", "true"]
-    }
+    assert_headers: { ["u8", "name","education::uni","education::graduated"] }
+    assert_fields: { ["0", "Maxim", "BNTU", "true"] }
 );
-test_struct!(
-    display_with,
-    {
-        {
-            f1: u8,
-            #[tabled(display = "display_option")]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        fn display_option(o: &Option<sstr>) -> String {
-            match o {
-                Some(s) => format!("some {s}"),
-                None => "none".to_string(),
-            }
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "some v2"] }
-);
-test_struct!(
-    display_with_args,
-    {
-        {
-            f1: u8,
-            #[tabled(display("display_option", 1, 2, 3))]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        fn display_option(_opt: &Option<sstr>, v1: usize, v2: usize, v3: usize) -> String {
-            format!("{v1} {v2} {v3}")
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "1 2 3"] }
-);
-test_struct!(
-    display_with_args_using_self,
-    {
-        {
-            f1: u8,
-            #[tabled(display("display_option", &self.f1, 2, 3))]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        fn display_option(_opt: &Option<sstr>, v1: &u8, v2: usize, v3: usize) -> String {
-            format!("{v1} {v2} {v3}")
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "0 2 3"] }
-);
-test_struct!(
-    display_with_self_static_method,
-    {
-        {
-            f1: u8,
-            #[tabled(display = "Self::display_option")]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        impl TestType {
-            fn display_option(o: &Option<sstr>) -> String {
-                match o {
-                    Some(s) => format!("some {s}"),
-                    None => "none".to_string(),
-                }
-            }
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "some v2"] }
-);
-test_struct!(
-    display_with_self_static_method_2,
-    {
-        {
-            f1: u8,
-            #[tabled(display("Self::display_option", self))]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        impl TestType {
-            fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
-                match o.f2 {
-                    Some(s) => format!("some {s}"),
-                    None => "none".to_string(),
-                }
-            }
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "some v2"] }
-);
-test_struct!(
-    display_with_self_2_self_static_method_2,
-    {
-        {
-            f1: u8,
-            #[tabled(display("Self::display_option", self))]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        impl TestType {
-            fn display_option(_opt: &Option<sstr>, s: &Self) -> String {
-                match s.f2 {
-                    Some(s) => format!("some {s}"),
-                    None => "none".to_string(),
-                }
-            }
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "some v2"] }
-);
-test_struct!(
-    display_with_self_2_self_static_method,
-    {
-        {
-            f1: u8,
-            #[tabled(display("display_option", self))]
-            f2: Option<sstr>,
-        }
-    }
-    {
-        fn display_option(_opt: &Option<sstr>, o: &TestType) -> String {
-            match o.f2 {
-                Some(s) => format!("some {s}"),
-                None => "none".to_string(),
-            }
-        }
-    }
-    { f1: 0, f2: Some("v2") }
-    { ["f1", "f2"], ["0", "some v2"] }
-);
-test_struct!(
-    display_with_args_using_self_array_and_func,
-    {
-        {
-            #[tabled(skip)]
-            f1: [u8; 4],
-            #[tabled(display("display_option", &[self.f1[0], self.f1[1]], ToString::to_string(&self.f3.to_string())))]
-            f2: Option<sstr>,
-            f3: usize,
-        }
-    }
-    {
-        fn display_option(_opt: &Option<sstr>, v1: &[u8; 2], v4: String) -> String {
-            format!("{} {} {v4}", v1[0], v1[1])
-        }
-    }
-    { f1: [0, 1, 2, 3], f2: Some("v2"), f3: 100 }
-    { ["f2", "f3"], ["0 1 100", "100"] }
-);
-test_struct!(order_0,  { { #[tabled(order = 0)] f0: u8, f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f1", "f2"], ["0", "1", "2"] });
-test_struct!(order_1,  { { #[tabled(order = 1)] f0: u8, f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f1", "f0", "f2"], ["1", "0", "2"] });
-test_struct!(order_2,  { { #[tabled(order = 2)] f0: u8, f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f1", "f2", "f0"], ["1", "2", "0"] });
-test_struct!(order_3,  { { f0: u8, #[tabled(order = 0)] f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f1", "f0", "f2"], ["1", "0", "2"] });
-test_struct!(order_4,  { { f0: u8, #[tabled(order = 1)] f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f1", "f2"], ["0", "1", "2"] });
-test_struct!(order_5,  { { f0: u8, #[tabled(order = 2)] f1: u8, f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f2", "f1"], ["0", "2", "1"] });
-test_struct!(order_6,  { { f0: u8, f1: u8, #[tabled(order = 0)] f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f2", "f0", "f1"], ["2", "0", "1"] });
-test_struct!(order_7,  { { f0: u8, f1: u8, #[tabled(order = 1)] f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f2", "f1"], ["0", "2", "1"] });
-test_struct!(order_8,  { { f0: u8, f1: u8, #[tabled(order = 2)] f2: u8 } }                                           {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f1", "f2"], ["0", "1", "2"] });
-test_struct!(order_9,  { { #[tabled(order = 2)] f0: u8, f1: u8, #[tabled(order = 0)] f2: u8 } }                      {} { f0: 0, f1: 1, f2: 2 } { ["f2", "f1", "f0"], ["2", "1", "0"] });
-test_struct!(order_10, { { #[tabled(order = 2)] f0: u8, #[tabled(order = 1)] f1: u8, f2: u8 } }                      {} { f0: 0, f1: 1, f2: 2 } { ["f2", "f1", "f0"], ["2", "1", "0"] });
-test_struct!(order_11, { { #[tabled(order = 2)] f0: u8, #[tabled(order = 2)] f1: u8, #[tabled(order = 1)] f2: u8 } } {} { f0: 0, f1: 1, f2: 2 } { ["f0", "f2", "f1"], ["0", "2", "1"] });
-test_struct!(order_12, { { #[tabled(order = 2)] f0: u8, #[tabled(order = 1)] f1: u8, #[tabled(order = 0)] f2: u8 } } {} { f0: 0, f1: 1, f2: 2 } { ["f2", "f1", "f0"], ["2", "1", "0"] });
+
+test_struct!(struct_order_0,  declare: { { #[tabled(order = 0)] f0: u8, f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f1", "f2"] } assert_fields: { ["0", "1", "2"] } );
+test_struct!(struct_order_1,  declare: { { #[tabled(order = 1)] f0: u8, f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f1", "f0", "f2"] } assert_fields: { ["1", "0", "2"] } );
+test_struct!(struct_order_2,  declare: { { #[tabled(order = 2)] f0: u8, f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f1", "f2", "f0"] } assert_fields: { ["1", "2", "0"] } );
+test_struct!(struct_order_3,  declare: { { f0: u8, #[tabled(order = 0)] f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f1", "f0", "f2"] } assert_fields: { ["1", "0", "2"] } );
+test_struct!(struct_order_4,  declare: { { f0: u8, #[tabled(order = 1)] f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f1", "f2"] } assert_fields: { ["0", "1", "2"] } );
+test_struct!(struct_order_5,  declare: { { f0: u8, #[tabled(order = 2)] f1: u8, f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f2", "f1"] } assert_fields: { ["0", "2", "1"] } );
+test_struct!(struct_order_6,  declare: { { f0: u8, f1: u8, #[tabled(order = 0)] f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f2", "f0", "f1"] } assert_fields: { ["2", "0", "1"] } );
+test_struct!(struct_order_7,  declare: { { f0: u8, f1: u8, #[tabled(order = 1)] f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f2", "f1"] } assert_fields: { ["0", "2", "1"] } );
+test_struct!(struct_order_8,  declare: { { f0: u8, f1: u8, #[tabled(order = 2)] f2: u8 } }                                           init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f1", "f2"] } assert_fields: { ["0", "1", "2"] } );
+test_struct!(struct_order_9,  declare: { { #[tabled(order = 2)] f0: u8, f1: u8, #[tabled(order = 0)] f2: u8 } }                      init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f2", "f1", "f0"] } assert_fields: { ["2", "1", "0"] } );
+test_struct!(struct_order_10, declare: { { #[tabled(order = 2)] f0: u8, #[tabled(order = 1)] f1: u8, f2: u8 } }                      init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f2", "f1", "f0"] } assert_fields: { ["2", "1", "0"] } );
+test_struct!(struct_order_11, declare: { { #[tabled(order = 2)] f0: u8, #[tabled(order = 2)] f1: u8, #[tabled(order = 1)] f2: u8 } } init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f0", "f2", "f1"] } assert_fields: { ["0", "2", "1"] } );
+test_struct!(struct_order_12, declare: { { #[tabled(order = 2)] f0: u8, #[tabled(order = 1)] f1: u8, #[tabled(order = 0)] f2: u8 } } init: {} define: { f0: 0, f1: 1, f2: 2 } assert_headers: { ["f2", "f1", "f0"] } assert_fields: { ["2", "1", "0"] } );
 
 test_struct!(
-    rename_all,
-    { #[tabled(rename_all = "UPPERCASE")] { f1: u8, f2: sstr } }
-    {}
-    { f1: 0, f2: "v2" }
-    { ["F1", "F2"], ["0", "v2"] }
-);
-test_struct!(
-    rename_all_override_in_field_by_rename,
-    { #[tabled(rename_all = "UPPERCASE")] { #[tabled(rename = "213213")] f1: u8, f2: sstr } }
-    {}
-    { f1: 0, f2: "v2" }
-    { ["213213", "F2"], ["0", "v2"] }
-);
-test_struct!(
-    rename_all_override_in_field_by_rename_all,
-    { #[tabled(rename_all = "UPPERCASE")] { #[tabled(rename_all = "lowercase")] f1: u8, f2: sstr } }
-    {}
-    { f1: 0, f2: "v2" }
-    { ["f1", "F2"], ["0", "v2"] }
-);
-test_struct!(
-    rename_all_field,
-    { { #[tabled(rename_all = "lowercase")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr } }
-    {}
-    { f1: 0, f2: "v2" }
-    { ["f1", "F2"], ["0", "v2"] }
-);
-test_struct!(
-    rename_all_field_overridden_by_rename,
-    { { #[tabled(rename_all = "lowercase", rename = "Hello")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr } }
-    {}
-    { f1: 0, f2: "v2" }
-    { ["Hello", "F2"], ["0", "v2"] }
+    struct_rename_all,
+    declare: { #[tabled(rename_all = "UPPERCASE")] { f1: u8, f2: sstr } }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["F1", "F2"] }
+    assert_fields: { ["0", "v2"] }
 );
 
 test_struct!(
-    format,
-    {
+    struct_rename_all_override_in_field_by_rename,
+    declare: { #[tabled(rename_all = "UPPERCASE")] { #[tabled(rename = "213213")] f1: u8, f2: sstr } }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["213213", "F2"] }
+    assert_fields: { ["0", "v2"] }
+);
+
+test_struct!(
+    struct_rename_all_override_in_field_by_rename_all,
+    declare: { #[tabled(rename_all = "UPPERCASE")] { #[tabled(rename_all = "lowercase")] f1: u8, f2: sstr } }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["f1", "F2"] }
+    assert_fields: { ["0", "v2"] }
+);
+
+test_struct!(
+    struct_rename_all_field,
+    declare: { { #[tabled(rename_all = "lowercase")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr } }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["f1", "F2"] }
+    assert_fields: { ["0", "v2"] }
+);
+
+test_struct!(
+    struct_rename_all_field_overridden_by_rename,
+    declare: { { #[tabled(rename_all = "lowercase", rename = "Hello")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr } }
+    init: {}
+    define: { f1: 0, f2: "v2" }
+    assert_headers: { ["Hello", "F2"] }
+    assert_fields: { ["0", "v2"] }
+);
+
+test_struct!(
+    struct_format,
+    declare: {
         {
             #[tabled(format = "{} cc")]
             f1: u8,
             f2: u8,
         }
     }
-    {}
-    { f1: 0, f2: 0 }
-    { ["f1", "f2"], ["0 cc", "0"] }
+    init: {}
+    define: { f1: 0, f2: 0 }
+    assert_headers: { ["f1", "f2"] }
+    assert_fields: { ["0 cc", "0"] }
 );
 
 test_struct!(
-    format_with_args,
-    {
+    struct_format_with_args,
+    declare: {
         {
             #[tabled(format("{}/{} cc/kg", self.f1, self.f2))]
             f1: u8,
             f2: u8,
         }
     }
-    {}
-    { f1: 1, f2: 2 }
-    { ["f1", "f2"], ["1/2 cc/kg", "2"] }
+    init: {}
+    define: { f1: 1, f2: 2 }
+    assert_headers: { ["f1", "f2"] }
+    assert_fields: { ["1/2 cc/kg", "2"] }
 );
 
-test_tuple!(skipped_fields_not_implement_display_tuple, { { #[tabled(skip)] () sstr } }, { () "123" }, { ["1"], ["123"] });
-test_struct!(skipped_fields_not_implement_display_struct, { { #[tabled(skip)] _unit: (), s: sstr } } {} { _unit: (), s: "123" } { ["s"], ["123"] });
+test_tuple!(
+    tuple_skipped_fields_not_implement_display_tuple,
+    declare: { { #[tabled(skip)] () sstr } }
+    init: {}
+    define: { () "123" }
+    assert_headers: { ["1"] }
+    assert_fields: { ["123"] }
+);
+
 test_struct!(
-    skipped_fields_not_implement_display_struct_in_inline,
-    { { s: sstr, #[tabled(inline)] f: S1 } }
-    {
+    struct_skipped_fields_not_implement_display_struct,
+    declare: { { #[tabled(skip)] _unit: (), s: sstr } }
+    init: {}
+    define: { _unit: (), s: "123" }
+    assert_headers: { ["s"] }
+    assert_fields: { ["123"] }
+);
+
+test_struct!(
+    struct_skipped_fields_not_implement_display_struct_in_inline,
+    declare: { { s: sstr, #[tabled(inline)] f: S1 } }
+    init: {
         #[derive(Tabled)]
         struct S1 {
             #[tabled(skip)]
@@ -1151,12 +918,14 @@ test_struct!(
             s: sstr,
         }
     }
-    { s: "123", f: S1 { _unit: (), s: "..." } }
-    { ["s", "s"], ["123", "..."] },
+    define: { s: "123", f: S1 { _unit: (), s: "..." } }
+    assert_headers: { ["s", "s"] }
+    assert_fields: { ["123", "..."] }
 );
+
 test_enum!(
-    skipped_fields_not_implement_display_enum,
-    {
+    struct_skipped_fields_not_implement_display_enum,
+    declare: {
         {
             #[tabled(inline("A::"))]
             A {
@@ -1173,51 +942,15 @@ test_enum!(
             C(usize, #[tabled(skip)] (), sstr)
             D
         }
-    },
-    {},
-    { ["A::name", "B::issue", "B::name", "C::0", "C::2", "D"] },
-    {
+    }
+    init: {}
+    assert_headers: { ["A::name", "B::issue", "B::name", "C::0", "C::2", "D"] }
+    assert: {
         A { name: "nrdxp" } => ["nrdxp", "", "", "", "", ""],
         B { _gem: (), issue: 32, name: "nrdxp" } => ["", "32", "nrdxp", "", "", ""],
         C(32, (), "nrdxp") => ["", "", "", "32", "nrdxp", ""],
         D => ["", "", "", "", "", "+"],
     }
-);
-
-test_struct!(
-    ignore_display_with_when_used_with_inline,
-    { { f1: sstr, f2: sstr, #[tabled(display = "print", inline)] f3: usize } }
-    {}
-    { f1: "123", f2: "456", f3: 789 }
-    { ["f1", "f2", "usize"], ["123", "456", "789"], }
-);
-test_struct!(
-    ignore_display_with_when_used_with_inline_2,
-    { { f1: sstr, f2: sstr, #[tabled(display = "print", )] #[tabled(inline)] f3: usize } }
-    {}
-    { f1: "123", f2: "456", f3: 789 }
-    { ["f1", "f2", "usize"], ["123", "456", "789"], }
-);
-test_struct!(
-    display_with_and_rename,
-    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename = "asd")] f3: usize } }
-    { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
-    { f1: "123", f2: "456", f3: 789 }
-    { ["f1", "f2", "asd"], ["123", "456", ""], }
-);
-test_struct!(
-    display_with_and_rename_2,
-    { { f1: sstr, f2: sstr, #[tabled(display = "print")] #[tabled(rename = "asd")] f3: usize } }
-    { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
-    { f1: "123", f2: "456", f3: 789 }
-    { ["f1", "f2", "asd"], ["123", "456", ""], }
-);
-test_struct!(
-    display_with_and_rename_all,
-    { { f1: sstr, f2: sstr, #[tabled(display = "print", rename_all = "UPPERCASE")] f3: usize } }
-    { #[allow(dead_code)] fn print<T>(_: T) -> String { String::new() } }
-    { f1: "123", f2: "456", f3: 789 }
-    { ["f1", "f2", "F3"], ["123", "456", ""], }
 );
 
 #[test]
@@ -1354,16 +1087,6 @@ fn test_reimport_trait_by_crate_attribute() {
     );
 }
 
-// #[test]
-// fn test_display_with_2() {
-//     #[derive(Tabled)]
-//     #[allow(dead_code)]
-//     struct Struct<'a> {
-//         #[tabled(display("std::path::Path::display"))]
-//         path: &'a std::path::Path,
-//     }
-// }
-
 #[test]
 fn test_format_enum_inline() {
     #[derive(Tabled)]
@@ -1390,35 +1113,6 @@ fn test_format_enum_inline() {
     );
     assert_eq!(Struct::Variant2('c').fields(), ["", "", "+", ""]);
     assert_eq!(Struct::Variant3.fields(), ["", "", "", "+"]);
-}
-
-#[test]
-#[allow(dead_code)]
-fn test_macros_in_display_with() {
-    #[derive(Tabled)]
-    #[tabled(rename_all = "camelCase")]
-    struct Country {
-        name: String,
-        #[tabled(display("display_capital", format!(".{}", self.capital)))]
-        capital: String,
-        #[tabled(display("display_perimeter", self))]
-        area_km2: f32,
-        #[tabled(display = "str::to_lowercase")]
-        national_currency: String,
-        national_currency_short: String,
-    }
-
-    fn display_perimeter(_area: &f32, country: &Country) -> sstr {
-        if country.area_km2 > 1_000_000.0 {
-            "Very Big Land"
-        } else {
-            "Big Land"
-        }
-    }
-
-    fn display_capital(_capital: &str, country: String) -> std::borrow::Cow<'static, str> {
-        format!("{country}!").into()
-    }
 }
 
 #[test]
@@ -1465,219 +1159,6 @@ mod __ {
         #[derive(tabled::Tabled)]
         struct __;
     }
-}
-
-test_table!(
-    test_display_type_0,
-    {
-        #[derive(Tabled)]
-        #[tabled(display(Password, "password_fmt"))]
-        struct User {
-            id: usize,
-            pass: Password,
-            mirrow: Password,
-        }
-
-        struct Password([u8; 4]);
-
-        fn password_fmt(p: &Password) -> String {
-            p.0.iter().sum::<u8>().to_string()
-        }
-
-        let data = [
-            User {
-                id: 0,
-                pass: Password([0, 1, 2, 3]),
-                mirrow: Password([1, 1, 1, 1]),
-            },
-            User {
-                id: 1,
-                pass: Password([1, 1, 2, 3]),
-                mirrow: Password([2, 2, 1, 1]),
-            },
-        ];
-
-        Table::new(data)
-    },
-    "+----+------+--------+"
-    "| id | pass | mirrow |"
-    "+----+------+--------+"
-    "| 0  | 6    | 4      |"
-    "+----+------+--------+"
-    "| 1  | 7    | 6      |"
-    "+----+------+--------+"
-);
-
-test_table!(
-    test_display_type_args,
-    {
-        #[derive(Tabled)]
-        #[tabled(display(Password, "password_fmt", self, 0))]
-        struct User {
-            id: usize,
-            pass: Password,
-            mirrow: Password,
-        }
-
-        struct Password([u8; 4]);
-
-        fn password_fmt(p: &Password, _: &User, _: usize) -> String {
-            p.0.iter().sum::<u8>().to_string()
-        }
-
-        let data = [
-            User {
-                id: 0,
-                pass: Password([0, 1, 2, 3]),
-                mirrow: Password([1, 1, 1, 1]),
-            },
-            User {
-                id: 1,
-                pass: Password([1, 1, 2, 3]),
-                mirrow: Password([2, 2, 1, 1]),
-            },
-        ];
-
-        Table::new(data)
-    },
-    "+----+------+--------+"
-    "| id | pass | mirrow |"
-    "+----+------+--------+"
-    "| 0  | 6    | 4      |"
-    "+----+------+--------+"
-    "| 1  | 7    | 6      |"
-    "+----+------+--------+"
-);
-
-test_table!(
-    test_display_type_generic,
-    {
-        #[derive(Tabled)]
-        #[tabled(display(Password, "password_fmt"))]
-        struct User {
-            id: usize,
-            pass: Password<usize>,
-            mirrow: Password<u8>,
-        }
-
-        struct Password<T>([T; 4]);
-
-        fn password_fmt<T>(p: &Password<T>) -> String where T: Display {
-            p.0.iter().map(|s| s.to_string()).collect::<Vec<_>>().join("-")
-        }
-
-        let data = [
-            User {
-                id: 0,
-                pass: Password([0, 1, 2, 3]),
-                mirrow: Password([1, 1, 1, 1]),
-            },
-            User {
-                id: 1,
-                pass: Password([1, 1, 2, 3]),
-                mirrow: Password([2, 2, 1, 1]),
-            },
-        ];
-
-        Table::new(data)
-    },
-    "+----+---------+---------+"
-    "| id | pass    | mirrow  |"
-    "+----+---------+---------+"
-    "| 0  | 0-1-2-3 | 1-1-1-1 |"
-    "+----+---------+---------+"
-    "| 1  | 1-1-2-3 | 2-2-1-1 |"
-    "+----+---------+---------+"
-);
-
-test_table!(
-    test_display_type_generic_use,
-    {
-        #[derive(Tabled)]
-        #[tabled(display(Password<usize>, "password_usize_fmt"))]
-        #[tabled(display(Password<u8>, "password_u8_fmt"))]
-        struct User {
-            id: usize,
-            pass: Password<usize>,
-            mirrow: Password<u8>,
-        }
-
-        struct Password<T>([T; 4]);
-
-        fn password_usize_fmt(p: &Password<usize>) -> String {
-            p.0.iter().sum::<usize>().to_string()
-        }
-
-        fn password_u8_fmt(p: &Password<u8>) -> String {
-            p.0.iter().sum::<u8>().to_string()
-        }
-
-        let data = [
-            User {
-                id: 0,
-                pass: Password([0, 1, 2, 3]),
-                mirrow: Password([1, 1, 1, 1]),
-            },
-            User {
-                id: 1,
-                pass: Password([1, 1, 2, 3]),
-                mirrow: Password([2, 2, 1, 1]),
-            },
-        ];
-
-        Table::new(data)
-    },
-    "+----+------+--------+"
-    "| id | pass | mirrow |"
-    "+----+------+--------+"
-    "| 0  | 6    | 4      |"
-    "+----+------+--------+"
-    "| 1  | 7    | 6      |"
-    "+----+------+--------+"
-);
-
-#[cfg(test)]
-mod test_display_enum {
-    use super::*;
-
-    #[derive(Tabled)]
-    pub enum User {
-        #[tabled(display("some::bar::user_fmt"))]
-        Public { id: usize },
-        #[tabled(display("user_fmt"))]
-        Private { id: usize },
-    }
-
-    fn user_fmt(_: &User) -> String {
-        format!("...")
-    }
-
-    pub mod some {
-        pub mod bar {
-            pub fn user_fmt(_: &super::super::User) -> String {
-                format!("111")
-            }
-        }
-    }
-
-    test_table!(
-        test_display_enum,
-        {
-            let data = [
-                User::Public { id: 0 },
-                User::Private { id: 1 },
-            ];
-
-            Table::new(data)
-        },
-        "+--------+---------+"
-        "| Public | Private |"
-        "+--------+---------+"
-        "| 111    |         |"
-        "+--------+---------+"
-        "|        | ...     |"
-        "+--------+---------+"
-    );
 }
 
 test_table!(
