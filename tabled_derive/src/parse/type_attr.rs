@@ -76,14 +76,12 @@ impl Parse for TypeAttr {
             let nested;
             let _paren = parenthesized!(nested in input);
 
-            if name_str.as_str() == "inline" {
-                if nested.peek(LitStr) {
-                    let lit = nested.parse::<LitStr>()?;
-                    return Ok(Self::new(Inline(
-                        LitBool::new(true, Span::call_site()),
-                        Some(lit),
-                    )));
-                }
+            if name_str.as_str() == "inline" && nested.peek(LitStr) {
+                let lit = nested.parse::<LitStr>()?;
+                return Ok(Self::new(Inline(
+                    LitBool::new(true, Span::call_site()),
+                    Some(lit),
+                )));
             }
 
             if name_str.as_str() == "display" {

@@ -85,8 +85,8 @@ impl FieldAttributes {
                     self.format_with_args = Some(args);
                 }
             }
-            FieldAttrKind::Map(foo, ret_type) => {
-                self.map = Some(foo.value());
+            FieldAttrKind::Map(func, ret_type) => {
+                self.map = Some(func.value());
                 if let Some((_, ret_type)) = ret_type {
                     self.map_type = Some(ret_type);
                 }

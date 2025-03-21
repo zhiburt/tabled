@@ -9,6 +9,7 @@ mod rename_test;
 mod skip_test;
 
 // https://users.rust-lang.org/t/create-a-struct-from-macro-rules/19829
+#[allow(unused_macros)]
 macro_rules! test_tuple {
     (
         $test_name:ident,
@@ -50,6 +51,7 @@ macro_rules! test_tuple {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! test_enum {
     (
         $test_name:ident,
@@ -115,6 +117,7 @@ macro_rules! test_enum {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! test_struct {
     (
         $test_name:ident,
@@ -161,8 +164,12 @@ macro_rules! test_struct {
 }
 
 #[allow(non_camel_case_types)]
+#[allow(dead_code)]
 pub(crate) type sstr = &'static str;
 
+#[allow(unused_imports)]
 pub(crate) use test_enum;
+#[allow(unused_imports)]
 pub(crate) use test_struct;
+#[allow(unused_imports)]
 pub(crate) use test_tuple;
