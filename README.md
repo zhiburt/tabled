@@ -370,7 +370,7 @@ Go   Rob Pike       2009
 You can modify existing styles to fit your needs.
 Mind that all modifications are done at compile time.
 
-Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Style.html)
+Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/style/struct.Style.html)
 for more customization options.
 
 If you can't make desicions at compile time - use `Theme`.
@@ -404,7 +404,7 @@ As was said doing customization at `const`ant context is not always a best chois
 you may need to change a style at runtime, you may use `Theme` object to do that.
 
 `Theme` is quite powerful by itself,
-you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
+you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/themes/struct.Theme.html).
 
 ```rust
 use tabled::grid::config::{Border, HorizontalLine};
