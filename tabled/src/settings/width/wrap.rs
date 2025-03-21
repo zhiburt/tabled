@@ -204,7 +204,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if keep_words {
         split_keeping_words(text, width, "\n")
     } else {
-        chunks(text, width).join("\n")
+        chunks(text, width)
     }
 }
 
@@ -241,66 +241,47 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
 }
 
 #[cfg(not(feature = "ansi"))]
-fn chunks(s: &str, width: usize) -> Vec<String> {
+fn chunks(s: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     if width == 0 {
-        return Vec::new();
+        return String::new();
     }
 
-    let mut prev_newline = false;
-    let mut buf = String::with_capacity(width);
-    let mut list = Vec::new();
-    let mut line_width = 0;
+    let mut buf = String::new();
+    let mut currect_width = 0;
     for c in s.chars() {
         if c == '\n' {
-            if buf.is_empty() {
-                list.push(String::new());
-            } else {
-                list.push(buf);
-            }
-
-            buf = String::with_capacity(width);
-            line_width = 0;
-            prev_newline = true;
+            buf.push('\n');
+            currect_width = 0;
             continue;
         }
 
+        if currect_width == width {
+            buf.push('\n');
+            currect_width = 0;
+        }
+
         let char_width = get_char_width(c);
-        let has_line_space = line_width + char_width <= width;
+        let has_line_space = currect_width + char_width <= width;
         if !has_line_space {
             let is_char_small = char_width <= width;
             if !is_char_small {
-                let count_unknowns = width - line_width;
+                let count_unknowns = width - currect_width;
                 buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-                line_width += count_unknowns;
+                currect_width += count_unknowns;
             } else {
-                list.push(buf);
-                buf = String::with_capacity(width);
-                line_width = 0;
-                prev_newline = false;
-
+                buf.push('\n');
                 buf.push(c);
-                line_width += char_width;
+                currect_width = char_width;
             }
         } else {
             buf.push(c);
-            line_width += char_width;
-        }
-
-        if line_width == width {
-            list.push(buf);
-            buf = String::with_capacity(width);
-            line_width = 0;
-            prev_newline = false;
+            currect_width += char_width;
         }
     }
 
-    if !buf.is_empty() || prev_newline {
-        list.push(buf);
-    }
-
-    list
+    buf
 }
 
 #[cfg(feature = "ansi")]
@@ -907,7 +888,7 @@ mod tests {
     #[test]
     fn split_test() {
         #[cfg(not(feature = "ansi"))]
-        let split = |text, width| chunks(text, width).join("\n");
+        let split = |text, width| chunks(text, width);
 
         #[cfg(feature = "ansi")]
         let split = |text, width| chunks(text, width, "", "").join("\n");
@@ -939,15 +920,27 @@ mod tests {
         #[cfg(feature = "ansi")]
         let chunks = |text, width| chunks(text, width, "", "");
 
-        assert_eq!(chunks("123456", 0), [""; 0]);
+        assert_eq!(chunks("123456", 0), "");
 
-        assert_eq!(chunks("123456", 1), ["1", "2", "3", "4", "5", "6"]);
-        assert_eq!(chunks("123456", 2), ["12", "34", "56"]);
-        assert_eq!(chunks("12345", 2), ["12", "34", "5"]);
+        assert_eq!(
+            chunks("123456", 1),
+            ["1", "2", "3", "4", "5", "6"].join("\n")
+        );
+        assert_eq!(chunks("123456", 2), ["12", "34", "56"].join("\n"));
+        assert_eq!(chunks("12345", 2), ["12", "34", "5"].join("\n"));
 
-        assert_eq!(chunks("😳😳😳😳😳", 1), ["�", "�", "�", "�", "�"]);
-        assert_eq!(chunks("😳😳😳😳😳", 2), ["😳", "😳", "😳", "😳", "😳"]);
-        assert_eq!(chunks("😳😳😳😳😳", 3), ["😳", "😳", "😳", "😳", "😳"]);
+        assert_eq!(
+            chunks("😳😳😳😳😳", 1),
+            ["�", "�", "�", "�", "�"].join("\n")
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 2),
+            ["😳", "😳", "😳", "😳", "😳"].join("\n")
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 3),
+            ["😳", "😳", "😳", "😳", "😳"].join("\n")
+        );
     }
 
     #[cfg(not(feature = "ansi"))]
@@ -1474,10 +1467,10 @@ mod tests {
 
         assert_eq!(
             chunks(text, 40),
-            [
-                "(公司{ 名称:\"腾讯科技（深圳）有限公司\",",
+            concat!(
+                "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
                 "成立时间:\"1998年11月\"}",
-            ]
+            ),
         );
     }
 }
