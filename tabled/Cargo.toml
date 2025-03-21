@@ -89,6 +89,16 @@ path = "examples/derive/format_enum.rs"
 required-features = ["derive"]
 
 [[example]]
+name = "derive_map"
+path = "examples/derive/map.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "derive_map_inlined"
+path = "examples/derive/map_inlined.rs"
+required-features = ["derive"]
+
+[[example]]
 name = "table"
 path = "examples/table.rs"
 required-features = ["derive"]
