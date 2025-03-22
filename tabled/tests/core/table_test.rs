@@ -752,7 +752,7 @@ mod derived {
 #[cfg(feature = "ansi")]
 test_table!(
     test_wrap_multiline_0,
-    Table::new(&[
+    Table::new([
         [
             concat!(
                 "\u{1b}[37m",
@@ -782,19 +782,23 @@ test_table!(
 
 test_table!(
     test_wrap_multiline_1,
-    Table::new(&[
-        [
-            concat!(
-                "This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html",
-                "\n",
-                "\n",
-                "For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies",
-                "\n",
-            )
-        ],
-    ])
-    .with(Style::modern())
-    .with(Width::wrap(100)),
+    {
+        let data = &[
+            [
+                concat!(
+                    "This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html",
+                    "\n",
+                    "\n",
+                    "For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies",
+                    "\n",
+                )
+            ],
+        ];
+
+        Table::new(data)
+            .with(Style::modern())
+            .with(Width::wrap(100))
+    },
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
     "│ 0                                                                                                │"
     "├──────────────────────────────────────────────────────────────────────────────────────────────────┤"

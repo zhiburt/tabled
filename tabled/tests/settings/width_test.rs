@@ -1,7 +1,6 @@
 #![cfg(feature = "std")]
 
 use tabled::{
-    grid::util::string::get_text_width,
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
@@ -13,7 +12,7 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{assert_width, static_table, test_table};
+use testing_table::{assert_width, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{
@@ -479,7 +478,7 @@ test_table!(
 
 test_table!(
     max_width_with_emoji,
-    Matrix::iter(&["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"])
+    Matrix::iter(["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"])
         .with(Style::markdown())
         .modify(Segment::all(), Width::truncate(6).suffix("..."))
         .to_string(),
@@ -2068,7 +2067,9 @@ test_table!(
 mod derived {
     use super::*;
 
+    use tabled::grid::util::string::get_text_width;
     use tabled::Tabled;
+    use testing_table::static_table;
 
     #[test]
     fn wrapping_as_total_multiline() {
