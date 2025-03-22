@@ -216,7 +216,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
         let (prefix, suffix) = build_link_prefix_suffix(url);
 
         if keep_words {
-            split_keeping_words(&text, width, &prefix, &suffix)
+            wrap_text_keeping_words(&text, width, &prefix, &suffix)
         } else {
             wrap_text_basic(&text, width, &prefix, &suffix)
         }
@@ -382,6 +382,10 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
 fn wrap_text_keeping_words(text: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
+    if width == 0 || text.is_empty() {
+        return String::new();
+    }
+
     let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
@@ -450,7 +454,12 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
 }
 
 #[cfg(feature = "ansi")]
-fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
+fn wrap_text_keeping_words(
+    text: &str,
+    width: usize,
+    line_prefix: &str,
+    line_suffix: &str,
+) -> String {
     if text.is_empty() || width == 0 {
         return String::new();
     }
@@ -460,8 +469,8 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
     let mut word_chars = 0;
     let mut blocks = parsing::Blocks::new(ansi_str::get_blocks(text));
     let mut buf = parsing::MultilineBuffer::new(width);
-    buf.set_prefix(prefix);
-    buf.set_suffix(suffix);
+    buf.set_prefix(line_prefix);
+    buf.set_suffix(line_suffix);
 
     for c in stripped_text.chars() {
         match c {
@@ -598,7 +607,6 @@ mod parsing {
 
             self.buf.push_str(self.suffix);
 
-            let _ = self.fill(' ');
             self.buf.push('\n');
             self.width_last = 0;
 
@@ -619,8 +627,6 @@ mod parsing {
             }
 
             self.buf.push_str(self.suffix);
-
-            let _ = self.fill(' ');
             self.width_last = 0;
         }
 
@@ -953,29 +959,29 @@ mod tests {
     #[test]
     fn split_by_line_keeping_words_test() {
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
         assert_eq!(split_keeping_words("123456", 2), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5 ");
+        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5");
 
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
 
-        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
+        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_test() {
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
 
-        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m ");
+        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
 
@@ -985,7 +991,7 @@ mod tests {
         use ansi_str::AnsiStr;
 
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
@@ -1132,7 +1138,7 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_3_test() {
-        let split = |text, width| split_keeping_words(text, width, "", "");
+        let split = |text, width| wrap_text_keeping_words(text, width, "", "");
         assert_eq!(
             split(
                 "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",
@@ -1142,19 +1148,19 @@ mod tests {
         );
         assert_eq!(
             split("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
-            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m     "
+            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello World\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWorld\u{1b}[39m  "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWorld\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m  "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
-            "\u{1b}[37mHello \u{1b}[39m  \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m   "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m"
         );
     }
 
@@ -1170,12 +1176,12 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn split_keeping_words_4_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
-        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
+        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
@@ -1215,20 +1221,20 @@ mod tests {
     #[test]
     fn split_by_line_keeping_words_test_with_prefix_and_suffix() {
         assert_eq!(
-            split_keeping_words("123456", 1, "^", "$"),
+            wrap_text_keeping_words("123456", 1, "^", "$"),
             "^1$\n^2$\n^3$\n^4$\n^5$\n^6$"
         );
         assert_eq!(
-            split_keeping_words("123456", 2, "^", "$"),
+            wrap_text_keeping_words("123456", 2, "^", "$"),
             "^12$\n^34$\n^56$"
         );
         assert_eq!(
-            split_keeping_words("12345", 2, "^", "$"),
-            "^12$\n^34$\n^5$ "
+            wrap_text_keeping_words("12345", 2, "^", "$"),
+            "^12$\n^34$\n^5$"
         );
 
         assert_eq!(
-            split_keeping_words("😳😳😳😳😳", 1, "^", "$"),
+            wrap_text_keeping_words("😳😳😳😳😳", 1, "^", "$"),
             "^�$\n^�$\n^�$\n^�$\n^�$"
         );
     }
@@ -1241,7 +1247,7 @@ mod tests {
         let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
 
         assert_eq!(
-            split_keeping_words(text, 2, "^", "$")
+            wrap_text_keeping_words(text, 2, "^", "$")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1289,7 +1295,7 @@ mod tests {
         );
 
         assert_eq!(
-            split_keeping_words(text, 1, "^", "$")
+            wrap_text_keeping_words(text, 1, "^", "$")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1412,8 +1418,8 @@ mod tests {
         let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
 
         assert_eq!(
-            split_keeping_words(text, 22, "", ""),
-            "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m            "
+            wrap_text_keeping_words(text, 22, "", ""),
+            "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m"
         );
     }
 
@@ -1443,18 +1449,18 @@ mod tests {
     fn chunks_wrap_4_keeping_words() {
         let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
         assert_eq!(
-            split_keeping_words(text, 10, "", ""),
+            wrap_text_keeping_words(text, 10, "", ""),
             concat!(
-                "\u{1b}[37mReturns \u{1b}[39m  \n",
+                "\u{1b}[37mReturns \u{1b}[39m\n",
                 "\u{1b}[37mthe floor \u{1b}[39m\n",
-                "\u{1b}[37mof a \u{1b}[39m     \n",
-                "\u{1b}[37mnumber \u{1b}[39m   \n",
-                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m \n",
-                "\u{1b}[37minteger \u{1b}[39m  \n",
+                "\u{1b}[37mof a \u{1b}[39m\n",
+                "\u{1b}[37mnumber \u{1b}[39m\n",
+                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n",
+                "\u{1b}[37minteger \u{1b}[39m\n",
                 "\u{1b}[37mless than \u{1b}[39m\n",
-                "\u{1b}[37mor equal \u{1b}[39m \n",
-                "\u{1b}[37mto that \u{1b}[39m  \n",
-                "\u{1b}[37mnumber).\u{1b}[39m  ",
+                "\u{1b}[37mor equal \u{1b}[39m\n",
+                "\u{1b}[37mto that \u{1b}[39m\n",
+                "\u{1b}[37mnumber).\u{1b}[39m",
             )
         );
     }

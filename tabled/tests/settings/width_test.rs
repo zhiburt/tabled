@@ -202,10 +202,10 @@ test_table!(
 
         AnsiStr::ansi_strip(&table).to_string()
     },
-    "| String            |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    "| String          |"
+    "|-----------------|"
+    "| this is a long  |"
+    "| sentence        |"
 );
 
 #[cfg(feature = "ansi")]
@@ -215,10 +215,10 @@ test_table!(
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
-        "| String            |"
-        "|-------------------|"
-        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
-        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+        "| String          |"
+        "|-----------------|"
+        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m |"
+        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m        |"
 );
 
 #[cfg(feature = "ansi")]
@@ -233,10 +233,10 @@ test_table!(
 
         AnsiStr::ansi_strip(&table).to_string()
     },
-    "| String            |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    "| String           |"
+    "|------------------|"
+    "| this is a long   |"
+    "| sentence         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -246,10 +246,10 @@ test_table!(
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
-    "| String            |"
-    "|-------------------|"
-    "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |"
-    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+    "| String           |"
+    "|------------------|"
+    "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m         |"
 );
 
 #[cfg(feature = "ansi")]
