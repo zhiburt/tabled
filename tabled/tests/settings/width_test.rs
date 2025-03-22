@@ -2063,10 +2063,54 @@ test_table!(
     "+--+---+----------+----------+"
 );
 
+#[cfg(feature = "ansi")]
+test_table!(
+    wrap_issue_0,
+    {
+        tabled::Table::new(vec![
+            ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
+        ])
+        .with(Width::wrap(40).keep_words(true))
+        .to_string()
+    },
+    "+--------------------------------------+"
+    "| &str                                 |"
+    "+--------------------------------------+"
+    "| x xxx xx xxxxxxx xxxxxxxx xx xxxx    |"
+    "| xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx |"
+    "|  xx xxxxxxx x xx xxxxxx x xxxxxx     |"
+    "| xxxxxxxxxxxx xx xxxxxx xxx xxx       |"
+    "| xxxxxx xxxxxxx. xx xxxxxxxx xx xx    |"
+    "| xxxxxxxxxx                           |"
+    "+--------------------------------------+"
+);
+
+#[cfg(feature = "ansi")]
+test_table!(
+    wrap_issue_1,
+    {
+        tabled::Table::new(vec![
+            ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
+        ])
+        .with(Width::wrap(40).keep_words(false))
+        .to_string()
+    },
+    "+--------------------------------------+"
+    "| &str                                 |"
+    "+--------------------------------------+"
+    "| x xxx xx xxxxxxx xxxxxxxx xx xxxx xx |"
+    "| xxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx x |"
+    "| x xxxxxxx x xx xxxxxx x xxxxxx xxxxx |"
+    "| xxxxxxx xx xxxxxx xxx xxx xxxxxx xxx |"
+    "| xxxx. xx xxxxxxxx xx xx xxxxxxxxxx   |"
+    "+--------------------------------------+"
+);
+
 #[cfg(feature = "derive")]
 mod derived {
     use super::*;
 
+    #[cfg(feature = "ansi")]
     use tabled::grid::util::string::get_text_width;
     use tabled::Tabled;
     use testing_table::static_table;

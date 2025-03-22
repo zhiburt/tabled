@@ -259,7 +259,7 @@ fn wrap_text_basic(s: &str, width: usize) -> String {
             current_width = 0;
         }
 
-        let char_width = get_char_width(c);
+        let char_width = std::cmp::max(1, get_char_width(c));
         let has_line_space = current_width + char_width <= width;
         if !has_line_space {
             let is_char_small = char_width <= width;
@@ -330,7 +330,7 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
                 continue;
             }
 
-            let char_width = get_char_width(c);
+            let char_width = std::cmp::max(1, get_char_width(c));
             let line_has_space = line_width + char_width <= width;
             if line_has_space {
                 buf.push(c);
@@ -421,7 +421,7 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
         for c in word.chars() {
             // take 1 char by 1 and just push it
 
-            let char_width = get_char_width(c);
+            let char_width = std::cmp::max(1, get_char_width(c));
             let line_has_space = line_width + char_width <= width;
             if !line_has_space {
                 let is_char_small = char_width <= width;
@@ -454,140 +454,99 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
 }
 
 #[cfg(feature = "ansi")]
-fn wrap_text_keeping_words(
-    text: &str,
-    width: usize,
-    line_prefix: &str,
-    line_suffix: &str,
-) -> String {
+fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
     if text.is_empty() || width == 0 {
         return String::new();
     }
 
-    let stripped_text = ansi_str::AnsiStr::ansi_strip(text);
-    let mut word_width = 0;
-    let mut word_chars = 0;
-    let mut blocks = parsing::Blocks::new(ansi_str::get_blocks(text));
-    let mut buf = parsing::MultilineBuffer::new(width);
-    buf.set_prefix(line_prefix);
-    buf.set_suffix(line_suffix);
-
-    for c in stripped_text.chars() {
-        match c {
-            ' ' => {
-                parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 1);
-                word_chars = 0;
-                word_width = 0;
-            }
-            '\n' => {
-                parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 1);
-                word_chars = 0;
-                word_width = 0;
-            }
-            _ => {
-                word_width += get_char_width(c);
-                word_chars += 1;
-            }
-        }
-    }
-
-    if word_chars > 0 {
-        parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 0);
-        buf.finish_line(&blocks);
-    }
-
-    buf.into_string()
+    parsing::split_text(text, width, prefix, suffix)
 }
 
 #[cfg(feature = "ansi")]
 mod parsing {
     use super::get_char_width;
-    use ansi_str::{AnsiBlock, AnsiBlockIter, Style};
+    use ansi_str::{get_blocks, AnsiBlock, AnsiBlockIter, Style};
     use std::fmt::Write;
 
-    pub(super) struct Blocks<'a> {
+    struct TextBlocks<'a> {
         iter: AnsiBlockIter<'a>,
         current: Option<RelativeBlock<'a>>,
     }
 
-    impl<'a> Blocks<'a> {
-        pub(super) fn new(iter: AnsiBlockIter<'a>) -> Self {
+    impl<'a> TextBlocks<'a> {
+        fn new(text: &'a str) -> Self {
             Self {
-                iter,
+                iter: get_blocks(text),
                 current: None,
             }
         }
 
-        pub(super) fn next_block(&mut self) -> Option<RelativeBlock<'a>> {
+        fn next(&mut self) -> Option<RelativeBlock<'a>> {
             self.current
                 .take()
                 .or_else(|| self.iter.next().map(RelativeBlock::new))
         }
     }
 
-    pub(super) struct RelativeBlock<'a> {
+    struct RelativeBlock<'a> {
         block: AnsiBlock<'a>,
         pos: usize,
     }
 
     impl<'a> RelativeBlock<'a> {
-        pub(super) fn new(block: AnsiBlock<'a>) -> Self {
+        fn new(block: AnsiBlock<'a>) -> Self {
             Self { block, pos: 0 }
         }
 
-        pub(super) fn get_text(&self) -> &str {
+        fn get_text(&self) -> &str {
             &self.block.text()[self.pos..]
         }
 
-        pub(super) fn get_origin(&self) -> &str {
+        fn get_origin(&self) -> &str {
             self.block.text()
         }
 
-        pub(super) fn get_style(&self) -> &Style {
+        fn get_style(&self) -> &Style {
             self.block.style()
         }
     }
 
-    pub(super) struct MultilineBuffer<'a> {
+    struct MultilineBuffer<'text, 'color> {
         buf: String,
         width_last: usize,
         width: usize,
-        prefix: &'a str,
-        suffix: &'a str,
+        prefix: &'color str,
+        suffix: &'color str,
+        blocks: TextBlocks<'text>,
     }
 
-    impl<'a> MultilineBuffer<'a> {
-        pub(super) fn new(width: usize) -> Self {
+    impl<'text, 'color> MultilineBuffer<'text, 'color> {
+        fn new(text: &'text str, width: usize, prefix: &'color str, suffix: &'color str) -> Self {
+            let blocks = TextBlocks::new(text);
+
             Self {
                 buf: String::new(),
                 width_last: 0,
-                prefix: "",
-                suffix: "",
+                prefix,
+                suffix,
                 width,
+                blocks,
             }
         }
 
-        pub(super) fn into_string(self) -> String {
+        fn into_string(self) -> String {
             self.buf
         }
 
-        pub(super) fn set_suffix(&mut self, suffix: &'a str) {
-            self.suffix = suffix;
-        }
-
-        pub(super) fn set_prefix(&mut self, prefix: &'a str) {
-            self.prefix = prefix;
-        }
-
-        pub(super) fn max_width(&self) -> usize {
+        fn max_width(&self) -> usize {
             self.width
         }
 
-        pub(super) fn available_width(&self) -> usize {
+        fn available_width(&self) -> usize {
             self.width - self.width_last
         }
 
-        pub(super) fn fill(&mut self, c: char) -> usize {
+        fn fill(&mut self, c: char) -> usize {
             debug_assert_eq!(get_char_width(c), 1);
 
             let rest_width = self.available_width();
@@ -598,8 +557,8 @@ mod parsing {
             rest_width
         }
 
-        pub(super) fn set_next_line(&mut self, blocks: &Blocks<'_>) {
-            if let Some(block) = &blocks.current {
+        fn set_next_line(&mut self) {
+            if let Some(block) = &self.blocks.current {
                 let _ = self
                     .buf
                     .write_fmt(format_args!("{}", block.get_style().end()));
@@ -612,15 +571,15 @@ mod parsing {
 
             self.buf.push_str(self.prefix);
 
-            if let Some(block) = &blocks.current {
+            if let Some(block) = &self.blocks.current {
                 let _ = self
                     .buf
                     .write_fmt(format_args!("{}", block.get_style().start()));
             }
         }
 
-        pub(super) fn finish_line(&mut self, blocks: &Blocks<'_>) {
-            if let Some(block) = &blocks.current {
+        fn finish_line(&mut self) {
+            if let Some(block) = &self.blocks.current {
                 let _ = self
                     .buf
                     .write_fmt(format_args!("{}", block.get_style().end()));
@@ -630,7 +589,7 @@ mod parsing {
             self.width_last = 0;
         }
 
-        pub(super) fn read_chars(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
+        fn read_chars(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
             let mut count_chars = 0;
             let mut count_bytes = 0;
             for c in block.get_text().chars() {
@@ -641,7 +600,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = get_char_width(c);
+                let cwidth = std::cmp::max(1, get_char_width(c));
 
                 let available_space = self.width - self.width_last;
                 if available_space == 0 {
@@ -674,11 +633,7 @@ mod parsing {
             (count_chars, count_bytes)
         }
 
-        pub(super) fn read_chars_unchecked(
-            &mut self,
-            block: &RelativeBlock<'_>,
-            n: usize,
-        ) -> (usize, usize) {
+        fn read_chars_unchecked(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
             let mut count_chars = 0;
             let mut count_bytes = 0;
             for c in block.get_text().chars() {
@@ -689,7 +644,7 @@ mod parsing {
                 count_chars += 1;
                 count_bytes += c.len_utf8();
 
-                let cwidth = get_char_width(c);
+                let cwidth = std::cmp::max(1, get_char_width(c));
                 self.width_last += cwidth;
 
                 self.buf.push(c);
@@ -701,11 +656,12 @@ mod parsing {
         }
     }
 
-    pub(super) fn read_chars(buf: &mut MultilineBuffer<'_>, blocks: &mut Blocks<'_>, n: usize) {
+    fn read_chars(buf: &mut MultilineBuffer<'_, '_>, n: usize) {
         let mut n = n;
         while n > 0 {
-            let is_new_block = blocks.current.is_none();
-            let mut block = blocks.next_block().expect("Must never happen");
+            let is_new_block = buf.blocks.current.is_none();
+            let mut block = buf.blocks.next().expect("Must never happen");
+
             if is_new_block {
                 buf.buf.push_str(buf.prefix);
                 let _ = buf
@@ -721,22 +677,18 @@ mod parsing {
                     .write_fmt(format_args!("{}", block.get_style().end()));
             } else {
                 block.pos += read_bytes;
-                blocks.current = Some(block);
+                buf.blocks.current = Some(block);
             }
 
             n -= read_count;
         }
     }
 
-    pub(super) fn read_chars_unchecked(
-        buf: &mut MultilineBuffer<'_>,
-        blocks: &mut Blocks<'_>,
-        n: usize,
-    ) {
+    fn read_chars_unchecked(buf: &mut MultilineBuffer<'_, '_>, n: usize) {
         let mut n = n;
         while n > 0 {
-            let is_new_block = blocks.current.is_none();
-            let mut block = blocks.next_block().expect("Must never happen");
+            let is_new_block = buf.blocks.current.is_none();
+            let mut block = buf.blocks.next().expect("Must never happen");
 
             if is_new_block {
                 buf.buf.push_str(buf.prefix);
@@ -753,16 +705,15 @@ mod parsing {
                     .write_fmt(format_args!("{}", block.get_style().end()));
             } else {
                 block.pos += read_bytes;
-                blocks.current = Some(block);
+                buf.blocks.current = Some(block);
             }
 
             n -= read_count;
         }
     }
 
-    pub(super) fn handle_word(
-        buf: &mut MultilineBuffer<'_>,
-        blocks: &mut Blocks<'_>,
+    fn handle_word(
+        buf: &mut MultilineBuffer<'_, '_>,
         word_chars: usize,
         word_width: usize,
         additional_read: usize,
@@ -772,17 +723,17 @@ mod parsing {
             let is_word_too_big = word_width > buf.max_width();
 
             if is_word_too_big {
-                read_chars(buf, blocks, word_chars + additional_read);
+                read_chars(buf, word_chars + additional_read);
             } else if has_line_space {
-                read_chars_unchecked(buf, blocks, word_chars);
+                read_chars_unchecked(buf, word_chars);
                 if additional_read > 0 {
-                    read_chars(buf, blocks, additional_read);
+                    read_chars(buf, additional_read);
                 }
             } else {
-                buf.set_next_line(&*blocks);
-                read_chars_unchecked(buf, blocks, word_chars);
+                buf.set_next_line();
+                read_chars_unchecked(buf, word_chars);
                 if additional_read > 0 {
-                    read_chars(buf, blocks, additional_read);
+                    read_chars(buf, additional_read);
                 }
             }
 
@@ -791,11 +742,44 @@ mod parsing {
 
         let has_current_line_space = additional_read <= buf.available_width();
         if has_current_line_space {
-            read_chars_unchecked(buf, blocks, additional_read);
+            read_chars_unchecked(buf, additional_read);
         } else {
-            buf.set_next_line(&*blocks);
-            read_chars_unchecked(buf, blocks, additional_read);
+            buf.set_next_line();
+            read_chars_unchecked(buf, additional_read);
         }
+    }
+
+    pub(super) fn split_text(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
+        let mut word_width = 0;
+        let mut word_chars = 0;
+        let mut buf = MultilineBuffer::new(text, width, prefix, suffix);
+
+        let stripped_text = ansi_str::AnsiStr::ansi_strip(text);
+        for c in stripped_text.chars() {
+            match c {
+                ' ' => {
+                    handle_word(&mut buf, word_chars, word_width, 1);
+                    word_chars = 0;
+                    word_width = 0;
+                }
+                '\n' => {
+                    handle_word(&mut buf, word_chars, word_width, 1);
+                    word_chars = 0;
+                    word_width = 0;
+                }
+                _ => {
+                    word_width += std::cmp::max(1, get_char_width(c));
+                    word_chars += 1;
+                }
+            }
+        }
+
+        if word_chars > 0 {
+            handle_word(&mut buf, word_chars, word_width, 0);
+            buf.finish_line();
+        }
+
+        buf.into_string()
     }
 }
 
