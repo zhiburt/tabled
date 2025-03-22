@@ -22,8 +22,10 @@ use crate::{
 #[cfg(not(feature = "ansi"))]
 use crate::grid::util::string::get_string_width;
 
-use super::util::{get_table_widths, get_table_widths_with_total};
+#[cfg(feature = "ansi")]
 use crate::util::string::split_at_width;
+
+use super::util::{get_table_widths, get_table_widths_with_total};
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -202,9 +204,9 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     }
 
     if keep_words {
-        split_keeping_words(text, width, "\n")
+        wrap_text_keeping_words(text, width)
     } else {
-        chunks(text, width)
+        wrap_text_basic(text, width)
     }
 }
 
@@ -241,7 +243,7 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
 }
 
 #[cfg(not(feature = "ansi"))]
-fn chunks(s: &str, width: usize) -> String {
+fn wrap_text_basic(s: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     if width == 0 {
@@ -249,35 +251,35 @@ fn chunks(s: &str, width: usize) -> String {
     }
 
     let mut buf = String::new();
-    let mut currect_width = 0;
+    let mut current_width = 0;
     for c in s.chars() {
         if c == '\n' {
             buf.push('\n');
-            currect_width = 0;
+            current_width = 0;
             continue;
         }
 
-        if currect_width == width {
+        if current_width == width {
             buf.push('\n');
-            currect_width = 0;
+            current_width = 0;
         }
 
         let char_width = get_char_width(c);
-        let has_line_space = currect_width + char_width <= width;
+        let has_line_space = current_width + char_width <= width;
         if !has_line_space {
             let is_char_small = char_width <= width;
             if !is_char_small {
-                let count_unknowns = width - currect_width;
+                let count_unknowns = width - current_width;
                 buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-                currect_width += count_unknowns;
+                current_width += count_unknowns;
             } else {
                 buf.push('\n');
                 buf.push(c);
-                currect_width = char_width;
+                current_width = char_width;
             }
         } else {
             buf.push(c);
-            currect_width += char_width;
+            current_width += char_width;
         }
     }
 
@@ -371,82 +373,74 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
 }
 
 #[cfg(not(feature = "ansi"))]
-fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+fn wrap_text_keeping_words(text: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
-    let mut lines = Vec::new();
-    let mut line = String::with_capacity(width);
+    let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
-    let mut is_first_word = true;
-
-    for word in s.split(' ') {
-        if !is_first_word {
+    for word in text.split(' ') {
+        // restore space char
+        if line_width > 0 {
             let line_has_space = line_width < width;
             if line_has_space {
-                line.push(' ');
+                buf.push(' ');
                 line_width += 1;
-                is_first_word = false;
             }
-        }
-
-        if is_first_word {
-            is_first_word = false;
         }
 
         let word_width = get_string_width(word);
 
         let line_has_space = line_width + word_width <= width;
         if line_has_space {
-            line.push_str(word);
+            buf.push_str(word);
             line_width += word_width;
             continue;
         }
 
-        if word_width <= width {
-            // the word can be fit to 'width' so we put it on new line
-
-            line.extend(std::iter::repeat(' ').take(width - line_width));
-            lines.push(line);
-
-            line = String::with_capacity(width);
+        let is_small_word = word_width <= width;
+        if is_small_word {
+            buf.push('\n');
             line_width = 0;
 
-            line.push_str(word);
+            buf.push_str(word);
             line_width += word_width;
-            is_first_word = false;
-        } else {
-            // the word is too long any way so we split it
+            continue;
+        }
 
-            let mut word_part = word;
-            while !word_part.is_empty() {
-                let available_space = width - line_width;
-                let (lhs, rhs, (unknowns, split_char)) =
-                    split_string_at(word_part, available_space);
+        for c in word.chars() {
+            // take 1 char by 1 and just push it
 
-                word_part = &rhs[split_char..];
-                line_width += get_string_width(lhs) + unknowns;
-                is_first_word = false;
+            let char_width = get_char_width(c);
+            let line_has_space = line_width + char_width <= width;
+            if !line_has_space {
+                let is_char_small = char_width <= width;
+                if !is_char_small {
+                    if line_width == width {
+                        buf.push('\n');
+                        line_width = 0;
+                    }
 
-                line.push_str(lhs);
-                line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
-
-                if line_width == width {
-                    lines.push(line);
-                    line = String::with_capacity(width);
-                    line_width = 0;
-                    is_first_word = true;
+                    // NOTE:
+                    // Practically it only can happen if we wrap some late UTF8 symbol.
+                    // For example:
+                    // Emojie with width 2 but and wrap width 1
+                    let available = width - line_width;
+                    buf.extend(std::iter::repeat(REPLACEMENT).take(available));
+                    line_width = width;
+                    continue;
                 }
+
+                buf.push('\n');
+                line_width = 0;
             }
+
+            buf.push(c);
+            line_width += char_width;
         }
     }
 
-    if line_width > 0 {
-        line.extend(std::iter::repeat(' ').take(width - line_width));
-        lines.push(line);
-    }
-
-    lines.join(sep)
+    buf
 }
 
 #[cfg(feature = "ansi")]
@@ -793,6 +787,7 @@ mod parsing {
     }
 }
 
+#[cfg(feature = "ansi")]
 fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
     let (length, width, split_char_size) = split_at_width(text, at);
     let count_unknowns = if split_char_size > 0 { at - width } else { 0 };
@@ -888,7 +883,7 @@ mod tests {
     #[test]
     fn split_test() {
         #[cfg(not(feature = "ansi"))]
-        let split = |text, width| chunks(text, width);
+        let split = |text, width| wrap_text_basic(text, width);
 
         #[cfg(feature = "ansi")]
         let split = |text, width| chunks(text, width, "", "").join("\n");
@@ -915,7 +910,7 @@ mod tests {
     fn chunks_test() {
         #[allow(clippy::redundant_closure)]
         #[cfg(not(feature = "ansi"))]
-        let chunks = |text, width| chunks(text, width);
+        let chunks = |text, width| wrap_text_basic(text, width);
 
         #[cfg(feature = "ansi")]
         let chunks = |text, width| chunks(text, width, "", "");
@@ -946,15 +941,15 @@ mod tests {
     #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_by_line_keeping_words_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
 
         assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
         assert_eq!(split_keeping_words("123456", 2), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5 ");
+        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5");
 
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
 
-        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
+        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
     }
 
     #[cfg(feature = "ansi")]
@@ -1169,9 +1164,9 @@ mod tests {
     #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_keeping_words_4_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
 
-        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
+        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
@@ -1466,7 +1461,21 @@ mod tests {
         let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
 
         assert_eq!(
-            chunks(text, 40),
+            wrap_text_basic(text, 40),
+            concat!(
+                "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
+                "成立时间:\"1998年11月\"}",
+            ),
+        );
+    }
+
+    #[cfg(not(feature = "ansi"))]
+    #[test]
+    fn chunks_keeping_chinese_0() {
+        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
+
+        assert_eq!(
+            wrap_text_keeping_words(text, 40),
             concat!(
                 "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
                 "成立时间:\"1998年11月\"}",

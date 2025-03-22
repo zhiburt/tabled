@@ -88,40 +88,28 @@ test_table!(
 
 test_table!(
     max_width_wrapped_keep_words_0,
-    {
-        let table = Matrix::iter(vec!["this is a long sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(table, 17 + 2 + 2);
-
-        table
-    },
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    Matrix::iter(vec!["this is a long sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
+    "| &str            |"
+    "|-----------------|"
+    "| this is a long  |"
+    "| sentence        |"
 );
 
 test_table!(
     max_width_wrapped_keep_words_1,
-    {
-        let table = Matrix::iter(vec!["this is a long  sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    Matrix::iter(vec!["this is a long  sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
+    "| &str             |"
+    "|------------------|"
+    "| this is a long   |"
+    "| sentence         |"
 );
 
 test_table!(
