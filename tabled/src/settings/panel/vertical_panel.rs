@@ -144,7 +144,7 @@ mod tests {
                 }
                 #[cfg(not(feature = "ansi"))]
                 {
-                    "\u{1b}[31\n;10\n0m�\n😳🏳\n\u{fe0f}\u{1b}[39\nm\u{1b}[4\n9m�\n🏳\u{fe0f}"
+                    "\u{1b}[3\n1;1\n00m\n😳�\n🏳\u{fe0f}\u{1b}\n[39\nm\u{1b}[\n49m\n😳🏳\n\u{fe0f}"
                 }
             }
         );

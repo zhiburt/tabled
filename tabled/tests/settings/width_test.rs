@@ -1,7 +1,6 @@
 #![cfg(feature = "std")]
 
 use tabled::{
-    grid::util::string::get_text_width,
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
@@ -9,10 +8,11 @@ use tabled::{
         width::{Justify, MinWidth, SuffixLimit, Width},
         Alignment, Margin, Modify, Padding, Panel, Settings, Span, Style,
     },
+    Table,
 };
 
 use crate::matrix::Matrix;
-use testing_table::{assert_width, static_table, test_table};
+use testing_table::{assert_width, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{
@@ -88,40 +88,28 @@ test_table!(
 
 test_table!(
     max_width_wrapped_keep_words_0,
-    {
-        let table = Matrix::iter(vec!["this is a long sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(table, 17 + 2 + 2);
-
-        table
-    },
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    Matrix::iter(vec!["this is a long sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
+    "| &str            |"
+    "|-----------------|"
+    "| this is a long  |"
+    "| sentence        |"
 );
 
 test_table!(
     max_width_wrapped_keep_words_1,
-    {
-        let table = Matrix::iter(vec!["this is a long  sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    Matrix::iter(vec!["this is a long  sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
+    "| &str             |"
+    "|------------------|"
+    "| this is a long   |"
+    "| sentence         |"
 );
 
 test_table!(
@@ -214,10 +202,10 @@ test_table!(
 
         AnsiStr::ansi_strip(&table).to_string()
     },
-    "| String            |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    "| String          |"
+    "|-----------------|"
+    "| this is a long  |"
+    "| sentence        |"
 );
 
 #[cfg(feature = "ansi")]
@@ -227,10 +215,10 @@ test_table!(
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
-        "| String            |"
-        "|-------------------|"
-        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
-        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+        "| String          |"
+        "|-----------------|"
+        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m |"
+        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m        |"
 );
 
 #[cfg(feature = "ansi")]
@@ -245,10 +233,10 @@ test_table!(
 
         AnsiStr::ansi_strip(&table).to_string()
     },
-    "| String            |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
+    "| String           |"
+    "|------------------|"
+    "| this is a long   |"
+    "| sentence         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -258,10 +246,10 @@ test_table!(
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true))),
-    "| String            |"
-    "|-------------------|"
-    "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |"
-    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+    "| String           |"
+    "|------------------|"
+    "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -367,662 +355,508 @@ test_table!(
 );
 
 #[cfg(feature = "ansi")]
-#[test]
-fn max_width_wrapped_keep_words_long_word_color() {
-    let data = vec![
-        (Color::BG_BLACK | Color::FG_GREEN).colorize("this is a long sentencesentencesentence")
-    ];
-    let table = Matrix::iter(data)
-        .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-        .to_string();
-
-    assert_eq!(
-        ansi_str::AnsiStr::ansi_strip(&table),
-        static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| this is a long se |"
-            "| ntencesentencesen |"
-            "| tence             |"
-        )
-    );
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long se\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mntencesentencesen\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
-        )
-    );
-}
+test_table!(
+    max_width_wrapped_keep_words_long_word_color,
+    {
+        let color = Color::BG_BLACK | Color::FG_GREEN;
+        let data = vec![color.colorize("this is a long sentencesentencesentence")];
+        Table::new(data)
+            .with(Style::markdown())
+            .with(Alignment::left())
+            .with(Width::wrap(21).keep_words(true))
+            .to_string()
+    },
+    "| String            |"
+    "|-------------------|"
+    "| \u{1b}[32m\u{1b}[40mthis is a long se\u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40mntencesentencesen\u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
+);
 
 #[cfg(feature = "ansi")]
-#[test]
-fn max_width_keep_words_1() {
-    let table = Matrix::iter(["asdf"])
-        .with(Width::wrap(7).keep_words(true))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "+-----+"
-            "| &st |"
-            "| r   |"
-            "+-----+"
-            "| asd |"
-            "| f   |"
-            "+-----+"
-        )
-    );
-
-    let table = Matrix::iter(["qweqw eqwe"])
-        .with(Width::wrap(8).keep_words(true))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "+------+"
-            "| &str |"
-            "+------+"
-            "| qweq |"
-            "| w    |"
-            "| eqwe |"
-            "+------+"
-        )
-    );
-
-    let table = Matrix::iter([
-        ["123 45678", "qweqw eqwe", "..."],
-        ["0", "1", "..."],
-        ["0", "1", "..."],
-    ])
-    .with(
-        Style::modern()
-            .remove_horizontal()
-            .horizontals([(1, HorizontalLine::inherit(Style::modern()))]),
-    )
-    .with(
-        Width::wrap(21)
-            .keep_words(true)
-            .priority(PriorityMax::right()),
-    )
-    .with(Alignment::center())
-    .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "┌──────┬──────┬─────┐"
-            "│  0   │  1   │  2  │"
-            "├──────┼──────┼─────┤"
-            "│ 123  │ qweq │ ... │"
-            "│ 4567 │ w    │     │"
-            "│ 8    │ eqwe │     │"
-            "│  0   │  1   │ ... │"
-            "│  0   │  1   │ ... │"
-            "└──────┴──────┴─────┘"
-        )
-    );
-}
+test_table!(
+    max_width_keep_words_1,
+    Matrix::iter(["asdf"])
+        .with(Width::wrap(7).keep_words(true)),
+    "+-----+"
+    "| &st |"
+    "| r   |"
+    "+-----+"
+    "| asd |"
+    "| f   |"
+    "+-----+"
+);
 
 #[cfg(feature = "ansi")]
-#[test]
-fn max_width_wrapped_collored() {
-    let data = &[
-        Color::FG_RED.colorize("asd"),
-        Color::FG_BLUE.colorize("zxc2"),
-        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
-    ];
+test_table!(
+    max_width_keep_words_2,
+    Matrix::iter(["qweqw eqwe"])
+        .with(Width::wrap(8).keep_words(true)),
+    "+------+"
+    "| &str |"
+    "+------+"
+    "| qweq |"
+    "| w    |"
+    "| eqwe |"
+    "+------+"
+);
 
-    let table = Matrix::iter(data)
-        .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Width::wrap(2)))
-        .to_string();
+#[cfg(feature = "ansi")]
+test_table!(
+    max_width_keep_words_3,
+    {
+        let mut m = Matrix::iter([
+            ["123 45678", "qweqw eqwe", "..."],
+            ["0", "1", "..."],
+            ["0", "1", "..."],
+        ]);
 
-    assert_eq!(
-        table,
-        "| St |\n| ri |\n| ng |\n|----|\n| \u{1b}[31mas\u{1b}[39m |\n| \u{1b}[31md\u{1b}[39m  |\n| \u{1b}[34mzx\u{1b}[39m |\n| \u{1b}[34mc2\u{1b}[39m |\n| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |"
-    );
-}
+        m.with(Alignment::center())
+            .with(
+                Style::modern()
+                    .remove_horizontal()
+                    .horizontals([(1, HorizontalLine::inherit(Style::modern()))]),
+            )
+            .with(
+                Width::wrap(21)
+                    .keep_words(true)
+                    .priority(PriorityMax::right()),
+            )
+            .to_string()
+    },
+    "┌──────┬──────┬─────┐"
+    "│  0   │  1   │  2  │"
+    "├──────┼──────┼─────┤"
+    "│ 123  │ qweq │ ... │"
+    "│ 4567 │ w    │     │"
+    "│ 8    │ eqwe │     │"
+    "│  0   │  1   │ ... │"
+    "│  0   │  1   │ ... │"
+    "└──────┴──────┴─────┘"
+);
 
-#[test]
-fn dont_change_content_if_width_is_less_then_max_width() {
-    let table = Matrix::new(3, 3)
+#[cfg(feature = "ansi")]
+test_table!(
+    max_width_wrapped_collored,
+    {
+        let data = &[
+            Color::FG_RED.colorize("asd"),
+            Color::FG_BLUE.colorize("zxc2"),
+            (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
+        ];
+
+        Matrix::iter(data)
+            .with(Style::markdown())
+            .modify(Segment::all(), Width::wrap(2))
+            .to_string()
+    },
+    "| St |"
+    "| ri |"
+    "| ng |"
+    "|----|"
+    "| \u{1b}[31mas\u{1b}[39m |"
+    "| \u{1b}[31md\u{1b}[39m  |"
+    "| \u{1b}[34mzx\u{1b}[39m |"
+    "| \u{1b}[34mc2\u{1b}[39m |"
+    "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |"
+    "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |"
+);
+
+test_table!(
+    dont_change_content_if_width_is_less_then_max_width,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(1000).suffix("...")))
-        .to_string();
+        .to_string(),
+    "| N | column 0 | column 1 | column 2 |"
+    "|---|----------|----------|----------|"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0 | column 1 | column 2 |"
-            "|---|----------|----------|----------|"
-            "| 0 |   0-0    |   0-1    |   0-2    |"
-            "| 1 |   1-0    |   1-1    |   1-2    |"
-            "| 2 |   2-0    |   2-1    |   2-2    |"
-        )
-    );
-}
-
-#[test]
-fn max_width_with_emoji() {
-    let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
-
-    let table = Matrix::iter(data)
+test_table!(
+    max_width_with_emoji,
+    Matrix::iter(["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"])
         .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "|  &str  |"
-            "|--------|"
-            "|   🤠   |"
-            "| 😳�... |"
-            "| 🚴�... |"
-        )
-    );
-}
+        .modify(Segment::all(), Width::truncate(6).suffix("..."))
+        .to_string(),
+    "|  &str  |"
+    "|--------|"
+    "|   🤠   |"
+    "| 😳�... |"
+    "| 🚴�... |"
+);
 
 #[cfg(feature = "ansi")]
-#[test]
-fn color_chars_are_stripped() {
-    let data = &[
+test_table!(
+    color_chars_are_stripped,
+    Matrix::iter(&[
         Color::FG_RED.colorize("asd"),
         Color::FG_BLUE.colorize("zxc"),
         (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
-    ];
+    ])
+    .with(Style::markdown())
+    .modify(Segment::all(), Width::truncate(4).suffix("..."))
+    .to_string(),
+    "| S... |"
+    "|------|"
+    "| \u{1b}[31masd\u{1b}[39m  |"
+    "| \u{1b}[34mzxc\u{1b}[39m  |"
+    "| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m... |"
+);
 
-    let table = Matrix::iter(data)
+test_table!(
+    min_width_0,
+    Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Width::truncate(4).suffix("...")))
-        .to_string();
+        .modify(Rows::single(0), MinWidth::new(12)),
+    "| N            | column 0     | column 1     | column 2     |"
+    "|--------------|--------------|--------------|--------------|"
+    "|      0       |     0-0      |     0-1      |     0-2      |"
+    "|      1       |     1-0      |     1-1      |     1-2      |"
+    "|      2       |     2-0      |     2-1      |     2-2      |"
+);
 
-    assert_eq!(
-        ansi_str::AnsiStr::ansi_strip(&table),
-        static_table!(
-            "| S... |"
-            "|------|"
-            "| asd  |"
-            "| zxc  |"
-            "| a... |"
-        )
-    );
-
-    assert_eq!(
-        table,
-        "| S... |\n|------|\n| \u{1b}[31masd\u{1b}[39m  |\n| \u{1b}[34mzxc\u{1b}[39m  |\n| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m... |",
-    );
-}
-
-#[test]
-fn min_width() {
-    let mut table = Matrix::table(3, 3);
-    table
+test_table!(
+    min_width_1,
+    Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
+        .modify(Rows::single(0), MinWidth::new(12))
+        .modify(Segment::all(), TrimStrategy::None),
+    "| N            | column 0     | column 1     | column 2     |"
+    "|--------------|--------------|--------------|--------------|"
+    "|      0       |     0-0      |     0-1      |     0-2      |"
+    "|      1       |     1-0      |     1-1      |     1-2      |"
+    "|      2       |     2-0      |     2-1      |     2-2      |"
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N            | column 0     | column 1     | column 2     |"
-            "|--------------|--------------|--------------|--------------|"
-            "|      0       |     0-0      |     0-1      |     0-2      |"
-            "|      1       |     1-0      |     1-1      |     1-2      |"
-            "|      2       |     2-0      |     2-1      |     2-2      |"
-        ),
-    );
-
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
-
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N            | column 0     | column 1     | column 2     |"
-            "|--------------|--------------|--------------|--------------|"
-            "|      0       |     0-0      |     0-1      |     0-2      |"
-            "|      1       |     1-0      |     1-1      |     1-2      |"
-            "|      2       |     2-0      |     2-1      |     2-2      |"
-        ),
-    );
-}
-
-#[test]
-fn min_width_with_filler() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_width_with_filler,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
-        .to_string();
+        .modify(Rows::single(0), MinWidth::new(12).fill_with('.'))
+        .to_string(),
+    "| N........... | column 0.... | column 1.... | column 2.... |"
+    "|--------------|--------------|--------------|--------------|"
+    "|      0       |     0-0      |     0-1      |     0-2      |"
+    "|      1       |     1-0      |     1-1      |     1-2      |"
+    "|      2       |     2-0      |     2-1      |     2-2      |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N........... | column 0.... | column 1.... | column 2.... |"
-            "|--------------|--------------|--------------|--------------|"
-            "|      0       |     0-0      |     0-1      |     0-2      |"
-            "|      1       |     1-0      |     1-1      |     1-2      |"
-            "|      2       |     2-0      |     2-1      |     2-2      |"
-        )
-    );
-}
-
-#[test]
-fn min_width_one_column() {
-    let mut table = Matrix::table(3, 3);
-    table
+test_table!(
+    min_width_one_column_0,
+    Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new((0, 0)).with(MinWidth::new(5)));
+        .modify((0, 0), MinWidth::new(5)),
+    "| N     | column 0 | column 1 | column 2 |"
+    "|-------|----------|----------|----------|"
+    "|   0   |   0-0    |   0-1    |   0-2    |"
+    "|   1   |   1-0    |   1-1    |   1-2    |"
+    "|   2   |   2-0    |   2-1    |   2-2    |"
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N     | column 0 | column 1 | column 2 |"
-            "|-------|----------|----------|----------|"
-            "|   0   |   0-0    |   0-1    |   0-2    |"
-            "|   1   |   1-0    |   1-1    |   1-2    |"
-            "|   2   |   2-0    |   2-1    |   2-2    |"
-        )
-    );
+test_table!(
+    min_width_one_column_1,
+    Matrix::table(3, 3)
+        .with(Style::markdown())
+        .modify((0, 0), MinWidth::new(5))
+        .modify(Segment::all(), TrimStrategy::None),
+    "| N     | column 0 | column 1 | column 2 |"
+    "|-------|----------|----------|----------|"
+    "|   0   |   0-0    |   0-1    |   0-2    |"
+    "|   1   |   1-0    |   1-1    |   1-2    |"
+    "|   2   |   2-0    |   2-1    |   2-2    |"
+);
 
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+test_table!(
+    min_width_on_smaller_content,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify(Rows::single(0), MinWidth::new(1))
+        .to_string(),
+    "| N | column 0 | column 1 | column 2 |"
+    "|---|----------|----------|----------|"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N     | column 0 | column 1 | column 2 |"
-            "|-------|----------|----------|----------|"
-            "|   0   |   0-0    |   0-1    |   0-2    |"
-            "|   1   |   1-0    |   1-1    |   1-2    |"
-            "|   2   |   2-0    |   2-1    |   2-2    |"
-        )
-    );
-}
-
-#[test]
-fn min_width_on_smaller_content() {
-    assert_eq!(
-        Matrix::new(3, 3)
-            .with(Style::markdown())
-            .with(Modify::new(Rows::single(0)).with(MinWidth::new(1)))
-            .to_string(),
-        Matrix::new(3, 3).with(Style::markdown()).to_string()
-    );
-}
-
-#[test]
-fn min_with_max_width() {
-    let mut table = Matrix::table(3, 3);
-    table
+test_table!(
+    min_with_max_width_0,
+    Matrix::table(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3))),
+    "| N   | col | col | col |"
+    "|-----|-----|-----|-----|"
+    "|  0  | 0-0 | 0-1 | 0-2 |"
+    "|  1  | 1-0 | 1-1 | 1-2 |"
+    "|  2  | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N   | col | col | col |"
-            "|-----|-----|-----|-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
-
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N   | col | col | col |"
-            "|-----|-----|-----|-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn min_with_max_width_truncate_suffix() {
-    let mut table = Matrix::table(3, 3);
-    table
+test_table!(
+    min_with_max_width_1,
+    Matrix::table(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3)))
+        .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
+    "| N   | col | col | col |"
+    "|-----|-----|-----|-----|"
+    "|  0  | 0-0 | 0-1 | 0-2 |"
+    "|  1  | 1-0 | 1-1 | 1-2 |"
+    "|  2  | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N   | ... | ... | ... |"
-            "|-----|-----|-----|-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
-
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "| N   | ... | ... | ... |"
-            "|-----|-----|-----|-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn min_with_max_width_truncate_suffix_limit_replace() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_with_max_width_truncate_suffix_0,
+    Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(
-            Modify::new(Rows::single(0)).with(
-                Width::truncate(3)
-                    .suffix("...")
-                    .suffix_limit(SuffixLimit::Replace('x')),
-            ),
-        )
-        .to_string();
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("..."))),
+    "| N   | ... | ... | ... |"
+    "|-----|-----|-----|-----|"
+    "|  0  | 0-0 | 0-1 | 0-2 |"
+    "|  1  | 1-0 | 1-1 | 1-2 |"
+    "|  2  | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | xxx | xxx | xxx |"
-            "|---|-----|-----|-----|"
-            "| 0 | 0-0 | 0-1 | 0-2 |"
-            "| 1 | 1-0 | 1-1 | 1-2 |"
-            "| 2 | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn min_with_max_width_truncate_suffix_limit_cut() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_with_max_width_truncate_suffix_1,
+    Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(
-            Modify::new(Rows::single(0)).with(
-                Width::truncate(3)
-                    .suffix("qwert")
-                    .suffix_limit(SuffixLimit::Cut),
-            ),
-        )
-        .to_string();
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")))
+        .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
+    "| N   | ... | ... | ... |"
+    "|-----|-----|-----|-----|"
+    "|  0  | 0-0 | 0-1 | 0-2 |"
+    "|  1  | 1-0 | 1-1 | 1-2 |"
+    "|  2  | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | qwe | qwe | qwe |"
-            "|---|-----|-----|-----|"
-            "| 0 | 0-0 | 0-1 | 0-2 |"
-            "| 1 | 1-0 | 1-1 | 1-2 |"
-            "| 2 | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn min_with_max_width_truncate_suffix_limit_ignore() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_with_max_width_truncate_suffix_limit_replace,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(
-            Modify::new(Rows::single(0)).with(
-                Width::truncate(3)
-                    .suffix("qwert")
-                    .suffix_limit(SuffixLimit::Ignore),
-            ),
+        .modify(
+            Rows::single(0),
+            Width::truncate(3)
+                .suffix("...")
+                .suffix_limit(SuffixLimit::Replace('x'))
         )
-        .to_string();
+        .to_string(),
+    "| N | xxx | xxx | xxx |"
+    "|---|-----|-----|-----|"
+    "| 0 | 0-0 | 0-1 | 0-2 |"
+    "| 1 | 1-0 | 1-1 | 1-2 |"
+    "| 2 | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | col | col | col |"
-            "|---|-----|-----|-----|"
-            "| 0 | 0-0 | 0-1 | 0-2 |"
-            "| 1 | 1-0 | 1-1 | 1-2 |"
-            "| 2 | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
+test_table!(
+    min_with_max_width_truncate_suffix_limit_cut,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify(
+            Rows::single(0),
+            Width::truncate(3)
+                .suffix("qwert")
+                .suffix_limit(SuffixLimit::Cut)
+        ),
+    "| N | qwe | qwe | qwe |"
+    "|---|-----|-----|-----|"
+    "| 0 | 0-0 | 0-1 | 0-2 |"
+    "| 1 | 1-0 | 1-1 | 1-2 |"
+    "| 2 | 2-0 | 2-1 | 2-2 |"
+);
+
+test_table!(
+    min_with_max_width_truncate_suffix_limit_ignore,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify(
+            Rows::single(0),
+            Width::truncate(3)
+                .suffix("qwert")
+                .suffix_limit(SuffixLimit::Ignore),
+        ),
+    "| N | col | col | col |"
+    "|---|-----|-----|-----|"
+    "| 0 | 0-0 | 0-1 | 0-2 |"
+    "| 1 | 1-0 | 1-1 | 1-2 |"
+    "| 2 | 2-0 | 2-1 | 2-2 |"
+);
 
 #[cfg(feature = "ansi")]
-#[test]
-fn min_with_max_width_truncate_suffix_try_color() {
-    let data = &[
-        Color::FG_RED.colorize("asd"),
-        Color::FG_BLUE.colorize("zxc2"),
-        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
-    ];
+test_table!(
+    min_with_max_width_truncate_suffix_try_color,
+    {
+        let data = &[
+            Color::FG_RED.colorize("asd"),
+            Color::FG_BLUE.colorize("zxc2"),
+            (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
+        ];
 
-    let table = Matrix::iter(data)
-        .with(Style::markdown())
-        .with(Width::truncate(7).suffix("..").suffix_try_color(true))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| S.. |"
-            "|-----|"
-            "| \u{1b}[31masd\u{1b}[39m |"
-            "| \u{1b}[34mz\u{1b}[39m\u{1b}[34m..\u{1b}[39m |"
-            "| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m..\u{1b}[39m\u{1b}[49m |"
-        )
-    );
-}
-
-#[cfg(feature = "ansi")]
-#[test]
-fn min_width_color() {
-    let data = &[
-        Color::FG_RED.colorize("asd"),
-        Color::FG_BLUE.colorize("zxc"),
-        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
-    ];
-
-    let table = Matrix::iter(data)
-        .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(MinWidth::new(10)))
-        .to_string();
-
-    assert_eq!(
-        ansi_str::AnsiStr::ansi_strip(&table),
-        static_table!(
-            "| String     |"
-            "|------------|"
-            "| asd        |"
-            "| zxc        |"
-            "| asdasd     |"
-        )
-    );
-
-    assert_eq!(
-        table,
-        "| String     |\n|------------|\n| \u{1b}[31masd\u{1b}[39m        |\n| \u{1b}[34mzxc\u{1b}[39m        |\n| \u{1b}[32m\u{1b}[40masdasd\u{1b}[39m\u{1b}[49m     |",
-    );
-}
-
-#[cfg(feature = "ansi")]
-#[test]
-fn min_width_color_with_smaller_then_width() {
-    let data = &[
-        Color::FG_RED.colorize("asd"),
-        Color::FG_BLUE.colorize("zxc2"),
-        (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
-    ];
-
-    assert_eq!(
         Matrix::iter(data)
-            .with(Modify::new(Segment::all()).with(MinWidth::new(1)))
-            .to_string(),
-        Matrix::iter(data).to_string()
-    );
-}
+            .with(Style::markdown())
+            .with(Width::truncate(7).suffix("..").suffix_try_color(true))
+    },
+    "| S.. |"
+    "|-----|"
+    "| \u{1b}[31masd\u{1b}[39m |"
+    "| \u{1b}[34mz\u{1b}[39m\u{1b}[34m..\u{1b}[39m |"
+    "| \u{1b}[32m\u{1b}[40ma\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m..\u{1b}[39m\u{1b}[49m |"
+);
 
-#[test]
-fn total_width_big() {
-    let table = Matrix::new(3, 3)
+#[cfg(feature = "ansi")]
+test_table!(
+    min_width_color,
+    {
+        let data = &[
+            Color::FG_RED.colorize("asd"),
+            Color::FG_BLUE.colorize("zxc"),
+            (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
+        ];
+
+        Matrix::iter(data)
+            .with(Style::markdown())
+            .with(Modify::new(Segment::all()).with(MinWidth::new(10)))
+    },
+    "| String     |"
+    "|------------|"
+    "| \u{1b}[31masd\u{1b}[39m        |"
+    "| \u{1b}[34mzxc\u{1b}[39m        |"
+    "| \u{1b}[32m\u{1b}[40masdasd\u{1b}[39m\u{1b}[49m     |"
+);
+
+#[cfg(feature = "ansi")]
+test_table!(
+    min_width_color_with_smaller_then_width,
+    {
+        let data = &[
+            Color::FG_RED.colorize("asd"),
+            Color::FG_BLUE.colorize("zxc2"),
+            (Color::FG_GREEN | Color::BG_BLACK).colorize("asdasd"),
+        ];
+
+        Matrix::iter(data)
+            .modify(Segment::all(), MinWidth::new(1))
+    },
+    "+--------+"
+    "| String |"
+    "+--------+"
+    "|  \u{1b}[31masd\u{1b}[39m   |"
+    "+--------+"
+    "|  \u{1b}[34mzxc2\u{1b}[39m  |"
+    "+--------+"
+    "| \u{1b}[32m\u{1b}[40masdasd\u{1b}[39m\u{1b}[49m |"
+    "+--------+"
+);
+
+test_table!(
+    total_width_big_0,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(80))
-        .with(MinWidth::new(80))
-        .to_string();
+        .with(MinWidth::new(80)),
+    "|      N       |      column 0       |      column 1      |      column 2      |"
+    "|--------------|---------------------|--------------------|--------------------|"
+    "|      0       |         0-0         |        0-1         |        0-2         |"
+    "|      1       |         1-0         |        1-1         |        1-2         |"
+    "|      2       |         2-0         |        2-1         |        2-2         |"
+);
 
-    assert_eq!(get_text_width(&table), 80);
-    assert_eq!(
-        table,
-        static_table!(
-            "|      N       |      column 0       |      column 1      |      column 2      |"
-            "|--------------|---------------------|--------------------|--------------------|"
-            "|      0       |         0-0         |        0-1         |        0-2         |"
-            "|      1       |         1-0         |        1-1         |        1-2         |"
-            "|      2       |         2-0         |        2-1         |        2-2         |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_big_1,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
-        .with(Settings::new(Width::truncate(80), Width::increase(80)))
-        .to_string();
+        .with(Settings::new(Width::truncate(80), Width::increase(80))),
+    "|      N       |      column 0       |      column 1      |      column 2      |"
+    "|--------------|---------------------|--------------------|--------------------|"
+    "|      0       |         0-0         |        0-1         |        0-2         |"
+    "|      1       |         1-0         |        1-1         |        1-2         |"
+    "|      2       |         2-0         |        2-1         |        2-2         |"
+);
 
-    assert_eq!(get_text_width(&table), 80);
-    assert_eq!(
-        table,
-        static_table!(
-            "|      N       |      column 0       |      column 1      |      column 2      |"
-            "|--------------|---------------------|--------------------|--------------------|"
-            "|      0       |         0-0         |        0-1         |        0-2         |"
-            "|      1       |         1-0         |        1-1         |        1-2         |"
-            "|      2       |         2-0         |        2-1         |        2-2         |"
-        )
-    );
-}
-
-#[test]
-fn total_width_big_with_panel() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_big_with_panel,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Alignment::center())
+        .with(Padding::zero())
         .with(Style::markdown())
         .with(Width::truncate(80))
-        .with(MinWidth::new(80))
-        .to_string();
+        .with(MinWidth::new(80)),
+    "|                                 Hello World                                  |"
+    "|--------------|---------------------|--------------------|--------------------|"
+    "|      N       |      column 0       |      column 1      |      column 2      |"
+    "|      0       |         0-0         |        0-1         |        0-2         |"
+    "|      1       |         1-0         |        1-1         |        1-2         |"
+    "|      2       |         2-0         |        2-1         |        2-2         |"
+);
 
-    assert_width!(&table, 80);
-    assert_eq!(
-        table,
-        static_table!(
-            "|                                 Hello World                                  |"
-            "|--------------|---------------------|--------------------|--------------------|"
-            "|      N       |      column 0       |      column 1      |      column 2      |"
-            "|      0       |         0-0         |        0-1         |        0-2         |"
-            "|      1       |         1-0         |        1-1         |        1-2         |"
-            "|      2       |         2-0         |        2-1         |        2-2         |"
-        )
-    );
-}
-
-#[test]
-fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
-    let table1 = Matrix::new(3, 3)
+test_table!(
+    total_width_big_with_panel_with_wrapping_doesnt_affect_increase,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(80))
-        .with(MinWidth::new(80))
-        .to_string();
+        .with(MinWidth::new(80)),
+    "|                                 Hello World                                  |"
+    "|--------------|---------------------|--------------------|--------------------|"
+    "|      N       |      column 0       |      column 1      |      column 2      |"
+    "|      0       |         0-0         |        0-1         |        0-2         |"
+    "|      1       |         1-0         |        1-1         |        1-2         |"
+    "|      2       |         2-0         |        2-1         |        2-2         |"
+);
 
-    let table2 = Matrix::new(3, 3)
-        .with(Panel::horizontal(0, "Hello World"))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::markdown())
-        .with(Width::truncate(80))
-        .with(MinWidth::new(80))
-        .to_string();
-
-    assert_eq!(table1, table2);
-}
-
-#[test]
-fn total_width_small() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(14))
-        .with(MinWidth::new(14))
-        .to_string();
+        .with(MinWidth::new(14)),
+    "|  |  |  | c |"
+    "|--|--|--|---|"
+    "|  |  |  | 0 |"
+    "|  |  |  | 1 |"
+    "|  |  |  | 2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  | c |"
-            "|--|--|--|---|"
-            "|  |  |  | 0 |"
-            "|  |  |  | 1 |"
-            "|  |  |  | 2 |"
-        )
-    );
-    assert_width!(table, 14);
-}
-
-#[test]
-fn total_width_smaller_then_content() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_smaller_then_content,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(8))
-        .with(MinWidth::new(8))
-        .to_string();
+        .with(MinWidth::new(8)),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn total_width_small_with_panel() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_0,
+    Matrix::new(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|  | co | co | col |"
+    "|--|----|----|-----|"
+    "|  | 0- | 0- | 0-2 |"
+    "|  | 1- | 1- | 1-2 |"
+    "|  | 2- | 2- | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | co | co | col |"
-            "|--|----|----|-----|"
-            "|  | 0- | 0- | 0-2 |"
-            "|  | 1- | 1- | 1-2 |"
-            "|  | 2- | 2- | 2-2 |"
-        )
-    );
-    assert_width!(table, 20);
-
-    let table = Matrix::iter(Vec::<usize>::new())
+test_table!(
+    total_width_small_with_panel_1,
+    Matrix::iter(Vec::<usize>::new())
         .with(Panel::horizontal(0, "Hello World"))
         .with(
             Modify::new(Segment::all())
@@ -1030,1418 +864,1105 @@ fn total_width_small_with_panel() {
                 .with(Padding::zero()),
         )
         .with(Width::truncate(5))
-        .with(MinWidth::new(5))
-        .to_string();
+        .with(MinWidth::new(5)),
+    "+---+"
+    "|Hel|"
+    "+---+"
+    "|usi|"
+    "+---+"
+);
 
-    assert_eq!(
-        table,
-        static_table!("+---+" "|Hel|" "+---+" "|usi|" "+---+")
-    );
-    assert_width!(table, 5);
-
-    let table = Matrix::table(1, 2)
+test_table!(
+    total_width_small_with_panel_2,
+    Matrix::table(1, 2)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|   Hello World    |"
+    "|--|-------|-------|"
+    "|  | colum | colum |"
+    "|  |  0-0  |  0-1  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|   Hello World    |"
-            "|--|-------|-------|"
-            "|  | colum | colum |"
-            "|  |  0-0  |  0-1  |"
-        )
-    );
-    assert_width!(table, 20);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_3,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|   Hello World    |"
+    "|--|----|----|-----|"
+    "|  | co | co | col |"
+    "|  | 0- | 0- | 0-2 |"
+    "|  | 1- | 1- | 1-2 |"
+    "|  | 2- | 2- | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|   Hello World    |"
-            "|--|----|----|-----|"
-            "|  | co | co | col |"
-            "|  | 0- | 0- | 0-2 |"
-            "|  | 1- | 1- | 1-2 |"
-            "|  | 2- | 2- | 2-2 |"
-        )
-    );
-    assert_width!(table, 20);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_4,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(6))
-        .with(MinWidth::new(6))
-        .to_string();
+        .with(MinWidth::new(6)),
+    "| Hello Wor |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| Hello Wor |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-    assert_width!(table, 13);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_5,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
-        .with(MinWidth::new(14))
-        .to_string();
+        .with(MinWidth::new(14)),
+    "| Hello Worl |"
+    "|--|--|--|---|"
+    "|  |  |  | c |"
+    "|  |  |  | 0 |"
+    "|  |  |  | 1 |"
+    "|  |  |  | 2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| Hello Worl |"
-            "|--|--|--|---|"
-            "|  |  |  | c |"
-            "|  |  |  | 0 |"
-            "|  |  |  | 1 |"
-            "|  |  |  | 2 |"
-        )
-    );
-    assert_width!(table, 14);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_6,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
-        .with(MinWidth::new(14))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| Hello Worl |"
-            "|--|--|--|---|"
-            "|  |  |  | c |"
-            "|  |  |  | 0 |"
-            "|  |  |  | 1 |"
-            "|  |  |  | 2 |"
-        )
-    );
-    assert_width!(table, 14);
-}
+        .with(MinWidth::new(14)),
+    "| Hello Worl |"
+    "|--|--|--|---|"
+    "|  |  |  | c |"
+    "|  |  |  | 0 |"
+    "|  |  |  | 1 |"
+    "|  |  |  | 2 |"
+);
 
 #[cfg(feature = "ansi")]
-#[test]
-fn total_width_wrapping() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_wrapping_0,
+    Matrix::new(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|  | co | co | col |"
+    "|  | lu | lu | umn |"
+    "|  | mn | mn |  2  |"
+    "|  |  0 |  1 |     |"
+    "|--|----|----|-----|"
+    "|  | 0- | 0- | 0-2 |"
+    "|  | 0  | 1  |     |"
+    "|  | 1- | 1- | 1-2 |"
+    "|  | 0  | 1  |     |"
+    "|  | 2- | 2- | 2-2 |"
+    "|  | 0  | 1  |     |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | co | co | col |"
-            "|  | lu | lu | umn |"
-            "|  | mn | mn |  2  |"
-            "|  |  0 |  1 |     |"
-            "|--|----|----|-----|"
-            "|  | 0- | 0- | 0-2 |"
-            "|  | 0  | 1  |     |"
-            "|  | 1- | 1- | 1-2 |"
-            "|  | 0  | 1  |     |"
-            "|  | 2- | 2- | 2-2 |"
-            "|  | 0  | 1  |     |"
-        )
-    );
-    assert_width!(table, 20);
-
-    let table = Matrix::new(3, 3)
+#[cfg(feature = "ansi")]
+test_table!(
+    total_width_wrapping_1,
+    Matrix::new(3, 3)
         .insert((3, 2).into(), "some loong string")
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20).keep_words(true))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|  |  | column  |  |"
+    "|  |  | 1       |  |"
+    "|--|--|---------|--|"
+    "|  |  |   0-1   |  |"
+    "|  |  |   1-1   |  |"
+    "|  |  | some    |  |"
+    "|  |  | loong   |  |"
+    "|  |  | string  |  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  | column  |  |"
-            "|  |  | 1       |  |"
-            "|--|--|---------|--|"
-            "|  |  |   0-1   |  |"
-            "|  |  |   1-1   |  |"
-            "|  |  | some    |  |"
-            "|  |  | loong   |  |"
-            "|  |  | string  |  |"
-        )
-    );
-    assert_width!(table, 20);
-}
-
-#[test]
-fn total_width_small_with_panel_using_wrapping() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_using_wrapping_0,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
-        .with(MinWidth::new(20))
-        .to_string();
+        .with(MinWidth::new(20)),
+    "|   Hello World    |"
+    "|--|----|----|-----|"
+    "|  | co | co | col |"
+    "|  | lu | lu | umn |"
+    "|  | mn | mn |  2  |"
+    "|  |  0 |  1 |     |"
+    "|  | 0- | 0- | 0-2 |"
+    "|  | 0  | 1  |     |"
+    "|  | 1- | 1- | 1-2 |"
+    "|  | 0  | 1  |     |"
+    "|  | 2- | 2- | 2-2 |"
+    "|  | 0  | 1  |     |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|   Hello World    |"
-            "|--|----|----|-----|"
-            "|  | co | co | col |"
-            "|  | lu | lu | umn |"
-            "|  | mn | mn |  2  |"
-            "|  |  0 |  1 |     |"
-            "|  | 0- | 0- | 0-2 |"
-            "|  | 0  | 1  |     |"
-            "|  | 1- | 1- | 1-2 |"
-            "|  | 0  | 1  |     |"
-            "|  | 2- | 2- | 2-2 |"
-            "|  | 0  | 1  |     |"
-        )
-    );
-    assert_width!(table, 20);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_using_wrapping_1,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
-        .with(MinWidth::new(14))
-        .to_string();
+        .with(MinWidth::new(14)),
+    "| Hello Worl |"
+    "| d          |"
+    "|--|--|--|---|"
+    "|  |  |  | c |"
+    "|  |  |  | o |"
+    "|  |  |  | l |"
+    "|  |  |  | u |"
+    "|  |  |  | m |"
+    "|  |  |  | n |"
+    "|  |  |  |   |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 0 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 1 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 2 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| Hello Worl |"
-            "| d          |"
-            "|--|--|--|---|"
-            "|  |  |  | c |"
-            "|  |  |  | o |"
-            "|  |  |  | l |"
-            "|  |  |  | u |"
-            "|  |  |  | m |"
-            "|  |  |  | n |"
-            "|  |  |  |   |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 0 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 1 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 2 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-        )
-    );
-    assert_width!(table, 14);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    total_width_small_with_panel_using_wrapping_2,
+    Matrix::new(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
-        .with(MinWidth::new(14))
-        .to_string();
+        .with(MinWidth::new(14)),
+    "| Hello Worl |"
+    "| d 123      |"
+    "|--|--|--|---|"
+    "|  |  |  | c |"
+    "|  |  |  | o |"
+    "|  |  |  | l |"
+    "|  |  |  | u |"
+    "|  |  |  | m |"
+    "|  |  |  | n |"
+    "|  |  |  |   |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 0 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 1 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+    "|  |  |  | 2 |"
+    "|  |  |  | - |"
+    "|  |  |  | 2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| Hello Worl |"
-            "| d 123      |"
-            "|--|--|--|---|"
-            "|  |  |  | c |"
-            "|  |  |  | o |"
-            "|  |  |  | l |"
-            "|  |  |  | u |"
-            "|  |  |  | m |"
-            "|  |  |  | n |"
-            "|  |  |  |   |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 0 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 1 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-            "|  |  |  | 2 |"
-            "|  |  |  | - |"
-            "|  |  |  | 2 |"
-        )
-    );
-    assert_width!(table, 14);
-}
-
-#[test]
-fn max_width_with_span() {
-    let mut table = Matrix::new(3, 3)
+test_table!(
+    max_width_with_span_0,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "a long string")
-        .to_table();
-    table
+        .to_table()
         .with(Style::psql())
         .with(Modify::new((1, 1)).with(Span::column(2)))
-        .with(Modify::new((2, 2)).with(Span::column(2)));
+        .with(Modify::new((2, 2)).with(Span::column(2)))
+        .with(Width::truncate(40)),
+    " N | column 0 | column 1 | column 2 "
+    "---+----------+----------+----------"
+    " 0 |    a long string    |   0-2    "
+    " 1 |   1-0    |         1-1         "
+    " 2 |   2-0    |   2-1    |   2-2    "
+);
 
-    table.with(Width::truncate(40));
+test_table!(
+    max_width_with_span_1,
+    Matrix::new(3, 3)
+        .insert((1, 1).into(), "a long string")
+        .to_table()
+        .with(Style::psql())
+        .with(Modify::new((1, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 2)).with(Span::column(2)))
+        .with(Width::truncate(40))
+        .with(Width::truncate(20)),
+    "  | col | col | col "
+    "--+-----+-----+-----"
+    "  | a long st | 0-2 "
+    "  | 1-0 |    1-1    "
+    "  | 2-0 | 2-1 | 2-2 "
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            " N | column 0 | column 1 | column 2 "
-            "---+----------+----------+----------"
-            " 0 |    a long string    |   0-2    "
-            " 1 |   1-0    |         1-1         "
-            " 2 |   2-0    |   2-1    |   2-2    "
-        )
-    );
-    assert_width!(table, 36);
+test_table!(
+    max_width_with_span_2,
+    Matrix::new(3, 3)
+        .insert((1, 1).into(), "a long string")
+        .to_table()
+        .with(Style::psql())
+        .with(Modify::new((1, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 2)).with(Span::column(2)))
+        .with(Width::truncate(40))
+        .with(Width::truncate(20))
+        .with(Width::truncate(10)),
+    "  |  |  |  "
+    "--+--+--+--"
+    "  | a l |  "
+    "  |  | 1-1 "
+    "  |  |  |  "
+);
 
-    table.with(Width::truncate(20));
-
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "  | col | col | col "
-            "--+-----+-----+-----"
-            "  | a long st | 0-2 "
-            "  | 1-0 |    1-1    "
-            "  | 2-0 | 2-1 | 2-2 "
-        )
-    );
-    assert_width!(table, 20);
-
-    table.with(Width::truncate(10));
-
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "  |  |  |  "
-            "--+--+--+--"
-            "  | a l |  "
-            "  |  | 1-1 "
-            "  |  |  |  "
-        )
-    );
-    assert_width!(table, 11);
-}
-
-#[test]
-fn min_width_works_with_right_alignment() {
-    let json = r#"
+test_table!(
+    min_width_works_with_right_alignment_0,
     {
-        "some": "random",
-        "json": [
-            { "1": "2" },
-            { "1": "2" },
-            { "1": "2" }
-        ]
-    }
-    "#;
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    let mut table = Matrix::iter([json]);
-    table
-        .with(Style::markdown())
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::right())
-                .with(TrimStrategy::None),
-        )
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::right())
+            .with(TrimStrategy::None)
+            .with(MinWidth::new(50))
+    },
+    "|                                           &str |"
+    "|------------------------------------------------|"
+    "|                                                |"
+    "|                          {                     |"
+    "|                              \"some\": \"random\", |"
+    "|                              \"json\": [         |"
+    "|                                  { \"1\": \"2\" }, |"
+    "|                                  { \"1\": \"2\" }, |"
+    "|                                  { \"1\": \"2\" }  |"
+    "|                              ]                 |"
+    "|                          }                     |"
+    "|                                                |"
+);
 
-    assert_eq!(get_text_width(&table.to_string()), 50);
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "|                                           &str |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|                          {                     |"
-            "|                              \"some\": \"random\", |"
-            "|                              \"json\": [         |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }  |"
-            "|                              ]                 |"
-            "|                          }                     |"
-            "|                                                |"
-        )
-    );
+test_table!(
+    min_width_works_with_right_alignment_1,
+    {
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    table
-        .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal))
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::right())
+            .with(TrimStrategy::None)
+            .with(MinWidth::new(50))
+            .with(TrimStrategy::Horizontal)
+            .with(MinWidth::new(50))
+    },
+    r#"|                          &str |"#
+    r#"|-------------------------------|"#
+    r#"|                               |"#
+    r#"|             {                 |"#
+    r#"|             "some": "random", |"#
+    r#"|             "json": [         |"#
+    r#"|             { "1": "2" },     |"#
+    r#"|             { "1": "2" },     |"#
+    r#"|             { "1": "2" }      |"#
+    r#"|             ]                 |"#
+    r#"|             }                 |"#
+    r#"|                               |"#
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            r#"|                                           &str |"#
-            r#"|------------------------------------------------|"#
-            r#"|                                                |"#
-            r#"|                              {                 |"#
-            r#"|                              "some": "random", |"#
-            r#"|                              "json": [         |"#
-            r#"|                              { "1": "2" },     |"#
-            r#"|                              { "1": "2" },     |"#
-            r#"|                              { "1": "2" }      |"#
-            r#"|                              ]                 |"#
-            r#"|                              }                 |"#
-            r#"|                                                |"#
-        )
-    );
-    assert_width!(table, 50);
+test_table!(
+    min_width_works_with_right_alignment_2,
+    {
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    table
-        .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::right())
+            .with(TrimStrategy::None)
+            .with(MinWidth::new(50))
+            .with(TrimStrategy::Both)
+            .with(MinWidth::new(50))
+    },
+    r#"|                          &str |"#
+    r#"|-------------------------------|"#
+    r#"|             {                 |"#
+    r#"|             "some": "random", |"#
+    r#"|             "json": [         |"#
+    r#"|             { "1": "2" },     |"#
+    r#"|             { "1": "2" },     |"#
+    r#"|             { "1": "2" }      |"#
+    r#"|             ]                 |"#
+    r#"|             }                 |"#
+    r#"|                               |"#
+    r#"|                               |"#
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            r#"|                                           &str |"#
-            r#"|------------------------------------------------|"#
-            r#"|                              {                 |"#
-            r#"|                              "some": "random", |"#
-            r#"|                              "json": [         |"#
-            r#"|                              { "1": "2" },     |"#
-            r#"|                              { "1": "2" },     |"#
-            r#"|                              { "1": "2" }      |"#
-            r#"|                              ]                 |"#
-            r#"|                              }                 |"#
-            r#"|                                                |"#
-            r#"|                                                |"#
-        )
-    );
-    assert_width!(table, 50);
+test_table!(
+    min_width_works_with_right_alignment_3,
+    {
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    let mut table = Matrix::iter([json]);
-    table
-        .with(Style::markdown())
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(TrimStrategy::None),
-        )
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::center())
+            .with(TrimStrategy::None)
+            .with(MinWidth::new(50))
+    },
+    r#"|                      &str                      |"#
+    r#"|------------------------------------------------|"#
+    r#"|                                                |"#
+    r#"|                 {                              |"#
+    r#"|                     "some": "random",          |"#
+    r#"|                     "json": [                  |"#
+    r#"|                         { "1": "2" },          |"#
+    r#"|                         { "1": "2" },          |"#
+    r#"|                         { "1": "2" }           |"#
+    r#"|                     ]                          |"#
+    r#"|                 }                              |"#
+    r#"|                                                |"#
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            "|                      &str                      |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|               {                                |"
-            "|                   \"some\": \"random\",            |"
-            "|                   \"json\": [                    |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" }             |"
-            "|                   ]                            |"
-            "|               }                                |"
-            "|                                                |"
-        )
-    );
-    assert_eq!(get_text_width(&table.to_string()), 50);
+test_table!(
+    min_width_works_with_right_alignment_4,
+    {
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    table
-        .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal))
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::center())
+            .with(TrimStrategy::Horizontal)
+            .with(MinWidth::new(50))
+    },
+    r#"|                      &str                      |"#
+    r#"|------------------------------------------------|"#
+    r#"|                                                |"#
+    r#"|               {                                |"#
+    r#"|               "some": "random",                |"#
+    r#"|               "json": [                        |"#
+    r#"|               { "1": "2" },                    |"#
+    r#"|               { "1": "2" },                    |"#
+    r#"|               { "1": "2" }                     |"#
+    r#"|               ]                                |"#
+    r#"|               }                                |"#
+    r#"|                                                |"#
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            r#"|                      &str                      |"#
-            r#"|------------------------------------------------|"#
-            r#"|                                                |"#
-            r#"|               {                                |"#
-            r#"|               "some": "random",                |"#
-            r#"|               "json": [                        |"#
-            r#"|               { "1": "2" },                    |"#
-            r#"|               { "1": "2" },                    |"#
-            r#"|               { "1": "2" }                     |"#
-            r#"|               ]                                |"#
-            r#"|               }                                |"#
-            r#"|                                                |"#
-        )
-    );
-    assert_width!(table, 50);
+test_table!(
+    min_width_works_with_right_alignment_5,
+    {
+        let json = r#"
+        {
+            "some": "random",
+            "json": [
+                { "1": "2" },
+                { "1": "2" },
+                { "1": "2" }
+            ]
+        }
+        "#;
 
-    table
-        .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
-        .with(MinWidth::new(50));
+        Matrix::iter([json])
+            .with(Style::markdown())
+            .with(Alignment::center())
+            .with(TrimStrategy::Both)
+            .with(MinWidth::new(50))
+    },
+    r#"|                      &str                      |"#
+    r#"|------------------------------------------------|"#
+    r#"|               {                                |"#
+    r#"|               "some": "random",                |"#
+    r#"|               "json": [                        |"#
+    r#"|               { "1": "2" },                    |"#
+    r#"|               { "1": "2" },                    |"#
+    r#"|               { "1": "2" }                     |"#
+    r#"|               ]                                |"#
+    r#"|               }                                |"#
+    r#"|                                                |"#
+    r#"|                                                |"#
+);
 
-    assert_eq!(
-        table.to_string(),
-        static_table!(
-            r#"|                      &str                      |"#
-            r#"|------------------------------------------------|"#
-            r#"|               {                                |"#
-            r#"|               "some": "random",                |"#
-            r#"|               "json": [                        |"#
-            r#"|               { "1": "2" },                    |"#
-            r#"|               { "1": "2" },                    |"#
-            r#"|               { "1": "2" }                     |"#
-            r#"|               ]                                |"#
-            r#"|               }                                |"#
-            r#"|                                                |"#
-            r#"|                                                |"#
-        )
-    );
-    assert_width!(table, 50);
-}
-
-#[test]
-fn min_width_with_span_1() {
-    let data = [
+test_table!(
+    min_width_with_span_1,
+    Matrix::iter([
         ["0", "1"],
         ["a long string which will affect min width logic", ""],
         ["2", "3"],
-    ];
+    ])
+    .with(Style::markdown())
+    .with(Modify::new((1, 0)).with(Span::column(2)))
+    .with(MinWidth::new(100)),
+    "|                                   0                                    |            1            |"
+    "|------------------------------------------------------------------------|-------------------------|"
+    "|                                                0                                                 |"
+    "|            a long string which will affect min width logic             |                         |"
+    "|                                   2                                    |            3            |"
+);
 
-    let table = Matrix::iter(data)
-        .with(Style::markdown())
-        .with(Modify::new((1, 0)).with(Span::column(2)))
-        .with(MinWidth::new(100))
-        .to_string();
-
-    assert_eq!(get_text_width(&table), 100);
-    assert_eq!(
-        table,
-        static_table!(
-            "|                                   0                                    |            1            |"
-            "|------------------------------------------------------------------------|-------------------------|"
-            "|                                                0                                                 |"
-            "|            a long string which will affect min width logic             |                         |"
-            "|                                   2                                    |            3            |"
-        )
-    );
-    assert_width!(table, 100);
-}
-
-#[test]
-fn min_width_with_span_2() {
-    let data = [
+test_table!(
+    min_width_with_span_2,
+    Matrix::iter([
         ["0", "1"],
         ["a long string which will affect min width logic", ""],
         ["2", "3"],
-    ];
+    ])
+    .with(Style::markdown())
+    .with(Modify::new((2, 0)).with(Span::column(2)))
+    .with(MinWidth::new(100)),
+    "|                        0                        |                       1                        |"
+    "|-------------------------------------------------|------------------------------------------------|"
+    "|                        0                        |                       1                        |"
+    "|                         a long string which will affect min width logic                          |"
+    "|                        2                        |                       3                        |"
+);
 
-    let table = Matrix::iter(data)
+test_table!(
+    justify_width_constant_test,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new((2, 0)).with(Span::column(2)))
-        .with(MinWidth::new(100))
-        .to_string();
+        .with(Justify::new(3)),
+    "| N   | col | col | col |"
+    "|-----|-----|-----|-----|"
+    "| 0   | 0-0 | 0-1 | 0-2 |"
+    "| 1   | 1-0 | 1-1 | 1-2 |"
+    "| 2   | 2-0 | 2-1 | 2-2 |"
+);
 
-    assert_eq!(get_text_width(&table), 100);
-    assert_eq!(
-        table,
-        static_table!(
-            "|                        0                        |                       1                        |"
-            "|-------------------------------------------------|------------------------------------------------|"
-            "|                        0                        |                       1                        |"
-            "|                         a long string which will affect min width logic                          |"
-            "|                        2                        |                       3                        |"
-        )
-    );
-}
-
-#[test]
-fn justify_width_constant_test() {
-    let table = Matrix::new(3, 3)
-        .with(Style::markdown())
-        .with(Justify::new(3))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| N   | col | col | col |"
-            "|-----|-----|-----|-----|"
-            "| 0   | 0-0 | 0-1 | 0-2 |"
-            "| 1   | 1-0 | 1-1 | 1-2 |"
-            "| 2   | 2-0 | 2-1 | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn justify_width_constant_different_sizes_test() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    justify_width_constant_different_sizes_test,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "Hello World")
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
-        .with(Justify::new(3))
-        .to_string();
+        .with(Justify::new(3)),
+    "| N   | col | col | col |"
+    "|-----|-----|-----|-----|"
+    "| 0   | Hel | 0-1 | 0-2 |"
+    "| 1   | 1-0 | 1-1 | 1-2 |"
+    "| 2   | 2-0 | mul | 2-2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N   | col | col | col |"
-            "|-----|-----|-----|-----|"
-            "| 0   | Hel | 0-1 | 0-2 |"
-            "| 1   | 1-0 | 1-1 | 1-2 |"
-            "| 2   | 2-0 | mul | 2-2 |"
-        )
-    );
-}
-
-#[test]
-fn justify_width_constant_0_test() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    justify_width_constant_0_test,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Justify::new(0))
-        .to_string();
+        .with(Justify::new(0)),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn justify_width_min_test() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    justify_width_min_test,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Justify::min())
-        .to_string();
+        .with(Justify::min()),
+    "| N | c | c | c |"
+    "|---|---|---|---|"
+    "| 0 | 0 | 0 | 0 |"
+    "| 1 | 1 | 1 | 1 |"
+    "| 2 | 2 | 2 | 2 |"
+);
 
-    println!("{table}");
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | c | c | c |"
-            "|---|---|---|---|"
-            "| 0 | 0 | 0 | 0 |"
-            "| 1 | 1 | 1 | 1 |"
-            "| 2 | 2 | 2 | 2 |"
-        )
-    );
-}
-
-#[test]
-fn justify_width_max_test() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    justify_width_max_test,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Justify::max())
-        .to_string();
+        .with(Justify::max()),
+    "| N        | column 0 | column 1 | column 2 |"
+    "|----------|----------|----------|----------|"
+    "| 0        | 0-0      | 0-1      | 0-2      |"
+    "| 1        | 1-0      | 1-1      | 1-2      |"
+    "| 2        | 2-0      | 2-1      | 2-2      |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N        | column 0 | column 1 | column 2 |"
-            "|----------|----------|----------|----------|"
-            "| 0        | 0-0      | 0-1      | 0-2      |"
-            "| 1        | 1-0      | 1-1      | 1-2      |"
-            "| 2        | 2-0      | 2-1      | 2-2      |"
-        )
-    );
-}
-
-#[test]
-fn max_width_when_cell_has_tabs() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_when_cell_has_tabs,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "\tHello\tWorld\t")
         .with(TabSize::new(4))
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
-        .to_string();
+        .with(Modify::new(Columns::new(..)).with(Width::truncate(1))),
+    "| N | c | c | c |"
+    "|---|---|---|---|"
+    "| 0 | 0 | 0 | 0 |"
+    "| 1 |   | 1 | 1 |"
+    "| 2 | 2 | 2 | 2 |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | c | c | c |"
-            "|---|---|---|---|"
-            "| 0 | 0 | 0 | 0 |"
-            "| 1 |   | 1 | 1 |"
-            "| 2 | 2 | 2 | 2 |"
-        )
-    );
-}
-
-#[test]
-fn max_width_table_when_cell_has_tabs() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_table_when_cell_has_tabs,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "\tHello\tWorld\t")
         .with(TabSize::new(4))
         .with(Style::markdown())
-        .with(Width::truncate(15))
-        .to_string();
+        .with(Width::truncate(15)),
+    "|  | co |  |  |"
+    "|--|----|--|--|"
+    "|  | 0- |  |  |"
+    "|  |    |  |  |"
+    "|  | 2- |  |  |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | co |  |  |"
-            "|--|----|--|--|"
-            "|  | 0- |  |  |"
-            "|  |    |  |  |"
-            "|  | 2- |  |  |"
-        )
-    );
-}
-
-// WE GOT [["", "column 0", "column 1 ", "column 2  "], ["", "0-0     ", "0-1      ", "0-2       "], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0     ", "Hello World With Big L", "2-2"]]
-// [2, 10, 11, 12]
-// 40 55 40
-
-// BEFORE ADJ [2, 10, 11, 12]
-
-// WE GOT [["", "column 0", "column 1", "column 2"], ["", "0-0", "0-1", "0-2"], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0", "Hello World With Big L", "2-2"]]
-// [2, 11, 12, 11]
-// 41 55 40
-
-// adj [2, 10, 10, 10]
-
-#[test]
-fn max_width_truncate_with_big_span() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_with_big_span_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
-        .with(Width::truncate(40))
-        .to_string();
+        .with(Width::truncate(40)),
+    "|  | column 0  | column 1  | column 2  |"
+    "|--|-----------|-----------|-----------|"
+    "|  |    0-0    |    0-1    |    0-2    |"
+    "|  | Hello World With Big Line; Here w |"
+    "|  |    2-0    |    2-1    |    2-2    |"
+);
 
-    assert_eq!(get_text_width(&table), 40);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | column 0  | column 1  | column 2  |"
-            "|--|-----------|-----------|-----------|"
-            "|  |    0-0    |    0-1    |    0-2    |"
-            "|  | Hello World With Big Line; Here w |"
-            "|  |    2-0    |    2-1    |    2-2    |"
-        )
-    );
+test_table!(
+    max_width_truncate_with_big_span_1,
+    Matrix::new(3, 3)
+        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
+        .insert((3, 2).into(), "Hello World With Big Line; Here")
+        .with(Style::markdown())
+        .with(Modify::new((2, 1)).with(Span::column(3)))
+        .with(Modify::new((3, 2)).with(Span::column(2))),
+    "| N | column 0  |    column 1    |    column 2    |"
+    "|---|-----------|----------------|----------------|"
+    "| 0 |    0-0    |      0-1       |      0-2       |"
+    "| 1 | Hello World With Big Line; Here we gooooooo |"
+    "| 2 |    2-0    | Hello World With Big Line; Here |"
+);
 
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_with_big_span_2,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
         .insert((3, 2).into(), "Hello World With Big Line; Here")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
-        .to_string();
+        .with(Width::truncate(40)),
+    "|  | colum |  column 1   |  column 2   |"
+    "|--|-------|-------------|-------------|"
+    "|  |  0-0  |     0-1     |     0-2     |"
+    "|  | Hello World With Big Line; Here w |"
+    "|  |  2-0  | Hello World With Big Line |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0  |    column 1    |    column 2    |"
-            "|---|-----------|----------------|----------------|"
-            "| 0 |    0-0    |      0-1       |      0-2       |"
-            "| 1 | Hello World With Big Line; Here we gooooooo |"
-            "| 2 |    2-0    | Hello World With Big Line; Here |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
-        .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
-        .insert((3, 2).into(), "Hello World With Big Line; Here")
-        .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::column(3)))
-        .with(Modify::new((3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | colum |  column 1   |  column 2   |"
-            "|--|-------|-------------|-------------|"
-            "|  |  0-0  |     0-1     |     0-2     |"
-            "|  | Hello World With Big Line; Here w |"
-            "|  |  2-0  | Hello World With Big Line |"
-        )
-    );
-    assert_eq!(get_text_width(&table), 40);
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_with_big_span_3,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line; Here we gooooooo")
         .insert((3, 2).into(), "Hello World With Big Line; Here")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Modify::new((3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
-        .to_string();
+        .with(Width::truncate(40)),
+    "|  |   column 0    |   column 1    | c |"
+    "|--|---------------|---------------|---|"
+    "|  |      0-0      |      0-1      | 0 |"
+    "|  | Hello World With Big Line; He | 1 |"
+    "|  |      2-0      | Hello World With  |"
+);
 
-    assert_eq!(get_text_width(&table), 40);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |   column 0    |   column 1    | c |"
-            "|--|---------------|---------------|---|"
-            "|  |      0-0      |      0-1      | 0 |"
-            "|  | Hello World With Big Line; He | 1 |"
-            "|  |      2-0      | Hello World With  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_with_big_span_4,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line; Here w")
         .insert((3, 2).into(), "Hello World With Big L")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(3)))
-        .with(Modify::new((3, 2)).with(Span::column(2)))
-        .to_string();
+        .with(Modify::new((3, 2)).with(Span::column(2))),
+    "| N | column 0 |  column 1  | column 2  |"
+    "|---|----------|------------|-----------|"
+    "| 0 |   0-0    |    0-1     |    0-2    |"
+    "| 1 | Hello World With Big Line; Here w |"
+    "| 2 |   2-0    | Hello World With Big L |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0 |  column 1  | column 2  |"
-            "|---|----------|------------|-----------|"
-            "| 0 |   0-0    |    0-1     |    0-2    |"
-            "| 1 | Hello World With Big Line; Here w |"
-            "| 2 |   2-0    | Hello World With Big L |"
-        )
-    );
-}
-
-#[test]
-fn max_width_truncate_priority_max() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_max_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::truncate(35).priority(PriorityMax::right())),
+    "| N | column  | column  | column  |"
+    "|---|---------|---------|---------|"
+    "| 0 |   0-0   |   0-1   |   0-2   |"
+    "| 1 | Hello W |   1-1   |   1-2   |"
+    "| 2 |   2-0   |   2-1   |   2-2   |"
+);
 
-    assert_width!(table, 35);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column  | column  | column  |"
-            "|---|---------|---------|---------|"
-            "| 0 |   0-0   |   0-1   |   0-2   |"
-            "| 1 | Hello W |   1-1   |   1-2   |"
-            "| 2 |   2-0   |   2-1   |   2-2   |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_max_1,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::truncate(20).priority(PriorityMax::right())),
+    "| N | co | co | co |"
+    "|---|----|----|----|"
+    "| 0 | 0- | 0- | 0- |"
+    "| 1 | He | 1- | 1- |"
+    "| 2 | 2- | 2- | 2- |"
+);
 
-    assert_width!(table, 20);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | co | co | co |"
-            "|---|----|----|----|"
-            "| 0 | 0- | 0- | 0- |"
-            "| 1 | He | 1- | 1- |"
-            "| 2 | 2- | 2- | 2- |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_max_2,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::truncate(0).priority(PriorityMax::right())),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_width!(table, 13);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_truncate_priority_max_with_span() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_max_with_span,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::truncate(15).priority(PriorityMax::right())),
+    "| N | c |  |  |"
+    "|---|---|--|--|"
+    "| 0 | 0 |  |  |"
+    "| 1 | Hell |  |"
+    "| 2 | 2 |  |  |"
+);
 
-    assert_width!(table, 15);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | c |  |  |"
-            "|---|---|--|--|"
-            "| 0 | 0 |  |  |"
-            "| 1 | Hell |  |"
-            "| 2 | 2 |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_max() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_max_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::wrap(35).priority(PriorityMax::right())),
+    "| N | column  | column  | column  |"
+    "|   | 0       | 1       | 2       |"
+    "|---|---------|---------|---------|"
+    "| 0 |   0-0   |   0-1   |   0-2   |"
+    "| 1 | Hello W |   1-1   |   1-2   |"
+    "|   | orld Wi |         |         |"
+    "|   | th Big  |         |         |"
+    "|   | Line    |         |         |"
+    "| 2 |   2-0   |   2-1   |   2-2   |"
+);
 
-    assert_width!(table, 35);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column  | column  | column  |"
-            "|   | 0       | 1       | 2       |"
-            "|---|---------|---------|---------|"
-            "| 0 |   0-0   |   0-1   |   0-2   |"
-            "| 1 | Hello W |   1-1   |   1-2   |"
-            "|   | orld Wi |         |         |"
-            "|   | th Big  |         |         |"
-            "|   | Line    |         |         |"
-            "| 2 |   2-0   |   2-1   |   2-2   |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_max_1,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::wrap(20).priority(PriorityMax::right())),
+    "| N | co | co | co |"
+    "|   | lu | lu | lu |"
+    "|   | mn | mn | mn |"
+    "|   |  0 |  1 |  2 |"
+    "|---|----|----|----|"
+    "| 0 | 0- | 0- | 0- |"
+    "|   | 0  | 1  | 2  |"
+    "| 1 | He | 1- | 1- |"
+    "|   | ll | 1  | 2  |"
+    "|   | o  |    |    |"
+    "|   | Wo |    |    |"
+    "|   | rl |    |    |"
+    "|   | d  |    |    |"
+    "|   | Wi |    |    |"
+    "|   | th |    |    |"
+    "|   |  B |    |    |"
+    "|   | ig |    |    |"
+    "|   |  L |    |    |"
+    "|   | in |    |    |"
+    "|   | e  |    |    |"
+    "| 2 | 2- | 2- | 2- |"
+    "|   | 0  | 1  | 2  |"
+);
 
-    assert_width!(table, 20);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | co | co | co |"
-            "|   | lu | lu | lu |"
-            "|   | mn | mn | mn |"
-            "|   |  0 |  1 |  2 |"
-            "|---|----|----|----|"
-            "| 0 | 0- | 0- | 0- |"
-            "|   | 0  | 1  | 2  |"
-            "| 1 | He | 1- | 1- |"
-            "|   | ll | 1  | 2  |"
-            "|   | o  |    |    |"
-            "|   | Wo |    |    |"
-            "|   | rl |    |    |"
-            "|   | d  |    |    |"
-            "|   | Wi |    |    |"
-            "|   | th |    |    |"
-            "|   |  B |    |    |"
-            "|   | ig |    |    |"
-            "|   |  L |    |    |"
-            "|   | in |    |    |"
-            "|   | e  |    |    |"
-            "| 2 | 2- | 2- | 2- |"
-            "|   | 0  | 1  | 2  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_max_2,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::wrap(0).priority(PriorityMax::right())),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_width!(table, 13);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_max_with_span() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_max_with_span,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority(PriorityMax::right()))
-        .to_string();
+        .with(Width::wrap(15).priority(PriorityMax::right())),
+    "| N | c |  |  |"
+    "|   | o |  |  |"
+    "|   | l |  |  |"
+    "|   | u |  |  |"
+    "|   | m |  |  |"
+    "|   | n |  |  |"
+    "|   |   |  |  |"
+    "|   | 0 |  |  |"
+    "|---|---|--|--|"
+    "| 0 | 0 |  |  |"
+    "|   | - |  |  |"
+    "|   | 0 |  |  |"
+    "| 1 | Hell |  |"
+    "|   | o Wo |  |"
+    "|   | rld  |  |"
+    "|   | With |  |"
+    "|   |  Big |  |"
+    "|   |  Lin |  |"
+    "|   | e    |  |"
+    "| 2 | 2 |  |  |"
+    "|   | - |  |  |"
+    "|   | 0 |  |  |"
+);
 
-    assert_width!(table, 15);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | c |  |  |"
-            "|   | o |  |  |"
-            "|   | l |  |  |"
-            "|   | u |  |  |"
-            "|   | m |  |  |"
-            "|   | n |  |  |"
-            "|   |   |  |  |"
-            "|   | 0 |  |  |"
-            "|---|---|--|--|"
-            "| 0 | 0 |  |  |"
-            "|   | - |  |  |"
-            "|   | 0 |  |  |"
-            "| 1 | Hell |  |"
-            "|   | o Wo |  |"
-            "|   | rld  |  |"
-            "|   | With |  |"
-            "|   |  Big |  |"
-            "|   |  Lin |  |"
-            "|   | e    |  |"
-            "| 2 | 2 |  |  |"
-            "|   | - |  |  |"
-            "|   | 0 |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_truncate_priority_min() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_min_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(35).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::truncate(35).priority(PriorityMin::right())),
+    "|  |        column 0        |  |  |"
+    "|--|------------------------|--|--|"
+    "|  |          0-0           |  |  |"
+    "|  | Hello World With Big L |  |  |"
+    "|  |          2-0           |  |  |"
+);
 
-    assert_width!(table, 35);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |        column 0        |  |  |"
-            "|--|------------------------|--|--|"
-            "|  |          0-0           |  |  |"
-            "|  | Hello World With Big L |  |  |"
-            "|  |          2-0           |  |  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_min_1,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(20).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::truncate(20).priority(PriorityMin::right())),
+    "|  | column  |  |  |"
+    "|--|---------|--|--|"
+    "|  |   0-0   |  |  |"
+    "|  | Hello W |  |  |"
+    "|  |   2-0   |  |  |"
+);
 
-    assert_width!(table, 20);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | column  |  |  |"
-            "|--|---------|--|--|"
-            "|  |   0-0   |  |  |"
-            "|  | Hello W |  |  |"
-            "|  |   2-0   |  |  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_min_2,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::truncate(0).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::truncate(0).priority(PriorityMin::right())),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_width!(table, 13);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_truncate_priority_min_with_span() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_min_with_span_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(15).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::truncate(15).priority(PriorityMin::right())),
+    "|  |  | co |  |"
+    "|--|--|----|--|"
+    "|  |  | 0- |  |"
+    "|  | Hello |  |"
+    "|  |  | 2- |  |"
+);
 
-    assert_width!(table, 15);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  | co |  |"
-            "|--|--|----|--|"
-            "|  |  | 0- |  |"
-            "|  | Hello |  |"
-            "|  |  | 2- |  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_truncate_priority_min_with_span_1,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::truncate(17).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::truncate(17).priority(PriorityMin::right())),
+    "|  |  | colu |  |"
+    "|--|--|------|--|"
+    "|  |  | 0-1  |  |"
+    "|  | Hello W |  |"
+    "|  |  | 2-1  |  |"
+);
 
-    assert_width!(table, 17);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  | colu |  |"
-            "|--|--|------|--|"
-            "|  |  | 0-1  |  |"
-            "|  | Hello W |  |"
-            "|  |  | 2-1  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_min() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_min_0,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(35).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::wrap(35).priority(PriorityMin::right())),
+    "|  |        column 0        |  |  |"
+    "|--|------------------------|--|--|"
+    "|  |          0-0           |  |  |"
+    "|  | Hello World With Big L |  |  |"
+    "|  | ine                    |  |  |"
+    "|  |          2-0           |  |  |"
+);
 
-    assert_width!(table, 35);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |        column 0        |  |  |"
-            "|--|------------------------|--|--|"
-            "|  |          0-0           |  |  |"
-            "|  | Hello World With Big L |  |  |"
-            "|  | ine                    |  |  |"
-            "|  |          2-0           |  |  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_min_1,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(20).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::wrap(20).priority(PriorityMin::right())),
+    "|  | column  |  |  |"
+    "|  | 0       |  |  |"
+    "|--|---------|--|--|"
+    "|  |   0-0   |  |  |"
+    "|  | Hello W |  |  |"
+    "|  | orld Wi |  |  |"
+    "|  | th Big  |  |  |"
+    "|  | Line    |  |  |"
+    "|  |   2-0   |  |  |"
+);
 
-    assert_width!(table, 20);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | column  |  |  |"
-            "|  | 0       |  |  |"
-            "|--|---------|--|--|"
-            "|  |   0-0   |  |  |"
-            "|  | Hello W |  |  |"
-            "|  | orld Wi |  |  |"
-            "|  | th Big  |  |  |"
-            "|  | Line    |  |  |"
-            "|  |   2-0   |  |  |"
-        )
-    );
-
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_min_2,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
-        .with(Width::wrap(0).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::wrap(0).priority(PriorityMin::right())),
+    "|  |  |  |  |"
+    "|--|--|--|--|"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+    "|  |  |  |  |"
+);
 
-    assert_width!(table, 13);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  |  |  |"
-            "|--|--|--|--|"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-            "|  |  |  |  |"
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_min_with_span() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    max_width_wrap_priority_min_with_span,
+    Matrix::new(3, 3)
         .insert((2, 1).into(), "Hello World With Big Line")
         .with(Style::markdown())
         .with(Modify::new((2, 1)).with(Span::column(2)))
-        .with(Width::wrap(15).priority(PriorityMin::right()))
-        .to_string();
+        .with(Width::wrap(15).priority(PriorityMin::right())),
+    "|  |  | co |  |"
+    "|  |  | lu |  |"
+    "|  |  | mn |  |"
+    "|  |  |  1 |  |"
+    "|--|--|----|--|"
+    "|  |  | 0- |  |"
+    "|  |  | 1  |  |"
+    "|  | Hello |  |"
+    "|  |  Worl |  |"
+    "|  | d Wit |  |"
+    "|  | h Big |  |"
+    "|  |  Line |  |"
+    "|  |  | 2- |  |"
+    "|  |  | 1  |  |"
+);
 
-    assert_width!(table, 15);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  |  | co |  |"
-            "|  |  | lu |  |"
-            "|  |  | mn |  |"
-            "|  |  |  1 |  |"
-            "|--|--|----|--|"
-            "|  |  | 0- |  |"
-            "|  |  | 1  |  |"
-            "|  | Hello |  |"
-            "|  |  Worl |  |"
-            "|  | d Wit |  |"
-            "|  | h Big |  |"
-            "|  |  Line |  |"
-            "|  |  | 2- |  |"
-            "|  |  | 1  |  |"
-        )
-    );
-}
-
-#[test]
-fn min_width_priority_max() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_width_priority_max,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority(PriorityMax::right()))
-        .to_string();
+        .with(MinWidth::new(60).priority(PriorityMax::right())),
+    "| N | column 0 | column 1 |            column 2            |"
+    "|---|----------|----------|--------------------------------|"
+    "| 0 |   0-0    |   0-1    |              0-2               |"
+    "| 1 |   1-0    |   1-1    |              1-2               |"
+    "| 2 |   2-0    |   2-1    |              2-2               |"
+);
 
-    assert_eq!(get_text_width(&table), 60);
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0 | column 1 |            column 2            |"
-            "|---|----------|----------|--------------------------------|"
-            "| 0 |   0-0    |   0-1    |              0-2               |"
-            "| 1 |   1-0    |   1-1    |              1-2               |"
-            "| 2 |   2-0    |   2-1    |              2-2               |"
-        ),
-    );
-}
-
-#[test]
-fn min_width_priority_min() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_width_priority_min,
+    Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority(PriorityMin::right()))
-        .to_string();
+        .with(MinWidth::new(60).priority(PriorityMin::right())),
+    "|      N       |   column 0   |   column 1   |  column 2   |"
+    "|--------------|--------------|--------------|-------------|"
+    "|      0       |     0-0      |     0-1      |     0-2     |"
+    "|      1       |     1-0      |     1-1      |     1-2     |"
+    "|      2       |     2-0      |     2-1      |     2-2     |"
+);
 
-    assert_eq!(get_text_width(&table), 60);
-    assert_eq!(
-        table,
-        static_table!(
-            "|      N       |   column 0   |   column 1   |  column 2   |"
-            "|--------------|--------------|--------------|-------------|"
-            "|      0       |     0-0      |     0-1      |     0-2     |"
-            "|      1       |     1-0      |     1-1      |     1-2     |"
-            "|      2       |     2-0      |     2-1      |     2-2     |"
-        ),
-    );
-}
-
-#[test]
-fn max_width_tab_0() {
-    let table =
-        Matrix::iter(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+test_table!(
+    max_width_tab_0,
+    Matrix::iter(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
             .with(TabSize::new(4))
             .with(Style::markdown())
-            .with(Width::wrap(60))
-            .to_string();
+            .with(Width::wrap(60)),
+    "|                           &str                           |"
+    "|----------------------------------------------------------|"
+    "|         Tigre Ecuador    OMYA Andina    3824909999    Ca |"
+    "| lcium carbonate    Colombia                              |"
+);
 
-    assert_width!(table, 60);
-    assert_eq!(
-        table,
-        static_table!(
-            "|                           &str                           |"
-            "|----------------------------------------------------------|"
-            "|         Tigre Ecuador    OMYA Andina    3824909999    Ca |"
-            "| lcium carbonate    Colombia                              |"
-        )
-    );
-}
-
-#[test]
-fn min_width_is_not_used_after_padding() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_width_is_not_used_after_padding,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(MinWidth::new(60))
-        .with(Modify::new((0, 0)).with(Padding::new(2, 2, 0, 0)))
-        .to_string();
+        .modify((0, 0), Padding::new(2, 2, 0, 0)),
+    "|  N  | column 0 | column 1 | column 2 |"
+    "|-----|----------|----------|----------|"
+    "|  0  |   0-0    |   0-1    |   0-2    |"
+    "|  1  |   1-0    |   1-1    |   1-2    |"
+    "|  2  |   2-0    |   2-1    |   2-2    |"
+);
 
-    assert_eq!(get_text_width(&table), 40);
-    assert_eq!(
-        table,
-        static_table!(
-            "|  N  | column 0 | column 1 | column 2 |"
-            "|-----|----------|----------|----------|"
-            "|  0  |   0-0    |   0-1    |   0-2    |"
-            "|  1  |   1-0    |   1-1    |   1-2    |"
-            "|  2  |   2-0    |   2-1    |   2-2    |"
-        ),
-    );
-}
-
-#[test]
-fn min_width_is_used_after_margin() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    min_width_is_used_after_margin,
+    Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Margin::new(1, 1, 1, 1))
-        .with(Width::increase(60))
-        .to_string();
+        .with(Width::increase(60)),
+    "                                                            "
+    " |   N    |   column 0    |   column 1    |   column 2    | "
+    " |--------|---------------|---------------|---------------| "
+    " |   0    |      0-0      |      0-1      |      0-2      | "
+    " |   1    |      1-0      |      1-1      |      1-2      | "
+    " |   2    |      2-0      |      2-1      |      2-2      | "
+    "                                                            "
+);
 
-    assert_eq!(get_text_width(&table), 60);
-    assert_eq!(
-        table,
-        static_table!(
-            "                                                            "
-            " |   N    |   column 0    |   column 1    |   column 2    | "
-            " |--------|---------------|---------------|---------------| "
-            " |   0    |      0-0      |      0-1      |      0-2      | "
-            " |   1    |      1-0      |      1-1      |      1-2      | "
-            " |   2    |      2-0      |      2-1      |      2-2      | "
-            "                                                            "
-        ),
-    );
-}
+test_table!(
+    wrap_keeping_words_0,
+    Table::new(vec![["Hello world"]])
+        .with(Width::wrap(8).keep_words(true)),
+    "+------+"
+    "| 0    |"
+    "+------+"
+    "| Hell |"
+    "| o wo |"
+    "| rld  |"
+    "+------+"
+);
 
-#[test]
-fn wrap_keeping_words_0() {
-    let data = vec![["Hello world"]];
-    let table = tabled::Table::new(data)
-        .with(Width::wrap(8).keep_words(true))
-        .to_string();
-
-    assert_eq!(tabled::grid::util::string::get_text_width(&table), 8);
-
-    assert_eq!(
-        table,
-        static_table!(
-            "+------+"
-            "| 0    |"
-            "+------+"
-            "| Hell |"
-            "| o wo |"
-            "| rld  |"
-            "+------+"
-        )
-    );
-}
-
-#[test]
-fn cell_truncate_multiline() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    cell_truncate_multiline,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "H\nel\nlo World")
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
-        .with(
-            Modify::new(Columns::new(1..2).not(Rows::single(0)))
-                .with(Width::truncate(1).multiline(true)),
-        )
-        .to_string();
+        .modify(
+            Columns::new(1..2).not(Rows::single(0)),
+            Width::truncate(1).multiline(true),
+        ),
+    "| N | column 0 |  column 1   | column 2 |"
+    "|---|----------|-------------|----------|"
+    "| 0 |    H     |     0-1     |   0-2    |"
+    "|   |    e     |             |          |"
+    "|   |    l     |             |          |"
+    "| 1 |    1     |     1-1     |   1-2    |"
+    "| 2 |    2     | multi       |   2-2    |"
+    "|   |          | line string |          |"
+    "|   |          |             |          |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0 |  column 1   | column 2 |"
-            "|---|----------|-------------|----------|"
-            "| 0 |    H     |     0-1     |   0-2    |"
-            "|   |    e     |             |          |"
-            "|   |    l     |             |          |"
-            "| 1 |    1     |     1-1     |   1-2    |"
-            "| 2 |    2     | multi       |   2-2    |"
-            "|   |          | line string |          |"
-            "|   |          |             |          |"
-        )
-    );
-}
-
-#[test]
-fn cell_truncate_multiline_with_suffix() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    cell_truncate_multiline_with_suffix,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "H\nel\nlo World")
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..2).not(Rows::single(0)))
                 .with(Width::truncate(1).multiline(true).suffix(".")),
-        )
-        .to_string();
+        ),
+    "| N | column 0 |  column 1   | column 2 |"
+    "|---|----------|-------------|----------|"
+    "| 0 |    .     |     0-1     |   0-2    |"
+    "|   |    .     |             |          |"
+    "|   |    .     |             |          |"
+    "| 1 |    .     |     1-1     |   1-2    |"
+    "| 2 |    .     | multi       |   2-2    |"
+    "|   |          | line string |          |"
+    "|   |          |             |          |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "| N | column 0 |  column 1   | column 2 |"
-            "|---|----------|-------------|----------|"
-            "| 0 |    .     |     0-1     |   0-2    |"
-            "|   |    .     |             |          |"
-            "|   |    .     |             |          |"
-            "| 1 |    .     |     1-1     |   1-2    |"
-            "| 2 |    .     | multi       |   2-2    |"
-            "|   |          | line string |          |"
-            "|   |          |             |          |"
-        )
-    );
-}
-
-#[test]
-fn table_truncate_multiline() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    table_truncate_multiline,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "H\nel\nlo World")
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
-        .with(Width::truncate(20).multiline(true))
-        .to_string();
+        .with(Width::truncate(20).multiline(true)),
+    "|  | c | colu | co |"
+    "|--|---|------|----|"
+    "|  | H | 0-1  | 0- |"
+    "|  | e |      |    |"
+    "|  | l |      |    |"
+    "|  | 1 | 1-1  | 1- |"
+    "|  | 2 | mult | 2- |"
+    "|  |   | line |    |"
+    "|  |   |      |    |"
+);
 
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | c | colu | co |"
-            "|--|---|------|----|"
-            "|  | H | 0-1  | 0- |"
-            "|  | e |      |    |"
-            "|  | l |      |    |"
-            "|  | 1 | 1-1  | 1- |"
-            "|  | 2 | mult | 2- |"
-            "|  |   | line |    |"
-            "|  |   |      |    |"
-        )
-    );
-}
-
-#[test]
-fn table_truncate_multiline_with_suffix() {
-    let table = Matrix::new(3, 3)
+test_table!(
+    table_truncate_multiline_with_suffix,
+    Matrix::new(3, 3)
         .insert((1, 1).into(), "H\nel\nlo World")
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
-        .with(Width::truncate(20).suffix(".").multiline(true))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "|  | . | col. | c. |"
-            "|--|---|------|----|"
-            "|  | . | 0-1  | 0. |"
-            "|  | . |      |    |"
-            "|  | . |      |    |"
-            "|  | . | 1-1  | 1. |"
-            "|  | . | mul. | 2. |"
-            "|  |   | lin. |    |"
-            "|  |   | .    |    |"
-        )
-    );
-}
+        .with(Width::truncate(20).suffix(".").multiline(true)),
+    "|  | . | col. | c. |"
+    "|--|---|------|----|"
+    "|  | . | 0-1  | 0. |"
+    "|  | . |      |    |"
+    "|  | . |      |    |"
+    "|  | . | 1-1  | 1. |"
+    "|  | . | mul. | 2. |"
+    "|  |   | lin. |    |"
+    "|  |   | .    |    |"
+);
 
 test_table!(
     test_priority_left,
@@ -2589,7 +2110,10 @@ test_table!(
 mod derived {
     use super::*;
 
+    #[cfg(feature = "ansi")]
+    use tabled::grid::util::string::get_text_width;
     use tabled::Tabled;
+    use testing_table::static_table;
 
     #[test]
     fn wrapping_as_total_multiline() {

@@ -750,46 +750,67 @@ mod derived {
 }
 
 #[cfg(feature = "ansi")]
-#[test]
-fn multiline_table_test2() {
-    use testing_table::assert_table;
+test_table!(
+    test_wrap_multiline_0,
+    Table::new([
+        [
+            concat!(
+                "\u{1b}[37m",
+                "This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html",
+                "\n",
+                "\n",
+                "For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies",
+                "\n",
+                "\u{1b}[0m",
+            )
+        ],
+    ])
+    .with(Style::modern())
+    .with(Width::wrap(100)),
+    "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
+    "│ 0                                                                                                │"
+    "├──────────────────────────────────────────────────────────────────────────────────────────────────┤"
+    "│ \u{1b}[37mThis is the 0.19 release of Nushell. If you'd like to read more about it, please check out: http\u{1b}[39m │"
+    "│ \u{1b}[37ms://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\u{1b}[39m                                             │"
+    "│ \u{1b}[37m\u{1b}[39m                                                                                                 │"
+    "│ \u{1b}[37mFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all \u{1b}[39m │"
+    "│ \u{1b}[37mextra features\" builds, so be sure you have the requirements to enable all capabilities: https:/\u{1b}[39m │"
+    "│ \u{1b}[37m/github.com/nushell/book/blob/master/en/installation.md#dependencies\u{1b}[39m                             │"
+    "│ \u{1b}[37m\u{1b}[39m                                                                                                 │"
+    "└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+);
 
-    let data = &[
-        ["\u{1b}[37mThis is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\n\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\n\u{1b}[0m"],
-    ];
+test_table!(
+    test_wrap_multiline_1,
+    {
+        let data = &[
+            [
+                concat!(
+                    "This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html",
+                    "\n",
+                    "\n",
+                    "For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies",
+                    "\n",
+                )
+            ],
+        ];
 
-    let mut table = Table::new(data);
-    table.with(Style::modern());
-
-    assert_table!(
-        ansi_str::AnsiStr::ansi_strip(&table.to_string()),
-        r#"┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐"#
-        r#"│ 0                                                                                                                                                                                                                                                                    │"#
-        r#"├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤"#
-        r#"│ This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html                                                                                                                 │"#
-        r#"│                                                                                                                                                                                                                                                                      │"#
-        r#"│ For convenience, we are providing full builds for Windows, Linux, and macOS. These are the "all extra features" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies │"#
-        r#"│                                                                                                                                                                                                                                                                      │"#
-        r#"└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘"#
-    );
-
-    table.with(Width::wrap(100));
-
-    assert_table!(
-        ansi_str::AnsiStr::ansi_strip(&table.to_string()),
-        "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
-        "│ 0                                                                                                │"
-        "├──────────────────────────────────────────────────────────────────────────────────────────────────┤"
-        "│ This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: http │"
-        "│ s://www.nushell.sh/blog/2020/09/01/nushell_0_19.html                                             │"
-        "│                                                                                                  │"
-        "│ For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all  │"
-        "│ extra features\" builds, so be sure you have the requirements to enable all capabilities: https:/ │"
-        "│ /github.com/nushell/book/blob/master/en/installation.md#dependencies                             │"
-        "│                                                                                                  │"
-        "└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
-    );
-}
+        Table::new(data)
+            .with(Style::modern())
+            .with(Width::wrap(100))
+    },
+    "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
+    "│ 0                                                                                                │"
+    "├──────────────────────────────────────────────────────────────────────────────────────────────────┤"
+    "│ This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: http │"
+    "│ s://www.nushell.sh/blog/2020/09/01/nushell_0_19.html                                             │"
+    "│                                                                                                  │"
+    "│ For convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all  │"
+    "│ extra features\" builds, so be sure you have the requirements to enable all capabilities: https:/ │"
+    "│ /github.com/nushell/book/blob/master/en/installation.md#dependencies                             │"
+    "│                                                                                                  │"
+    "└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+);
 
 test_table!(
     table_1x1_empty,

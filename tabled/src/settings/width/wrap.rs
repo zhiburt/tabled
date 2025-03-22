@@ -23,7 +23,6 @@ use crate::{
 use crate::grid::util::string::get_string_width;
 
 use super::util::{get_table_widths, get_table_widths_with_total};
-use crate::util::string::split_at_width;
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -195,34 +194,32 @@ where
     widths
 }
 
-#[cfg(not(feature = "ansi"))]
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         return String::new();
     }
 
-    if keep_words {
-        split_keeping_words(text, width, "\n")
-    } else {
-        chunks(text, width).join("\n")
-    }
-}
-
-#[cfg(feature = "ansi")]
-pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
-    use crate::util::string::strip_osc;
-
-    if width == 0 {
-        return String::new();
+    #[cfg(not(feature = "ansi"))]
+    {
+        if keep_words {
+            wrap_text_keeping_words(text, width)
+        } else {
+            wrap_text_basic(text, width)
+        }
     }
 
-    let (text, url): (String, Option<String>) = strip_osc(text);
-    let (prefix, suffix) = build_link_prefix_suffix(url);
+    #[cfg(feature = "ansi")]
+    {
+        use crate::util::string::strip_osc;
 
-    if keep_words {
-        split_keeping_words(&text, width, &prefix, &suffix)
-    } else {
-        chunks(&text, width, &prefix, &suffix).join("\n")
+        let (text, url): (String, Option<String>) = strip_osc(text);
+        let (prefix, suffix) = build_link_prefix_suffix(url);
+
+        if keep_words {
+            wrap_text_keeping_words(&text, width, &prefix, &suffix)
+        } else {
+            wrap_text_basic(&text, width, &prefix, &suffix)
+        }
     }
 }
 
@@ -241,223 +238,223 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
 }
 
 #[cfg(not(feature = "ansi"))]
-fn chunks(s: &str, width: usize) -> Vec<String> {
+fn wrap_text_basic(s: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     if width == 0 {
-        return Vec::new();
+        return String::new();
     }
 
-    let mut prev_newline = false;
-    let mut buf = String::with_capacity(width);
-    let mut list = Vec::new();
-    let mut i = 0;
+    let mut buf = String::new();
+    let mut current_width = 0;
     for c in s.chars() {
         if c == '\n' {
-            if buf.is_empty() {
-                list.push(String::new());
-            } else {
-                list.push(buf);
-            }
-
-            buf = String::with_capacity(width);
-            i = 0;
-            prev_newline = true;
+            buf.push('\n');
+            current_width = 0;
             continue;
         }
 
-        let c_width = get_char_width(c);
-        if i + c_width > width {
-            let count_unknowns = width - i;
-            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-            i += count_unknowns;
+        if current_width == width {
+            buf.push('\n');
+            current_width = 0;
+        }
+
+        let char_width = std::cmp::max(1, get_char_width(c));
+        let has_line_space = current_width + char_width <= width;
+        if !has_line_space {
+            let is_char_small = char_width <= width;
+            if !is_char_small {
+                let count_unknowns = width - current_width;
+                buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+                current_width += count_unknowns;
+            } else {
+                buf.push('\n');
+                buf.push(c);
+                current_width = char_width;
+            }
         } else {
             buf.push(c);
-            i += c_width;
-        }
-
-        if i == width {
-            list.push(buf);
-            buf = String::with_capacity(width);
-            i = 0;
-            prev_newline = false;
+            current_width += char_width;
         }
     }
 
-    if !buf.is_empty() || prev_newline {
-        list.push(buf);
-    }
-
-    list
+    buf
 }
 
 #[cfg(feature = "ansi")]
-fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
+fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &str) -> String {
     use std::fmt::Write;
 
-    if width == 0 {
-        return Vec::new();
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    if width == 0 || text.is_empty() {
+        return String::new();
     }
 
-    let mut list = Vec::new();
-    let mut line = String::with_capacity(width);
+    let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
-    for b in ansi_str::get_blocks(s) {
-        let text_style = b.style();
-        let mut text_slice = b.text();
-        if text_slice.is_empty() {
+    buf.push_str(line_prefix);
+
+    for block in ansi_str::get_blocks(text) {
+        let style = block.style();
+        let text = block.text();
+        if text.is_empty() {
             continue;
         }
 
-        let available_space = width - line_width;
-        if available_space == 0 {
-            list.push(line);
-            line = String::with_capacity(width);
+        let available = width - line_width;
+        if available == 0 {
+            buf.push('\n');
             line_width = 0;
         }
 
-        line.push_str(prefix);
-        let _ = write!(&mut line, "{}", text_style.start());
+        let _ = write!(&mut buf, "{}", style.start());
 
-        while !text_slice.is_empty() {
-            let available_space = width - line_width;
+        // let text_width = get_text_width(text);
+        // if text_width + line_width <= width {
+        //     buf.push_str(text);
+        //     let _ = write!(&mut buf, "{}", style.end());
+        //     buf.push_str(line_suffix);
+        //     continue;
+        // }
 
-            let part_width = get_text_width(text_slice);
-
-            if part_width <= available_space {
-                line.push_str(text_slice);
-                line_width += part_width;
-
-                if available_space == 0 {
-                    let _ = write!(&mut line, "{}", text_style.end());
-                    line.push_str(suffix);
-                    list.push(line);
-                    line = String::with_capacity(width);
-                    line.push_str(prefix);
-                    line_width = 0;
-                    let _ = write!(&mut line, "{}", text_style.start());
-                }
-
-                break;
+        for c in text.chars() {
+            if c == '\n' {
+                let _ = write!(&mut buf, "{}", style.end());
+                buf.push_str(line_suffix);
+                buf.push('\n');
+                line_width = 0;
+                buf.push_str(line_prefix);
+                let _ = write!(&mut buf, "{}", style.start());
+                continue;
             }
 
-            let (lhs, rhs, (unknowns, split_char)) = split_string_at(text_slice, available_space);
+            let char_width = std::cmp::max(1, get_char_width(c));
+            let line_has_space = line_width + char_width <= width;
+            if line_has_space {
+                buf.push(c);
+                line_width += char_width;
+                continue;
+            }
 
-            text_slice = &rhs[split_char..];
+            let is_char_small = char_width <= width;
+            if is_char_small {
+                let _ = write!(&mut buf, "{}", style.end());
+                buf.push_str(line_suffix);
+                buf.push('\n');
+                line_width = 0;
+                buf.push_str(line_prefix);
+                let _ = write!(&mut buf, "{}", style.start());
 
-            line.push_str(lhs);
-            line_width += get_text_width(lhs);
-
-            const REPLACEMENT: char = '\u{FFFD}';
-            line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
-            line_width += unknowns;
+                buf.push(c);
+                line_width += char_width;
+                continue;
+            }
 
             if line_width == width {
-                let _ = write!(&mut line, "{}", text_style.end());
-                line.push_str(suffix);
-                list.push(line);
-                line = String::with_capacity(width);
-                line.push_str(prefix);
+                let _ = write!(&mut buf, "{}", style.end());
+                buf.push_str(line_suffix);
+                buf.push('\n');
                 line_width = 0;
-                let _ = write!(&mut line, "{}", text_style.start());
+                buf.push_str(line_prefix);
+                let _ = write!(&mut buf, "{}", style.start());
             }
+
+            let count_unknowns = width - line_width;
+            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            line_width += count_unknowns;
         }
 
         if line_width > 0 {
-            let _ = write!(&mut line, "{}", text_style.end());
+            let _ = write!(&mut buf, "{}", style.end());
         }
     }
 
     if line_width > 0 {
-        line.push_str(suffix);
-        list.push(line);
+        buf.push_str(line_suffix);
     }
 
-    list
+    buf
 }
 
 #[cfg(not(feature = "ansi"))]
-fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+fn wrap_text_keeping_words(text: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
-    let mut lines = Vec::new();
-    let mut line = String::with_capacity(width);
+    if width == 0 || text.is_empty() {
+        return String::new();
+    }
+
+    let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
-    let mut is_first_word = true;
-
-    for word in s.split(' ') {
-        if !is_first_word {
+    for word in text.split(' ') {
+        // restore space char
+        if line_width > 0 {
             let line_has_space = line_width < width;
             if line_has_space {
-                line.push(' ');
+                buf.push(' ');
                 line_width += 1;
-                is_first_word = false;
             }
-        }
-
-        if is_first_word {
-            is_first_word = false;
         }
 
         let word_width = get_string_width(word);
 
         let line_has_space = line_width + word_width <= width;
         if line_has_space {
-            line.push_str(word);
+            buf.push_str(word);
             line_width += word_width;
             continue;
         }
 
-        if word_width <= width {
-            // the word can be fit to 'width' so we put it on new line
-
-            line.extend(std::iter::repeat(' ').take(width - line_width));
-            lines.push(line);
-
-            line = String::with_capacity(width);
+        let is_small_word = word_width <= width;
+        if is_small_word {
+            buf.push('\n');
             line_width = 0;
 
-            line.push_str(word);
+            buf.push_str(word);
             line_width += word_width;
-            is_first_word = false;
-        } else {
-            // the word is too long any way so we split it
+            continue;
+        }
 
-            let mut word_part = word;
-            while !word_part.is_empty() {
-                let available_space = width - line_width;
-                let (lhs, rhs, (unknowns, split_char)) =
-                    split_string_at(word_part, available_space);
+        for c in word.chars() {
+            // take 1 char by 1 and just push it
 
-                word_part = &rhs[split_char..];
-                line_width += get_string_width(lhs) + unknowns;
-                is_first_word = false;
+            let char_width = std::cmp::max(1, get_char_width(c));
+            let line_has_space = line_width + char_width <= width;
+            if !line_has_space {
+                let is_char_small = char_width <= width;
+                if !is_char_small {
+                    if line_width == width {
+                        buf.push('\n');
+                        line_width = 0;
+                    }
 
-                line.push_str(lhs);
-                line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
-
-                if line_width == width {
-                    lines.push(line);
-                    line = String::with_capacity(width);
-                    line_width = 0;
-                    is_first_word = true;
+                    // NOTE:
+                    // Practically it only can happen if we wrap some late UTF8 symbol.
+                    // For example:
+                    // Emojie with width 2 but and wrap width 1
+                    let available = width - line_width;
+                    buf.extend(std::iter::repeat(REPLACEMENT).take(available));
+                    line_width = width;
+                    continue;
                 }
+
+                buf.push('\n');
+                line_width = 0;
             }
+
+            buf.push(c);
+            line_width += char_width;
         }
     }
 
-    if line_width > 0 {
-        line.extend(std::iter::repeat(' ').take(width - line_width));
-        lines.push(line);
-    }
-
-    lines.join(sep)
+    buf
 }
 
 #[cfg(feature = "ansi")]
-fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
+fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
     if text.is_empty() || width == 0 {
         return String::new();
     }
@@ -569,7 +566,6 @@ mod parsing {
 
             self.buf.push_str(self.suffix);
 
-            let _ = self.fill(' ');
             self.buf.push('\n');
             self.width_last = 0;
 
@@ -590,8 +586,6 @@ mod parsing {
             }
 
             self.buf.push_str(self.suffix);
-
-            let _ = self.fill(' ');
             self.width_last = 0;
         }
 
@@ -789,14 +783,6 @@ mod parsing {
     }
 }
 
-fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
-    let (length, width, split_char_size) = split_at_width(text, at);
-    let count_unknowns = if split_char_size > 0 { at - width } else { 0 };
-    let (lhs, rhs) = text.split_at(length);
-
-    (lhs, rhs, (count_unknowns, split_char_size))
-}
-
 fn decrease_widths<F>(
     widths: &mut [usize],
     min_widths: &[usize],
@@ -884,10 +870,10 @@ mod tests {
     #[test]
     fn split_test() {
         #[cfg(not(feature = "ansi"))]
-        let split = |text, width| chunks(text, width).join("\n");
+        let split = |text, width| wrap_text_basic(text, width);
 
         #[cfg(feature = "ansi")]
-        let split = |text, width| chunks(text, width, "", "").join("\n");
+        let split = |text, width| wrap_text_basic(text, width, "", "");
 
         assert_eq!(split("123456", 0), "");
 
@@ -899,7 +885,7 @@ mod tests {
 
         assert_eq!(split("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
         assert_eq!(split("😳😳😳😳😳", 2), "😳\n😳\n😳\n😳\n😳");
-        assert_eq!(split("😳😳😳😳😳", 3), "😳�\n😳�\n😳");
+        assert_eq!(split("😳😳😳😳😳", 3), "😳\n😳\n😳\n😳\n😳");
         assert_eq!(split("😳😳😳😳😳", 6), "😳😳😳\n😳😳");
         assert_eq!(split("😳😳😳😳😳", 20), "😳😳😳😳😳");
 
@@ -911,63 +897,75 @@ mod tests {
     fn chunks_test() {
         #[allow(clippy::redundant_closure)]
         #[cfg(not(feature = "ansi"))]
-        let chunks = |text, width| chunks(text, width);
+        let chunks = |text, width| wrap_text_basic(text, width);
 
         #[cfg(feature = "ansi")]
-        let chunks = |text, width| chunks(text, width, "", "");
+        let chunks = |text, width| wrap_text_basic(text, width, "", "");
 
-        assert_eq!(chunks("123456", 0), [""; 0]);
+        assert_eq!(chunks("123456", 0), "");
 
-        assert_eq!(chunks("123456", 1), ["1", "2", "3", "4", "5", "6"]);
-        assert_eq!(chunks("123456", 2), ["12", "34", "56"]);
-        assert_eq!(chunks("12345", 2), ["12", "34", "5"]);
+        assert_eq!(
+            chunks("123456", 1),
+            ["1", "2", "3", "4", "5", "6"].join("\n")
+        );
+        assert_eq!(chunks("123456", 2), ["12", "34", "56"].join("\n"));
+        assert_eq!(chunks("12345", 2), ["12", "34", "5"].join("\n"));
 
-        assert_eq!(chunks("😳😳😳😳😳", 1), ["�", "�", "�", "�", "�"]);
-        assert_eq!(chunks("😳😳😳😳😳", 2), ["😳", "😳", "😳", "😳", "😳"]);
-        assert_eq!(chunks("😳😳😳😳😳", 3), ["😳�", "😳�", "😳"]);
+        assert_eq!(
+            chunks("😳😳😳😳😳", 1),
+            ["�", "�", "�", "�", "�"].join("\n")
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 2),
+            ["😳", "😳", "😳", "😳", "😳"].join("\n")
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 3),
+            ["😳", "😳", "😳", "😳", "😳"].join("\n")
+        );
     }
 
     #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_by_line_keeping_words_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
 
         assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
         assert_eq!(split_keeping_words("123456", 2), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5 ");
+        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5");
 
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
 
-        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
+        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_test() {
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
         assert_eq!(split_keeping_words("123456", 2), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5 ");
+        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5");
 
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
 
-        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1   ");
+        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_test() {
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
 
-        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m ");
+        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
 
@@ -977,7 +975,7 @@ mod tests {
         use ansi_str::AnsiStr;
 
         #[cfg(feature = "ansi")]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
@@ -1124,7 +1122,7 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_3_test() {
-        let split = |text, width| split_keeping_words(text, width, "", "");
+        let split = |text, width| wrap_text_keeping_words(text, width, "", "");
         assert_eq!(
             split(
                 "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",
@@ -1134,66 +1132,72 @@ mod tests {
         );
         assert_eq!(
             split("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
-            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m     "
+            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello World\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWorld\u{1b}[39m  "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWorld\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m  "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
-            "\u{1b}[37mHello \u{1b}[39m  \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m   "
+            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m"
         );
     }
 
     #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_keeping_words_4_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
 
-        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
+        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn split_keeping_words_4_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         #[cfg(not(feature = "ansi"))]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
-        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
+        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
     #[cfg(feature = "ansi")]
     #[test]
     fn chunks_test_with_prefix_and_suffix() {
-        assert_eq!(chunks("123456", 0, "^", "$"), ["^$"; 0]);
+        assert_eq!(wrap_text_basic("123456", 0, "^", "$"), ["^$"; 0].join("\n"));
 
         assert_eq!(
-            chunks("123456", 1, "^", "$"),
-            ["^1$", "^2$", "^3$", "^4$", "^5$", "^6$"]
+            wrap_text_basic("123456", 1, "^", "$"),
+            ["^1$", "^2$", "^3$", "^4$", "^5$", "^6$"].join("\n")
         );
-        assert_eq!(chunks("123456", 2, "^", "$"), ["^12$", "^34$", "^56$"]);
-        assert_eq!(chunks("12345", 2, "^", "$"), ["^12$", "^34$", "^5$"]);
+        assert_eq!(
+            wrap_text_basic("123456", 2, "^", "$"),
+            ["^12$", "^34$", "^56$"].join("\n")
+        );
+        assert_eq!(
+            wrap_text_basic("12345", 2, "^", "$"),
+            ["^12$", "^34$", "^5$"].join("\n")
+        );
 
         assert_eq!(
-            chunks("😳😳😳😳😳", 1, "^", "$"),
-            ["^�$", "^�$", "^�$", "^�$", "^�$"]
+            wrap_text_basic("😳😳😳😳😳", 1, "^", "$"),
+            ["^�$", "^�$", "^�$", "^�$", "^�$"].join("\n")
         );
         assert_eq!(
-            chunks("😳😳😳😳😳", 2, "^", "$"),
-            ["^😳$", "^😳$", "^😳$", "^😳$", "^😳$"]
+            wrap_text_basic("😳😳😳😳😳", 2, "^", "$"),
+            ["^😳$", "^😳$", "^😳$", "^😳$", "^😳$"].join("\n")
         );
         assert_eq!(
-            chunks("😳😳😳😳😳", 3, "^", "$"),
-            ["^😳�$", "^😳�$", "^😳$"]
+            wrap_text_basic("😳😳😳😳😳", 3, "^", "$"),
+            "^😳$\n^😳$\n^😳$\n^😳$\n^😳$"
         );
     }
 
@@ -1201,20 +1205,20 @@ mod tests {
     #[test]
     fn split_by_line_keeping_words_test_with_prefix_and_suffix() {
         assert_eq!(
-            split_keeping_words("123456", 1, "^", "$"),
+            wrap_text_keeping_words("123456", 1, "^", "$"),
             "^1$\n^2$\n^3$\n^4$\n^5$\n^6$"
         );
         assert_eq!(
-            split_keeping_words("123456", 2, "^", "$"),
+            wrap_text_keeping_words("123456", 2, "^", "$"),
             "^12$\n^34$\n^56$"
         );
         assert_eq!(
-            split_keeping_words("12345", 2, "^", "$"),
-            "^12$\n^34$\n^5$ "
+            wrap_text_keeping_words("12345", 2, "^", "$"),
+            "^12$\n^34$\n^5$"
         );
 
         assert_eq!(
-            split_keeping_words("😳😳😳😳😳", 1, "^", "$"),
+            wrap_text_keeping_words("😳😳😳😳😳", 1, "^", "$"),
             "^�$\n^�$\n^�$\n^�$\n^�$"
         );
     }
@@ -1227,7 +1231,7 @@ mod tests {
         let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
 
         assert_eq!(
-            split_keeping_words(text, 2, "^", "$")
+            wrap_text_keeping_words(text, 2, "^", "$")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1275,7 +1279,7 @@ mod tests {
         );
 
         assert_eq!(
-            split_keeping_words(text, 1, "^", "$")
+            wrap_text_keeping_words(text, 1, "^", "$")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1368,12 +1372,12 @@ mod tests {
     fn chunks_wrap_2() {
         let text = "\u{1b}[30mDebian\u{1b}[0m\u{1b}[31mDebian\u{1b}[0m\u{1b}[32mDebian\u{1b}[0m\u{1b}[33mDebian\u{1b}[0m\u{1b}[34mDebian\u{1b}[0m\u{1b}[35mDebian\u{1b}[0m\u{1b}[36mDebian\u{1b}[0m\u{1b}[37mDebian\u{1b}[0m\u{1b}[40mDebian\u{1b}[0m\u{1b}[41mDebian\u{1b}[0m\u{1b}[42mDebian\u{1b}[0m\u{1b}[43mDebian\u{1b}[0m\u{1b}[44mDebian\u{1b}[0m";
         assert_eq!(
-            chunks(text, 30, "", ""),
+            wrap_text_basic(text, 30, "", ""),
             [
                 "\u{1b}[30mDebian\u{1b}[39m\u{1b}[31mDebian\u{1b}[39m\u{1b}[32mDebian\u{1b}[39m\u{1b}[33mDebian\u{1b}[39m\u{1b}[34mDebian\u{1b}[39m",
                 "\u{1b}[35mDebian\u{1b}[39m\u{1b}[36mDebian\u{1b}[39m\u{1b}[37mDebian\u{1b}[39m\u{1b}[40mDebian\u{1b}[49m\u{1b}[41mDebian\u{1b}[49m",
                 "\u{1b}[42mDebian\u{1b}[49m\u{1b}[43mDebian\u{1b}[49m\u{1b}[44mDebian\u{1b}[49m",
-            ]
+            ].join("\n")
         );
     }
 
@@ -1383,11 +1387,12 @@ mod tests {
         let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
 
         assert_eq!(
-            chunks(text, 22, "", ""),
+            wrap_text_basic(text, 22, "", ""),
             [
                 "\u{1b}[37mCreate bytes from the \u{1b}[39m",
                 "\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m"
             ]
+            .join("\n")
         );
     }
 
@@ -1397,8 +1402,8 @@ mod tests {
         let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
 
         assert_eq!(
-            split_keeping_words(text, 22, "", ""),
-            "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m            "
+            wrap_text_keeping_words(text, 22, "", ""),
+            "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m"
         );
     }
 
@@ -1408,7 +1413,7 @@ mod tests {
         let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
 
         assert_eq!(
-            chunks(text, 10, "", ""),
+            wrap_text_basic(text, 10, "", ""),
             [
                 "\u{1b}[37mReturns th\u{1b}[39m",
                 "\u{1b}[37me floor of\u{1b}[39m",
@@ -1419,7 +1424,7 @@ mod tests {
                 "\u{1b}[37mequal to t\u{1b}[39m",
                 "\u{1b}[37mhat number\u{1b}[39m",
                 "\u{1b}[37m).\u{1b}[39m",
-            ]
+            ].join("\n")
         );
     }
 
@@ -1428,19 +1433,47 @@ mod tests {
     fn chunks_wrap_4_keeping_words() {
         let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
         assert_eq!(
-            split_keeping_words(text, 10, "", ""),
+            wrap_text_keeping_words(text, 10, "", ""),
             concat!(
-                "\u{1b}[37mReturns \u{1b}[39m  \n",
+                "\u{1b}[37mReturns \u{1b}[39m\n",
                 "\u{1b}[37mthe floor \u{1b}[39m\n",
-                "\u{1b}[37mof a \u{1b}[39m     \n",
-                "\u{1b}[37mnumber \u{1b}[39m   \n",
-                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m \n",
-                "\u{1b}[37minteger \u{1b}[39m  \n",
+                "\u{1b}[37mof a \u{1b}[39m\n",
+                "\u{1b}[37mnumber \u{1b}[39m\n",
+                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n",
+                "\u{1b}[37minteger \u{1b}[39m\n",
                 "\u{1b}[37mless than \u{1b}[39m\n",
-                "\u{1b}[37mor equal \u{1b}[39m \n",
-                "\u{1b}[37mto that \u{1b}[39m  \n",
-                "\u{1b}[37mnumber).\u{1b}[39m  ",
+                "\u{1b}[37mor equal \u{1b}[39m\n",
+                "\u{1b}[37mto that \u{1b}[39m\n",
+                "\u{1b}[37mnumber).\u{1b}[39m",
             )
+        );
+    }
+
+    #[cfg(not(feature = "ansi"))]
+    #[test]
+    fn chunks_chinese_0() {
+        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
+
+        assert_eq!(
+            wrap_text_basic(text, 40),
+            concat!(
+                "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
+                "成立时间:\"1998年11月\"}",
+            ),
+        );
+    }
+
+    #[cfg(not(feature = "ansi"))]
+    #[test]
+    fn chunks_keeping_chinese_0() {
+        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
+
+        assert_eq!(
+            wrap_text_keeping_words(text, 40),
+            concat!(
+                "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
+                "成立时间:\"1998年11月\"}",
+            ),
         );
     }
 }

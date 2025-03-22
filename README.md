@@ -370,7 +370,7 @@ Go   Rob Pike       2009
 You can modify existing styles to fit your needs.
 Mind that all modifications are done at compile time.
 
-Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Style.html)
+Check the [documentation](https://docs.rs/tabled/latest/tabled/settings/style/struct.Style.html)
 for more customization options.
 
 If you can't make desicions at compile time - use `Theme`.
@@ -404,7 +404,7 @@ As was said doing customization at `const`ant context is not always a best chois
 you may need to change a style at runtime, you may use `Theme` object to do that.
 
 `Theme` is quite powerful by itself,
-you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/struct.Theme.html).
+you can check it in the [documentation](https://docs.rs/tabled/latest/tabled/settings/themes/struct.Theme.html).
 
 ```rust
 use tabled::grid::config::{Border, HorizontalLine};
@@ -1487,8 +1487,8 @@ struct Person {
 
 ### Format headers
 
-Beside `#[tabled(rename = "")]` you can change a format of a column name using
-`#[tabled(rename_all = "UPPERCASE")]`.
+Using `#[tabled(rename_all = "")]` you can change a format of a column name.
+Supported values are [`camelCase`, `kebab-case`, `PascalCase`, `SCREAMING_SNAKE_CASE`, `snake_case`, `lowercase`, `UPPERCASE`, `lower title case`, `Upper Title Case`, `verbatim`]
 
 ```rust
 use tabled::Tabled;
@@ -1499,7 +1499,7 @@ struct Person {
     id: u8,
     number: &'static str,
     name: &'static str,
-    #[tabled(rename_all = "snake_case")]
+    #[tabled(rename_all = "UPPERCASE")]
     middle_name: &'static str,
 }
 ```
@@ -1599,7 +1599,7 @@ See next example.
 use tabled::Tabled;
 
 #[derive(Tabled)]
-#[tabled(display(Option, "tabled::derive::display::option", ""))]
+#[tabled(display(Option, "tabled::derive::display::option", "undefined"))]
 pub struct Record {
     pub id: i64,
     pub name: Option<String>,

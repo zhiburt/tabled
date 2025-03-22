@@ -32,6 +32,14 @@ macro_rules! static_table {
 ///     "|--|--|"
 /// )
 /// ```
+///
+/// ```text
+/// test_table!(
+///     test_name,
+///     Table::new([[1, 2, 3], [4, 5, 6]]), // got
+///     Table::new([[1, 2, 3], [4, 5, 6]]), // expected
+/// )
+/// ```
 #[macro_export]
 macro_rules! test_table {
     ($test:ident, $table:expr, $($line:expr)*) => {
@@ -45,7 +53,13 @@ macro_rules! test_table {
         fn $test() {
             let table = $table.to_string();
             let expected = $expected.to_string();
-            assert_eq!(table, expected);
+            assert_eq!(
+                table,
+                expected,
+                "\ngot:\n{}\nexpected:\n{}",
+                table,
+                expected,
+            );
         }
     };
 }
@@ -65,7 +79,16 @@ macro_rules! test_table {
 #[macro_export]
 macro_rules! assert_table {
     ($table:expr, $($line:expr)*) => {
-        let table = $table.to_string();
+        let table;
+        #[cfg(feature = "std")]
+        {
+            table = $table.to_string();
+        }
+        #[cfg(not(feature = "std"))]
+        {
+            table = $table;
+        }
+
         let expected = $crate::static_table!($($line)*);
         assert_eq!(
             table,
