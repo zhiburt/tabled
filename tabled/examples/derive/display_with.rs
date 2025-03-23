@@ -23,7 +23,7 @@ struct Country {
     currency: Option<String>,
 }
 
-fn perimeter<'a>(area: &f32, country: &Country, _milies: bool) -> String {
+fn perimeter(area: &f32, country: &Country, _milies: bool) -> String {
     let is_big = *area > 1_000_000.0f32;
     let big_sign = if is_big { "B" } else { "" };
     format!("{} {}", country.area_km2, big_sign)
