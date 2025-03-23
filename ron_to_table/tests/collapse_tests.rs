@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use ron::{value::Float, Map, Number, Value};
+use ron::{value::F32, Map, Number, Value};
 use tabled::assert::test_table;
 use tabled::settings::Alignment;
 
@@ -48,7 +48,7 @@ test_table!(
 
 test_table!(
     test_int,
-    build_ron_table(Value::Number(Number::Integer(123456789))),
+    build_ron_table(Value::Number(Number::U64(123456789))),
     "+-----------+"
     "| 123456789 |"
     "+-----------+"
@@ -56,10 +56,18 @@ test_table!(
 
 test_table!(
     test_float,
-    build_ron_table(Value::Number(Number::Float(Float::new(123.456789)))),
-    "+------------+"
-    "| 123.456789 |"
-    "+------------+"
+    build_ron_table(Value::Number(Number::F32(F32::new(123.456789)))),
+    "+-----------+"
+    "| 123.45679 |"
+    "+-----------+"
+);
+
+test_table!(
+    test_bytes,
+    build_ron_table(Value::Bytes(vec![1, 2, 3, 4, 5])),
+    "+-----------------+"
+    "| [1, 2, 3, 4, 5] |"
+    "+-----------------+"
 );
 
 test_table!(

@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use ron::{value::Float, Map, Number, Value};
+use ron::{value::F32, Map, Number, Value};
 use tabled::assert::test_table;
 use tabled::settings::Alignment;
 
@@ -11,37 +11,57 @@ test_table!(test_unit, build_ron_table(Value::Unit).to_string(), "");
 test_table!(
     test_string,
     build_ron_table(Value::String(String::from("123456789"))),
-    "+-----------+\n| 123456789 |\n+-----------+"
+    "+-----------+"
+    "| 123456789 |"
+    "+-----------+"
 );
 
 test_table!(
     test_bool_true,
     build_ron_table(Value::Bool(true)),
-    "+------+\n| true |\n+------+"
+    "+------+"
+    "| true |"
+    "+------+"
 );
 
 test_table!(
     test_bool_false,
     build_ron_table(Value::Bool(false)),
-    "+-------+\n| false |\n+-------+"
+    "+-------+"
+    "| false |"
+    "+-------+"
 );
 
 test_table!(
     test_char,
     build_ron_table(Value::Char('a')),
-    "+---+\n| a |\n+---+"
+    "+---+"
+    "| a |"
+    "+---+"
 );
 
 test_table!(
     test_int,
-    build_ron_table(Value::Number(Number::Integer(123456789))),
-    "+-----------+\n| 123456789 |\n+-----------+"
+    build_ron_table(Value::Number(Number::U32(123456789))),
+    "+-----------+"
+    "| 123456789 |"
+    "+-----------+"
 );
 
 test_table!(
     test_float,
-    build_ron_table(Value::Number(Number::Float(Float::new(123.456789)))),
-    "+------------+\n| 123.456789 |\n+------------+"
+    build_ron_table(Value::Number(Number::F32(F32(123.456789)))),
+    "+-----------+"
+    "| 123.45679 |"
+    "+-----------+"
+);
+
+test_table!(
+    test_bytes,
+    build_ron_table(Value::Bytes(vec![1, 2, 3, 4, 5])),
+    "+-----------------+"
+    "| [1, 2, 3, 4, 5] |"
+    "+-----------------+"
 );
 
 test_table!(
