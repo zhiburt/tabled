@@ -504,13 +504,13 @@ mod test_display_enum {
     }
 
     fn user_fmt(_: &User) -> String {
-        format!("...")
+        String::from("...")
     }
 
     pub mod some {
         pub mod bar {
             pub fn user_fmt(_: &super::super::User) -> String {
-                format!("111")
+                String::from("111")
             }
         }
     }
