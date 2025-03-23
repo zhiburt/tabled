@@ -18,7 +18,7 @@ derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
 [dependencies]
-ron = "0.8"
+ron = "0.9"
 tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]

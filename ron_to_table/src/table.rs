@@ -147,10 +147,25 @@ fn convert_value_to_table_value(value: &Value, ctx: CollapseCtx) -> TableValue {
         Value::Seq(list) => convert_list(list, ctx),
         Value::Bool(value) => TableValue::Cell(value.to_string()),
         Value::Char(char) => TableValue::Cell(char.to_string()),
-        Value::Number(Number::Integer(number)) => TableValue::Cell(number.to_string()),
-        Value::Number(Number::Float(number)) => TableValue::Cell(number.get().to_string()),
         Value::String(text) => TableValue::Cell(text.to_owned()),
         Value::Unit => TableValue::Cell(String::new()),
+        Value::Bytes(bytes) => TableValue::Cell(format!("{:?}", bytes)),
+        Value::Number(num) => {
+            let value = match num {
+                Number::I8(num) => num.to_string(),
+                Number::I16(num) => num.to_string(),
+                Number::I32(num) => num.to_string(),
+                Number::I64(num) => num.to_string(),
+                Number::U8(num) => num.to_string(),
+                Number::U16(num) => num.to_string(),
+                Number::U32(num) => num.to_string(),
+                Number::U64(num) => num.to_string(),
+                Number::F32(num) => num.get().to_string(),
+                Number::F64(num) => num.get().to_string(),
+            };
+
+            TableValue::Cell(value)
+        }
     }
 }
 
@@ -386,8 +401,23 @@ fn _plain_table(value: &Value, cfg: &RonTable, outer: bool) -> String {
         Value::String(text) => string_table(text.to_owned(), config, outer),
         Value::Bool(val) => string_table(val.to_string(), config, outer),
         Value::Char(char) => string_table(char.to_string(), config, outer),
-        Value::Number(Number::Integer(num)) => string_table(num.to_string(), config, outer),
-        Value::Number(Number::Float(num)) => string_table(num.get().to_string(), config, outer),
+        Value::Bytes(bytes) => string_table(format!("{:?}", bytes), config, outer),
+        Value::Number(num) => {
+            let value = match num {
+                Number::I8(num) => num.to_string(),
+                Number::I16(num) => num.to_string(),
+                Number::I32(num) => num.to_string(),
+                Number::I64(num) => num.to_string(),
+                Number::U8(num) => num.to_string(),
+                Number::U16(num) => num.to_string(),
+                Number::U32(num) => num.to_string(),
+                Number::U64(num) => num.to_string(),
+                Number::F32(num) => num.get().to_string(),
+                Number::F64(num) => num.get().to_string(),
+            };
+
+            string_table(value, config, outer)
+        }
     }
 }
 
