@@ -1,9 +1,11 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 #![allow(clippy::redundant_clone)]
 
 use std::iter::FromIterator;
 
 use tabled::{
+    assert::{static_table, test_table},
     builder::Builder,
     grid::config::Position,
     settings::{
@@ -15,7 +17,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{static_table, test_table};
 
 test_table!(
     span_column_test_0,

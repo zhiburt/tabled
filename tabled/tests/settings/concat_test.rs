@@ -1,9 +1,12 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{Concat, Style};
+use tabled::{
+    assert::test_table,
+    settings::{Concat, Style},
+};
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     join_vertical_0,

@@ -1,6 +1,7 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use tabled::{
+    assert::test_table,
     grid::{
         config::CompactConfig, dimension::CompactGridDimension, dimension::Estimate,
         records::IterRecords,
@@ -9,7 +10,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     compact_new,

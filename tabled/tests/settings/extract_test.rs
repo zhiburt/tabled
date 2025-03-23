@@ -1,6 +1,8 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use tabled::{
+    assert::test_table,
     builder::Builder,
     settings::{
         object::{Rows, Segment},
@@ -9,7 +11,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     extract_segment_full_test,

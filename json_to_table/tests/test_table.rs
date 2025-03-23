@@ -1,9 +1,8 @@
 use json_to_table::{json_to_table, Orientation};
 
 use serde_json::json;
+use tabled::assert::test_table;
 use tabled::settings::Style;
-
-use testing_table::test_table;
 
 test_table!(
     general_json_test_0,

@@ -1,5 +1,4 @@
-use tabled::{settings::style::Style, tables::CompactTable};
-use testing_table::assert_table;
+use tabled::{assert::assert_table, settings::style::Style, tables::CompactTable};
 
 fn main() {
     let data = [

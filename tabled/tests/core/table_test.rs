@@ -1,8 +1,9 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use std::iter::FromIterator;
 
 use tabled::{
+    assert::test_table,
     builder::Builder,
     settings::{
         formatting::Charset, Height, Highlight, Modify, Padding, Settings, Shadow, Style, Width,
@@ -11,7 +12,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 mod default_types {
     use super::*;

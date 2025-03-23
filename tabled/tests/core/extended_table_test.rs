@@ -1,12 +1,15 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
-use tabled::{tables::ExtendedTable, Tabled};
-
-use crate::matrix::Matrix;
-use testing_table::{static_table, test_table};
+use tabled::{
+    assert::{static_table, test_table},
+    tables::ExtendedTable,
+    Tabled,
+};
 
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;
+
+use crate::matrix::Matrix;
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {

@@ -1,9 +1,12 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{themes::Layout, Alignment, Style};
+use tabled::{
+    assert::test_table,
+    settings::{themes::Layout, Alignment, Style},
+};
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     theme_stick_left,

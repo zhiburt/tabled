@@ -1,8 +1,10 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use std::iter::FromIterator;
 
 use tabled::{
+    assert::{static_table, test_table},
     builder::Builder,
     grid::config::Border as GridBorder,
     settings::{
@@ -18,7 +20,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{static_table, test_table};
 
 test_table!(
     default_style,

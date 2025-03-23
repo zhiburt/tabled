@@ -1,13 +1,16 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{
-    object::{Cell, Object},
-    themes::Colorization,
-    Color,
+use tabled::{
+    assert::test_table,
+    settings::{
+        object::{Cell, Object},
+        themes::Colorization,
+        Color,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     chess_2x3,

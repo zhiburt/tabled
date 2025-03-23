@@ -1,14 +1,17 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{
-    location::ByColumnName,
-    object::{Columns, Rows, Segment},
-    style::{HorizontalLine, Style},
-    Alignment, Modify, Remove,
+use tabled::{
+    assert::test_table,
+    settings::{
+        location::ByColumnName,
+        object::{Columns, Rows, Segment},
+        style::{HorizontalLine, Style},
+        Alignment, Modify, Remove,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     disable_rows,

@@ -1,7 +1,6 @@
 use std::{iter::FromIterator, str::FromStr};
 
-use tabled::settings::Alignment;
-use testing_table::test_table;
+use tabled::{assert::test_table, settings::Alignment};
 use toml::{Table as TomlMap, Value};
 
 use toml_to_table::{Orientation, TomlTable};

@@ -1,13 +1,13 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use tabled::{
+    assert::test_table,
     grid::dimension::{DimensionPriority, PoolTableDimension},
     settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, Style},
     tables::{PoolTable, TableValue},
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
 use tabled::{grid::ansi::ANSIStr, settings::PaddingColor};

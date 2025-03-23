@@ -1,7 +1,7 @@
 use table_to_html::{Alignment, Entity, HtmlTable, Margin, Padding, Position};
 
+use tabled::assert::test_table;
 use tabled::Table;
-use testing_table::test_table;
 
 test_table!(
     table_iter_fmt,

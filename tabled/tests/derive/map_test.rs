@@ -1,7 +1,6 @@
-#![cfg(feature = "derive")]
+#![cfg(all(feature = "derive", feature = "assert"))]
 
-use tabled::{Table, Tabled};
-use testing_table::test_table;
+use tabled::{assert::test_table, Table, Tabled};
 
 test_table!(
     test_map_path,

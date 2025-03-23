@@ -1,16 +1,19 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use std::{collections::HashMap, iter::FromIterator};
 
-use tabled::settings::{
-    object::{Cell, Object, Rows, Segment},
-    style::{BorderSpanCorrection, HorizontalLine, Style},
-    themes::Theme,
-    Alignment, Highlight, Modify, Panel, Span, Width,
+use tabled::{
+    assert::test_table,
+    settings::{
+        object::{Cell, Object, Rows, Segment},
+        style::{BorderSpanCorrection, HorizontalLine, Style},
+        themes::Theme,
+        Alignment, Highlight, Modify, Panel, Span, Width,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     panel_has_no_style_by_default,

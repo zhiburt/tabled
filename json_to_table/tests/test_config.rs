@@ -1,8 +1,7 @@
 use json_to_table::json_to_table;
 use serde_json::json;
+use tabled::assert::test_table;
 use tabled::settings::{Alignment, Padding, Style};
-
-use testing_table::test_table;
 
 #[cfg(feature = "ansi")]
 use tabled::{grid::ansi::ANSIBuf, grid::config::ColoredConfig};

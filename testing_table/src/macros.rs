@@ -79,16 +79,7 @@ macro_rules! test_table {
 #[macro_export]
 macro_rules! assert_table {
     ($table:expr, $($line:expr)*) => {
-        let table;
-        #[cfg(feature = "std")]
-        {
-            table = $table.to_string();
-        }
-        #[cfg(not(feature = "std"))]
-        {
-            table = $table;
-        }
-
+        let table = $table.to_string();
         let expected = $crate::static_table!($($line)*);
         assert_eq!(
             table,

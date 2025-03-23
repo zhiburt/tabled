@@ -1,10 +1,9 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use std::iter::FromIterator;
 
+use tabled::assert::test_table;
 use tabled::builder::Builder;
-
-use testing_table::test_table;
 
 test_table!(
     push_record,

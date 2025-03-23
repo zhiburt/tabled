@@ -1,9 +1,12 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{object::Cell, Highlight, Margin, MarginColor, Modify, Span, Style, Width};
+use tabled::{
+    assert::{assert_table, assert_width, test_table},
+    settings::{object::Cell, Highlight, Margin, MarginColor, Modify, Span, Style, Width},
+};
 
 use crate::matrix::Matrix;
-use testing_table::{assert_table, assert_width, test_table};
 
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;

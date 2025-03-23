@@ -1,9 +1,8 @@
 use json_to_table::json_to_table;
 
 use serde_json::json;
+use tabled::assert::test_table;
 use tabled::settings::Style;
-
-use testing_table::test_table;
 
 test_table!(
     string_test,

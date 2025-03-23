@@ -1,14 +1,17 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 // todo: add method for SPACING between cells.
 
-use tabled::settings::{
-    object::{Cell, Rows},
-    Border, Highlight, Rotate,
+use tabled::{
+    assert::test_table,
+    settings::{
+        object::{Cell, Rows},
+        Border, Highlight, Rotate,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 #[test]
 fn test_rotate() {

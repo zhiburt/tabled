@@ -1,6 +1,8 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use tabled::{
+    assert::{assert_width, test_table},
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
@@ -12,7 +14,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{assert_width, test_table};
 
 #[cfg(feature = "ansi")]
 use ::{
@@ -2110,10 +2111,10 @@ test_table!(
 mod derived {
     use super::*;
 
+    use tabled::assert::static_table;
     #[cfg(feature = "ansi")]
     use tabled::grid::util::string::get_text_width;
     use tabled::Tabled;
-    use testing_table::static_table;
 
     #[test]
     fn wrapping_as_total_multiline() {
@@ -2181,7 +2182,7 @@ mod derived {
     #[cfg(feature = "ansi")]
     #[test]
     fn wrapping_as_total_multiline_color() {
-        use testing_table::assert_table;
+        use tabled::assert::assert_table;
 
         #[derive(Tabled)]
         struct D(
