@@ -1,10 +1,10 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use std::iter::FromIterator;
 
+use tabled::{assert::test_table, builder::Builder, Table};
+
 use crate::matrix::Matrix;
-use tabled::{builder::Builder, Table};
-use testing_table::test_table;
 
 test_table!(
     builder_index,

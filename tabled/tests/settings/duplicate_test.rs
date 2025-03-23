@@ -1,12 +1,15 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{
-    object::{Cell, Columns, Rows, Segment},
-    Dup,
+use tabled::{
+    assert::test_table,
+    settings::{
+        object::{Cell, Columns, Rows, Segment},
+        Dup,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     dup_cell_to_cell,

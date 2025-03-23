@@ -9,9 +9,9 @@
 //!         object::{Columns, Object, Rows},
 //!         Alignment,
 //!     },
+//!     assert::assert_table,
 //!     Table,
 //! };
-//! use testing_table::assert_table;
 //!
 //! let data = [
 //!     [1, 2, 3, 4, 5],

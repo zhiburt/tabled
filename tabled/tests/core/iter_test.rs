@@ -1,12 +1,11 @@
-#![cfg(all(feature = "std", feature = "derive"))]
+#![cfg(all(feature = "std", feature = "derive", feature = "assert"))]
 
 use tabled::{
+    assert::test_table,
     iter::LayoutIterator,
     settings::{style::BorderSpanCorrection, Span, Style},
     Table, Tabled,
 };
-
-use testing_table::test_table;
 
 test_table!(
     push_record,

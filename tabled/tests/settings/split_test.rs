@@ -1,10 +1,9 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use std::iter::FromIterator;
 
-use tabled::{builder::Builder, settings::split::Split, Table};
-
-use testing_table::test_table;
+use tabled::{assert::test_table, builder::Builder, settings::split::Split, Table};
 
 test_table!(
     split_column_test,

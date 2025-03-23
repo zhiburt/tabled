@@ -1,13 +1,16 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::grid::config::Entity;
-use tabled::settings::{
-    object::{Columns, Object, ObjectIterator, Segment},
-    Alignment, Style,
+use tabled::{
+    assert::test_table,
+    grid::config::Entity,
+    settings::{
+        object::{Columns, Object, ObjectIterator, Segment},
+        Alignment, Style,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 // todo: Columns::all()
 

@@ -1,12 +1,12 @@
 use std::iter::FromIterator;
 
 use ron::{value::Float, Map, Number, Value};
+use tabled::assert::test_table;
 use tabled::settings::Alignment;
-use testing_table::test_table;
 
 use ron_to_table::{Orientation, RonTable};
 
-test_table!(test_unit, build_ron_table(Value::Unit), "");
+test_table!(test_unit, build_ron_table(Value::Unit).to_string(), "");
 
 test_table!(
     test_string,

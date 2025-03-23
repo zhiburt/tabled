@@ -1,8 +1,9 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
 use std::iter::FromIterator;
 
 use tabled::{
+    assert::test_table,
     builder::Builder,
     settings::{
         formatting::Charset, Height, Highlight, Modify, Padding, Settings, Shadow, Style, Width,
@@ -11,7 +12,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 mod default_types {
     use super::*;
@@ -830,7 +830,7 @@ mod derived {
 #[cfg(feature = "ansi")]
 #[test]
 fn multiline_table_test2() {
-    use testing_table::assert_table;
+    use tabled::assert::assert_table;
 
     let data = &[
         ["\u{1b}[37mThis is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\n\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\n\u{1b}[0m"],

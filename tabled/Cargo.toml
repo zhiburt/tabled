@@ -345,20 +345,19 @@ required-features = []
 no-default-features = true
 
 [features]
-default = ["derive", "macros"]
+default = ["derive", "macros", "assert"]
 std = ["papergrid/std", "testing_table/std"]
 derive = ["tabled_derive", "std"]
-ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
+ansi = ["papergrid/ansi", "testing_table/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
+assert = ["testing_table"]
 
 [dependencies]
 papergrid = { path = "../papergrid", default-features = false }
 tabled_derive = { path = "../tabled_derive", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true }
-
-[dev-dependencies]
-testing_table = { path = "../testing_table", features = ["ansi"] }
+testing_table = { path = "../testing_table", default-features = false, optional = true }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

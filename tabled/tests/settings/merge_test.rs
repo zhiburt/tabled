@@ -1,8 +1,7 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::{settings::merge::Merge, Table};
-
-use testing_table::test_table;
+use tabled::{assert::test_table, settings::merge::Merge, Table};
 
 test_table!(
     merge_horizontal,

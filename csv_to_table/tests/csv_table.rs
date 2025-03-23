@@ -1,4 +1,4 @@
-use testing_table::test_table;
+use tabled::assert::test_table;
 
 test_table!(
     test_0,

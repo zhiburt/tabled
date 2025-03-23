@@ -20,7 +20,7 @@ Most of a table configuration can be found in [`tabled::settings`](https://docs.
 
 ```rust
 use tabled::{Table, Tabled};
-use testing_table::assert_table;
+use tabled::assert::assert_table;
 
 #[derive(Tabled)]
 struct Language<'a> {
@@ -33,7 +33,6 @@ let languages = vec![
     Language { name: "C",    designed_by: "Dennis Ritchie", invented_year: 1972 },
     Language { name: "Go",   designed_by: "Rob Pike",       invented_year: 2009 },
     Language { name: "Rust", designed_by: "Graydon Hoare",  invented_year: 2010 },
-    Language { name: "Hare", designed_by: "Drew DeVault",   invented_year: 2022 },
 ];
 
 let table = Table::new(languages);
@@ -49,8 +48,6 @@ assert_table!(
     "+------+----------------+---------------+"
     "| Rust | Graydon Hoare  | 2010          |"
     "+------+----------------+---------------+"
-    "| Hare | Drew DeVault   | 2022          |"
-    "+------+----------------+---------------+"
 );
 ```
 
@@ -58,13 +55,12 @@ The same example but we are building a table step by step.
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
-use testing_table::assert_table;
+use tabled::assert::assert_table;
 
 let mut builder = Builder::new();
 builder.push_record(["C", "Dennis Ritchie", "1972"]);
 builder.push_record(["Go", "Rob Pike", "2009"]);
 builder.push_record(["Rust", "Graydon Hoare", "2010"]);
-builder.push_record(["Hare", "Drew DeVault", "2022"]);
 
 let mut table = builder.build();
 table.with(Style::ascii_rounded());
@@ -75,7 +71,6 @@ assert_table!(
     "| C    | Dennis Ritchie | 1972 |"
     "| Go   | Rob Pike       | 2009 |"
     "| Rust | Graydon Hoare  | 2010 |"
-    "| Hare | Drew DeVault   | 2022 |"
     "'------------------------------'"
 );
 ```

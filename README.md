@@ -435,9 +435,9 @@ Sometimes it's necessary to change a border of a particular cell.
 For this purpose you can use `Border`.
 
 ```rust
-use testing_table::assert_table;
 use tabled::{
     settings::{object::Rows, Border, Style},
+    assert::assert_table,
     Table,
 };
 

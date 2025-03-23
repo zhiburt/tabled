@@ -1,9 +1,9 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::Reverse;
+use tabled::{assert::test_table, settings::Reverse};
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     test_0x0_reverse_rows,

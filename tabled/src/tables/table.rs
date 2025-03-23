@@ -99,8 +99,7 @@ impl Table {
     /// # Examples
     ///
     /// ```
-    /// use tabled::{Table, Tabled};
-    /// use testing_table::assert_table;
+    /// use tabled::{Table, Tabled, assert::assert_table};
     ///
     /// #[derive(Tabled)]
     /// struct Relationship {
@@ -129,8 +128,7 @@ impl Table {
     /// ## Notice that you can pass tuples.
     ///
     /// ```
-    /// use tabled::{Table, Tabled};
-    /// use testing_table::assert_table;
+    /// use tabled::{Table, Tabled, assert::assert_table};
     ///
     /// #[derive(Tabled)]
     /// struct Relationship {
@@ -159,8 +157,7 @@ impl Table {
     /// ## Notice that you can pass const arrays as well.
     ///
     /// ```
-    /// use tabled::Table;
-    /// use testing_table::assert_table;
+    /// use tabled::{Table, assert::assert_table};
     ///
     /// let list = vec![
     ///     ["Kate", "+", "+", "+", "-"],
@@ -185,8 +182,7 @@ impl Table {
     ///
     /// ```
     /// use std::iter::FromIterator;
-    /// use tabled::Table;
-    /// use testing_table::assert_table;
+    /// use tabled::{Table, assert::assert_table};
     ///
     /// let list = vec![
     ///     vec!["Kate", "+", "+", "+", "-"],
@@ -243,8 +239,7 @@ impl Table {
     /// # Examples
     ///
     /// ```
-    /// use tabled::{Table, Tabled};
-    /// use testing_table::assert_table;
+    /// use tabled::{Table, Tabled, assert::assert_table};
     ///
     /// #[derive(Tabled)]
     /// #[tabled(rename_all = "PascalCase")]
@@ -302,7 +297,7 @@ impl Table {
     /// ```
     /// use tabled::{Table, Tabled, settings::Style};
     /// use tabled::settings::{style::HorizontalLine, Theme};
-    /// use testing_table::assert_table;
+    /// use tabled::assert::assert_table;
     ///
     /// #[derive(Tabled)]
     /// #[tabled(rename_all = "PascalCase")]

@@ -1,6 +1,8 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use tabled::{
+    assert::{static_table, test_table},
     builder::Builder,
     settings::{
         highlight::Highlight,
@@ -10,7 +12,6 @@ use tabled::{
 };
 
 use crate::matrix::Matrix;
-use testing_table::{static_table, test_table};
 
 test_table!(
     highlingt_object_exceeds_boundaries,

@@ -1,9 +1,8 @@
-#![cfg(feature = "derive")]
+#![cfg(all(feature = "derive", feature = "assert"))]
 
 use std::fmt::Display;
 
-use tabled::{Table, Tabled};
-use testing_table::test_table;
+use tabled::{assert::test_table, Table, Tabled};
 
 use super::{sstr, test_enum, test_struct, test_tuple};
 

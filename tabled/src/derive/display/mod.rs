@@ -5,16 +5,14 @@ use core::fmt::Debug;
 /// A function which is usefull in conjuntion with
 /// `#[tabled(display)]` and `#[tabled(display)]`.
 ///
-/// It can be used with a [`bool`] type.
+/// It can be used with a [`prim@bool`] type.
 /// You must provide 2 argumnts which will be display
 /// for true and false case correspondingly.
 ///
 /// # Example
 ///
 /// ```
-/// use tabled::Tabled;
-/// use tabled::derive::display;
-/// use testing_table::assert_table;
+/// use tabled::{Tabled, assert::assert_table, derive::display};
 ///
 /// #[derive(Tabled)]
 /// #[tabled(display(bool, "display::bool", "Got", 0))]
@@ -65,9 +63,8 @@ where
 /// # Example
 ///
 /// ```
-/// use tabled::Tabled;
-/// use tabled::derive::display;
-/// use testing_table::assert_table;
+/// use tabled::{Tabled, derive::display};
+/// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
 /// #[tabled(display(Option, "display::option", "Unknown"))]
@@ -114,9 +111,8 @@ where
 /// So rather then [`std::fmt::Display`] usage we will be using a debug implementation.
 ///
 /// ```
-/// use tabled::Tabled;
-/// use tabled::derive::display;
-/// use testing_table::assert_table;
+/// use tabled::{Tabled, derive::display};
+/// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
 /// #[tabled(display(Option, "display::debug"))]
@@ -159,9 +155,8 @@ where
 /// It just returns an empty string.
 ///
 /// ```
-/// use tabled::Tabled;
-/// use tabled::derive::display;
-/// use testing_table::assert_table;
+/// use tabled::{Tabled, derive::display};
+/// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
 /// pub struct ZKP<'a> {

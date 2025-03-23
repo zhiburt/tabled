@@ -1,13 +1,14 @@
 #![cfg(feature = "macros")]
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
 use tabled::{
+    assert::test_table,
     col, row,
     settings::{format::Format, object::Segment, Alignment, Modify, Padding},
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     row_pair_test,

@@ -1,5 +1,5 @@
 use table_to_html::html::{Attribute, HtmlElement, HtmlValue, HtmlVisitor, HtmlVisitorMut};
-use testing_table::{assert_table, test_table};
+use tabled::assert::{assert_table, test_table};
 
 test_table!(
     html_built_element,

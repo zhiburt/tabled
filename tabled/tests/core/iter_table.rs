@@ -1,9 +1,8 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", feature = "assert"))]
 
-use tabled::tables::IterTable;
+use tabled::{assert::test_table, tables::IterTable};
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     iter_table,

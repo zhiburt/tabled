@@ -1,6 +1,6 @@
 use static_table::pool_table;
 
-use testing_table::test_table;
+use tabled::assert::test_table;
 
 test_table!(
     pool_table,

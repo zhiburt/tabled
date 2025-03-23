@@ -31,9 +31,12 @@ pub trait Peaker {
 /// An abstract factory to construct different [`Peaker`] methods.
 ///
 /// ```
-/// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-/// # use testing_table::assert_table;
-/// #
+/// use tabled::{
+///     Table,
+///     assert::assert_table,
+///     settings::{Style, peaker::Priority, Width},
+/// };
+///
 /// let data = [
 ///     ("1", "Hello", 100),
 ///     ("2", "World", 1000),
@@ -72,9 +75,12 @@ impl Priority {
     /// just peaking each value after another.
     ///
     /// ```
-    /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-    /// # use testing_table::assert_table;
-    /// #
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{Style, peaker::Priority, Width},
+    ///     assert::assert_table,
+    /// };
+    ///
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -112,9 +118,12 @@ impl Priority {
     /// and prioritizing a chosen side when equal values are met.
     ///
     /// ```
-    /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-    /// # use testing_table::assert_table;
-    /// #
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{Style, peaker::Priority, Width},
+    ///     assert::assert_table,
+    /// };
+    ///
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -145,9 +154,12 @@ impl Priority {
     /// and prioritizing a chosen side when equal values are met.
     ///
     /// ```
-    /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-    /// # use testing_table::assert_table;
-    /// #
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{Style, peaker::Priority, Width},
+    ///     assert::assert_table,
+    /// };
+    ///
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -184,9 +196,12 @@ impl Priority {
     /// Returns a [`Peaker`] which goes over list peacking a left most value as far as possible.
     ///
     /// ```
-    /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-    /// # use testing_table::assert_table;
-    /// #
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{Style, peaker::Priority, Width},
+    ///     assert::assert_table,
+    /// };
+    ///
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),
@@ -227,9 +242,12 @@ impl Priority {
     /// Returns a [`Peaker`] which goes over list peacking a right most value as far as possible.
     ///
     /// ```
-    /// # use tabled::{Table, settings::{Style, peaker::Priority, Width}};
-    /// # use testing_table::assert_table;
-    /// #
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{Style, peaker::Priority, Width},
+    ///     assert::assert_table,
+    /// };
+    ///
     /// let data = [
     ///     ("1", "Hello", 100),
     ///     ("2", "World", 1000),

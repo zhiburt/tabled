@@ -1,9 +1,12 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{formatting::Justification, object::Columns, Color, Modify};
+use tabled::{
+    assert::test_table,
+    settings::{formatting::Justification, object::Columns, Color, Modify},
+};
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     justification,

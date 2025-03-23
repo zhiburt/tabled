@@ -15,11 +15,18 @@
 //! Beside a default [`Table`] type there are more,\
 //! more specific table which works best when there are some constraints.
 //!
-#![cfg_attr(all(feature = "derive", feature = "std"), doc = "```")]
-#![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
-//! use tabled::{Tabled, Table};
-//! use tabled::settings::{Style, Alignment, object::Columns};
-//! use testing_table::assert_table;
+#![cfg_attr(
+    all(feature = "derive", feature = "std", feature = "assert"),
+    doc = "```"
+)]
+#![cfg_attr(
+    not(all(feature = "derive", feature = "std", feature = "assert")),
+    doc = "```ignore"
+)]
+//! use tabled::{
+//!     Tabled, Table, assert::assert_table,
+//!     settings::{Style, Alignment, object::Columns},
+//! };
 //!
 //! #[derive(Tabled)]
 //! struct Language {
@@ -58,11 +65,10 @@
 //! You most likely will not able to relay on [`Table`].\
 //! One option would be is to use [`Builder`].
 //!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
+#![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
+#![cfg_attr(not(all(feature = "std", feature = "assert")), doc = "```ignore")]
 //! use std::iter::once;
-//! use tabled::{builder::Builder, settings::Style};
-//! use testing_table::assert_table;
+//! use tabled::{builder::Builder, settings::Style, assert::assert_table};
 //!
 //! const X: usize = 3;
 //! const Y: usize = 5;
@@ -101,10 +107,9 @@
 //! [`Table`] can be build from vast majority of Rust's standard types.\
 //! This allows you to run the following code.
 //!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::Table;
-//! use testing_table::assert_table;
+#![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
+#![cfg_attr(not(all(feature = "std", feature = "assert")), doc = "```ignore")]
+//! use tabled::{Table, assert::assert_table};
 //!
 //! let table = Table::new(&[1, 2, 3]);
 //!
@@ -125,11 +130,12 @@
 //! You can compine types, and settings together using a tupples.\
 //! And achive magical results.
 //!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::Table;
-//! use tabled::settings::{style::{Style, HorizontalLine}, Alignment, Padding};
-//! use testing_table::assert_table;
+#![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
+#![cfg_attr(not(all(feature = "std", feature = "assert")), doc = "```ignore")]
+//! use tabled::{
+//!     Table, assert::assert_table,
+//!     settings::{style::{Style, HorizontalLine}, Alignment, Padding},
+//! };
 //!
 //! let data = &[(1, 2, "Hello"), (1, 3, "World")];
 //!
@@ -163,10 +169,15 @@
 //!
 //! Be ware you don't obligated to `collect` your data before building.
 //!
-#![cfg_attr(all(feature = "derive", feature = "std"), doc = "```")]
-#![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
-//! use tabled::{Tabled, Table};
-//! use testing_table::assert_table;
+#![cfg_attr(
+    all(feature = "derive", feature = "std", feature = "assert"),
+    doc = "```"
+)]
+#![cfg_attr(
+    not(all(feature = "derive", feature = "std", feature = "assert")),
+    doc = "```ignore"
+)]
+//! use tabled::{Tabled, Table, assert::assert_table};
 //!
 //! let data = (0..3).map(|i| [i, i * 2, i * 3]);
 //!
@@ -188,10 +199,15 @@
 //!
 //! Build table using [`row!`] and [`col!`] macros.
 //!
-#![cfg_attr(all(feature = "macros", feature = "std"), doc = "```")]
-#![cfg_attr(not(all(feature = "macros", feature = "std")), doc = "```ignore")]
-//! use tabled::{row, col};
-//! use testing_table::assert_table;
+#![cfg_attr(
+    all(feature = "macros", feature = "std", feature = "assert"),
+    doc = "```"
+)]
+#![cfg_attr(
+    not(all(feature = "macros", feature = "std", feature = "assert")),
+    doc = "```ignore"
+)]
+//! use tabled::{row, col, assert::assert_table};
 //!
 //! let table = row![
 //!     col!["Hello", "World", "!"],
@@ -268,6 +284,9 @@ mod macros;
 mod tabled;
 mod util;
 
+#[cfg(feature = "assert")]
+#[cfg_attr(docsrs, doc(cfg(feature = "assert")))]
+pub mod assert;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod builder;

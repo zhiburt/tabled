@@ -1,13 +1,16 @@
 #![cfg(feature = "std")]
+#![cfg(feature = "assert")]
 
-use tabled::settings::{
-    location::ByColumnName,
-    object::{Columns, Rows, Segment},
-    Alignment, Modify, Padding, Style,
+use tabled::{
+    assert::test_table,
+    settings::{
+        location::ByColumnName,
+        object::{Columns, Rows, Segment},
+        Alignment, Modify, Padding, Style,
+    },
 };
 
 use crate::matrix::Matrix;
-use testing_table::test_table;
 
 test_table!(
     full_alignment,
