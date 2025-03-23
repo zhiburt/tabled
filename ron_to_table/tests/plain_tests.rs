@@ -50,7 +50,7 @@ test_table!(
 
 test_table!(
     test_float,
-    build_ron_table(Value::Number(Number::F32(F32(123.456789)))),
+    build_ron_table(Value::Number(Number::F32(F32(123.45679)))),
     "+-----------+"
     "| 123.45679 |"
     "+-----------+"
