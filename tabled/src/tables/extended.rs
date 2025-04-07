@@ -254,13 +254,12 @@ fn write_header_template(
             let part2 = rest_to_print - part1 - 1;
 
             template.extend(
-                std::iter::repeat('-')
-                    .take(part1)
+                std::iter::repeat_n('-', part1)
                     .chain(std::iter::once('+'))
-                    .chain(std::iter::repeat('-').take(part2)),
+                    .chain(std::iter::repeat_n('-', part2)),
             );
         } else {
-            template.extend(std::iter::repeat('-').take(rest_to_print));
+            template.extend(std::iter::repeat_n('-', rest_to_print));
         }
     }
 
@@ -284,7 +283,7 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     if max == 0 || text.is_empty() {
         *text = String::new();
     } else {
-        *text = crate::util::string::cut_str2(text, max).into_owned();
+        *text = crate::util::string::cut_str(text, max).into_owned();
     }
 
     let cut_was_done = text.len() < original_len;

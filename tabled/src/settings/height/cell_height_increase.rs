@@ -96,7 +96,7 @@ where
 fn add_lines(s: &str, n: usize) -> String {
     let mut text = String::with_capacity(s.len() + n);
     text.push_str(s);
-    text.extend(std::iter::repeat('\n').take(n));
+    text.extend(std::iter::repeat_n('\n', n));
 
     text
 }

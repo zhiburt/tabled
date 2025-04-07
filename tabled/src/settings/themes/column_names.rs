@@ -353,7 +353,7 @@ fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
         cmp::Ordering::Equal => {}
         cmp::Ordering::Less => {
             let additional_size = size - data.len();
-            data.extend(std::iter::repeat(String::new()).take(additional_size));
+            data.extend(std::iter::repeat_n(String::new(), additional_size));
         }
         cmp::Ordering::Greater => {
             data.truncate(size);

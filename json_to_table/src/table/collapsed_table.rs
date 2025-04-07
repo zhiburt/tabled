@@ -1,10 +1,11 @@
 use std::{
     cmp::{self, max},
     collections::HashMap,
-    iter::repeat,
+    iter::repeat_n,
 };
 
 use serde_json::Map;
+
 use tabled::{
     builder::Builder,
     grid::{
@@ -933,21 +934,21 @@ fn set_string_dimension(
 
     let (top, bottom) = indent_vertical(av, height, count_lines);
 
-    out.extend(repeat(String::new()).take(top));
+    out.extend(repeat_n(String::new(), top));
 
     for line in get_lines(text) {
         let w = get_line_width(&line);
         let (left, right) = indent_horizontal(ah, width, w);
 
         let mut buf = String::new();
-        buf.extend(repeat(' ').take(left));
+        buf.extend(repeat_n(' ', left));
         buf.push_str(&line);
-        buf.extend(repeat(' ').take(right));
+        buf.extend(repeat_n(' ', right));
 
         out.push(buf);
     }
 
-    out.extend(repeat(String::new()).take(bottom));
+    out.extend(repeat_n(String::new(), bottom));
 
     out.join("\n")
 }

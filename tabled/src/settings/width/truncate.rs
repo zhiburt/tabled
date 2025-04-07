@@ -295,7 +295,7 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
             (suffix, 0)
         }
         SuffixLimit::Replace(c) => {
-            let suffix = Cow::Owned(iter::repeat(c).take(width).collect());
+            let suffix = Cow::Owned(iter::repeat_n(c, width).collect());
             (suffix, 0)
         }
     }

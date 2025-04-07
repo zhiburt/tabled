@@ -2315,17 +2315,6 @@ mod derived {
     }
 
     #[cfg(feature = "ansi")]
-    fn format_osc8_hyperlink(url: &str, text: &str) -> String {
-        format!(
-            "{osc}8;;{url}{st}{text}{osc}8;;{st}",
-            url = url,
-            text = text,
-            osc = "\x1b]",
-            st = "\x1b\\"
-        )
-    }
-
-    #[cfg(feature = "ansi")]
     #[test]
     fn hyperlinks() {
         #[derive(Tabled)]
@@ -2483,5 +2472,150 @@ mod derived {
                 "+--------+--------+"
             )
         );
+    }
+
+    #[cfg(feature = "ansi")]
+    #[test]
+    fn hyperlinks_truncate() {
+        use testing_table::assert_table;
+
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let create_table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+
+            Table::new(data).with(Width::truncate(20)).to_string()
+        };
+
+        let text = format_osc8_hyperlink("https://www.debian.org/", "Debian");
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+-----+------------+"
+            "| nam | is_hyperli |"
+            "+-----+------------+"
+            "| \u{1b}]8;;https://www.debian.org/\u{1b}\\Deb\u{1b}]8;;\u{1b}\\ | true       |"
+            "+-----+------------+"
+        );
+
+        // if there's more text than a link it will be ignored
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+--------+---------+"
+            "| name   | is_hype |"
+            "+--------+---------+"
+            "| Debian | true    |"
+            "+--------+---------+"
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+            format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+---------------+--+"
+            "| name          |  |"
+            "+---------------+--+"
+            "| asd Debian 2  |  |"
+            "+---------------+--+"
+        );
+    }
+
+    #[cfg(feature = "ansi")]
+    #[test]
+    fn hyperlinks_colored_truncate() {
+        use testing_table::assert_table;
+
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let create_table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+
+            Table::new(data).with(Width::truncate(20)).to_string()
+        };
+
+        let text =
+            format_osc8_hyperlink("https://www.debian.org/", &Color::FG_RED.colorize("Debian"));
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+-----+------------+"
+            "| nam | is_hyperli |"
+            "+-----+------------+"
+            "| \u{1b}]8;;https://www.debian.org/\u{1b}\\\u{1b}[31mDeb\u{1b}[39m\u{1b}]8;;\u{1b}\\ | true       |"
+            "+-----+------------+"
+        );
+
+        // if there's more text than a link it will be ignored
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink(
+                "https://www.debian.org/",
+                Color::FG_RED.colorize("Debian").as_str()
+            ),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+--------+---------+"
+            "| name   | is_hype |"
+            "+--------+---------+"
+            "| \u{1b}[31mDebian\u{1b}[39m | true    |"
+            "+--------+---------+"
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink(
+                "https://www.debian.org/",
+                Color::FG_RED.colorize("Debian").as_str()
+            ),
+            format_osc8_hyperlink(
+                "https://www.wikipedia.org/",
+                Color::FG_RED.colorize("Wiki").as_str()
+            ),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+---------------+--+"
+            "| name          |  |"
+            "+---------------+--+"
+            "| asd \u{1b}[31mDebian\u{1b}[39m 2  |  |"
+            "+---------------+--+"
+        );
+    }
+
+    #[cfg(feature = "ansi")]
+    fn format_osc8_hyperlink(url: &str, text: &str) -> String {
+        format!(
+            "{osc}8;;{url}{st}{text}{osc}8;;{st}",
+            url = url,
+            text = text,
+            osc = "\x1b]",
+            st = "\x1b\\"
+        )
     }
 }

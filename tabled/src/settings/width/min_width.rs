@@ -2,11 +2,14 @@
 //!
 //! [`Table`]: crate::Table
 
+use std::borrow::Cow;
+use std::iter::repeat_n;
+
 use crate::{
     grid::config::{ColoredConfig, Entity},
     grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_lines, get_text_width},
+    grid::util::string::{get_line_width, get_lines, get_text_width},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -190,9 +193,6 @@ where
 }
 
 fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    use crate::grid::util::string::get_line_width;
-    use std::{borrow::Cow, iter::repeat};
-
     get_lines(s)
         .map(|line| {
             let length = get_line_width(&line);
@@ -200,7 +200,7 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
             if length < width {
                 let mut line = line.into_owned();
                 let remain = width - length;
-                line.extend(repeat(fill_with).take(remain));
+                line.extend(repeat_n(fill_with, remain));
                 Cow::Owned(line)
             } else {
                 line
