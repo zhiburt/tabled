@@ -48,30 +48,17 @@ pub(crate) fn split_str(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
 pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     #[cfg(feature = "ansi")]
     {
-        const REPLACEMENT: char = '\u{FFFD}';
-
-        let stripped = ansi_str::AnsiStr::ansi_strip(s);
-        let (length, cutwidth, csize) = split_at_width(&stripped, width);
-        let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
-        if csize != 0 {
-            let mut b = buf.into_owned();
-            let count_unknowns = width - cutwidth;
-            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-            buf = Cow::Owned(b);
-        }
-
-        buf
+        cut_str_colored(s, width)
     }
 
     #[cfg(not(feature = "ansi"))]
     {
-        cut_str2(s, width)
+        cut_str_basic(s, width)
     }
 }
 
-/// The function cuts the string to a specific width.
-/// While not preserving ansi sequences.
-pub(crate) fn cut_str2(text: &str, width: usize) -> Cow<'_, str> {
+#[cfg(not(feature = "ansi"))]
+fn cut_str_basic(text: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let (length, cutwidth, csize) = split_at_width(text, width);
@@ -86,6 +73,45 @@ pub(crate) fn cut_str2(text: &str, width: usize) -> Cow<'_, str> {
     buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
 
     Cow::Owned(buf)
+}
+
+// TODO: Cow::Borrow if no ansi is used.
+#[cfg(feature = "ansi")]
+fn cut_str_colored(text: &str, width: usize) -> Cow<'_, str> {
+    use crate::util::string::{build_link, strip_osc};
+
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let (text, url) = strip_osc(text);
+    let (prefix, suffix) = build_link(url);
+
+    let stripped = ansi_str::AnsiStr::ansi_strip(&text);
+    let (length, cutwidth, csize) = split_at_width(&stripped, width);
+    let mut buf = ansi_str::AnsiStr::ansi_cut(&text, ..length);
+
+    if csize != 0 {
+        let mut b = buf.into_owned();
+        let count_unknowns = width - cutwidth;
+        b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        buf = Cow::Owned(b);
+    }
+
+    if !prefix.is_empty() && !suffix.is_empty() {
+        let mut b = String::with_capacity(buf.len() + prefix.len() + suffix.len());
+        for (i, part) in ansi_str::AnsiStr::ansi_split(buf.as_ref(), "\n").enumerate() {
+            if i > 0 {
+                b.push('\n');
+            }
+
+            b.push_str(&prefix);
+            b.push_str(&part);
+            b.push_str(&suffix);
+        }
+
+        buf = Cow::Owned(b);
+    }
+
+    Cow::Owned(buf.into_owned())
 }
 
 /// The function splits a string in the position and
@@ -184,6 +210,23 @@ pub(crate) fn strip_osc(text: &str) -> (String, Option<String>) {
     }
 }
 
+#[cfg(feature = "ansi")]
+pub(crate) fn build_link(url: Option<String>) -> (String, String) {
+    let url = match url {
+        Some(url) => url,
+        None => return (String::new(), String::new()),
+    };
+
+    // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+    let osc8 = "\x1b]8;;";
+    let st = "\x1b\\";
+
+    let prefix = format!("{osc8}{url}{st}");
+    let suffix = format!("{osc8}{st}");
+
+    (prefix, suffix)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -197,6 +240,13 @@ mod tests {
         assert_eq!(cut_str("123456", 10), "123456");
 
         assert_eq!(cut_str("a week ago", 4), "a we");
+
+        assert_eq!(cut_str("123\n456789", 0), "");
+        assert_eq!(cut_str("123\n456789", 2), "12");
+        assert_eq!(cut_str("123\n456789", 3), "123");
+        assert_eq!(cut_str("123\n456789", 4), "123\n4567");
+        assert_eq!(cut_str("123\n45\n67\n89", 4), "123\n45\n67\n89");
+        assert_eq!(cut_str("123\n45\n67\n89\n", 4), "123\n45\n67\n89\n");
 
         assert_eq!(cut_str("😳😳😳😳😳", 0), "");
         assert_eq!(cut_str("😳😳😳😳😳", 3), "😳�");

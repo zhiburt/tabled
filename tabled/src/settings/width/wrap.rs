@@ -210,30 +210,16 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
 
     #[cfg(feature = "ansi")]
     {
-        use crate::util::string::strip_osc;
+        use crate::util::string::{build_link, strip_osc};
 
-        let (text, url): (String, Option<String>) = strip_osc(text);
-        let (prefix, suffix) = build_link_prefix_suffix(url);
+        let (text, url) = strip_osc(text);
+        let (prefix, suffix) = build_link(url);
 
         if keep_words {
             wrap_text_keeping_words(&text, width, &prefix, &suffix)
         } else {
             wrap_text_basic(&text, width, &prefix, &suffix)
         }
-    }
-}
-
-#[cfg(feature = "ansi")]
-fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
-    match url {
-        Some(url) => {
-            // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
-            let osc8 = "\x1b]8;;";
-            let st = "\x1b\\";
-
-            (format!("{osc8}{url}{st}"), format!("{osc8}{st}"))
-        }
-        None => ("".to_string(), "".to_string()),
     }
 }
 

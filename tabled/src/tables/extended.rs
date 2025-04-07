@@ -284,7 +284,7 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     if max == 0 || text.is_empty() {
         *text = String::new();
     } else {
-        *text = crate::util::string::cut_str2(text, max).into_owned();
+        *text = crate::util::string::cut_str(text, max).into_owned();
     }
 
     let cut_was_done = text.len() < original_len;
