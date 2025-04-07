@@ -366,7 +366,7 @@ fn collect_row(elems: &MatrixRowElements) -> Result<Vec<String>> {
         MatrixRowElements::Static { elem, len, .. } => {
             let len = len.base10_parse::<usize>()?;
             let elem = expr_val_to_list(elem)?;
-            let iter = std::iter::repeat(elem).take(len).flatten();
+            let iter = std::iter::repeat_n(elem, len).flatten();
 
             row.extend(iter);
         }

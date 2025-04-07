@@ -251,7 +251,7 @@ fn wrap_text_basic(s: &str, width: usize) -> String {
             let is_char_small = char_width <= width;
             if !is_char_small {
                 let count_unknowns = width - current_width;
-                buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+                buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
                 current_width += count_unknowns;
             } else {
                 buf.push('\n');
@@ -348,7 +348,7 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
             }
 
             let count_unknowns = width - line_width;
-            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
             line_width += count_unknowns;
         }
 
@@ -422,7 +422,7 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
                     // For example:
                     // Emojie with width 2 but and wrap width 1
                     let available = width - line_width;
-                    buf.extend(std::iter::repeat(REPLACEMENT).take(available));
+                    buf.extend(std::iter::repeat_n(REPLACEMENT, available));
                     line_width = width;
                     continue;
                 }

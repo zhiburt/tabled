@@ -254,13 +254,12 @@ fn write_header_template(
             let part2 = rest_to_print - part1 - 1;
 
             template.extend(
-                std::iter::repeat('-')
-                    .take(part1)
+                std::iter::repeat_n('-', part1)
                     .chain(std::iter::once('+'))
-                    .chain(std::iter::repeat('-').take(part2)),
+                    .chain(std::iter::repeat_n('-', part2)),
             );
         } else {
-            template.extend(std::iter::repeat('-').take(rest_to_print));
+            template.extend(std::iter::repeat_n('-', rest_to_print));
         }
     }
 

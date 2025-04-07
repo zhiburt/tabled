@@ -271,9 +271,7 @@ where
     let padv = padding.top.size + padding.bottom.size;
 
     if opts.sniff == 0 {
-        width = std::iter::repeat(pad)
-            .take(count_columns)
-            .collect::<Vec<_>>();
+        width = std::iter::repeat_n(pad, count_columns).collect::<Vec<_>>();
     }
 
     let content_width = WidthDimension::List(width.iter().map(|i| i.saturating_sub(pad)).collect());

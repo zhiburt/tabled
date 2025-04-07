@@ -16,7 +16,7 @@ pub(crate) fn split_str(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
         if csize > 0 {
             let mut buf = lhs.into_owned();
             let count_unknowns = width - cutwidth;
-            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
             lhs = Cow::Owned(buf);
             rhs = Cow::Owned(ansi_str::AnsiStr::ansi_cut(rhs.as_ref(), csize..).into_owned());
         }
@@ -37,7 +37,7 @@ pub(crate) fn split_str(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
 
         let count_unknowns = width - cutwidth;
         let mut buf = lhs.to_owned();
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
 
         (Cow::Owned(buf), Cow::Borrowed(&rhs[csize..]))
     }
@@ -70,7 +70,7 @@ fn cut_str_basic(text: &str, width: usize) -> Cow<'_, str> {
     let buf = &text[..length];
     let mut buf = buf.to_owned();
     let count_unknowns = width - cutwidth;
-    buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+    buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
 
     Cow::Owned(buf)
 }
@@ -92,7 +92,7 @@ fn cut_str_colored(text: &str, width: usize) -> Cow<'_, str> {
     if csize != 0 {
         let mut b = buf.into_owned();
         let count_unknowns = width - cutwidth;
-        b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        b.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
         buf = Cow::Owned(b);
     }
 
