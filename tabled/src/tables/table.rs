@@ -551,6 +551,16 @@ impl Table {
     pub fn get_records_mut(&mut self) -> &mut VecRecords<Text<String>> {
         &mut self.records
     }
+
+    /// Returns a dimension.
+    pub fn get_dimension(&self) -> &CompleteDimensionVecRecords<'static> {
+        &self.dimension
+    }
+
+    /// Returns a dimension.
+    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimensionVecRecords<'static> {
+        &mut self.dimension
+    }
 }
 
 impl Default for Table {
