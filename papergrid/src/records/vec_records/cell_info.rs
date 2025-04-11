@@ -20,7 +20,7 @@ impl<S> Text<S> {
     where
         S: AsRef<str>,
     {
-        create_cell_info(text)
+        create_text(text)
     }
 
     /// Creates a new instance of the structure with a single line.
@@ -138,7 +138,8 @@ impl<'a> StrWithWidth<'a> {
     }
 }
 
-fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
+// TODO: compare with 'get_text_dimension'
+fn create_text<S: AsRef<str>>(text: S) -> Text<S> {
     let mut info = Text {
         text,
         lines: vec![],

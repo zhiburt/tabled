@@ -8,7 +8,7 @@ use core::{
 
 use crate::{
     ansi::{ANSIFmt, ANSIStr},
-    colors::{Colors, NoColors},
+    colors::Colors,
     config::{AlignmentHorizontal, Borders, HorizontalLine, Indent, Sides},
     dimension::Dimension,
     records::{IntoRecords, Records},
@@ -16,6 +16,8 @@ use crate::{
 };
 
 use crate::config::compact::CompactConfig;
+
+type ANSIString = ANSIStr<'static>;
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -26,14 +28,14 @@ pub struct CompactGrid<R, D, G, C> {
     colors: C,
 }
 
-impl<R, D, G> CompactGrid<R, D, G, NoColors> {
+impl<R, D, G, C> CompactGrid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, dimension: D, config: G) -> Self {
+    pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
         CompactGrid {
             records,
             config,
             dimension,
-            colors: NoColors,
+            colors,
         }
     }
 }
@@ -102,6 +104,50 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
+struct RowConfig<D, C> {
+    margin: Sides<ColoredIndent>,
+    pad: Sides<ColoredIndent>,
+    verticals: HorizontalLine<ColoredIndent>,
+    alignment: AlignmentHorizontal,
+    dims: D,
+    colors: C,
+    count_columns: usize,
+}
+
+impl<D, C> RowConfig<D, C> {
+    fn new(cfg: &CompactConfig, dims: D, colors: C, count_columns: usize) -> Self {
+        let borders_chars = cfg.get_borders();
+        let borders_colors = cfg.get_borders_color();
+        let verticals = create_vertical_borders(borders_chars, borders_colors);
+        let margin = create_margin(cfg);
+        let pad = create_padding(cfg);
+        let alignment = cfg.get_alignment_horizontal();
+
+        Self {
+            margin,
+            pad,
+            alignment,
+            verticals,
+            colors,
+            dims,
+            count_columns,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct RowIter<I> {
+    iter: I,
+    row: usize,
+}
+
+impl<I> RowIter<I> {
+    fn new(iter: I, row: usize) -> Self {
+        Self { iter, row }
+    }
+}
+
 fn print_grid<F, R, D, C>(
     f: &mut F,
     records: R,
@@ -137,11 +183,9 @@ where
     let horizontal_borders = create_horizontal(borders_chars);
     let horizontal_colors = create_horizontal_colors(borders_colors);
 
-    let vertical_borders = create_vertical_borders(borders_chars, borders_colors);
-
     let margin = create_margin(cfg);
-    let padding = create_padding(cfg);
-    let alignment = cfg.get_alignment_horizontal();
+
+    let rowcfg = RowConfig::new(cfg, dims, colors, count_columns);
 
     let mut new_line = false;
 
@@ -170,18 +214,8 @@ where
         }
 
         let cells = records_first.into_iter();
-        print_grid_row(
-            f,
-            cells,
-            count_columns,
-            dims,
-            colors,
-            &margin,
-            &padding,
-            &vertical_borders,
-            alignment,
-            0,
-        )?;
+        let iter = RowIter::new(cells, 0);
+        print_grid_row(f, iter, &rowcfg)?;
 
         for (row, cells) in records.enumerate() {
             f.write_char('\n')?;
@@ -198,52 +232,24 @@ where
             f.write_char('\n')?;
 
             let cells = cells.into_iter();
-            print_grid_row(
-                f,
-                cells,
-                count_columns,
-                dims,
-                colors,
-                &margin,
-                &padding,
-                &vertical_borders,
-                alignment,
-                row + 1,
-            )?;
+            let iter = RowIter::new(cells, row + 1);
+            print_grid_row(f, iter, &rowcfg)?;
         }
     } else {
         if new_line {
             f.write_char('\n')?;
         }
 
-        print_grid_row(
-            f,
-            records_first.into_iter(),
-            count_columns,
-            dims,
-            colors,
-            &margin,
-            &padding,
-            &vertical_borders,
-            alignment,
-            0,
-        )?;
+        let cells = records_first.into_iter();
+        let iter = RowIter::new(cells, 0);
+        print_grid_row(f, iter, &rowcfg)?;
 
         for (row, cells) in records.enumerate() {
             f.write_char('\n')?;
 
-            print_grid_row(
-                f,
-                cells.into_iter(),
-                count_columns,
-                dims,
-                colors,
-                &margin,
-                &padding,
-                &vertical_borders,
-                alignment,
-                row + 1,
-            )?;
+            let cells = cells.into_iter();
+            let iter = RowIter::new(cells, row + 1);
+            print_grid_row(f, iter, &rowcfg)?;
         }
     }
 
@@ -279,7 +285,7 @@ fn create_margin(cfg: &CompactConfig) -> Sides<ColoredIndent> {
 
 fn create_vertical_borders(
     borders: &Borders<char>,
-    colors: &Borders<ANSIStr<'static>>,
+    colors: &Borders<ANSIString>,
 ) -> HorizontalLine<ColoredIndent> {
     let intersect = borders
         .vertical
@@ -296,7 +302,7 @@ fn print_horizontal_line<F, D>(
     f: &mut F,
     dims: &D,
     borders: &HorizontalLine<char>,
-    borders_colors: &HorizontalLine<ANSIStr<'static>>,
+    borders_colors: &HorizontalLine<ANSIString>,
     margin: &Sides<ColoredIndent>,
     count_columns: usize,
 ) -> fmt::Result
@@ -319,44 +325,32 @@ where
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-fn print_grid_row<F, I, T, C, D>(
-    f: &mut F,
-    data: I,
-    size: usize,
-    dims: &D,
-    colors: &C,
-    margin: &Sides<ColoredIndent>,
-    padding: &Sides<ColoredIndent>,
-    borders: &HorizontalLine<ColoredIndent>,
-    alignment: AlignmentHorizontal,
-    row: usize,
-) -> fmt::Result
+fn print_grid_row<F, I, D, C>(f: &mut F, iter: RowIter<I>, rowcfg: &RowConfig<D, C>) -> fmt::Result
 where
     F: Write,
-    I: Iterator<Item = T>,
-    T: AsRef<str>,
-    C: Colors,
+    I: Iterator,
+    I::Item: AsRef<str>,
     D: Dimension,
+    C: Colors,
 {
-    for _ in 0..padding.top.space.size {
-        print_indent(f, margin.left)?;
-        print_columns_empty_colored(f, dims, borders, padding.top.color, size)?;
-        print_indent(f, margin.right)?;
+    for _ in 0..rowcfg.pad.top.space.size {
+        print_indent(f, rowcfg.margin.left)?;
+        print_row_columns_empty(f, &rowcfg, rowcfg.pad.top.color)?;
+        print_indent(f, rowcfg.margin.right)?;
 
         f.write_char('\n')?;
     }
 
-    print_indent(f, margin.left)?;
-    print_row_columns_one_line(f, data, dims, colors, borders, padding, alignment, row)?;
-    print_indent(f, margin.right)?;
+    print_indent(f, rowcfg.margin.left)?;
+    print_row_columns(f, iter, rowcfg)?;
+    print_indent(f, rowcfg.margin.right)?;
 
-    for _ in 0..padding.top.space.size {
+    for _ in 0..rowcfg.pad.bottom.space.size {
         f.write_char('\n')?;
 
-        print_indent(f, margin.left)?;
-        print_columns_empty_colored(f, dims, borders, padding.bottom.color, size)?;
-        print_indent(f, margin.right)?;
+        print_indent(f, rowcfg.margin.left)?;
+        print_row_columns_empty(f, &rowcfg, rowcfg.pad.bottom.color)?;
+        print_indent(f, rowcfg.margin.right)?;
     }
 
     Ok(())
@@ -394,17 +388,15 @@ fn create_horizontal_bottom(b: &Borders<char>) -> HorizontalLine<char> {
     )
 }
 
-fn create_horizontal_colors(b: &Borders<ANSIStr<'static>>) -> HorizontalLine<ANSIStr<'static>> {
+fn create_horizontal_colors(b: &Borders<ANSIString>) -> HorizontalLine<ANSIString> {
     HorizontalLine::new(b.horizontal, b.intersection, b.left, b.right)
 }
 
-fn create_horizontal_top_colors(b: &Borders<ANSIStr<'static>>) -> HorizontalLine<ANSIStr<'static>> {
+fn create_horizontal_top_colors(b: &Borders<ANSIString>) -> HorizontalLine<ANSIString> {
     HorizontalLine::new(b.top, b.top_intersection, b.top_left, b.top_right)
 }
 
-fn create_horizontal_bottom_colors(
-    b: &Borders<ANSIStr<'static>>,
-) -> HorizontalLine<ANSIStr<'static>> {
+fn create_horizontal_bottom_colors(b: &Borders<ANSIString>) -> HorizontalLine<ANSIString> {
     HorizontalLine::new(
         b.bottom,
         b.bottom_intersection,
@@ -440,109 +432,102 @@ fn count_verticals(cfg: &CompactConfig, count_columns: usize) -> usize {
         + borders.has_right() as usize
 }
 
-#[allow(clippy::too_many_arguments)]
-fn print_row_columns_one_line<F, I, T, D, C>(
+fn print_row_columns<F, I, D, C>(
     f: &mut F,
-    mut data: I,
-    dims: &D,
-    colors: &C,
-    borders: &HorizontalLine<ColoredIndent>,
-    padding: &Sides<ColoredIndent>,
-    alignment: AlignmentHorizontal,
-    row: usize,
+    mut iter: RowIter<I>,
+    rowcfg: &RowConfig<D, C>,
 ) -> fmt::Result
 where
     F: Write,
-    I: Iterator<Item = T>,
-    T: AsRef<str>,
+    I: Iterator,
+    I::Item: AsRef<str>,
     D: Dimension,
     C: Colors,
 {
-    if let Some(indent) = borders.left {
+    if let Some(indent) = rowcfg.verticals.left {
         print_char(f, indent.space.fill, indent.color)?;
     }
 
-    let text = data
+    let text = iter
+        .iter
         .next()
         .expect("we check in the beginning that size must be at least 1 column");
-    let width = dims.get_width(0);
-    let color = colors.get_color((row, 0).into());
+    let width = rowcfg.dims.get_width(0);
+    let color = rowcfg.colors.get_color((iter.row, 0).into());
 
     let text = text.as_ref();
     let text = text.lines().next().unwrap_or("");
-    print_cell(f, text, color, padding, alignment, width)?;
+    print_cell(f, text, color, &rowcfg.pad, rowcfg.alignment, width)?;
 
-    match borders.intersection {
+    match rowcfg.verticals.intersection {
         Some(indent) => {
-            for (col, text) in data.enumerate() {
+            for (col, text) in iter.iter.enumerate() {
                 let col = col + 1;
 
-                let width = dims.get_width(col);
-                let color = colors.get_color((row, col).into());
+                let width = rowcfg.dims.get_width(col);
+                let color = rowcfg.colors.get_color((iter.row, col).into());
                 let text = text.as_ref();
                 let text = text.lines().next().unwrap_or("");
 
                 print_char(f, indent.space.fill, indent.color)?;
-                print_cell(f, text, color, padding, alignment, width)?;
+                print_cell(f, text, color, &rowcfg.pad, rowcfg.alignment, width)?;
             }
         }
         None => {
-            for (col, text) in data.enumerate() {
+            for (col, text) in iter.iter.enumerate() {
                 let col = col + 1;
 
-                let width = dims.get_width(col);
-                let color = colors.get_color((row, col).into());
+                let width = rowcfg.dims.get_width(col);
+                let color = rowcfg.colors.get_color((iter.row, col).into());
                 let text = text.as_ref();
                 let text = text.lines().next().unwrap_or("");
 
-                print_cell(f, text, color, padding, alignment, width)?;
+                print_cell(f, text, color, &rowcfg.pad, rowcfg.alignment, width)?;
             }
         }
     }
 
-    if let Some(indent) = borders.right {
+    if let Some(indent) = rowcfg.verticals.right {
         print_char(f, indent.space.fill, indent.color)?;
     }
 
     Ok(())
 }
 
-fn print_columns_empty_colored<F, D>(
+fn print_row_columns_empty<F, D, C>(
     f: &mut F,
-    dims: &D,
-    borders: &HorizontalLine<ColoredIndent>,
-    color: Option<ANSIStr<'static>>,
-    count_columns: usize,
+    rowcfg: &RowConfig<D, C>,
+    color: Option<ANSIString>,
 ) -> fmt::Result
 where
     F: Write,
     D: Dimension,
 {
-    if let Some(indent) = borders.left {
+    if let Some(indent) = rowcfg.verticals.left {
         print_char(f, indent.space.fill, indent.color)?;
     }
 
-    let width = dims.get_width(0);
+    let width = rowcfg.dims.get_width(0);
     print_indent(f, ColoredIndent::new(width, ' ', color))?;
 
-    match borders.intersection {
+    match rowcfg.verticals.intersection {
         Some(indent) => {
-            for column in 1..count_columns {
-                let width = dims.get_width(column);
+            for column in 1..rowcfg.count_columns {
+                let width = rowcfg.dims.get_width(column);
 
                 print_char(f, indent.space.fill, indent.color)?;
                 print_indent(f, ColoredIndent::new(width, ' ', color))?;
             }
         }
         None => {
-            for column in 1..count_columns {
-                let width = dims.get_width(column);
+            for column in 1..rowcfg.count_columns {
+                let width = rowcfg.dims.get_width(column);
                 print_indent(f, ColoredIndent::new(width, ' ', color))?;
             }
         }
     }
 
-    if let Some(indent) = borders.right {
+    if let Some(indent) = rowcfg.verticals.right {
         print_char(f, indent.space.fill, indent.color)?;
     }
 
@@ -585,7 +570,7 @@ fn print_split_line_colored<F, D>(
     f: &mut F,
     dimension: &D,
     borders: &HorizontalLine<char>,
-    borders_colors: &HorizontalLine<ANSIStr<'static>>,
+    borders_colors: &HorizontalLine<ANSIString>,
     count_columns: usize,
 ) -> fmt::Result
 where
@@ -702,11 +687,7 @@ where
     Ok(())
 }
 
-fn prepare_coloring<F>(
-    f: &mut F,
-    clr: &ANSIStr<'static>,
-    used: &mut ANSIStr<'static>,
-) -> fmt::Result
+fn prepare_coloring<F>(f: &mut F, clr: &ANSIString, used: &mut ANSIString) -> fmt::Result
 where
     F: Write,
 {
@@ -748,7 +729,7 @@ where
 }
 
 // todo: replace Option<StaticColor> to StaticColor and check performance
-fn print_char<F>(f: &mut F, c: char, color: Option<ANSIStr<'static>>) -> fmt::Result
+fn print_char<F>(f: &mut F, c: char, color: Option<ANSIString>) -> fmt::Result
 where
     F: Write,
 {
@@ -798,18 +779,18 @@ where
 #[derive(Debug, Clone, Copy)]
 struct ColoredIndent {
     space: Indent,
-    color: Option<ANSIStr<'static>>,
+    color: Option<ANSIString>,
 }
 
 impl ColoredIndent {
-    fn new(width: usize, c: char, color: Option<ANSIStr<'static>>) -> Self {
+    fn new(width: usize, c: char, color: Option<ANSIString>) -> Self {
         Self {
             space: Indent::new(width, c),
             color,
         }
     }
 
-    fn from_indent(indent: Indent, color: ANSIStr<'static>) -> Self {
+    fn from_indent(indent: Indent, color: ANSIString) -> Self {
         Self {
             space: indent,
             color: create_color(color),
@@ -817,7 +798,7 @@ impl ColoredIndent {
     }
 }
 
-fn create_color(color: ANSIStr<'static>) -> Option<ANSIStr<'static>> {
+fn create_color(color: ANSIString) -> Option<ANSIString> {
     if color.is_empty() {
         None
     } else {

@@ -6,10 +6,9 @@
 //!   see [`Grid`] and [`SpannedGridDimension`].
 
 use papergrid::{
-    config::compact::CompactConfig,
-    config::{AlignmentHorizontal, Borders, Indent, Sides},
-    dimension::compact::CompactGridDimension,
-    dimension::Estimate,
+    colors::NoColors,
+    config::{compact::CompactConfig, AlignmentHorizontal, Borders, Indent, Sides},
+    dimension::{compact::CompactGridDimension, Estimate},
     grid::compact::CompactGrid,
     records::IterRecords,
 };
@@ -31,7 +30,7 @@ fn main() {
     let mut dim = CompactGridDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = CompactGrid::new(records, &dim, &cfg);
+    let grid = CompactGrid::new(records, &dim, &cfg, NoColors);
 
     println!("{grid}");
 }
