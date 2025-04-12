@@ -25,10 +25,7 @@ use crate::{
 /// ```
 /// use tabled::{
 ///     Table,
-///     settings::{
-///         style::BorderCorrection,
-///         Span, Alignment,
-///     },
+///     settings::{Span, Alignment, themes::BorderCorrection},
 ///     assert::assert_table,
 /// };
 ///
@@ -54,7 +51,7 @@ use crate::{
 ///     "+----+------+------+"
 /// );
 ///
-/// table.with(BorderCorrection);
+/// table.with(BorderCorrection::span());
 ///
 /// assert_table!(
 ///     table,
@@ -72,7 +69,15 @@ use crate::{
 /// [`Span`]: crate::settings::span::Span
 /// [`Style`]: crate::settings::Style
 #[derive(Debug)]
-pub struct BorderCorrection;
+pub struct BorderCorrection {}
+
+impl BorderCorrection {
+    /// Constructs an object which will adjust borders affected by spans if any was set.
+    /// See [`BorderCorrection`].
+    pub fn span() -> Self {
+        Self {}
+    }
+}
 
 impl<R, D> TableOption<R, ColoredConfig, D> for BorderCorrection
 where

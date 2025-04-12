@@ -3,7 +3,7 @@
 use tabled::{
     assert::test_table,
     iter::LayoutIterator,
-    settings::{style::BorderCorrection, Span, Style},
+    settings::{themes::BorderCorrection, Span, Style},
     Table, Tabled,
 };
 
@@ -31,7 +31,7 @@ test_table!(
         }
 
         table.with(Style::modern());
-        table.with(BorderCorrection);
+        table.with(BorderCorrection::span());
 
         table
     },

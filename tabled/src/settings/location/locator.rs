@@ -6,9 +6,9 @@ pub struct Locator;
 
 impl Locator {
     /// Constructs a new location searcher for a cells with a given content.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// use tabled::{
     ///     settings::location::Locator,
@@ -55,9 +55,9 @@ impl Locator {
     }
 
     /// Constructs a new location searcher for a column by its header.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// use tabled::{
     ///     settings::{location::Locator, Width},
@@ -109,7 +109,7 @@ impl Locator {
     /// Otherwise return `false`.
     ///  
     /// # Example
-    /// 
+    ///
     /// ```
     /// use tabled::{
     ///     settings::{location::Locator, Width},
@@ -159,9 +159,9 @@ impl Locator {
     ///
     /// Return `true` if it shall be counted.
     /// Otherwise return `false`.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// use tabled::{
     ///     settings::{location::Locator, Width, Format},
