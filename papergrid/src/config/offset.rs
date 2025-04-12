@@ -2,7 +2,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Offset {
     /// An offset from the start.
-    Begin(usize),
+    Start(usize),
     /// An offset from the end.
     End(usize),
 }
@@ -11,7 +11,7 @@ pub enum Offset {
 impl From<isize> for Offset {
     fn from(value: isize) -> Self {
         if value > 0 {
-            Offset::Begin(value as usize)
+            Offset::Start(value as usize)
         } else {
             Offset::End((-value) as usize)
         }
@@ -21,7 +21,7 @@ impl From<isize> for Offset {
 impl From<i32> for Offset {
     fn from(value: i32) -> Self {
         if value > 0 {
-            Offset::Begin(value as usize)
+            Offset::Start(value as usize)
         } else {
             Offset::End((-value) as usize)
         }
@@ -31,7 +31,7 @@ impl From<i32> for Offset {
 impl From<i64> for Offset {
     fn from(value: i64) -> Self {
         if value > 0 {
-            Offset::Begin(value as usize)
+            Offset::Start(value as usize)
         } else {
             Offset::End((-value) as usize)
         }
@@ -40,6 +40,6 @@ impl From<i64> for Offset {
 
 impl From<usize> for Offset {
     fn from(value: usize) -> Self {
-        Offset::Begin(value)
+        Offset::Start(value)
     }
 }

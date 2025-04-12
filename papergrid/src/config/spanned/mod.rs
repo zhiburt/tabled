@@ -269,7 +269,7 @@ impl SpannedConfig {
         self.horizontal_chars
             .get(&pos)
             .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
+                chars.get(&Offset::Start(offset)).or_else(|| {
                     if end > offset {
                         if end == 0 {
                             chars.get(&Offset::End(0))
@@ -323,7 +323,7 @@ impl SpannedConfig {
         self.vertical_chars
             .get(&pos)
             .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
+                chars.get(&Offset::Start(offset)).or_else(|| {
                     if end > offset {
                         if end == 0 {
                             chars.get(&Offset::End(0))
@@ -372,7 +372,7 @@ impl SpannedConfig {
         end: usize,
     ) -> Option<&ANSIBuf> {
         self.horizontal_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
+            chars.get(&Offset::Start(offset)).or_else(|| {
                 if end > offset {
                     if end == 0 {
                         chars.get(&Offset::End(0))
@@ -404,7 +404,7 @@ impl SpannedConfig {
         end: usize,
     ) -> Option<&ANSIBuf> {
         self.vertical_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
+            chars.get(&Offset::Start(offset)).or_else(|| {
                 if end > offset {
                     if end == 0 {
                         chars.get(&Offset::End(0))
@@ -928,7 +928,7 @@ impl Default for MarginIndent {
     fn default() -> Self {
         Self {
             indent: Indent::default(),
-            offset: Offset::Begin(0),
+            offset: Offset::Start(0),
             color: None,
         }
     }

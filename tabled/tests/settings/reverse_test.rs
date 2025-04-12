@@ -56,7 +56,7 @@ test_table!(
 test_table!(
     test_3x3_reverse_rows_skip_end_0,
     Matrix::iter([(123, 456, 789), (234, 567, 891), (345, 678, 912)])
-        .with(Reverse::rows(1).limit(Offset::Begin(2))),
+        .with(Reverse::rows(1).limit(Offset::Start(2))),
     "+-----+-----+-----+"
     "| i32 | i32 | i32 |"
     "+-----+-----+-----+"
@@ -121,7 +121,7 @@ test_table!(
 test_table!(
     test_3x3_reverse_columns_skip_end_0,
     Matrix::iter([(123, 456, 789), (234, 567, 891), (345, 678, 912)])
-        .with(Reverse::columns(0).limit(Offset::Begin(2))),
+        .with(Reverse::columns(0).limit(Offset::Start(2))),
     "+-----+-----+-----+"
     "| i32 | i32 | i32 |"
     "+-----+-----+-----+"

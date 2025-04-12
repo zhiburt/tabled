@@ -1121,7 +1121,7 @@ mod grid_not_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -1159,7 +1159,7 @@ mod grid_not_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (start, 0),
+            Offset::Start(start) => (start, 0),
             Offset::End(end) => (0, end),
         };
 
@@ -1984,7 +1984,7 @@ mod grid_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -2022,7 +2022,7 @@ mod grid_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (*start, 0),
+            Offset::Start(start) => (*start, 0),
             Offset::End(end) => (0, *end),
         };
 

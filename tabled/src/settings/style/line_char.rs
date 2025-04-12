@@ -21,9 +21,9 @@ use crate::{
 ///     .with(Style::markdown())
 ///     .modify(
 ///         Rows::single(1),
-///         (LineChar::horizontal(':', Offset::Begin(0)), LineChar::horizontal(':', Offset::End(0))),
+///         (LineChar::horizontal(':', Offset::Start(0)), LineChar::horizontal(':', Offset::End(0))),
 ///     )
-///     .modify((1, 0).and((1, 1)), LineChar::vertical('#', Offset::Begin(0)));
+///     .modify((1, 0).and((1, 1)), LineChar::vertical('#', Offset::Start(0)));
 ///
 /// assert_table!(
 ///     table,

@@ -51,7 +51,7 @@ where
 
         if self.columns {
             let end = match self.limit {
-                Offset::Begin(limit) => start + limit,
+                Offset::Start(limit) => start + limit,
                 Offset::End(limit) => count_columns - limit,
             };
 
@@ -62,7 +62,7 @@ where
             reverse_columns(records, start, end);
         } else {
             let end = match self.limit {
-                Offset::Begin(limit) => start + limit,
+                Offset::Start(limit) => start + limit,
                 Offset::End(limit) => count_rows - limit,
             };
 

@@ -431,7 +431,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_0,
-    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Begin(5))),
+    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Start(5))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-Table----+----------+"
@@ -443,7 +443,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_1,
-    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Begin(15))),
+    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Start(15))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-----------Table-----+"
@@ -503,7 +503,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_6,
-    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Begin(21))),
+    Matrix::table(2, 2).with(LineText::new("-Table", Rows::single(1)).offset(Offset::Start(21))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+------Table"
@@ -2387,7 +2387,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(1))
-            .with(LineChar::horizontal(':', Offset::Begin(0)))
+            .with(LineChar::horizontal(':', Offset::Start(0)))
             .with(LineChar::horizontal(':', Offset::End(0)))
     ),
     "| N | column 0 | column 1 | column 2 |"
@@ -2401,8 +2401,8 @@ test_table!(
     override_horizontal_border_on_borders,
     Matrix::new(3, 3)
         .with(Modify::new(Rows::new(..5))
-            .with(LineChar::horizontal(':', Offset::Begin(0)))
-            .with(LineChar::horizontal('y', Offset::Begin(3)))
+            .with(LineChar::horizontal(':', Offset::Start(0)))
+            .with(LineChar::horizontal('y', Offset::Start(3)))
             .with(LineChar::horizontal(':', Offset::End(0)))
             .with(LineChar::horizontal('x', Offset::End(3)))
     ),
@@ -2422,8 +2422,8 @@ test_table!(
     Matrix::new(3, 3)
         .with(Modify::new(Rows::new(..5))
             .with(Border::filled('['))
-            .with(LineChar::horizontal(':', Offset::Begin(0)))
-            .with(LineChar::horizontal('y', Offset::Begin(3)))
+            .with(LineChar::horizontal(':', Offset::Start(0)))
+            .with(LineChar::horizontal('y', Offset::Start(3)))
             .with(LineChar::horizontal(':', Offset::End(0)))
             .with(LineChar::horizontal('x', Offset::End(3)))
     ),
@@ -2443,7 +2443,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(LineChar::vertical(':', Offset::Begin(0)))
+            .with(LineChar::vertical(':', Offset::Start(0)))
     ),
     "| N : column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
@@ -2472,7 +2472,7 @@ test_table!(
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(LineChar::vertical(':', Offset::Begin(4)))
+            .with(LineChar::vertical(':', Offset::Start(4)))
     ),
     "|     N     | column 0  | column 1  | column 2  |"
     "|-----------|-----------|-----------|-----------|"
@@ -2513,7 +2513,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Padding::new(1, 1, 1, 1))
-        .modify(Columns::single(1), LineChar::vertical(':', Offset::Begin(0)))
+        .modify(Columns::single(1), LineChar::vertical(':', Offset::Start(0)))
         .modify(Columns::single(1), LineChar::vertical(':', Offset::End(0))),
     "|   :          |          |          |"
     "| N | column 0 | column 1 | column 2 |"

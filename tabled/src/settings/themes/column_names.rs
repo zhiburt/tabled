@@ -407,7 +407,7 @@ fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
 }
 
 fn create_line_text<T>(text: &str, offset: usize, color: Option<&Color>, line: T) -> LineText<T> {
-    let offset = Offset::Begin(offset);
+    let offset = Offset::Start(offset);
     let mut btext = LineText::new(text, line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());

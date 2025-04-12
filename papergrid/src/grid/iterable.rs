@@ -1099,7 +1099,7 @@ fn print_margin_vertical<F: Write>(
     }
 
     match offset {
-        Offset::Begin(mut offset) => {
+        Offset::Start(mut offset) => {
             if let Some(max) = height {
                 offset = cmp::min(offset, max);
             }
@@ -1141,7 +1141,7 @@ fn print_indent_lines<F: Write>(
     }
 
     let (start_offset, end_offset) = match offset {
-        Offset::Begin(start) => (*start, 0),
+        Offset::Start(start) => (*start, 0),
         Offset::End(end) => (0, *end),
     };
 

@@ -82,7 +82,7 @@ impl<Line> LineText<Line> {
         LineText {
             line,
             text: text.into(),
-            offset: Offset::Begin(0),
+            offset: Offset::Start(0),
             color: None,
             alignment: None,
         }
@@ -331,9 +331,9 @@ fn set_horizontal_chars<D>(
                     None => return,
                 };
 
-                cfg.set_horizontal_char((line, col).into(), c, Offset::Begin(off));
+                cfg.set_horizontal_char((line, col).into(), c, Offset::Start(off));
                 if let Some(color) = color.as_ref() {
-                    cfg.set_horizontal_color((line, col).into(), color.clone(), Offset::Begin(off));
+                    cfg.set_horizontal_color((line, col).into(), color.clone(), Offset::Start(off));
                 }
             }
         }
@@ -427,10 +427,10 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line).into(), c, Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
+                cfg.set_vertical_char((row, line).into(), c, Offset::Start(off)); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
-                    cfg.set_vertical_color((row, line).into(), color.clone(), Offset::Begin(off));
+                    cfg.set_vertical_color((row, line).into(), color.clone(), Offset::Start(off));
                 }
             }
         }
@@ -462,7 +462,7 @@ fn set_vertical_chars<D>(
 
 fn get_start_pos(offset: Offset, total: usize) -> Option<usize> {
     match offset {
-        Offset::Begin(i) => {
+        Offset::Start(i) => {
             if i > total {
                 None
             } else {
@@ -494,9 +494,9 @@ fn get_horizontal_alignment_offset(
                 off = center.saturating_sub(text_center);
             }
 
-            Offset::Begin(off)
+            Offset::Start(off)
         }
-        AlignmentHorizontal::Left => Offset::Begin(0),
+        AlignmentHorizontal::Left => Offset::Start(0),
         AlignmentHorizontal::Right => {
             let width = get_text_width(text);
             Offset::End(width)
@@ -515,18 +515,18 @@ fn get_vertical_alignment_offset(text: &str, alignment: AlignmentVertical, total
                 off = center.saturating_sub(text_center);
             }
 
-            Offset::Begin(off)
+            Offset::Start(off)
         }
-        AlignmentVertical::Top => Offset::Begin(0),
+        AlignmentVertical::Top => Offset::Start(0),
         AlignmentVertical::Bottom => Offset::End(0),
     }
 }
 
 fn offset_sum(orig: Offset, and: Offset) -> Offset {
     match (orig, and) {
-        (Offset::Begin(a), Offset::Begin(b)) => Offset::Begin(a + b),
-        (Offset::Begin(a), Offset::End(b)) => Offset::Begin(a.saturating_sub(b)),
-        (Offset::End(a), Offset::Begin(b)) => Offset::End(a + b),
+        (Offset::Start(a), Offset::Start(b)) => Offset::Start(a + b),
+        (Offset::Start(a), Offset::End(b)) => Offset::Start(a.saturating_sub(b)),
+        (Offset::End(a), Offset::Start(b)) => Offset::End(a + b),
         (Offset::End(a), Offset::End(b)) => Offset::End(a.saturating_sub(b)),
     }
 }
