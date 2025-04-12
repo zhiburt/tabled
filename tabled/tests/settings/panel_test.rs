@@ -7,7 +7,7 @@ use tabled::{
     assert::test_table,
     settings::{
         object::{Cell, Object, Rows, Segment},
-        style::{BorderSpanCorrection, HorizontalLine, Style},
+        style::{SpanCorrection, HorizontalLine, Style},
         themes::Theme,
         Alignment, Highlight, Modify, Panel, Span, Width,
     },
@@ -168,7 +168,7 @@ test_table!(
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern())
-        .with(BorderSpanCorrection),
+        .with(SpanCorrection),
     "┌───────────┐"
     "│  Numbers  │"
     "├─────┬─────┤"
@@ -183,7 +183,7 @@ test_table!(
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0, "Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
-        .with(BorderSpanCorrection)
+        .with(SpanCorrection)
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"

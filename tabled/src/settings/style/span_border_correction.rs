@@ -1,4 +1,4 @@
-//! This module contains [`BorderSpanCorrection`] structure, which can be useful when [`Span`] is used, and
+//! This module contains [`SpanCorrection`] structure, which can be useful when [`Span`] is used, and
 //! you want to fix the intersections symbols which are left intact by default.
 //!
 //! [`Span`]: crate::settings::span::Span
@@ -26,9 +26,10 @@ use crate::{
 /// use tabled::{
 ///     Table,
 ///     settings::{
-///         Modify, style::{Style, BorderSpanCorrection},
-///         Format, Span, object::Cell
-///     }
+///         style::SpanCorrection,
+///         Span, Alignment,
+///     },
+///     assert::assert_table,
 /// };
 ///
 /// let data = vec![
@@ -37,48 +38,43 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::new(data);
-/// table.with(Modify::new((0, 0)).with("date").with(Span::column(3)));
-///
-/// assert_eq!(
-///     table.to_string(),
-///     concat!(
-///         "+----+------+------+\n",
-///         "| date             |\n",
-///         "+----+------+------+\n",
-///         "| 09 | June | 2022 |\n",
-///         "+----+------+------+\n",
-///         "| 10 | July | 2022 |\n",
-///         "+----+------+------+",
-///     )
+/// table.modify(
+///     (0, 0),
+///     ("My callendar", Span::column(3), Alignment::center()),
 /// );
 ///
-/// table.with(BorderSpanCorrection);
+/// assert_table!(
+///     table,
+///     "+----+------+------+"
+///     "|   My callendar   |"
+///     "+----+------+------+"
+///     "| 09 | June | 2022 |"
+///     "+----+------+------+"
+///     "| 10 | July | 2022 |"
+///     "+----+------+------+"
+/// );
 ///
-/// assert_eq!(
-///     table.to_string(),
-///     concat!(
-///         "+------------------+\n",
-///         "| date             |\n",
-///         "+----+------+------+\n",
-///         "| 09 | June | 2022 |\n",
-///         "+----+------+------+\n",
-///         "| 10 | July | 2022 |\n",
-///         "+----+------+------+",
-///     )
+/// table.with(SpanCorrection);
+///
+/// assert_table!(
+///     table,
+///     "+------------------+"
+///     "|   My callendar   |"
+///     "+----+------+------+"
+///     "| 09 | June | 2022 |"
+///     "+----+------+------+"
+///     "| 10 | July | 2022 |"
+///     "+----+------+------+"
 /// );
 /// ```
-/// See [`BorderSpanCorrection`].
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::settings::span::Span
 /// [`Style`]: crate::settings::Style
-/// [`Style::correct_spans`]: crate::settings::style::BorderSpanCorrection
 #[derive(Debug)]
-pub struct BorderSpanCorrection;
+pub struct SpanCorrection;
 
-// TODO: Theme::BorderSpanCorrect
-
-impl<R, D> TableOption<R, ColoredConfig, D> for BorderSpanCorrection
+impl<R, D> TableOption<R, ColoredConfig, D> for SpanCorrection
 where
     R: Records + ExactRecords,
 {

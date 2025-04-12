@@ -64,7 +64,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::from_iter(data);
-/// table.with(ColumnNames::default());
+/// table.with(ColumnNames::head());
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -160,7 +160,8 @@ impl ColumnNames {
     /// ```
     /// use std::iter::FromIterator;
     /// use tabled::Table;
-    /// use tabled::settings::{Color, themes::ColumnNames, assert::assert_table};
+    /// use tabled::settings::{Color, themes::ColumnNames};
+    /// use tabled::assert::assert_table;
     ///
     /// let data = vec![vec!["Hello", "World"]];
     /// let mut table = Table::from_iter(data);

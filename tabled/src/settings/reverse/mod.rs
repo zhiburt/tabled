@@ -3,6 +3,8 @@ use crate::{
     settings::TableOption,
 };
 
+// TOOD: simplify
+
 /// Reverse data on the table.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Reverse {

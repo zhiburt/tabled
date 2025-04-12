@@ -45,6 +45,7 @@ use super::util::{get_table_widths, get_table_widths_with_total};
 #[derive(Debug, Clone)]
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
+    // TODO: change treatment of space -- if we moving the word we can ignore space I think
     keep_words: bool,
     priority: P,
 }

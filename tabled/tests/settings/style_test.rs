@@ -10,7 +10,7 @@ use tabled::{
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderColor, BorderSpanCorrection, HorizontalLine, LineChar, LineText, Offset,
+            Border, BorderColor, SpanCorrection, HorizontalLine, LineChar, LineText, Offset,
             On, Style, VerticalLine,
         },
         themes::Theme,
@@ -197,6 +197,22 @@ test_table!(
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
     "│ 2 │   2-0    │   2-1    │   2-2    │"
+);
+
+test_table!(
+    rounded_style_1x1,
+    Matrix::new(0, 0).with(Style::rounded()),
+    "╭───╮"
+    "│ N │"
+    "├───┤"
+);
+
+test_table!(
+    rounded_style_1x1_0,
+    Matrix::new(0, 0).with(Style::rounded().remove_horizontals()),
+    "╭───╮"
+    "│ N │"
+    "╰───╯"
 );
 
 test_table!(
@@ -656,7 +672,7 @@ test_table!(
         .with(Modify::new((4, 1)).with(Span::column(4)))
         .with(Modify::new((5, 0)).with(Span::column(5)))
         .with(Modify::new((6, 0)).with(Span::column(5)))
-        .with(BorderSpanCorrection),
+        .with(SpanCorrection),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
     "+---+----------+----------+-----+-----+"
@@ -685,7 +701,7 @@ test_table!(
         .with(Modify::new((4, 1)).with(Span::column(4)))
         .with(Modify::new((5, 0)).with(Span::column(5)))
         .with(Modify::new((6, 0)).with(Span::column(5)))
-        .with(BorderSpanCorrection),
+        .with(SpanCorrection),
     "+----------------------+"
     "|          N           |"
     "+----------+-----+-----+"
@@ -2702,7 +2718,7 @@ test_table!(
 
 test_table!(
     line_text_vertical_1,
-    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::last())),
+    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::last() + 1)),
     "+---+----------+-----------"
     "| N | column 0 | column 1 T"
     "+---+----------+----------a"

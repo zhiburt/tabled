@@ -115,7 +115,7 @@ mod span_border_correction;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
     border_color::BorderColor, line_char::LineChar, line_text::LineText,
-    span_border_correction::BorderSpanCorrection,
+    span_border_correction::SpanCorrection,
 };
 
 pub use self::{
