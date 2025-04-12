@@ -1,4 +1,5 @@
 use crate::{
+    grid::config::Offset,
     grid::records::{ExactRecords, Records, Resizable},
     settings::TableOption,
 };
@@ -6,29 +7,34 @@ use crate::{
 // TOOD: simplify
 
 /// Reverse data on the table.
-#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Reverse {
     columns: bool,
-    skip: usize,
-    skip_from_end: usize,
+    start: usize,
+    limit: Offset,
 }
 
 impl Reverse {
-    /// Reverse columns.
-    pub const fn columns(start: usize, end: usize) -> Self {
-        Self::new(true, start, end)
+    /// Reverse columns starting from given index.
+    pub const fn columns(start: usize) -> Self {
+        Self::new(true, start, Offset::End(0))
     }
 
-    /// Reverse rows.
-    pub const fn rows(start: usize, end: usize) -> Self {
-        Self::new(false, start, end)
+    /// Reverse rows starting from given index.
+    pub const fn rows(start: usize) -> Self {
+        Self::new(false, start, Offset::End(0))
     }
 
-    const fn new(columns: bool, skip: usize, skip_from_end: usize) -> Self {
+    /// Reverse rows starting from given index.
+    pub const fn limit(self, limit: Offset) -> Self {
+        Self::new(self.columns, self.start, limit)
+    }
+
+    const fn new(columns: bool, start: usize, limit: Offset) -> Self {
         Self {
             columns,
-            skip,
-            skip_from_end,
+            start,
+            limit,
         }
     }
 }
@@ -41,24 +47,28 @@ where
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 
-        let skip = self.skip_from_end + self.skip;
+        let start = self.start;
 
         if self.columns {
-            if count_columns <= skip {
+            let end = match self.limit {
+                Offset::Begin(limit) => start + limit,
+                Offset::End(limit) => count_columns - limit,
+            };
+
+            if start >= end || end > count_columns {
                 return;
             }
-
-            let start = self.skip;
-            let end = count_columns - self.skip_from_end;
 
             reverse_columns(records, start, end);
         } else {
-            if count_rows <= skip {
+            let end = match self.limit {
+                Offset::Begin(limit) => start + limit,
+                Offset::End(limit) => count_rows - limit,
+            };
+
+            if start >= end || end > count_rows {
                 return;
             }
-
-            let start = self.skip;
-            let end = count_rows - self.skip_from_end;
 
             reverse_rows(records, start, end);
         }
@@ -74,8 +84,13 @@ where
         return;
     }
 
-    for (i, row) in (start..end / 2).enumerate() {
-        data.swap_row(row, end - i - 1);
+    let mut i = start;
+    let mut j = end - 1;
+
+    while i < j {
+        data.swap_row(i, j);
+        i += 1;
+        j -= 1;
     }
 }
 
@@ -88,8 +103,13 @@ where
         return;
     }
 
-    for (i, col) in (start..end / 2).enumerate() {
-        data.swap_column(col, end - i - 1);
+    let mut i = start;
+    let mut j = end - 1;
+
+    while i < j {
+        data.swap_column(i, j);
+        i += 1;
+        j -= 1;
     }
 }
 
