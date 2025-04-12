@@ -1,4 +1,4 @@
-//! This module contains [`SpanCorrection`] structure, which can be useful when [`Span`] is used, and
+//! This module contains [`BorderCorrection`] structure, which can be useful when [`Span`] is used, and
 //! you want to fix the intersections symbols which are left intact by default.
 //!
 //! [`Span`]: crate::settings::span::Span
@@ -26,7 +26,7 @@ use crate::{
 /// use tabled::{
 ///     Table,
 ///     settings::{
-///         style::SpanCorrection,
+///         style::BorderCorrection,
 ///         Span, Alignment,
 ///     },
 ///     assert::assert_table,
@@ -54,7 +54,7 @@ use crate::{
 ///     "+----+------+------+"
 /// );
 ///
-/// table.with(SpanCorrection);
+/// table.with(BorderCorrection);
 ///
 /// assert_table!(
 ///     table,
@@ -72,9 +72,9 @@ use crate::{
 /// [`Span`]: crate::settings::span::Span
 /// [`Style`]: crate::settings::Style
 #[derive(Debug)]
-pub struct SpanCorrection;
+pub struct BorderCorrection;
 
-impl<R, D> TableOption<R, ColoredConfig, D> for SpanCorrection
+impl<R, D> TableOption<R, ColoredConfig, D> for BorderCorrection
 where
     R: Records + ExactRecords,
 {

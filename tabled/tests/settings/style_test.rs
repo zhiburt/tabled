@@ -10,7 +10,7 @@ use tabled::{
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderColor, SpanCorrection, HorizontalLine, LineChar, LineText, Offset,
+            Border, BorderColor, BorderCorrection, HorizontalLine, LineChar, LineText, Offset,
             On, Style, VerticalLine,
         },
         themes::Theme,
@@ -672,7 +672,7 @@ test_table!(
         .with(Modify::new((4, 1)).with(Span::column(4)))
         .with(Modify::new((5, 0)).with(Span::column(5)))
         .with(Modify::new((6, 0)).with(Span::column(5)))
-        .with(SpanCorrection),
+        .with(BorderCorrection),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
     "+---+----------+----------+-----+-----+"
@@ -701,7 +701,7 @@ test_table!(
         .with(Modify::new((4, 1)).with(Span::column(4)))
         .with(Modify::new((5, 0)).with(Span::column(5)))
         .with(Modify::new((6, 0)).with(Span::column(5)))
-        .with(SpanCorrection),
+        .with(BorderCorrection),
     "+----------------------+"
     "|          N           |"
     "+----------+-----+-----+"
