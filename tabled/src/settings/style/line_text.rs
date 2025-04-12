@@ -17,6 +17,9 @@ use crate::{
     },
 };
 
+// TODO: reorder theme/style modules?
+//       maybe they belong together?
+
 use super::Offset;
 
 /// [`LineText`] writes a custom text on a border.
@@ -242,8 +245,10 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        let line = records.count_rows();
-        change_vertical_chars(records, dims, cfg, create_line(self, line))
+        let line = self.line.cells(records).next();
+        if let Some(Entity::Column(line)) = line {
+            change_vertical_chars(records, dims, cfg, create_line(self, line))
+        }
     }
 }
 
