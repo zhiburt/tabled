@@ -81,8 +81,32 @@ pub struct ColumnNames {
     line: usize,
 }
 
-impl Default for ColumnNames {
-    fn default() -> Self {
+impl ColumnNames {
+    /// Creates a [`ColumnNames`]
+    /// which will be removing the head row and putting it right on the given border.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::iter::FromIterator;
+    /// use tabled::{Table, settings::themes::ColumnNames, assert::assert_table};
+    ///
+    /// let data = vec![
+    ///     vec!["head1", "head2"],
+    ///     vec!["Hello", "World"],
+    /// ];
+    ///
+    /// let mut table = Table::from_iter(data);
+    /// table.with(ColumnNames::head());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+head1--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
+    /// );
+    /// ```
+    pub fn head() -> Self {
         Self {
             names: Default::default(),
             colors: Default::default(),
@@ -90,9 +114,7 @@ impl Default for ColumnNames {
             alignments: ListValue::Static(Alignment::left()),
         }
     }
-}
 
-impl ColumnNames {
     /// Creates a [`ColumnNames`] with a given names.
     ///
     /// Using a [`Default`] would reuse a names from the first row.
@@ -101,16 +123,17 @@ impl ColumnNames {
     ///
     /// ```
     /// use std::iter::FromIterator;
-    /// use tabled::{Table, settings::themes::ColumnNames};
+    /// use tabled::{Table, settings::themes::ColumnNames, assert::assert_table};
     ///
-    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
+    /// let data = vec![vec!["Hello", "World"]];
+    /// let mut table = Table::from_iter(data);
     /// table.with(ColumnNames::new(["head1", "head2"]));
     ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     "+head1--+head2--+\n\
-    ///      | Hello | World |\n\
-    ///      +-------+-------+"
+    /// assert_table!(
+    ///     table,
+    ///     "+head1--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
     /// );
     /// ```
     pub fn new<I>(names: I) -> Self
@@ -119,9 +142,12 @@ impl ColumnNames {
         I::Item: Into<String>,
     {
         let names = names.into_iter().map(Into::into).collect::<Vec<_>>();
+
         Self {
             names: Some(names),
-            ..Default::default()
+            alignments: ListValue::Static(Alignment::left()),
+            colors: Default::default(),
+            line: 0,
         }
     }
 
@@ -134,16 +160,17 @@ impl ColumnNames {
     /// ```
     /// use std::iter::FromIterator;
     /// use tabled::Table;
-    /// use tabled::settings::{Color, themes::ColumnNames};
+    /// use tabled::settings::{Color, themes::ColumnNames, assert::assert_table};
     ///
-    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
+    /// let data = vec![vec!["Hello", "World"]];
+    /// let mut table = Table::from_iter(data);
     /// table.with(ColumnNames::new(["head1", "head2"]).color(vec![Color::FG_RED]));
     ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     "+\u{1b}[31mh\u{1b}[39m\u{1b}[31me\u{1b}[39m\u{1b}[31ma\u{1b}[39m\u{1b}[31md\u{1b}[39m\u{1b}[31m1\u{1b}[39m--+head2--+\n\
-    ///      | Hello | World |\n\
-    ///      +-------+-------+"
+    /// assert_table!(
+    ///     table,
+    ///     "+\u{1b}[31mh\u{1b}[39m\u{1b}[31me\u{1b}[39m\u{1b}[31ma\u{1b}[39m\u{1b}[31md\u{1b}[39m\u{1b}[31m1\u{1b}[39m--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
     /// );
     /// ```
     pub fn color<T>(self, color: T) -> Self
