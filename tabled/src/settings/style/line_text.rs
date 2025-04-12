@@ -1,9 +1,9 @@
-use papergrid::config::{AlignmentHorizontal, AlignmentVertical};
-
 use crate::{
     grid::{
         ansi::ANSIBuf,
-        config::{self, ColoredConfig, Entity, SpannedConfig},
+        config::{
+            AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, SpannedConfig,
+        },
         dimension::{Dimension, Estimate},
         records::{ExactRecords, Records},
         util::string::get_text_width,
@@ -19,8 +19,8 @@ use crate::{
 
 // TODO: reorder theme/style modules?
 //       maybe they belong together?
-
-use super::Offset;
+//       NO? I mean maybe style inside themes as a folder?
+// TODO: this does not belong to style 100%
 
 /// [`LineText`] writes a custom text on a border.
 ///
@@ -331,13 +331,9 @@ fn set_horizontal_chars<D>(
                     None => return,
                 };
 
-                cfg.set_horizontal_char((line, col).into(), c, config::Offset::Begin(off));
+                cfg.set_horizontal_char((line, col).into(), c, Offset::Begin(off));
                 if let Some(color) = color.as_ref() {
-                    cfg.set_horizontal_color(
-                        (line, col).into(),
-                        color.clone(),
-                        config::Offset::Begin(off),
-                    );
+                    cfg.set_horizontal_color((line, col).into(), color.clone(), Offset::Begin(off));
                 }
             }
         }
@@ -431,14 +427,10 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line).into(), c, config::Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
+                cfg.set_vertical_char((row, line).into(), c, Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
-                    cfg.set_vertical_color(
-                        (row, line).into(),
-                        color.clone(),
-                        config::Offset::Begin(off),
-                    );
+                    cfg.set_vertical_color((row, line).into(), color.clone(), Offset::Begin(off));
                 }
             }
         }

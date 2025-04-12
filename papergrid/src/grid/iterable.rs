@@ -11,13 +11,15 @@ use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
-        spanned::{Offset, SpannedConfig},
-        AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
+        Position, Sides,
     },
     dimension::Dimension,
     records::{IntoRecords, Records},
     util::string::{count_lines, get_line_width, get_lines, get_text_width, Lines},
 };
+
+// TODO: Rename to IterGrid
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]

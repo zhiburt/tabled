@@ -6,6 +6,8 @@ pub fn pos(row: usize, col: usize) -> Position {
     Position::new(row, col)
 }
 
+// TODO: rework it once again
+
 /// Position is a (row, col) position on a Grid.
 ///
 /// For example such table has 4 cells.

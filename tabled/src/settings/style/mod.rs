@@ -99,7 +99,6 @@
 mod border;
 mod builder;
 mod horizontal_line;
-mod offset;
 mod vertical_line;
 
 #[cfg(feature = "std")]
@@ -117,7 +116,6 @@ pub use self::{
     border::Border,
     builder::{On, Style},
     horizontal_line::HorizontalLine,
-    offset::Offset,
     vertical_line::VerticalLine,
 };
 

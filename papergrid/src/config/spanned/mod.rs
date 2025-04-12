@@ -4,18 +4,18 @@
 
 mod borders_config;
 mod entity_map;
-mod offset;
 
 use std::collections::HashMap;
 
 use crate::ansi::{ANSIBuf, ANSIStr};
 use crate::config::compact::CompactConfig;
 use crate::config::{
-    AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
+    AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Offset, Position,
+    Sides,
 };
 use borders_config::BordersConfig;
 
-pub use self::{entity_map::EntityMap, offset::Offset};
+pub use self::entity_map::EntityMap;
 
 use super::Formatting;
 

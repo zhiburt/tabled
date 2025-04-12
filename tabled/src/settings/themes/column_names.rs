@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Position},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
@@ -12,7 +12,7 @@ use crate::{
     },
     settings::{
         object::{Column, Row},
-        style::{LineText, Offset},
+        style::LineText,
         Alignment, Color, TableOption,
     },
 };

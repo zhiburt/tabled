@@ -1,34 +1,35 @@
 use crate::{
-    grid::config::{ColoredConfig, Entity, Position, SpannedConfig},
+    grid::config::{ColoredConfig, Entity, Offset, Position, SpannedConfig},
     grid::records::{ExactRecords, Records},
     settings::CellOption,
 };
-
-use super::Offset;
 
 /// [`LineChar`] sets a char to a specific location on a horizontal line.
 ///
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, settings::{style::{Style, LineChar, Offset}, Modify, object::{Object, Rows, Columns}}};
+/// use tabled::{
+///     Table,
+///     grid::config::Offset,
+///     assert::assert_table,
+///     settings::{style::{Style, LineChar}, object::{Object, Rows, Columns}}
+/// };
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
 ///     .with(Style::markdown())
-///     .with(Modify::new(Rows::single(1))
-///         .with(LineChar::horizontal(':', Offset::Begin(0)))
-///         .with(LineChar::horizontal(':', Offset::End(0)))
+///     .modify(
+///         Rows::single(1),
+///         (LineChar::horizontal(':', Offset::Begin(0)), LineChar::horizontal(':', Offset::End(0))),
 ///     )
-///     .with(Modify::new((1, 0).and((1, 1))).with(LineChar::vertical('#', Offset::Begin(0))));
+///     .modify((1, 0).and((1, 1)), LineChar::vertical('#', Offset::Begin(0)));
 ///
-/// assert_eq!(
-///     table.to_string(),
-///     concat!(
-///         "| &str        |\n",
-///         "|:-----------:|\n",
-///         "# Hello World #",
-///     ),
+/// assert_table!(
+///     table,
+///     "| &str        |"
+///     "|:-----------:|"
+///     "# Hello World #"
 /// );
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

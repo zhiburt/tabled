@@ -11,10 +11,9 @@ use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
-        spanned::{Offset, SpannedConfig},
-        Formatting,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
+        Position, Sides,
     },
-    config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::get_line_width,

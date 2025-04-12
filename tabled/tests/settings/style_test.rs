@@ -6,13 +6,10 @@ use std::iter::FromIterator;
 use tabled::{
     assert::{static_table, test_table},
     builder::Builder,
-    grid::config::Border as GridBorder,
+    grid::config::{Border as GridBorder, Offset},
     settings::{
         object::{Columns, Rows, Segment},
-        style::{
-            Border, BorderColor, HorizontalLine, LineChar, LineText, Offset, On, Style,
-            VerticalLine,
-        },
+        style::{Border, BorderColor, HorizontalLine, LineChar, LineText, On, Style, VerticalLine},
         themes::{BorderCorrection, Theme},
         Alignment, Color, Format, Highlight, Modify, Padding, Span,
     },
