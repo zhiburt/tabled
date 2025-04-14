@@ -77,23 +77,23 @@ where
     T: Cell,
 {
     fn get_text(&self, pos: Position) -> &str {
-        self[pos.row()][pos.col()].text()
+        self[pos.row][pos.col].text()
     }
 
     fn count_lines(&self, pos: Position) -> usize {
-        self[pos.row()][pos.col()].count_lines()
+        self[pos.row][pos.col].count_lines()
     }
 
     fn get_line(&self, pos: Position, line: usize) -> &str {
-        self[pos.row()][pos.col()].line(line)
+        self[pos.row][pos.col].line(line)
     }
 
     fn get_line_width(&self, pos: Position, line: usize) -> usize {
-        self[pos.row()][pos.col()].line_width(line)
+        self[pos.row][pos.col].line_width(line)
     }
 
     fn get_width(&self, pos: Position) -> usize {
-        self[pos.row()][pos.col()].width()
+        self[pos.row][pos.col].width()
     }
 }
 

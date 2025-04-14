@@ -6,10 +6,12 @@ use std::borrow::Cow;
 use std::iter::repeat_n;
 
 use crate::{
-    grid::config::{ColoredConfig, Entity},
-    grid::dimension::CompleteDimensionVecRecords,
-    grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_line_width, get_lines, get_text_width},
+    grid::{
+        config::{ColoredConfig, Entity, Position},
+        dimension::CompleteDimensionVecRecords,
+        records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
+        util::string::{get_line_width, get_lines, get_text_width},
+    },
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -114,9 +116,10 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 

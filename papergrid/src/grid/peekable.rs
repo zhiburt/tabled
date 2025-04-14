@@ -272,7 +272,7 @@ mod grid_basic {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -312,7 +312,7 @@ mod grid_basic {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let pad = ctx.cfg.get_padding(pos);
         let valignment = *ctx.cfg.get_alignment_vertical(pos);
@@ -691,7 +691,7 @@ mod grid_not_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -822,7 +822,7 @@ mod grid_not_spanned {
         C: Colors,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let formatting = ctx.cfg.get_formatting(pos);
         let text_cfg = TextCfg {
@@ -1549,7 +1549,7 @@ mod grid_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -2076,11 +2076,11 @@ mod grid_spanned {
     {
         match cfg.get_column_span(pos) {
             Some(span) => {
-                let start = pos.col();
+                let start = pos.col;
                 let end = start + span;
                 range_width(dims, start, end) + count_verticals_range(cfg, start, end, max)
             }
-            None => dims.get_width(pos.col()),
+            None => dims.get_width(pos.col),
         }
     }
 
@@ -2103,11 +2103,11 @@ mod grid_spanned {
     {
         match cfg.get_row_span(pos) {
             Some(span) => {
-                let start = pos.row();
-                let end = pos.row() + span;
+                let start = pos.row;
+                let end = pos.row + span;
                 range_height(dims, start, end) + count_horizontals_range(cfg, start, end, max)
             }
-            None => dims.get_height(pos.row()),
+            None => dims.get_height(pos.row),
         }
     }
 
@@ -2127,10 +2127,10 @@ mod grid_spanned {
     fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
         loop {
             if cfg.is_cell_visible(pos) {
-                return Some(pos.row());
+                return Some(pos.row);
             }
 
-            if pos.row() == 0 {
+            if pos.row == 0 {
                 return None;
             }
 

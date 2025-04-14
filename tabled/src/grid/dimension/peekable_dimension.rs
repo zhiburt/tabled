@@ -130,7 +130,7 @@ mod estimation {
         });
 
         for (p, (span, height)) in spans_ordered {
-            adjust_row_range(cfg, height, len, p.row(), p.row() + span, heights);
+            adjust_row_range(cfg, height, len, p.row, p.row + span, heights);
         }
     }
 
@@ -215,7 +215,7 @@ mod estimation {
         });
 
         for (p, (span, width)) in spans_ordered {
-            adjust_column_range(cfg, width, len, p.col(), p.col() + span, widths);
+            adjust_column_range(cfg, width, len, p.col, p.col + span, widths);
         }
     }
 

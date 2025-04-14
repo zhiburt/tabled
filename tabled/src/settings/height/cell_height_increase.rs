@@ -1,6 +1,5 @@
 use crate::{
-    grid::config::ColoredConfig,
-    grid::config::Entity,
+    grid::config::{ColoredConfig, Entity, Position},
     grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::count_lines,
@@ -52,13 +51,17 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 
             let text = records.get_text(pos);
+
+            // TOOD: We have a Cell?
+            // I mean we could use Cell trait here
 
             let cell_height = count_lines(text);
             if cell_height >= height {

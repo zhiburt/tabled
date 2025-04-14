@@ -137,11 +137,11 @@ where
 }
 
 fn is_valid_cell(pos: Position, count_rows: usize, count_columns: usize) -> bool {
-    if pos.row() > count_rows {
+    if pos.row > count_rows {
         return false;
     }
 
-    if pos.col() > count_columns {
+    if pos.col > count_columns {
         return false;
     }
 

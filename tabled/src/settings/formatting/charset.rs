@@ -1,9 +1,7 @@
 use std::borrow::Cow;
 
-use papergrid::config::pos;
-
 use crate::{
-    grid::config::Entity,
+    grid::config::{Entity, Position},
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{CellOption, TableOption},
 };
@@ -101,9 +99,11 @@ where
     R: Records + ExactRecords + RecordsMut<String> + PeekableRecords,
 {
     fn change(self, records: &mut R, _: &mut C, _: &mut D) {
+        // TODO: Add a grid iterator which produces POS to squash these for loops
+
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let pos = pos(row, col);
+                let pos = Position::new(row, col);
                 let text = records.get_text(pos);
                 let text = clean_charset(text);
                 records.set(pos, text);

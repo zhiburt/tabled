@@ -1,13 +1,5 @@
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 
-/// Constructs a [`Position`] in a convinient way.
-/// Basically a short hand for `(row, col).into()` or `Position::new(row, col)`.
-pub fn pos(row: usize, col: usize) -> Position {
-    Position::new(row, col)
-}
-
-// TODO: rework it once again
-
 /// Position is a (row, col) position on a Grid.
 ///
 /// For example such table has 4 cells.
@@ -22,8 +14,10 @@ pub fn pos(row: usize, col: usize) -> Position {
 /// ```
 #[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position {
-    row: usize,
-    col: usize,
+    /// Row.
+    pub row: usize,
+    /// Column.
+    pub col: usize,
 }
 
 impl Position {
@@ -32,21 +26,41 @@ impl Position {
         Self { row, col }
     }
 
-    /// Returns a row value.
-    pub const fn row(&self) -> usize {
-        self.row
+    /// A check whether a given cell has intersection with any other cell.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use papergrid::config::Position;
+    /// let p = Position::new(3, 3);
+    ///
+    /// assert!(p.has_intersection(p));
+    /// assert!(p.has_intersection(Position::new(1, 1)));
+    /// assert!(p.has_intersection(Position::new(3, 10)));
+    /// assert!(p.has_intersection(Position::new(10, 3)));
+    ///
+    /// assert!(!p.has_intersection(Position::new(4, 4)));
+    /// ```
+    pub const fn has_intersection(&self, point: Position) -> bool {
+        self.row >= point.row || self.col >= point.col
     }
 
-    /// Returns a column value.
-    pub const fn col(&self) -> usize {
-        self.col
-    }
-
-    /// A check whether a cell is not beyond the maximum point.
-    /// Meaning it's less then a maximum point.
-    /// So it must be located left and bottom on XY axis.
-    pub const fn is_covered(&self, max: Position) -> bool {
-        self.row < max.row && self.col < max.col
+    /// A check whether a given cell has intersection with any other cell.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use papergrid::config::Position;
+    /// let p = Position::new(3, 3);
+    ///
+    /// assert!(p.has_coverage(Position::new(1, 1)));
+    ///
+    /// assert!(!p.has_coverage(Position::new(3, 3)));
+    /// assert!(!p.has_coverage(Position::new(1, 10)));
+    /// assert!(!p.has_coverage(p));
+    /// ```
+    pub const fn has_coverage(&self, point: Position) -> bool {
+        self.row > point.row && self.col > point.col
     }
 }
 
@@ -118,6 +132,27 @@ impl From<(usize, usize)> for Position {
 
 impl From<Position> for (usize, usize) {
     fn from(val: Position) -> Self {
-        (val.row(), val.col())
+        (val.row, val.col)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ordering() {
+        assert!(Position::new(1, 1) < Position::new(2, 2));
+        assert!(Position::new(2, 1) < Position::new(2, 2));
+        assert!(Position::new(1, 2) < Position::new(2, 2));
+
+        assert!(Position::new(2, 2) == Position::new(2, 2));
+
+        assert!(Position::new(3, 3) > Position::new(2, 2));
+        assert!(Position::new(3, 1) > Position::new(2, 2));
+
+        assert!(Position::new(1, 3) < Position::new(2, 2));
+
+        assert!(Position::new(0, 10000) < Position::new(4, 4));
     }
 }

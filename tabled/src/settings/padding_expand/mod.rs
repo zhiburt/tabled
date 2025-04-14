@@ -110,7 +110,7 @@ where
     let count_cols = records.count_columns();
 
     for pos in entity.iter(count_rows, count_cols) {
-        let col = pos.col();
+        let col = pos.col;
         let column_width = widths[col];
         let width = records.get_width(pos);
 
@@ -141,7 +141,7 @@ where
     let count_cols = records.count_columns();
 
     for pos in entity.iter(count_rows, count_cols) {
-        let row = pos.row();
+        let row = pos.row;
         let row_height = heights[row];
         let cell_height = records.count_lines(pos);
 

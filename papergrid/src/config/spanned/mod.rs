@@ -716,7 +716,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_horizontal(pos.row(), shape.0) && self.has_vertical(pos.col(), shape.1) {
+        if self.has_horizontal(pos.row, shape.0) && self.has_vertical(pos.col, shape.1) {
             return Some(self.get_borders_missing());
         }
 
@@ -732,7 +732,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_horizontal(pos.row(), count_rows) {
+        if self.has_horizontal(pos.row, count_rows) {
             return Some(self.get_borders_missing());
         }
 
@@ -747,7 +747,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_vertical(pos.col(), count_columns) {
+        if self.has_vertical(pos.col, count_columns) {
             return Some(self.get_borders_missing());
         }
 
@@ -886,13 +886,13 @@ fn set_cell_column_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
 fn is_cell_covered_by_column_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_columns
         .iter()
-        .any(|(p, span)| p.row() == pos.row() && pos.col() > p.col() && pos.col() < p.col() + span)
+        .any(|(p, span)| p.row == pos.row && pos.col > p.col && pos.col < p.col + span)
 }
 
 fn is_cell_covered_by_row_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_rows
         .iter()
-        .any(|(p, span)| p.col() == pos.col() && pos.row() > p.row() && pos.row() < p.row() + span)
+        .any(|(p, span)| p.col == pos.col && pos.row > p.row && pos.row < p.row + span)
 }
 
 fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
@@ -905,10 +905,10 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
             .iter()
             .filter(|(p2, _)| &p1 == p2)
             .any(|(_, col_span)| {
-                pos.row() > p1.row()
-                    && pos.row() < p1.row() + row_span
-                    && pos.col() > p1.col()
-                    && pos.col() < p1.col() + col_span
+                pos.row > p1.row
+                    && pos.row < p1.row + row_span
+                    && pos.col > p1.col
+                    && pos.col < p1.col + col_span
             })
     })
 }

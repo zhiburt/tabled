@@ -24,6 +24,6 @@ pub use formatting::Formatting;
 pub use horizontal_line::HorizontalLine;
 pub use indent::Indent;
 pub use offset::Offset;
-pub use position::{pos, Position};
+pub use position::Position;
 pub use sides::Sides;
 pub use vertical_line::VerticalLine;

@@ -91,18 +91,18 @@ where
 
 fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
     for (p, span) in cfg.get_column_spans() {
-        for col in p.col()..p.col() + span {
+        for col in p.col..p.col + span {
             if col == 0 {
                 continue;
             }
 
-            let is_first = col == p.col();
-            let has_up = p.row() > 0 && has_left(cfg, (p.row() - 1, col).into(), shape);
-            let has_down = p.row() + 1 < shape.0 && has_left(cfg, (p.row() + 1, col).into(), shape);
+            let is_first = col == p.col;
+            let has_up = p.row > 0 && has_left(cfg, (p.row - 1, col).into(), shape);
+            let has_down = p.row + 1 < shape.0 && has_left(cfg, (p.row + 1, col).into(), shape);
 
             let borders = cfg.get_borders();
 
-            let mut border = cfg.get_border((p.row(), col).into(), shape);
+            let mut border = cfg.get_border((p.row, col).into(), shape);
 
             let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
             if has_top_border {
@@ -130,7 +130,7 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
                 }
             }
 
-            cfg.set_border((p.row(), col).into(), border);
+            cfg.set_border((p.row, col).into(), border);
         }
     }
 

@@ -139,7 +139,7 @@ fn adjust_hspans(
     });
 
     for (pos, (span, height)) in spans_ordered {
-        adjust_row_range(cfg, height, len, pos.row(), pos.row() + span, heights);
+        adjust_row_range(cfg, height, len, pos.row, pos.row + span, heights);
     }
 }
 
@@ -219,7 +219,7 @@ fn adjust_vspans(
     });
 
     for (pos, (span, width)) in spans_ordered {
-        adjust_column_range(cfg, width, len, pos.col(), pos.col() + span, widths);
+        adjust_column_range(cfg, width, len, pos.col, pos.col + span, widths);
     }
 }
 

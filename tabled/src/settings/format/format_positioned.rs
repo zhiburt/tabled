@@ -1,8 +1,8 @@
-use papergrid::config::Position;
-
 use crate::{
-    grid::config::Entity,
-    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+    grid::{
+        config::{Entity, Position},
+        records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+    },
     settings::{CellOption, TableOption},
 };
 
@@ -38,9 +38,10 @@ where
     fn change(mut self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
+        let max_pos = Position::new(count_rows, count_cols);
 
         for pos in entity.iter(count_rows, count_cols) {
-            if !pos.is_covered((count_rows, count_cols).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 

@@ -6,7 +6,7 @@ use std::{borrow::Cow, iter};
 
 use crate::{
     grid::{
-        config::{ColoredConfig, Entity, SpannedConfig},
+        config::{ColoredConfig, Entity, Position, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{get_line_width, get_text_width},
@@ -205,11 +205,12 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         let colorize = need_suffix_color_preservation(&self.suffix);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 

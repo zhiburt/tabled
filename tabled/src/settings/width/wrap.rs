@@ -5,8 +5,7 @@
 
 use crate::{
     grid::{
-        config::SpannedConfig,
-        config::{ColoredConfig, Entity},
+        config::{ColoredConfig, Entity, Position, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{get_char_width, get_text_width},
@@ -146,11 +145,14 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
+
+            // TODO: use CELL trait?
 
             let text = records.get_text(pos);
             let cell_width = get_text_width(text);

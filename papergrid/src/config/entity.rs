@@ -43,7 +43,7 @@ impl Entity {
 
 impl From<Position> for Entity {
     fn from(pos: Position) -> Self {
-        Self::Cell(pos.row(), pos.col())
+        Self::Cell(pos.row, pos.col)
     }
 }
 

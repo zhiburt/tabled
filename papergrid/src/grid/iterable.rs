@@ -576,7 +576,7 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     shape: (usize, usize),
     used_color: &mut Option<&'a ANSIBuf>,
 ) -> fmt::Result {
-    if !cfg.has_vertical(pos.col(), shape.1) {
+    if !cfg.has_vertical(pos.col, shape.1) {
         return Ok(());
     }
 
@@ -1234,10 +1234,10 @@ fn count_verticals_in_range(cfg: &SpannedConfig, start: usize, end: usize, max: 
 fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return Some(pos.row());
+            return Some(pos.row);
         }
 
-        if pos.row() == 0 {
+        if pos.row == 0 {
             return None;
         }
 
