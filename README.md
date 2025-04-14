@@ -659,7 +659,7 @@ println!("{table}");
 
 ### Alignment
 
-You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`, `Rows`)\ using `Alignment`.
+You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`, `Rows`) using `Alignment`.
 
 ```rust
 use tabled::settings::{object::Segment, Alignment};
