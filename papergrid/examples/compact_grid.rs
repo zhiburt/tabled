@@ -1,11 +1,7 @@
-//! This example demonstrates using [`papergrid`] without [The Rust Standard Library](std).
-//!
-//! * Note the missing, pre-built [`Dimension`] implementations requiring manual design.
-
 use papergrid::{
     colors::NoColors,
     config::{compact::CompactConfig, AlignmentHorizontal, Borders, Indent, Sides},
-    dimension::Dimension,
+    dimension::{compact::CompactGridDimension, Estimate},
     grid::compact::CompactGrid,
     records::IterRecords,
 };
@@ -13,17 +9,16 @@ use papergrid::{
 fn main() {
     let data = [
         ["Papergrid", "is a library", "for printing tables", "!"],
-        [
-            "Just like this",
-            "NOTICE",
-            "that multiline is not supported",
-            "H\ne\nl\nl\no",
-        ],
+        ["Just like this", "", "", "!"],
+        ["NOTICE", "that multiline is not supported", "N\nO\n", "!"],
     ];
 
     let records = IterRecords::new(data, 4, None);
-    let dim = ConstDims(&[20, 15, 40, 3], 4);
+
     let cfg = generate_table_config();
+
+    let mut dim = CompactGridDimension::default();
+    dim.estimate(records, &cfg);
 
     let grid = CompactGrid::new(records, &dim, &cfg, NoColors);
 
@@ -55,19 +50,7 @@ const fn generate_table_config() -> CompactConfig {
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
-            Indent::spaced(3),
+            Indent::spaced(0),
             Indent::spaced(0),
         ))
-}
-
-struct ConstDims<'a>(&'a [usize], usize);
-
-impl Dimension for ConstDims<'_> {
-    fn get_width(&self, column: usize) -> usize {
-        self.0[column]
-    }
-
-    fn get_height(&self, _: usize) -> usize {
-        self.1
-    }
 }

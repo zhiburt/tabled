@@ -1,21 +1,12 @@
-//! This example demonstrates the flexibility of [`papergrid`] with manual configurations
-//! of [`Borders`], [`CompactConfig`], and column counts with [`IterRecords`].
-//!
-//! * For an alternative to [`CompactGrid`] and [`CompactGridDimension`] with
-//!   flexible row height, variable intra-column spans, and multiline cell support
-//!   see [`Grid`] and [`SpannedGridDimension`].
-
 use papergrid::{
     colors::NoColors,
     config::{compact::CompactConfig, AlignmentHorizontal, Borders, Indent, Sides},
-    dimension::{compact::CompactGridDimension, Estimate},
+    dimension::Dimension,
     grid::compact::CompactGrid,
     records::IterRecords,
 };
 
 fn main() {
-    let cfg = generate_table_config();
-
     let data = [
         ["Papergrid", "is a library", "for printing tables", "!"],
         [
@@ -25,10 +16,10 @@ fn main() {
             "H\ne\nl\nl\no",
         ],
     ];
-    let records = IterRecords::new(data, 4, None);
 
-    let mut dim = CompactGridDimension::default();
-    dim.estimate(records, &cfg);
+    let records = IterRecords::new(data, 4, None);
+    let dim = ConstDims(&[20, 15, 40, 3], 1);
+    let cfg = generate_table_config();
 
     let grid = CompactGrid::new(records, &dim, &cfg, NoColors);
 
@@ -60,7 +51,19 @@ const fn generate_table_config() -> CompactConfig {
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
-            Indent::spaced(0),
+            Indent::spaced(3),
             Indent::spaced(0),
         ))
+}
+
+struct ConstDims<'a>(&'a [usize], usize);
+
+impl Dimension for ConstDims<'_> {
+    fn get_width(&self, column: usize) -> usize {
+        self.0[column]
+    }
+
+    fn get_height(&self, _: usize) -> usize {
+        self.1
+    }
 }

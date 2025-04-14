@@ -1,7 +1,3 @@
-//! This example demonstrates how to set column names on a top horizontal line.
-//!
-//! It sets a `clickhouse` like table style (first seen on).
-
 use tabled::{
     settings::{style::Style, themes::ColumnNames, Alignment, Color},
     Table, Tabled,
@@ -37,8 +33,8 @@ fn main() {
 
     table.with(Style::modern().remove_horizontal());
     table.with(
-        ColumnNames::default()
-            .color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
+        ColumnNames::head()
+            .color(Color::BG_BLUE | Color::FG_WHITE | Color::BOLD)
             .alignment(Alignment::center()),
     );
 

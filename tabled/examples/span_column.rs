@@ -1,28 +1,22 @@
-//! [COMMENTED] A list of examples for a span use.
-
 use tabled::{
-    settings::{style::BorderSpanCorrection, Alignment, Span, Style},
+    settings::{themes::BorderCorrection, Alignment, Span, Style},
     Table,
 };
 
 fn main() {
     let data = [
-        (1, 2, 3),
-        (4, 5, 6),
-        (7, 8, 9),
-        (10, 11, 12),
-        (13, 14, 15),
-        (16, 17, 18),
-        (19, 20, 21),
+        ("0-0", "0-1", "0-2"),
+        ("1-0", "1-1", "1-2"),
+        ("2-0", "2-1", "2-2"),
+        ("3-0", "3-1", "3-2"),
+        ("4-0", "4-1", "4-2"),
+        ("5-0", "5-1", "5-2"),
+        ("6-0", "6-1", "6-2"),
     ];
+
     let mut table = Table::new(data);
 
     table.with(Style::modern_rounded());
-
-    // Here we show how original table looks.
-    println!("{table}");
-
-    // Then there's a list of Span appliences and it's affects.
 
     // Spread cell by 1 column to the right.
     table.modify((0, 1), Span::column(2));
@@ -51,7 +45,7 @@ fn main() {
     table.modify((4, 0), Span::column(1));
 
     // Correct the style to look good
-    table.with(BorderSpanCorrection);
+    table.with(BorderCorrection::span());
     table.with(Alignment::center());
 
     println!("{table}");

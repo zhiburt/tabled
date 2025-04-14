@@ -1,31 +1,26 @@
-//! This example demonstrates using colors to stylize [`Grid`] borders.
-//! Borders can be set globally with [`SpannedConfig::set_border_color_global()`]
-//! or individually with [`SpannedConfig::set_border_color()`].
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * [`CompactConfig`] also supports colorization when the `color` feature is enabled.
-
 use papergrid::{
     ansi::ANSIBuf,
     colors::NoColors,
     config::{
-        pos, spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders,
-        Entity::Global, Indent, Sides,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global,
+        Indent, Position, Sides,
     },
     dimension::{spanned::SpannedGridDimension, Estimate},
     grid::iterable::Grid,
     records::IterRecords,
 };
 
-fn main() {
-    let cfg = generate_table_config();
+// TODO: FIXME
 
+fn main() {
     let data = vec![
         vec!["Papergrid", "is a library", "for printing tables", "!"],
         vec!["", "Just like this", "", ""],
     ];
+
     let records = IterRecords::new(data, 4, Some(2));
+
+    let cfg = create_config();
 
     let mut dim = SpannedGridDimension::default();
     dim.estimate(&records, &cfg);
@@ -35,7 +30,7 @@ fn main() {
     println!("{grid}");
 }
 
-fn generate_table_config() -> SpannedConfig {
+fn create_config() -> SpannedConfig {
     let style = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -56,8 +51,8 @@ fn generate_table_config() -> SpannedConfig {
 
     let mut cfg = SpannedConfig::default();
     cfg.set_borders(style);
-    cfg.set_column_span(pos(1, 1), 3);
-    cfg.set_row_span(pos(0, 0), 2);
+    cfg.set_column_span(Position::new(1, 1), 3);
+    cfg.set_row_span(Position::new(0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
     cfg.set_padding(

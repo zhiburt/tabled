@@ -538,7 +538,7 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
 
     impl HtmlVisitorMut for Setter {
         fn visit_element_mut(&mut self, e: &mut HtmlElement) -> bool {
-            if self.cursor.row() != self.pos.row() {
+            if self.cursor.row != self.pos.row {
                 // looking for a row
                 if e.tag() == "tr" {
                     if self.is_started {

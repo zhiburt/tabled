@@ -1,5 +1,3 @@
-//! This example demonstrates a [`PoolTable`] usage.
-
 use tabled::{
     settings::{Alignment, Style},
     tables::PoolTable,

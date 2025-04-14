@@ -21,37 +21,3 @@ ansitok = { version = "0.3", optional = true  }
 
 [dev-dependencies]
 testing_table = { version = "0.2", features = ["ansi"] }
-
-[[example]]
-name = "papergrid_color"
-required-features = ["std", "ansi"]
-
-[[example]]
-name = "color_map"
-path = "examples/color_map.rs"
-required-features = ["std"]
-
-[[example]]
-name = "colored_border"
-path = "examples/colored_border.rs"
-required-features = ["std"]
-
-[[example]]
-name = "common_grid"
-path = "examples/common_grid.rs"
-required-features = ["std"]
-
-[[example]]
-name = "span_usage"
-path = "examples/span_usage.rs"
-required-features = ["std"]
-
-[[example]]
-name = "common_grid_no_std"
-path = "examples/common_grid_no_std.rs"
-required-features = []
-
-[[example]]
-name = "hello_world"
-path = "examples/hello_world.rs"
-required-features = ["std"]

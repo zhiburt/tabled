@@ -1,8 +1,3 @@
-//! This example demonstrates using a [`HashMap`] of colors to simplify styling
-//! sections of a [`Grid`] without embedding ANSI escape characters into cell values.
-//!
-//! * 🚩 This example requires the `ansi` feature.
-
 use std::{
     collections::HashMap,
     fmt::{self},
@@ -11,7 +6,7 @@ use std::{
 
 use papergrid::{
     ansi::ANSIFmt,
-    config::{pos, spanned::SpannedConfig, Borders, Position},
+    config::{spanned::SpannedConfig, Borders, Position},
     dimension::{spanned::SpannedGridDimension, Estimate},
     grid::iterable::Grid,
     records::IterRecords,
@@ -21,27 +16,8 @@ fn main() {
     let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
     let records = IterRecords::new(&records, 2, None);
 
-    let cfg = generate_table_config();
-
-    let mut dims = SpannedGridDimension::default();
-    dims.estimate(records, &cfg);
-
-    let colors = generate_colors();
-
-    let grid = Grid::new(records, &dims, &cfg, &colors);
-    grid.build(StdoutWriter::new()).unwrap();
-    println!();
-}
-
-fn generate_colors() -> HashMap<Position, Style> {
-    let mut m = HashMap::default();
-    m.insert(pos(0, 0), Style::Blue);
-    m.insert(pos(1, 1), Style::Black);
-    m
-}
-
-fn generate_table_config() -> SpannedConfig {
     let mut cfg = SpannedConfig::default();
+    cfg.set_borders_missing('+');
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),
@@ -51,8 +27,17 @@ fn generate_table_config() -> SpannedConfig {
         horizontal: Some('-'),
         ..Default::default()
     });
-    cfg.set_borders_missing('+');
-    cfg
+
+    let mut dims = SpannedGridDimension::default();
+    dims.estimate(records, &cfg);
+
+    let mut colors = HashMap::default();
+    colors.insert(Position::new(0, 0), Style::Blue);
+    colors.insert(Position::new(1, 1), Style::Black);
+
+    let grid = Grid::new(records, &dims, &cfg, &colors);
+    grid.build(StdoutWriter::new()).unwrap();
+    println!();
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -1,17 +1,8 @@
-//! This example demonstrates the flexibility of [`papergrid`] with manual configurations
-//! of [`Borders`], [`SpannedConfig`], and column counts with [`IterRecords`].
-//!
-//! * For an alternative to [`Grid`] and [`SpannedGridDimension`] with
-//!   uniform row height and intra-column spans see [`CompactGrid`] and [`CompactGridDimension`].
-//! * Note that [`Grid`] supports multiline cells whereas [`CompactGrid`] does not.
-//! * Note that [`Dimension`] implementations rely on [`Dimension::estimate()`]
-//!   to correctly format outputs, and typically trigger index-out-of-bounds errors otherwise.
-
 use papergrid::{
     colors::NoColors,
     config::{
-        pos, spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders,
-        Entity::Global, Indent, Sides,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global,
+        Indent, Position, Sides,
     },
     dimension::{spanned::SpannedGridDimension, Estimate},
     grid::iterable::Grid,
@@ -19,18 +10,19 @@ use papergrid::{
 };
 
 fn main() {
-    let cfg = generate_table_config();
-
     let data = [
         ["Papergrid", "is a library", "for printing tables", "!"],
         [
             "",
-            "Just                                     like\n\nthis",
+            "Just                                         like\n\nthis",
             "",
             "",
         ],
     ];
+
     let records = IterRecords::new(data, 4, None);
+
+    let cfg = generate_table_config();
 
     let mut dim = SpannedGridDimension::default();
     dim.estimate(records, &cfg);
@@ -61,8 +53,8 @@ fn generate_table_config() -> SpannedConfig {
 
     let mut cfg = SpannedConfig::default();
     cfg.set_borders(STYLE);
-    cfg.set_column_span(pos(1, 1), 3);
-    cfg.set_row_span(pos(0, 0), 2);
+    cfg.set_column_span(Position::new(1, 1), 3);
+    cfg.set_row_span(Position::new(0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
     cfg.set_padding(
