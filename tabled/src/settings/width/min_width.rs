@@ -104,7 +104,7 @@ impl<W, P> MinWidth<W, P> {
     }
 }
 
-impl<W, R> CellOption<R, ColoredConfig> for MinWidth<W>
+impl<W, R, P> CellOption<R, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,

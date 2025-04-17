@@ -133,7 +133,7 @@ where
     }
 }
 
-impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
+impl<W, R, P> CellOption<R, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -152,7 +152,7 @@ where
                 continue;
             }
 
-            // TODO: use CELL trait?
+            // TODO: use CELL trait? Clearly can benefit but we can't yet use SPECIALIZATION
 
             let text = records.get_text(pos);
             let cell_width = get_text_width(text);

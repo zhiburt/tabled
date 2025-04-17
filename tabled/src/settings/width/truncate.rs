@@ -229,6 +229,53 @@ where
     }
 }
 
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Truncate<'_, W, P>
+where
+    W: Measurement<Width>,
+    P: Peaker,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+    for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
+{
+    fn change(
+        self,
+        records: &mut R,
+        cfg: &mut ColoredConfig,
+        dims: &mut CompleteDimensionVecRecords<'_>,
+    ) {
+        if records.count_rows() == 0 || records.count_columns() == 0 {
+            return;
+        }
+
+        let width = self.width.measure(&*records, cfg);
+        let (widths, total) = get_table_widths_with_total(&*records, cfg);
+        if total <= width {
+            return;
+        }
+
+        let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
+            text: Cow::Borrowed(&s.text),
+            limit: s.limit,
+            #[cfg(feature = "ansi")]
+            try_color: s.try_color,
+        });
+
+        let multiline = self.multiline;
+        let widths = truncate_total_width(
+            records,
+            cfg,
+            widths,
+            total,
+            width,
+            self.priority,
+            suffix,
+            multiline,
+        );
+
+        dims.set_widths(widths);
+    }
+}
+
 fn truncate_multiline<'a>(
     text: &'a str,
     suffix: &'a str,
@@ -299,53 +346,6 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
             let suffix = Cow::Owned(iter::repeat_n(c, width).collect());
             (suffix, 0)
         }
-    }
-}
-
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Truncate<'_, W, P>
-where
-    W: Measurement<Width>,
-    P: Peaker,
-    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
-    for<'a> &'a R: Records,
-    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
-{
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
-        if records.count_rows() == 0 || records.count_columns() == 0 {
-            return;
-        }
-
-        let width = self.width.measure(&*records, cfg);
-        let (widths, total) = get_table_widths_with_total(&*records, cfg);
-        if total <= width {
-            return;
-        }
-
-        let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
-            text: Cow::Borrowed(&s.text),
-            limit: s.limit,
-            #[cfg(feature = "ansi")]
-            try_color: s.try_color,
-        });
-
-        let multiline = self.multiline;
-        let widths = truncate_total_width(
-            records,
-            cfg,
-            widths,
-            total,
-            width,
-            self.priority,
-            suffix,
-            multiline,
-        );
-
-        dims.set_widths(widths);
     }
 }
 
