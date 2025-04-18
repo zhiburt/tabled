@@ -8,7 +8,7 @@ use tabled::{
 };
 
 #[derive(Tabled)]
-struct BSD {
+struct Bsd {
     distribution: String,
     year_of_first_release: usize,
     is_active: bool,
@@ -17,11 +17,11 @@ struct BSD {
 fn main() {
     #[rustfmt::skip]
     let data = vec![
-        BSD { distribution: String::from("BSD"), year_of_first_release: 1978, is_active: false },
-        BSD { distribution: String::from("SunOS"), year_of_first_release: 1982, is_active: false },
-        BSD { distribution: String::from("NetBSD"), year_of_first_release: 1993, is_active: true },
-        BSD { distribution: String::from("FreeBSD"), year_of_first_release: 1993, is_active: true },
-        BSD { distribution: String::from("OpenBSD"), year_of_first_release: 1995, is_active: true },
+        Bsd { distribution: String::from("BSD"), year_of_first_release: 1978, is_active: false },
+        Bsd { distribution: String::from("SunOS"), year_of_first_release: 1982, is_active: false },
+        Bsd { distribution: String::from("NetBSD"), year_of_first_release: 1993, is_active: true },
+        Bsd { distribution: String::from("FreeBSD"), year_of_first_release: 1993, is_active: true },
+        Bsd { distribution: String::from("OpenBSD"), year_of_first_release: 1995, is_active: true },
     ];
 
     let mut table = Table::new(data);
