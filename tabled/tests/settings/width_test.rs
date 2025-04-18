@@ -7,6 +7,7 @@ use tabled::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
         peaker::{PriorityLeft, PriorityMax, PriorityMin, PriorityRight},
+        style::HorizontalLine,
         width::{Justify, MinWidth, SuffixLimit, Width},
         Alignment, Margin, Modify, Padding, Panel, Settings, Span, Style,
     },
@@ -16,10 +17,7 @@ use tabled::{
 use crate::matrix::Matrix;
 
 #[cfg(feature = "ansi")]
-use ::{
-    ansi_str::AnsiStr,
-    tabled::settings::{style::HorizontalLine, Color},
-};
+use ::{ansi_str::AnsiStr, tabled::settings::Color};
 
 test_table!(
     max_width,
@@ -115,58 +113,24 @@ test_table!(
 
 test_table!(
     max_width_wrapped_keep_words_2,
-    {
-        let table = Matrix::iter(vec!["this is a long   sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
+    Matrix::iter(vec!["this is a long   sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
     "| &str              |"
     "|-------------------|"
     "| this is a long    |"
     "| sentence          |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_3,
-    {
-        let table = Matrix::iter(vec!["this is a long    sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
-    // 'sentence' doesn't have a space ' sentence' because we use left alignment
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "|  sentence         |"
-);
-
-#[cfg(not(feature = "ansi"))]
-test_table!(
-    max_width_wrapped_keep_words_3,
-    {
-        let table = Matrix::iter(vec!["this is a long    sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
+    Matrix::iter(vec!["this is a long    sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
     // 'sentence' doesn't have a space ' sentence' because we use left alignment
     "| &str              |"
     "|-------------------|"
@@ -189,6 +153,26 @@ test_table!(
     "| &str |"
     "|------|"
     "| this |"
+);
+
+test_table!(
+    max_width_wrapped_keep_words_5,
+    {
+        let table = Matrix::iter(vec!["this is a longlon sentence"])
+            .with(Style::markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+            .to_string();
+
+        assert_width!(&table, 17 + 2 + 2);
+
+        table
+    },
+    // 'sentence' doesn't have a space ' sentence' because we use left alignment
+    "| &str              |"
+    "|-------------------|"
+    "| this is a longlon |"
+    "| sentence          |"
 );
 
 #[cfg(feature = "ansi")]
@@ -299,7 +283,7 @@ test_table!(
     "| String            |"
     "|-------------------|"
     "| this is a long    |"
-    "|  sentence         |"
+    "| sentence          |"
 );
 
 #[cfg(feature = "ansi")]
@@ -312,7 +296,7 @@ test_table!(
     "| String            |"
     "|-------------------|"
     "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
-    "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
+    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
 );
 
 #[cfg(feature = "ansi")]
@@ -374,7 +358,6 @@ test_table!(
     "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_1,
     Matrix::iter(["asdf"])
@@ -388,7 +371,6 @@ test_table!(
     "+-----+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_2,
     Matrix::iter(["qweqw eqwe"])
@@ -402,7 +384,6 @@ test_table!(
     "+------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_3,
     {
@@ -951,7 +932,6 @@ test_table!(
     "|  |  |  | 2 |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     total_width_wrapping_0,
     Matrix::new(3, 3)
@@ -972,7 +952,6 @@ test_table!(
     "|  | 0  | 1  |     |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     total_width_wrapping_1,
     Matrix::new(3, 3)
@@ -2064,7 +2043,6 @@ test_table!(
     "+--+---+----------+----------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     wrap_issue_0,
     {
@@ -2079,14 +2057,13 @@ test_table!(
     "+--------------------------------------+"
     "| x xxx xx xxxxxxx xxxxxxxx xx xxxx    |"
     "| xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx |"
-    "|  xx xxxxxxx x xx xxxxxx x xxxxxx     |"
+    "| xx xxxxxxx x xx xxxxxx x xxxxxx      |"
     "| xxxxxxxxxxxx xx xxxxxx xxx xxx       |"
     "| xxxxxx xxxxxxx. xx xxxxxxxx xx xx    |"
     "| xxxxxxxxxx                           |"
     "+--------------------------------------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     wrap_issue_1,
     {
@@ -2383,12 +2360,12 @@ mod derived {
                 "+-------+-------+"
                 "| asd D | true  |"
                 "| ebian |       |"
-                "|  2    |       |"
+                "| 2     |       |"
                 "| links |       |"
-                "|  in a |       |"
-                "|  stri |       |"
-                "| ng De |       |"
-                "| bian  |       |"
+                "| in a  |       |"
+                "| strin |       |"
+                "| g Deb |       |"
+                "| ian   |       |"
                 "+-------+-------+"
             )
         );
@@ -2444,7 +2421,7 @@ mod derived {
                 "|        | erlink |"
                 "+--------+--------+"
                 "| Debian | true   |"
-                "|  :link |        |"
+                "| :link  |        |"
                 "+--------+--------+"
             )
         );
@@ -2463,11 +2440,10 @@ mod derived {
                 "+--------+--------+"
                 "| asd    | true   |"
                 "| Debian |        |"
-                "|  2     |        |"
+                "| 2      |        |"
                 "| links  |        |"
                 "| in a   |        |"
                 "| string |        |"
-                "|        |        |"
                 "| Debian |        |"
                 "+--------+--------+"
             )
