@@ -1,8 +1,3 @@
-//! This example demonstrates using [`Wrap::keep_words()`] to preserve
-//! word shape while truncating a table to the specified size. Without
-//! this setting enabled, a word could possibly be split into pieces,
-//! greatly reducing the legibility of the display.
-
 use tabled::{
     settings::{object::Segment, Style, Width},
     Table,

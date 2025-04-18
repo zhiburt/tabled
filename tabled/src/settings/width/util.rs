@@ -1,6 +1,6 @@
 use crate::{
     grid::config::SpannedConfig,
-    grid::dimension::SpannedGridDimension,
+    grid::dimension::IterGridDimension,
     grid::records::{IntoRecords, Records},
 };
 
@@ -9,7 +9,7 @@ where
     R: Records,
     <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    SpannedGridDimension::width(records, cfg)
+    IterGridDimension::width(records, cfg)
 }
 
 pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
@@ -17,7 +17,7 @@ where
     R: Records,
     <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    let widths = SpannedGridDimension::width(records, cfg);
+    let widths = IterGridDimension::width(records, cfg);
     let total_width = get_table_total_width(&widths, cfg);
     (widths, total_width)
 }

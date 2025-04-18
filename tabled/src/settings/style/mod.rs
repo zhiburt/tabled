@@ -99,7 +99,6 @@
 mod border;
 mod builder;
 mod horizontal_line;
-mod offset;
 mod vertical_line;
 
 #[cfg(feature = "std")]
@@ -108,21 +107,15 @@ mod border_color;
 mod line_char;
 #[cfg(feature = "std")]
 mod line_text;
-#[cfg(feature = "std")]
-mod span_border_correction;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use self::{
-    border_color::BorderColor, line_char::LineChar, line_text::LineText,
-    span_border_correction::BorderSpanCorrection,
-};
+pub use self::{border_color::BorderColor, line_char::LineChar, line_text::LineText};
 
 pub use self::{
     border::Border,
     builder::{On, Style},
     horizontal_line::HorizontalLine,
-    offset::Offset,
     vertical_line::VerticalLine,
 };
 

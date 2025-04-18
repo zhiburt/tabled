@@ -11,12 +11,12 @@ mod compact_multiline_config;
 
 pub use papergrid::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator, Formatting,
-    HorizontalLine, Indent, Position, Sides, VerticalLine,
+    HorizontalLine, Indent, Offset, Position, Sides, VerticalLine,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use spanned_config::{EntityMap, Offset, SpannedConfig};
+pub use spanned_config::{EntityMap, SpannedConfig};
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]

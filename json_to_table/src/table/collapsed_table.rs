@@ -673,7 +673,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for SetTopChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &split in self.0 {
             let offset = split;
-            cfg.set_horizontal_char(Position::new(0, 0), self.1, Offset::Begin(offset));
+            cfg.set_horizontal_char(Position::new(0, 0), Offset::Start(offset), self.1);
         }
     }
 }
@@ -683,7 +683,7 @@ struct SetLeftChars<'a>(&'a [usize], char);
 impl<R, D> TableOption<R, ColoredConfig, D> for SetLeftChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &offset in self.0 {
-            cfg.set_vertical_char(Position::new(0, 0), self.1, Offset::Begin(offset));
+            cfg.set_vertical_char(Position::new(0, 0), Offset::Start(offset), self.1);
         }
     }
 }

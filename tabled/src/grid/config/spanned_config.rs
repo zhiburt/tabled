@@ -1,1 +1,1 @@
-pub use papergrid::config::spanned::{EntityMap, Offset, SpannedConfig};
+pub use papergrid::config::spanned::{EntityMap, SpannedConfig};

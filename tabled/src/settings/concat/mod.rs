@@ -13,9 +13,8 @@
 
 use std::borrow::Cow;
 
-use papergrid::config::pos;
-
 use crate::{
+    grid::config::Position,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     Table,
@@ -138,15 +137,17 @@ where
                     records.push_row();
 
                     for col in 0..records.count_columns() {
-                        records.set(pos(row, col), self.default_cell.to_string());
+                        let pos = Position::new(row, col);
+                        records.set(pos, self.default_cell.to_string());
                     }
                 }
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text(pos(row, col)).to_string();
-                        let col = col + count_cols;
-                        records.set((row, col).into(), text);
+                        let pos = Position::new(row, col);
+                        let text = rhs.get_records().get_text(pos).to_string();
+                        let pos = pos + (0, count_cols);
+                        records.set(pos, text);
                     }
                 }
             }
@@ -159,15 +160,17 @@ where
                     records.push_column();
 
                     for row in 0..records.count_rows() {
-                        records.set(pos(row, col), self.default_cell.to_string());
+                        let pos = Position::new(row, col);
+                        records.set(pos, self.default_cell.to_string());
                     }
                 }
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text(pos(row, col)).to_string();
-                        let row = row + count_rows;
-                        records.set(pos(row, col), text);
+                        let pos = Position::new(row, col);
+                        let text = rhs.get_records().get_text(pos).to_string();
+                        let pos = pos + (count_rows, 0);
+                        records.set(pos, text);
                     }
                 }
             }

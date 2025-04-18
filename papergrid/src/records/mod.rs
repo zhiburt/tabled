@@ -1,6 +1,4 @@
-//! The module contains a [Records] abstraction of a [`Grid`] trait and its implementers.
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! The module contains a [`Records`] abstraction of a grid trait and its implementers.
 
 mod exact_records;
 mod into_records;

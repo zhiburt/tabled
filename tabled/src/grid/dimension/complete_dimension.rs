@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 
 use crate::grid::{
-    config::{ColoredConfig, SpannedConfig},
-    dimension::{Dimension, Estimate, SpannedGridDimension},
-    records::{IntoRecords, Records},
+    config::{ColoredConfig, Entity, SpannedConfig},
+    dimension::{Dimension, Estimate, PeekableGridDimension},
+    records::{vec_records::Cell, IntoRecords, Records},
 };
 
 /// CompleteDimension is a [`Dimension`] implementation for a [`Table`]
@@ -33,10 +33,8 @@ impl CompleteDimension<'_> {
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
     ///
     /// [`TableOption`]: crate::settings::TableOption
-    pub fn set_widths(&mut self, columns: Vec<usize>) -> bool {
+    pub fn set_widths(&mut self, columns: Vec<usize>) {
         self.width = Some(Cow::Owned(columns));
-
-        true
     }
 
     /// Set rows heights.
@@ -46,10 +44,8 @@ impl CompleteDimension<'_> {
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
     ///
     /// [`TableOption`]: crate::settings::TableOption
-    pub fn set_heights(&mut self, rows: Vec<usize>) -> bool {
+    pub fn set_heights(&mut self, rows: Vec<usize>) {
         self.height = Some(Cow::Owned(rows));
-
-        true
     }
 
     /// Force width estimation.
@@ -62,12 +58,38 @@ impl CompleteDimension<'_> {
         self.height = None;
     }
 
+    /// Force width and height estimation.
+    pub fn clear(&mut self) {
+        self.width = None;
+        self.height = None;
+    }
+
     /// Copies a reference from self.
-    pub fn from_origin(&self) -> CompleteDimension<'_> {
+    pub fn into_owned(self) -> CompleteDimension<'static> {
+        let width = self.width.map(|v| Cow::Owned(v.into_owned()));
+        let height = self.height.map(|v| Cow::Owned(v.into_owned()));
+
+        CompleteDimension { width, height }
+    }
+
+    /// Copies a reference from self.
+    pub fn inherit(&self) -> CompleteDimension<'_> {
         let width = self.width.as_deref().map(Cow::Borrowed);
         let height = self.height.as_deref().map(Cow::Borrowed);
 
         CompleteDimension { width, height }
+    }
+
+    /// Copies a reference from self.
+    pub fn combine(&mut self, rhs: CompleteDimension<'_>, hint: Option<Entity>) {
+        let widths = rhs.width.map(|v| v.into_owned());
+        let heights = rhs.height.map(|v| v.into_owned());
+        dims_reastimate(self, widths, heights, hint);
+    }
+
+    /// Copies a reference from self.
+    pub fn reastimate(&mut self, hint: Option<Entity>) {
+        dims_reastimate_likely(self, hint);
     }
 }
 
@@ -94,22 +116,20 @@ impl Dimension for CompleteDimension<'_> {
 impl<R> Estimate<R, SpannedConfig> for CompleteDimension<'_>
 where
     R: Records,
-    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    <R::Iter as IntoRecords>::Cell: Cell,
 {
     fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
             (true, false) => {
-                self.height = Some(Cow::Owned(SpannedGridDimension::height(records, cfg)));
+                self.height = Some(Cow::Owned(PeekableGridDimension::height(records, cfg)));
             }
             (false, true) => {
-                self.width = Some(Cow::Owned(SpannedGridDimension::width(records, cfg)));
+                self.width = Some(Cow::Owned(PeekableGridDimension::width(records, cfg)));
             }
             (false, false) => {
-                let mut dims = SpannedGridDimension::default();
-                dims.estimate(records, cfg);
+                let (width, height) = PeekableGridDimension::dimension(records, cfg);
 
-                let (width, height) = dims.get_values();
                 self.width = Some(Cow::Owned(width));
                 self.height = Some(Cow::Owned(height));
             }
@@ -120,9 +140,74 @@ where
 impl<R> Estimate<R, ColoredConfig> for CompleteDimension<'_>
 where
     R: Records,
-    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    <R::Iter as IntoRecords>::Cell: Cell,
 {
     fn estimate(&mut self, records: R, cfg: &ColoredConfig) {
         Estimate::estimate(self, records, cfg.as_ref())
+    }
+}
+
+fn dims_reastimate(
+    dims: &mut CompleteDimension<'_>,
+    widths: Option<Vec<usize>>,
+    heights: Option<Vec<usize>>,
+    hint: Option<Entity>,
+) {
+    let hint = match hint {
+        Some(hint) => hint,
+        None => return,
+    };
+
+    match hint {
+        Entity::Global | Entity::Cell(_, _) => {
+            dims_set_widths(dims, widths);
+            dims_set_heights(dims, heights);
+        }
+        Entity::Column(_) => {
+            dims_set_widths(dims, widths);
+        }
+        Entity::Row(_) => {
+            dims_set_heights(dims, heights);
+        }
+    }
+}
+
+fn dims_set_widths(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {
+    match list {
+        Some(list) => {
+            dims.width = Some(Cow::Owned(list));
+        }
+        None => {
+            dims.width = None;
+        }
+    }
+}
+
+fn dims_set_heights(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {
+    match list {
+        Some(list) => {
+            dims.height = Some(Cow::Owned(list));
+        }
+        None => {
+            dims.height = None;
+        }
+    }
+}
+
+fn dims_reastimate_likely(dims: &mut CompleteDimension<'_>, hint: Option<Entity>) {
+    let hint = match hint {
+        Some(hint) => hint,
+        None => return,
+    };
+
+    match hint {
+        Entity::Global | Entity::Cell(_, _) => {
+            dims.clear_width();
+            dims.clear_height()
+        }
+        Entity::Column(_) => {
+            dims.clear_width();
+        }
+        Entity::Row(_) => dims.clear_height(),
     }
 }

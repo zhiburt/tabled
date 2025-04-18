@@ -6,7 +6,7 @@ use std::{
 
 use tabled::{
     grid::config::ColoredConfig,
-    grid::dimension::CompleteDimensionVecRecords,
+    grid::dimension::CompleteDimension,
     grid::records::vec_records::{Text, VecRecords},
     settings::{object::Segment, Alignment, Modify, TableOption},
     Table, Tabled,
@@ -77,7 +77,7 @@ impl Matrix {
     }
 
     pub fn insert<V: ToString>(mut self, pos: tabled::grid::config::Position, value: V) -> Self {
-        self.data[pos.row()][pos.col()] = value.to_string();
+        self.data[pos.row][pos.col] = value.to_string();
         self
     }
 
@@ -93,8 +93,7 @@ impl Matrix {
 
     pub fn with<O>(self, opt: O) -> Table
     where
-        for<'a> O:
-            TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'a>>,
+        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
     {
         let mut table = self.to_table();
         table.with(opt);

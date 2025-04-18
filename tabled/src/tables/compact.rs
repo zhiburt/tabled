@@ -3,6 +3,8 @@
 use core::cmp::max;
 use core::fmt;
 
+use papergrid::colors::NoColors;
+
 use crate::{
     grid::{
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides},
@@ -278,7 +280,7 @@ fn build_grid<W, I, D>(
     config: CompactConfig,
     cols: usize,
     rows: Option<usize>,
-) -> Result<(), fmt::Error>
+) -> fmt::Result
 where
     W: fmt::Write,
     I: IntoRecords,
@@ -290,12 +292,12 @@ where
             let records = LimitRows::new(records, limit);
             let records = LimitColumns::new(records, cols);
             let records = IterRecords::new(records, cols, rows);
-            CompactGrid::new(records, dims, config).build(writer)
+            CompactGrid::new(records, config, dims, NoColors).build(writer)
         }
         None => {
             let records = LimitColumns::new(records, cols);
             let records = IterRecords::new(records, cols, rows);
-            CompactGrid::new(records, dims, config).build(writer)
+            CompactGrid::new(records, config, dims, NoColors).build(writer)
         }
     }
 }

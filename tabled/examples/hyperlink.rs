@@ -1,40 +1,35 @@
-//! This example demonstrates how hyperlinks can be embedded into a [`Table`] display.
-//!
-//! While not a [`tabled`] specific implementation, it is helpful to know that
-//! most users expect certain elements of interactivity based on the purpose of your display.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * ⚠️ Terminal interfaces may differ in how they parse links or make them interactive.
-//!   [`tabled`] doesn't have the final say on whether a link is clickable or not.
-
 use tabled::{
-    settings::{object::Segment, Alignment, Style, Width},
+    settings::{object::Segment, Color, Style, Width},
     Table, Tabled,
 };
 
 fn main() {
-    let multicolored_debian = "\x1b[30mDebian\x1b[0m\
-    \x1b[31m Debian\x1b[0m\
-    \x1b[32m Debian\x1b[0m\
-    \x1b[33m Debian\x1b[0m\
-    \x1b[34m Debian\x1b[0m\
-    \x1b[35m Debian\x1b[0m\
-    \x1b[36m Debian\x1b[0m\
-    \x1b[37m Debian\x1b[0m\
-    \x1b[40m Debian\x1b[0m\
-    \x1b[41m Debian\x1b[0m\
-    \x1b[42m Debian\x1b[0m\
-    \x1b[43m Debian\x1b[0m\
-    \x1b[44m Debian\x1b[0m";
+    let colors = [
+        Color::FG_BLACK,
+        Color::FG_BLUE,
+        Color::FG_GREEN,
+        Color::FG_RED,
+        Color::FG_MAGENTA,
+        Color::FG_CYAN,
+        Color::BG_BLACK,
+        Color::BG_BLUE,
+        Color::BG_GREEN,
+        Color::BG_RED,
+        Color::BG_MAGENTA,
+        Color::BG_CYAN,
+    ];
 
-    let debian_repeat =
-        "DebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebian"
-            .to_string();
+    let debian_multicolored = colors
+        .iter()
+        .map(|color| color.colorize("Debian"))
+        .collect::<Vec<_>>()
+        .join(" ");
 
-    let debian_colored_link = format_osc8_hyperlink("https://www.debian.org/", multicolored_debian);
-    let debian_link = format_osc8_hyperlink("https://www.debian.org/", "Debian");
-    let wiki_link = format_osc8_hyperlink("https://www.wikipedia.org/", "Debian");
+    let debian_big = std::iter::repeat_n("Debian", 12).collect::<String>();
+
+    let debian_multicolored_link = hyperlink("https://www.debian.org/", &debian_multicolored);
+    let debian_link = hyperlink("https://www.debian.org/", "Debian");
+    let wiki_link = hyperlink("https://www.wikipedia.org/", "Debian");
 
     let data = [
         Distribution::new("Debian".into(), false),
@@ -45,24 +40,18 @@ fn main() {
             true,
         ),
         Distribution::new(format!("a link surrounded {debian_link} by text"), true),
-        Distribution::new(debian_colored_link, true),
-        Distribution::new(debian_repeat, false),
+        Distribution::new(debian_multicolored_link, true),
+        Distribution::new(debian_big, false),
     ];
 
     let mut table = Table::new(&data);
-    table
-        .with(Style::ascii_rounded())
-        .with(Alignment::left())
-        .modify(Segment::all(), Width::wrap(16).keep_words(true));
-
+    table.with(Style::ascii().remove_horizontal());
+    table.modify(Segment::all(), Width::wrap(20).keep_words(true));
     println!("{table}");
 
     let mut table = Table::new(&data);
-    table
-        .with(Style::ascii_rounded())
-        .with(Alignment::left())
-        .modify(Segment::all(), Width::wrap(16));
-
+    table.with(Style::ascii().remove_horizontal());
+    table.modify(Segment::all(), Width::wrap(20));
     println!("{table}");
 }
 
@@ -78,6 +67,6 @@ impl Distribution {
     }
 }
 
-fn format_osc8_hyperlink(url: &str, text: &str) -> String {
+fn hyperlink(url: &str, text: &str) -> String {
     format!("\x1b]8;;{url}\x1b\\{text}\x1b]8;;\x1b\\",)
 }

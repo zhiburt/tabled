@@ -1,7 +1,7 @@
 use crate::{
     grid::{
         config::ColoredConfig,
-        dimension::CompleteDimensionVecRecords,
+        dimension::CompleteDimension,
         records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
     },
@@ -45,8 +45,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>>
-    for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension<'_>> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -54,12 +53,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

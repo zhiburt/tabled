@@ -5,9 +5,9 @@ use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
-    config::{pos, spanned::SpannedConfig, Borders, Position},
-    dimension::{spanned::SpannedGridDimension, Dimension, Estimate},
-    grid::iterable::Grid,
+    config::{spanned::SpannedConfig, Borders, Position},
+    dimension::{iterable::IterGridDimension, Dimension, Estimate},
+    grid::iterable::IterGrid,
     records::{IterRecords, Records},
 };
 
@@ -30,7 +30,7 @@ impl GridBuilder {
         Self {
             size: (rows, cols),
             cfg,
-            ..Default::default()
+            data: HashMap::default(),
         }
     }
 
@@ -46,7 +46,7 @@ impl GridBuilder {
         for (i, rows) in data.into_iter().enumerate() {
             for (j, text) in rows.into_iter().enumerate() {
                 let text = text.into();
-                self.data.insert(pos(i, j), text);
+                self.data.insert(Position::new(i, j), text);
             }
         }
 
@@ -61,7 +61,7 @@ impl GridBuilder {
     pub fn build(self) -> String {
         let mut data = records(self.size.0, self.size.1);
         for (p, text) in self.data {
-            data[p.row()][p.col()] = text;
+            data[p.row][p.col] = text;
         }
 
         let grid = build_grid(data, self.cfg, self.size);
@@ -73,13 +73,13 @@ fn build_grid(
     data: Vec<Vec<String>>,
     cfg: SpannedConfig,
     shape: (usize, usize),
-) -> Grid<IterRecords<Vec<Vec<String>>>, SpannedGridDimension, SpannedConfig, NoColors> {
+) -> IterGrid<IterRecords<Vec<Vec<String>>>, IterGridDimension, SpannedConfig, NoColors> {
     let records = IterRecords::new(data, shape.1, Some(shape.0));
 
-    let mut dims = SpannedGridDimension::default();
+    let mut dims = IterGridDimension::default();
     dims.estimate(&records, &cfg);
 
-    Grid::new(records, dims, cfg, NoColors)
+    IterGrid::new(records, cfg, dims, NoColors)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {

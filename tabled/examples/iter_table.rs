@@ -1,16 +1,3 @@
-//! This example demonstrates using [`IterTable`], an [allocation](https://doc.rust-lang.org/nomicon/vec/vec-alloc.html)
-//! free [`Table`] alternative that translates an iterator into a display.
-//!
-//! * Note how [`IterTable`] supports the familiar `.with()` syntax for applying display
-//!   modifications.
-//!
-//! * [`IterTable`] supports manual configuration of:
-//!     * Record sniffing (default 1000 rows)
-//!     * Row cutoff
-//!     * Row height
-//!     * Column cutoff
-//!     * Column width
-
 use std::{
     fs::File,
     io::{stdout, BufRead, BufReader},

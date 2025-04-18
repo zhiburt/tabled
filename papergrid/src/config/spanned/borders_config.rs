@@ -47,46 +47,46 @@ impl<T> BordersConfig<T> {
     pub(crate) fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
-            self.layout.horizontals.insert(pos.row());
+            self.layout.horizontals.insert(pos.row);
         }
 
         if let Some(c) = border.bottom {
             self.cells.horizontal.insert(pos + (1, 0), c);
-            self.layout.horizontals.insert(pos.row() + 1);
+            self.layout.horizontals.insert(pos.row + 1);
         }
 
         if let Some(c) = border.left {
             self.cells.vertical.insert(pos, c);
-            self.layout.verticals.insert(pos.col());
+            self.layout.verticals.insert(pos.col);
         }
 
         if let Some(c) = border.right {
             self.cells.vertical.insert(pos + (0, 1), c);
-            self.layout.verticals.insert(pos.col() + 1);
+            self.layout.verticals.insert(pos.col + 1);
         }
 
         if let Some(c) = border.left_top_corner {
             self.cells.intersection.insert(pos, c);
-            self.layout.horizontals.insert(pos.row());
-            self.layout.verticals.insert(pos.col());
+            self.layout.horizontals.insert(pos.row);
+            self.layout.verticals.insert(pos.col);
         }
 
         if let Some(c) = border.right_top_corner {
             self.cells.intersection.insert(pos + (0, 1), c);
-            self.layout.horizontals.insert(pos.row());
-            self.layout.verticals.insert(pos.col() + 1);
+            self.layout.horizontals.insert(pos.row);
+            self.layout.verticals.insert(pos.col + 1);
         }
 
         if let Some(c) = border.left_bottom_corner {
             self.cells.intersection.insert(pos + (1, 0), c);
-            self.layout.horizontals.insert(pos.row() + 1);
-            self.layout.verticals.insert(pos.col());
+            self.layout.horizontals.insert(pos.row + 1);
+            self.layout.verticals.insert(pos.col);
         }
 
         if let Some(c) = border.right_bottom_corner {
             self.cells.intersection.insert(pos + (1, 1), c);
-            self.layout.horizontals.insert(pos.row() + 1);
-            self.layout.verticals.insert(pos.col() + 1);
+            self.layout.horizontals.insert(pos.row + 1);
+            self.layout.verticals.insert(pos.col + 1);
         }
     }
 
@@ -104,20 +104,20 @@ impl<T> BordersConfig<T> {
 
         // clean up the layout.
 
-        if !self.check_is_horizontal_set(pos.row(), count_rows) {
-            self.layout.horizontals.remove(&pos.row());
+        if !self.check_is_horizontal_set(pos.row, count_rows) {
+            self.layout.horizontals.remove(&pos.row);
         }
 
-        if !self.check_is_horizontal_set(pos.row() + 1, count_rows) {
-            self.layout.horizontals.remove(&(pos.row() + 1));
+        if !self.check_is_horizontal_set(pos.row + 1, count_rows) {
+            self.layout.horizontals.remove(&(pos.row + 1));
         }
 
-        if !self.check_is_vertical_set(pos.col(), count_cols) {
-            self.layout.verticals.remove(&pos.col());
+        if !self.check_is_vertical_set(pos.col, count_cols) {
+            self.layout.verticals.remove(&pos.col);
         }
 
-        if !self.check_is_vertical_set(pos.col() + 1, count_cols) {
-            self.layout.verticals.remove(&(pos.col() + 1));
+        if !self.check_is_vertical_set(pos.col + 1, count_cols) {
+            self.layout.verticals.remove(&(pos.col + 1));
         }
     }
 
@@ -222,11 +222,11 @@ impl<T> BordersConfig<T> {
         self.cells
             .vertical
             .get(&pos)
-            .or_else(|| self.verticals.get(&pos.col()).and_then(|l| l.main.as_ref()))
+            .or_else(|| self.verticals.get(&pos.col).and_then(|l| l.main.as_ref()))
             .or({
-                if pos.col() == count_cols {
+                if pos.col == count_cols {
                     self.borders.right.as_ref()
-                } else if pos.col() == 0 {
+                } else if pos.col == 0 {
                     self.borders.left.as_ref()
                 } else {
                     self.borders.vertical.as_ref()
@@ -239,15 +239,11 @@ impl<T> BordersConfig<T> {
         self.cells
             .horizontal
             .get(&pos)
-            .or_else(|| {
-                self.horizontals
-                    .get(&pos.row())
-                    .and_then(|l| l.main.as_ref())
-            })
+            .or_else(|| self.horizontals.get(&pos.row).and_then(|l| l.main.as_ref()))
             .or({
-                if pos.row() == 0 {
+                if pos.row == 0 {
                     self.borders.top.as_ref()
-                } else if pos.row() == count_rows {
+                } else if pos.row == count_rows {
                     self.borders.bottom.as_ref()
                 } else {
                     self.borders.horizontal.as_ref()
@@ -261,17 +257,17 @@ impl<T> BordersConfig<T> {
         pos: Position,
         (count_rows, count_cols): (usize, usize),
     ) -> Option<&T> {
-        let use_top = pos.row() == 0;
-        let use_bottom = pos.row() == count_rows;
-        let use_left = pos.col() == 0;
-        let use_right = pos.col() == count_cols;
+        let use_top = pos.row == 0;
+        let use_bottom = pos.row == count_rows;
+        let use_left = pos.col == 0;
+        let use_right = pos.col == count_cols;
 
         let intersection = self.cells.intersection.get(&pos);
         if intersection.is_some() {
             return intersection;
         }
 
-        let intersection = self.horizontals.get(&pos.row()).and_then(|l| {
+        let intersection = self.horizontals.get(&pos.row).and_then(|l| {
             if use_left && l.left.is_some() {
                 l.left.as_ref()
             } else if use_right && l.right.is_some() {
@@ -286,7 +282,7 @@ impl<T> BordersConfig<T> {
             return intersection;
         }
 
-        let intersection = self.verticals.get(&pos.col()).and_then(|l| {
+        let intersection = self.verticals.get(&pos.col).and_then(|l| {
             if use_top && l.top.is_some() {
                 l.top.as_ref()
             } else if use_bottom && l.bottom.is_some() {
@@ -360,15 +356,15 @@ impl<T> BordersConfig<T> {
     fn check_is_horizontal_set(&self, row: usize, count_rows: usize) -> bool {
         (row == 0 && self.layout.top)
             || (row == count_rows && self.layout.bottom)
-            || self.cells.horizontal.keys().any(|&p| p.row() == row)
-            || self.cells.intersection.keys().any(|&p| p.row() == row)
+            || self.cells.horizontal.keys().any(|&p| p.row == row)
+            || self.cells.intersection.keys().any(|&p| p.row == row)
     }
 
     fn check_is_vertical_set(&self, col: usize, count_cols: usize) -> bool {
         (col == 0 && self.layout.left)
             || (col == count_cols && self.layout.right)
-            || self.cells.vertical.keys().any(|&p| p.col() == col)
-            || self.cells.intersection.keys().any(|&p| p.col() == col)
+            || self.cells.vertical.keys().any(|&p| p.col == col)
+            || self.cells.intersection.keys().any(|&p| p.col == col)
     }
 }
 

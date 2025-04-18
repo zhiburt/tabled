@@ -838,19 +838,18 @@ test_table!(
 );
 
 test_table!(
-    table_2x2_empty_height_list_together_with_width_list_dont_work_0,
+    table_2x2_empty_height_list_together_with_width_list_work_0,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
             .with(Style::modern())
             .with(Padding::zero())
             .with(Height::list([1, 0]))
-            .with(Width::list([1, 0]))
+            .with(Width::list([1, 1]))
     },
-    "┌─┬┐"
-    "│ ││"
-    "├─┼┤"
-    "│ ││"
-    "└─┴┘"
+    "┌─┬─┐"
+    "│ │ │"
+    "├─┼─┤"
+    "└─┴─┘"
 );
 
 test_table!(
@@ -862,10 +861,10 @@ test_table!(
             .with(Width::list([1, 0]))
             .with(Height::list([1, 0]))
     },
-    "┌┬┐"
-    "│││"
-    "├┼┤"
-    "└┴┘"
+    "┌─┬┐"
+    "│ ││"
+    "├─┼┤"
+    "└─┴┘"
 );
 
 test_table!(

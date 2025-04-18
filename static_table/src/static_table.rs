@@ -13,7 +13,7 @@ use syn::{
 };
 use tabled::{
     builder::Builder,
-    settings::{style::BorderSpanCorrection, Alignment, Margin, Modify, Padding, Span, Style},
+    settings::{themes::BorderCorrection, Alignment, Margin, Modify, Padding, Span, Style},
     Table,
 };
 
@@ -643,7 +643,7 @@ pub(crate) fn build_table(table_st: &TableStruct) -> Result<String> {
 
     let has_spans = table.get_config().has_column_spans() || table.get_config().has_row_spans();
     if has_spans {
-        table.with(BorderSpanCorrection);
+        table.with(BorderCorrection::span());
     }
 
     Ok(table.to_string())

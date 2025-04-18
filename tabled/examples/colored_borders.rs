@@ -1,41 +1,22 @@
-//! This example demonstrates using the [`RawStyle`] [setting](tabled::settings) to
-//! to granularly specify border colors.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note how [`Color`] contains several helpful, const values covering
-//!   a basic selection of foreground and background colors. [`Color`] also
-//!   supports custom colors with [`Color::new()`].
-
 use tabled::{
     settings::{style::Style, themes::Theme, Color},
     Table, Tabled,
 };
 
 #[derive(Tabled)]
-struct CodeEditor {
+struct Editor {
     name: String,
-    first_release: String,
-    developer: String,
+    dev: String,
+    release: usize,
 }
-
-impl CodeEditor {
-    fn new(name: &str, first_release: &str, developer: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            first_release: first_release.to_string(),
-            developer: developer.to_string(),
-        }
-    }
-}
-
 fn main() {
+    #[rustfmt::skip]
     let data = [
-        CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
-        CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),
-        CodeEditor::new("Notepad++", "2003", "Don Ho"),
-        CodeEditor::new("GNU Emacs", "1984", "Richard Stallman"),
-        CodeEditor::new("Neovim", "2015", "Vim community"),
+        Editor { name: String::from("Sublime Text 3"),      release: 2008, dev: String::from("Sublime HQ") },
+        Editor { name: String::from("Visual Studio Code"),  release: 2015, dev: String::from("Microsoft") },
+        Editor { name: String::from("Notepad++"),           release: 2003, dev: String::from("Don Ho") },
+        Editor { name: String::from("GNU Emacs"),           release: 1984, dev: String::from("Richard Stallman") },
+        Editor { name: String::from("Neovim"),              release: 2015, dev: String::from("Vim community") },
     ];
 
     let mut style = Theme::from(Style::extended());

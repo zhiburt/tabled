@@ -11,14 +11,17 @@ use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
-        spanned::{Offset, SpannedConfig},
-        Formatting,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
+        Position, Sides,
     },
-    config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::get_line_width,
 };
+
+// TODO: Do we actually need PeekableRecords?
+//       Maybe Cloned iterator will be faster?
+//       Even better &referenced Records
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -273,7 +276,7 @@ mod grid_basic {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -313,7 +316,7 @@ mod grid_basic {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let pad = ctx.cfg.get_padding(pos);
         let valignment = *ctx.cfg.get_alignment_vertical(pos);
@@ -692,7 +695,7 @@ mod grid_not_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -823,7 +826,7 @@ mod grid_not_spanned {
         C: Colors,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let formatting = ctx.cfg.get_formatting(pos);
         let text_cfg = TextCfg {
@@ -1122,7 +1125,7 @@ mod grid_not_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -1160,7 +1163,7 @@ mod grid_not_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (start, 0),
+            Offset::Start(start) => (start, 0),
             Offset::End(end) => (0, end),
         };
 
@@ -1435,6 +1438,8 @@ mod grid_spanned {
                 // means it's part of other a spanned cell
                 // so. we just need to use line from other cell.
 
+                prepare_coloring(f, None, &mut used_color)?;
+
                 let original_row = closest_visible_row(ctx.cfg, pos).unwrap();
 
                 // considering that the content will be printed instead horizontal lines so we can skip some lines.
@@ -1550,7 +1555,7 @@ mod grid_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -1985,7 +1990,7 @@ mod grid_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -2023,7 +2028,7 @@ mod grid_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (*start, 0),
+            Offset::Start(start) => (*start, 0),
             Offset::End(end) => (0, *end),
         };
 
@@ -2077,11 +2082,11 @@ mod grid_spanned {
     {
         match cfg.get_column_span(pos) {
             Some(span) => {
-                let start = pos.col();
+                let start = pos.col;
                 let end = start + span;
                 range_width(dims, start, end) + count_verticals_range(cfg, start, end, max)
             }
-            None => dims.get_width(pos.col()),
+            None => dims.get_width(pos.col),
         }
     }
 
@@ -2104,11 +2109,11 @@ mod grid_spanned {
     {
         match cfg.get_row_span(pos) {
             Some(span) => {
-                let start = pos.row();
-                let end = pos.row() + span;
+                let start = pos.row;
+                let end = pos.row + span;
                 range_height(dims, start, end) + count_horizontals_range(cfg, start, end, max)
             }
-            None => dims.get_height(pos.row()),
+            None => dims.get_height(pos.row),
         }
     }
 
@@ -2128,10 +2133,10 @@ mod grid_spanned {
     fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
         loop {
             if cfg.is_cell_visible(pos) {
-                return Some(pos.row());
+                return Some(pos.row);
             }
 
-            if pos.row() == 0 {
+            if pos.row == 0 {
                 return None;
             }
 

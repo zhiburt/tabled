@@ -6,7 +6,7 @@ use papergrid::{
         spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity, Indent,
         Sides,
     },
-    dimension::{spanned::SpannedGridDimension, Dimension},
+    dimension::{iterable::IterGridDimension, peekable::PeekableGridDimension, Dimension},
     grid::peekable::PeekableGrid,
     records::vec_records::{Text, VecRecords},
 };
@@ -79,7 +79,79 @@ test_table!(
         let records = VecRecords::new(data);
 
         let dims = Dims {
-            width: SpannedGridDimension::width(&records, &cfg),
+            width: IterGridDimension::width(&records, &cfg),
+            height: vec![3, 0, 0, 0, 1, 0, 1],
+        };
+
+        PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string()
+    },
+    "+-----------------+------------+----------------+------------+"
+    "|                 |            |                |            |"
+    "|    Papergrid    |is a library|for print tables|!           |"
+    "|                 |            |                |            |"
+    "+-----------------+------------+----------------+------------+"
+    "+-----------------+------------+----------------+------------+"
+    "+-----------------+------------+----------------+------------+"
+    "+-----------------+------------+----------------+------------+"
+    "|?                |?           |?               |?           |"
+    "+-----------------+------------+----------------+------------+"
+    "+-----------------+------------+----------------+------------+"
+    "|is a library     |is a library|is a library    |is a library|"
+    "+-----------------+------------+----------------+------------+"
+);
+
+test_table!(
+    continues_empty_rows_with_horizontal_lines_peekable,
+    {
+        let mut cfg = SpannedConfig::default();
+        cfg.set_borders(Borders {
+            top: Some('-'),
+            top_left: Some('+'),
+            top_right: Some('+'),
+            top_intersection: Some('+'),
+            bottom: Some('-'),
+            bottom_left: Some('+'),
+            bottom_right: Some('+'),
+            bottom_intersection: Some('+'),
+            horizontal: Some('-'),
+            left_intersection: Some('+'),
+            right_intersection: Some('+'),
+            vertical: Some('|'),
+            left: Some('|'),
+            right: Some('|'),
+            intersection: Some('+'),
+        });
+        cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
+        cfg.set_alignment_vertical(Entity::Global, AlignmentVertical::Center);
+        cfg.set_padding(
+            (0, 0).into(),
+            Sides::new(
+                Indent::spaced(4),
+                Indent::spaced(4),
+                Indent::spaced(1),
+                Indent::spaced(1),
+            ),
+        );
+
+        let data = [
+            ["Papergrid", "is a library", "for print tables", "!"],
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["?", "?", "?", "?"],
+            ["", "", "", ""],
+            ["is a library", "is a library", "is a library", "is a library"],
+        ];
+
+        let data = data
+            .iter()
+            .map(|row| row.iter().map(Text::new).collect())
+            .collect();
+
+        let records = VecRecords::new(data);
+
+        let dims = Dims {
+            width: PeekableGridDimension::width(&records, &cfg),
             height: vec![3, 0, 0, 0, 1, 0, 1],
         };
 
@@ -151,7 +223,7 @@ test_table!(
         let records = VecRecords::new(data);
 
         let dims = Dims {
-            width: SpannedGridDimension::width(&records, &cfg),
+            width: IterGridDimension::width(&records, &cfg),
             height: vec![3, 0, 0, 0, 1, 0, 1],
         };
 

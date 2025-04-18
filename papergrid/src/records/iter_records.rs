@@ -32,22 +32,6 @@ where
     }
 }
 
-// why this does not work?
-
-// impl<'a, I> IntoRecords for &'a IterRecords<I>
-// where
-//     &'a I: IntoRecords,
-// {
-//     type Cell = <&'a I as IntoRecords>::Cell;
-//     type IterColumns = <&'a I as IntoRecords>::IterColumns;
-//     type IterRows = <&'a I as IntoRecords>::IterRows;
-
-//     fn iter_rows(self) -> Self::IterRows {
-//         // (&self.iter).iter_rows()
-//         todo!()
-//     }
-// }
-
 impl<I> Records for IterRecords<I>
 where
     I: IntoRecords,

@@ -2,8 +2,8 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Position},
-        dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
+        dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
@@ -12,7 +12,7 @@ use crate::{
     },
     settings::{
         object::{Column, Row},
-        style::{LineText, Offset},
+        style::LineText,
         Alignment, Color, TableOption,
     },
 };
@@ -64,7 +64,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::from_iter(data);
-/// table.with(ColumnNames::default());
+/// table.with(ColumnNames::head());
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -81,8 +81,32 @@ pub struct ColumnNames {
     line: usize,
 }
 
-impl Default for ColumnNames {
-    fn default() -> Self {
+impl ColumnNames {
+    /// Creates a [`ColumnNames`]
+    /// which will be removing the head row and putting it right on the given border.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::iter::FromIterator;
+    /// use tabled::{Table, settings::themes::ColumnNames, assert::assert_table};
+    ///
+    /// let data = vec![
+    ///     vec!["head1", "head2"],
+    ///     vec!["Hello", "World"],
+    /// ];
+    ///
+    /// let mut table = Table::from_iter(data);
+    /// table.with(ColumnNames::head());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+head1--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
+    /// );
+    /// ```
+    pub fn head() -> Self {
         Self {
             names: Default::default(),
             colors: Default::default(),
@@ -90,9 +114,7 @@ impl Default for ColumnNames {
             alignments: ListValue::Static(Alignment::left()),
         }
     }
-}
 
-impl ColumnNames {
     /// Creates a [`ColumnNames`] with a given names.
     ///
     /// Using a [`Default`] would reuse a names from the first row.
@@ -101,16 +123,17 @@ impl ColumnNames {
     ///
     /// ```
     /// use std::iter::FromIterator;
-    /// use tabled::{Table, settings::themes::ColumnNames};
+    /// use tabled::{Table, settings::themes::ColumnNames, assert::assert_table};
     ///
-    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
+    /// let data = vec![vec!["Hello", "World"]];
+    /// let mut table = Table::from_iter(data);
     /// table.with(ColumnNames::new(["head1", "head2"]));
     ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     "+head1--+head2--+\n\
-    ///      | Hello | World |\n\
-    ///      +-------+-------+"
+    /// assert_table!(
+    ///     table,
+    ///     "+head1--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
     /// );
     /// ```
     pub fn new<I>(names: I) -> Self
@@ -119,9 +142,12 @@ impl ColumnNames {
         I::Item: Into<String>,
     {
         let names = names.into_iter().map(Into::into).collect::<Vec<_>>();
+
         Self {
             names: Some(names),
-            ..Default::default()
+            alignments: ListValue::Static(Alignment::left()),
+            colors: Default::default(),
+            line: 0,
         }
     }
 
@@ -135,15 +161,17 @@ impl ColumnNames {
     /// use std::iter::FromIterator;
     /// use tabled::Table;
     /// use tabled::settings::{Color, themes::ColumnNames};
+    /// use tabled::assert::assert_table;
     ///
-    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
+    /// let data = vec![vec!["Hello", "World"]];
+    /// let mut table = Table::from_iter(data);
     /// table.with(ColumnNames::new(["head1", "head2"]).color(vec![Color::FG_RED]));
     ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     "+\u{1b}[31mh\u{1b}[39m\u{1b}[31me\u{1b}[39m\u{1b}[31ma\u{1b}[39m\u{1b}[31md\u{1b}[39m\u{1b}[31m1\u{1b}[39m--+head2--+\n\
-    ///      | Hello | World |\n\
-    ///      +-------+-------+"
+    /// assert_table!(
+    ///     table,
+    ///     "+\u{1b}[31mh\u{1b}[39m\u{1b}[31me\u{1b}[39m\u{1b}[31ma\u{1b}[39m\u{1b}[31md\u{1b}[39m\u{1b}[31m1\u{1b}[39m--+head2--+"
+    ///     "| Hello | World |"
+    ///     "+-------+-------+"
     /// );
     /// ```
     pub fn color<T>(self, color: T) -> Self
@@ -223,14 +251,12 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
-    for ColumnNames
-{
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>> for ColumnNames {
     fn change(
         self,
         records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
+        dims: &mut CompleteDimension<'_>,
     ) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
@@ -269,7 +295,7 @@ fn set_column_text(
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimensionVecRecords<'_>,
+    dims: &mut CompleteDimension<'_>,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);
@@ -305,7 +331,7 @@ fn set_row_text(
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimensionVecRecords<'_>,
+    dims: &mut CompleteDimension<'_>,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);
@@ -379,7 +405,7 @@ fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
 }
 
 fn create_line_text<T>(text: &str, offset: usize, color: Option<&Color>, line: T) -> LineText<T> {
-    let offset = Offset::Begin(offset);
+    let offset = Offset::Start(offset);
     let mut btext = LineText::new(text, line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());

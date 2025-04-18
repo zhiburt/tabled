@@ -179,9 +179,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Height::limit(0))
-        .with(
-            Modify::new(Columns::new(..)).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n")))
-        ),
+        .modify(Columns::new(..), Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))),
         "| xxxx | xxxx | xxxx | xxxx |"
         "| xxxx | xxxx | xxxx | xxxx |"
         "| xxxx | xxxx | xxxx | xxxx |"

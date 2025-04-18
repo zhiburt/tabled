@@ -1,13 +1,5 @@
-//! This example demonstrates using the [`Split`] [`TableOption`] to
-//! transform a [`Table`] display in multiple ways.
-//!
-//! * Several configurations are available to customize a [`Split`] instruction:
-//!     * [`Index`](usize)
-//!     * [`Behavior`]
-//!     * [`Direction`]
-//!     * [`Display`]
-
 use std::iter::FromIterator;
+
 use tabled::{
     col, row,
     settings::{split::Split, style::Style, Padding},
@@ -27,12 +19,11 @@ fn main() {
     let mut table = col![
         table,
         row![
-            table_1,
+            col![table_1, table_4, table_5]
+                .with(Style::blank())
+                .with(Padding::zero()),
             table_2,
             table_3,
-            col![table_4, table_5]
-                .with(Style::blank())
-                .with(Padding::zero())
         ]
         .with(Style::blank())
         .with(Padding::zero()),

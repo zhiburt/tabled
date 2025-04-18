@@ -1,11 +1,3 @@
-//! This example demonstrates using the [`Color`] [setting](tabled::settings) to
-//! stylize text, backgrounds, and borders.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note how [`Format::content()`] is used to break out [`CellOption`]
-//!   specifications. This is helpful for organizing extensive [`Table`] configurations.
-
 use std::iter::FromIterator;
 
 use tabled::{
@@ -14,54 +6,43 @@ use tabled::{
 };
 
 #[derive(Tabled)]
-#[tabled(rename_all = "UPPERCASE")]
+#[tabled(rename_all = "Upper Title Case")]
 struct Employee {
     id: usize,
-    #[tabled(rename = "FIRST NAME")]
     first_name: String,
-    #[tabled(rename = "LAST NAME")]
     last_name: String,
+    #[tabled(rename = "$")]
     salary: usize,
     comment: String,
 }
 
-impl Employee {
-    fn new(id: usize, first_name: &str, last_name: &str, salary: usize, comment: &str) -> Self {
-        Self {
-            id,
-            salary,
-            first_name: first_name.to_string(),
-            last_name: last_name.to_string(),
-            comment: comment.to_string(),
-        }
-    }
-}
-
 fn main() {
+    #[rustfmt::skip]
     let data = vec![
-        Employee::new(1, "Arya", "Stark", 3000, ""),
-        Employee::new(20, "Jon", "Snow", 2000, "You know nothing, Jon Snow!"),
-        Employee::new(300, "Tyrion", "Lannister", 5000, ""),
+        Employee { id: 1,   first_name: String::from("Arya"),   last_name: String::from("Stark"),     salary: 3000, comment: String::from("") },
+        Employee { id: 20,  first_name: String::from("Jon"),    last_name: String::from("Snow"),      salary: 2000, comment: String::from("You know nothing, Jon Snow!") },
+        Employee { id: 300, first_name: String::from("Tyrion"), last_name: String::from("Lannister"), salary: 5000, comment: String::from("") },
+        Employee { id: 300, first_name: String::from("Jaime"),  last_name: String::from("Lannister"), salary: 5000, comment: String::from("If there are gods, why is the world so full of pain and injustice?") },
     ];
 
     let total = data.iter().map(|e| e.salary).sum::<usize>();
-    let total_row = Table::from_iter([vec![
-        String::default(),
-        String::default(),
+    let total_row = Table::from_iter([[
+        String::new(),
+        String::new(),
         String::from("TOTAL"),
         total.to_string(),
     ]]);
 
-    let clr_data_primary = Color::BG_WHITE | Color::FG_BLACK;
-    let clr_data_second = Color::BG_BRIGHT_WHITE | Color::FG_BLACK;
-    let clr_head = Color::BOLD | Color::BG_CYAN | Color::FG_BLACK;
-    let clr_footer = Color::BOLD | Color::BG_BLUE | Color::FG_BLACK;
+    let clr_primary = Color::BG_WHITE | Color::FG_BLACK;
+    let clr_secondary = Color::BG_BRIGHT_BLACK | Color::FG_WHITE;
+    let clr_head = Color::BG_CYAN | Color::FG_BLACK | Color::BOLD;
+    let clr_footer = Color::BG_BLUE | Color::FG_BLACK | Color::BOLD;
 
     let mut table = Table::new(data);
     table
         .with(Concat::vertical(total_row))
         .with(Style::empty())
-        .with(Colorization::rows([clr_data_primary, clr_data_second]))
+        .with(Colorization::rows([clr_primary, clr_secondary]))
         .with(Colorization::exact([clr_head], Rows::first()))
         .with(Colorization::exact([clr_footer], Rows::last()));
 

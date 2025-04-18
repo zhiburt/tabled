@@ -1,5 +1,4 @@
 use tabled::{
-    grid::config::Borders,
     settings::{
         style::{HorizontalLine, On, Style},
         Border,
@@ -10,13 +9,11 @@ use tabled::{
 const STYLE_1: Style<On, On, On, On, On, On, 0, 0> =
     Style::modern().frame(Border::inherit(Style::rounded()));
 
-const STYLE_2: Style<On, On, On, On, On, On, 0, 0> = Style::rounded()
-    .line_horizontal(HorizontalLine::inherit(Style::modern()))
-    .remove_horizontals();
+const STYLE_2: Style<On, On, On, On, (), On, 1, 0> = Style::rounded()
+    .remove_horizontals()
+    .horizontals([(1, HorizontalLine::inherit(Style::modern()))]);
 
 fn main() {
-    assert_eq!(Borders::from(STYLE_1), Borders::from(STYLE_2));
-
     let data = vec![("Hello", "world", "!"); 3];
 
     let mut table1 = Table::new(&data);

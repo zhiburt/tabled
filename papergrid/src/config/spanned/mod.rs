@@ -1,21 +1,19 @@
-//! A module which contains configuration options for a [`Grid`].
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! A module which contains configuration options for a grid.
 
 mod borders_config;
 mod entity_map;
-mod offset;
 
 use std::collections::HashMap;
 
 use crate::ansi::{ANSIBuf, ANSIStr};
 use crate::config::compact::CompactConfig;
 use crate::config::{
-    AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
+    AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Offset, Position,
+    Sides,
 };
 use borders_config::BordersConfig;
 
-pub use self::{entity_map::EntityMap, offset::Offset};
+pub use self::entity_map::EntityMap;
 
 use super::Formatting;
 
@@ -78,6 +76,11 @@ impl Default for SpannedConfig {
 }
 
 impl SpannedConfig {
+    /// Creates a new spanned config.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Set a margin of a grid.
     pub fn set_margin(&mut self, margin: Sides<Indent>) {
         self.margin.left.indent = margin.left;
@@ -252,7 +255,7 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
-    pub fn set_horizontal_char(&mut self, pos: Position, c: char, offset: Offset) {
+    pub fn set_horizontal_char(&mut self, pos: Position, offset: Offset, c: char) {
         let chars = self
             .horizontal_chars
             .entry(pos)
@@ -269,7 +272,7 @@ impl SpannedConfig {
         self.horizontal_chars
             .get(&pos)
             .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
+                chars.get(&Offset::Start(offset)).or_else(|| {
                     if end > offset {
                         if end == 0 {
                             chars.get(&Offset::End(0))
@@ -306,7 +309,7 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
-    pub fn set_vertical_char(&mut self, pos: Position, c: char, offset: Offset) {
+    pub fn set_vertical_char(&mut self, pos: Position, offset: Offset, c: char) {
         let chars = self
             .vertical_chars
             .entry(pos)
@@ -323,7 +326,7 @@ impl SpannedConfig {
         self.vertical_chars
             .get(&pos)
             .and_then(|chars| {
-                chars.get(&Offset::Begin(offset)).or_else(|| {
+                chars.get(&Offset::Start(offset)).or_else(|| {
                     if end > offset {
                         if end == 0 {
                             chars.get(&Offset::End(0))
@@ -355,7 +358,7 @@ impl SpannedConfig {
     }
 
     /// Override a character color on a horizontal line.
-    pub fn set_horizontal_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
+    pub fn set_horizontal_char_color(&mut self, pos: Position, offset: Offset, c: ANSIBuf) {
         let chars = self
             .horizontal_colors
             .entry(pos)
@@ -372,7 +375,7 @@ impl SpannedConfig {
         end: usize,
     ) -> Option<&ANSIBuf> {
         self.horizontal_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
+            chars.get(&Offset::Start(offset)).or_else(|| {
                 if end > offset {
                     if end == 0 {
                         chars.get(&Offset::End(0))
@@ -387,7 +390,7 @@ impl SpannedConfig {
     }
 
     /// Override a character color on a vertical line.
-    pub fn set_vertical_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
+    pub fn set_vertical_char_color(&mut self, pos: Position, offset: Offset, c: ANSIBuf) {
         let chars = self
             .vertical_colors
             .entry(pos)
@@ -404,7 +407,7 @@ impl SpannedConfig {
         end: usize,
     ) -> Option<&ANSIBuf> {
         self.vertical_colors.get(&pos).and_then(|chars| {
-            chars.get(&Offset::Begin(offset)).or_else(|| {
+            chars.get(&Offset::Start(offset)).or_else(|| {
                 if end > offset {
                     if end == 0 {
                         chars.get(&Offset::End(0))
@@ -716,7 +719,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_horizontal(pos.row(), shape.0) && self.has_vertical(pos.col(), shape.1) {
+        if self.has_horizontal(pos.row, shape.0) && self.has_vertical(pos.col, shape.1) {
             return Some(self.get_borders_missing());
         }
 
@@ -732,7 +735,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_horizontal(pos.row(), count_rows) {
+        if self.has_horizontal(pos.row, count_rows) {
             return Some(self.get_borders_missing());
         }
 
@@ -747,7 +750,7 @@ impl SpannedConfig {
             return Some(*c);
         }
 
-        if self.has_vertical(pos.col(), count_columns) {
+        if self.has_vertical(pos.col, count_columns) {
             return Some(self.get_borders_missing());
         }
 
@@ -886,13 +889,13 @@ fn set_cell_column_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
 fn is_cell_covered_by_column_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_columns
         .iter()
-        .any(|(p, span)| p.row() == pos.row() && pos.col() > p.col() && pos.col() < p.col() + span)
+        .any(|(p, span)| p.row == pos.row && pos.col > p.col && pos.col < p.col + span)
 }
 
 fn is_cell_covered_by_row_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_rows
         .iter()
-        .any(|(p, span)| p.col() == pos.col() && pos.row() > p.row() && pos.row() < p.row() + span)
+        .any(|(p, span)| p.col == pos.col && pos.row > p.row && pos.row < p.row + span)
 }
 
 fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
@@ -905,16 +908,16 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
             .iter()
             .filter(|(p2, _)| &p1 == p2)
             .any(|(_, col_span)| {
-                pos.row() > p1.row()
-                    && pos.row() < p1.row() + row_span
-                    && pos.col() > p1.col()
-                    && pos.col() < p1.col() + col_span
+                pos.row > p1.row
+                    && pos.row < p1.row + row_span
+                    && pos.col > p1.col
+                    && pos.col < p1.col + col_span
             })
     })
 }
 
 /// A colorefull margin indent.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 struct MarginIndent {
     /// An indent value.
     indent: Indent,
@@ -928,7 +931,7 @@ impl Default for MarginIndent {
     fn default() -> Self {
         Self {
             indent: Indent::default(),
-            offset: Offset::Begin(0),
+            offset: Offset::Start(0),
             color: None,
         }
     }

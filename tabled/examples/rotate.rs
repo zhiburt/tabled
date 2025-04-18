@@ -1,11 +1,3 @@
-//! This example demonstrates using the [`Rotate`] [`TableOption`] to rotate the cells
-//! of a [`Table`].
-//!
-//! * [`Rotate`] supports four motions:
-//!     * `Left` | 90 degree shift
-//!     * `Right` | 90 degree shift
-//!     * `Top` & `Bottom` | Reverse row order
-
 use tabled::{settings::Rotate, Table, Tabled};
 
 #[derive(Tabled)]
@@ -15,24 +7,16 @@ struct Linux {
     link: &'static str,
 }
 
-impl Linux {
-    fn new(id: u8, distribution: &'static str, link: &'static str) -> Self {
-        Self {
-            id,
-            distribution,
-            link,
-        }
-    }
-}
-
 fn main() {
+    #[rustfmt::skip]
     let data = vec![
-        Linux::new(0, "Fedora", "https://getfedora.org/"),
-        Linux::new(2, "OpenSUSE", "https://www.opensuse.org/"),
-        Linux::new(3, "Endeavouros", "https://endeavouros.com/"),
+        Linux { id: 0, distribution: "Fedora", link: "https://getfedora.org/" },
+        Linux { id: 2, distribution: "OpenSUSE", link: "https://www.opensuse.org/" },
+        Linux { id: 3, distribution: "Endeavouros", link: "https://endeavouros.com/" },
     ];
 
-    let table = Table::new(data).with(Rotate::Left).to_string();
+    let mut table = Table::new(data);
+    table.with(Rotate::Left);
 
     println!("{table}");
 }

@@ -8,7 +8,7 @@ struct Phone {
     #[tabled(format = "code {}")]
     code: String,
     #[tabled(rename = "")]
-    #[tabled(format("{}/{}", self.alias.join(","), self.number))]
+    #[tabled(format("{}/{}", self.number, self.alias.join(",")))]
     number: String,
     #[tabled(skip)]
     alias: Vec<String>,
@@ -28,10 +28,10 @@ impl Phone {
 
 fn main() {
     let data = [
-        Phone::new("AFN", "11111111", &["Mate"]),
-        Phone::new("CAD", "22222222", &["Sara", "Football", "meetup"]),
-        Phone::new("RUS", "33333333", &["Cris", "meetup"]),
-        Phone::new("BLR", "44444444", &["Ham", "meetup"]),
+        Phone::new("AFN", "0", &["Mate"]),
+        Phone::new("CAD", "1", &["Sara", "Football", "meetup"]),
+        Phone::new("RUS", "11111", &["Cris", "meetup"]),
+        Phone::new("BLR", "123456789", &["Ham", "meetup"]),
     ];
 
     let mut table = Table::new(data);

@@ -1,24 +1,14 @@
-//! This example demonstrates creating a `new()` [`CompactTable`] with
-//! manual specifications for column count, column widths, and border styling.
-//!
-//! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
-//!   flexibility for improved performance.
-
-#![allow(unused_variables)]
-
 use tabled::{settings::style::Style, tables::CompactTable};
 
 fn main() {
     let data = [
-        ["Debian", "", "true"],
-        ["Arch", "", "true"],
+        ["Debian", "1.1.1.1", "true"],
+        ["Arch", "127.1.1.1", "true"],
         ["Manjaro", "Arch", "true"],
+        ["Manjaro", "A\nr\nc\nh", "true"],
     ];
 
-    let table = CompactTable::new(data)
-        .columns(3)
-        .width([7, 5, 5])
-        .with(Style::markdown());
+    let table = CompactTable::from(data).with(Style::ascii());
 
     #[cfg(feature = "std")]
     println!("{}", table.to_string());

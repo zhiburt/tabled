@@ -67,7 +67,7 @@ test_table!(
 
 test_table!(
     default,
-    Matrix::new(3, 3).with(ColumnNames::default()),
+    Matrix::new(3, 3).with(ColumnNames::head()),
     "+N--+column 0+column 1+column 2+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+---+--------+--------+--------+"
@@ -80,7 +80,7 @@ test_table!(
 test_table!(
     alignment_left,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::left())),
+        .with(ColumnNames::head().alignment(Alignment::left())),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -92,7 +92,7 @@ test_table!(
 test_table!(
     alignment_right,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::right())),
+        .with(ColumnNames::head().alignment(Alignment::right())),
     "+---&str+------&str+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -104,7 +104,7 @@ test_table!(
 test_table!(
     alignment_center,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::center())),
+        .with(ColumnNames::head().alignment(Alignment::center())),
     "+-&str--+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -130,7 +130,7 @@ test_table!(
 test_table!(
     alignment_array,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(vec![Alignment::right(), Alignment::center()])),
+        .with(ColumnNames::head().alignment(vec![Alignment::right(), Alignment::center()])),
     "+---&str+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -141,7 +141,7 @@ test_table!(
 
 test_table!(
     line,
-    Matrix::new(3, 3).with(ColumnNames::default().line(1)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(1)),
     "+---+--------+--------+--------+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+N--+column 0+column 1+column 2+"
@@ -153,7 +153,7 @@ test_table!(
 
 test_table!(
     line_max_out,
-    Matrix::new(3, 3).with(ColumnNames::default().line(100)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(100)),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -167,7 +167,7 @@ test_table!(
 
 test_table!(
     line_0,
-    Matrix::new(3, 3).with(ColumnNames::default().line(0)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(0)),
     "+N--+column 0+column 1+column 2+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+---+--------+--------+--------+"
@@ -180,7 +180,7 @@ test_table!(
 test_table!(
     colors_some_some,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::BG_BLACK, Color::BG_BLUE])),
+        .with(ColumnNames::head().color(vec![Color::BG_BLACK, Color::BG_BLUE])),
     "+\u{1b}[40m&\u{1b}[49m\u{1b}[40ms\u{1b}[49m\u{1b}[40mt\u{1b}[49m\u{1b}[40mr\u{1b}[49m---+\u{1b}[44m&\u{1b}[49m\u{1b}[44ms\u{1b}[49m\u{1b}[44mt\u{1b}[49m\u{1b}[44mr\u{1b}[49m------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -192,7 +192,7 @@ test_table!(
 test_table!(
     colors_none_some,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::default(), Color::BG_BLUE])),
+        .with(ColumnNames::head().color(vec![Color::default(), Color::BG_BLUE])),
         "+&str---+\u{1b}[44m&\u{1b}[49m\u{1b}[44ms\u{1b}[49m\u{1b}[44mt\u{1b}[49m\u{1b}[44mr\u{1b}[49m------+"
         "| Hello | World    |"
         "+-------+----------+"
@@ -204,7 +204,7 @@ test_table!(
 test_table!(
     colors_none_none,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::default(), Color::default()])),
+        .with(ColumnNames::head().color(vec![Color::default(), Color::default()])),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -216,7 +216,7 @@ test_table!(
 test_table!(
     colors_empty,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color({ Color::default(); vec![] as std::vec::Vec<tabled::settings::Color> })),
+        .with(ColumnNames::head().color({ Color::default(); vec![] as std::vec::Vec<tabled::settings::Color> })),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -313,7 +313,7 @@ test_table!(
 
 test_table!(
     new_vertical_default_0,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::top())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::head().alignment(Alignment::top())),
     "+---+-----+-----+"
     "N   |     |     |"
     "|   |     |     |"
@@ -334,7 +334,7 @@ test_table!(
 
 test_table!(
     new_vertical_default_2,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::bottom())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::head().alignment(Alignment::bottom())),
     "+---+-----+-----+"
     "|   |     |     |"
     "|   |     |     |"
@@ -355,7 +355,7 @@ test_table!(
 
 test_table!(
     new_vertical_default_1,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 5, 5)).with(ColumnNames::default().alignment(Alignment::center_vertical())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 5, 5)).with(ColumnNames::head().alignment(Alignment::center_vertical())),
     "+---+-----+-----+"
     "|   |     |     |"
     "|   |     |     |"

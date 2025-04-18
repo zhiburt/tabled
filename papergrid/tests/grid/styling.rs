@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use papergrid::config::{pos, AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Position, Sides};
 use testing_table::test_table;
 
 use crate::util::grid;
@@ -11,7 +11,7 @@ use ::{papergrid::ansi::ANSIBuf, std::convert::TryFrom};
 test_table!(
     grid_2x2_custom_frame_test,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| (0..2).for_each(|c| cfg.set_border(pos(r, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#')))))
+        .config(|cfg| (0..2).for_each(|r| (0..2).for_each(|c| cfg.set_border(Position::new(r, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#')))))
         .build(),
     "#***#***#"
     "|0-0|0-1|"
@@ -23,7 +23,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_column_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| cfg.set_border(pos(r, 1), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|r| cfg.set_border(Position::new(r, 1), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "+---#***#"
     "|0-0|0-1|"
@@ -35,7 +35,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_column_test_1,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| cfg.set_border(pos(r, 0), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|r| cfg.set_border(Position::new(r, 0), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "#***#---+"
     "|0-0|0-1|"
@@ -47,7 +47,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_row_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|c| cfg.set_border(pos(0, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|c| cfg.set_border(Position::new(0, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "#***#***#"
     "|0-0|0-1|"
@@ -59,7 +59,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_row_test_1,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|c| cfg.set_border(pos(1, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|c| cfg.set_border(Position::new(1, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "+---+---+"
     "|0-0|0-1|"
@@ -71,7 +71,7 @@ test_table!(
 test_table!(
     grid_2x2_change_cell_border_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|_| cfg.set_border(pos(0, 1), Border::full('*', '^', '@', '#', '~', '!', '%', '&'))))
+        .config(|cfg| (0..2).for_each(|_| cfg.set_border(Position::new(0, 1), Border::full('*', '^', '@', '#', '~', '!', '%', '&'))))
         .build(),
     "+---~***!"
     "|0-0@0-1#"
@@ -83,8 +83,8 @@ test_table!(
 test_table!(
     grid_2x2_alignment_test_0,
     grid(2, 2)
-        .change_cell(pos(0, 0), "asd    ")
-        .change_cell(pos(0, 1), "asd    ")
+        .change_cell(Position::new(0, 0), "asd    ")
+        .change_cell(Position::new(0, 1), "asd    ")
         .config(|cfg| {
             cfg.set_alignment_horizontal(Entity::Column(0), AlignmentHorizontal::Left);
             cfg.set_alignment_horizontal(Entity::Column(1), AlignmentHorizontal::Right);
@@ -147,7 +147,7 @@ test_table!(
 
 test_table!(
     grid_2x2_vertical_resize_test,
-    grid(2, 2).change_cell(pos(1, 1), "asd     ").build(),
+    grid(2, 2).change_cell(Position::new(1, 1), "asd     ").build(),
     "+---+--------+"
     "|0-0|0-1     |"
     "+---+--------+"
@@ -191,7 +191,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             cfg.set_border(
-                pos(0, 0),
+                Position::new(0, 0),
                 Border {
                     bottom: Some('-'),
                     top: Some('*'),
@@ -202,11 +202,11 @@ test_table!(
                 },
             );
             cfg.set_border(
-                pos(0, 1),
+                Position::new(0, 1),
                 Border::full('*', '-', '@', '%', ' ', ' ', '+', '+'),
             );
             cfg.set_border(
-                pos(1, 0),
+                Position::new(1, 0),
                 Border {
                     bottom: Some('*'),
                     left: Some('#'),
@@ -216,7 +216,7 @@ test_table!(
                 },
             );
             cfg.set_border(
-                pos(1, 1),
+                Position::new(1, 1),
                 Border {
                     bottom: Some('*'),
                     left: Some('^'),
@@ -246,7 +246,7 @@ test_table!(
                 ..Default::default()
             });
             cfg.set_border(
-                pos(1, 1),
+                Position::new(1, 1),
                 Border {
                     top: Some('*'),
                     ..Default::default()
@@ -265,7 +265,7 @@ test_table!(
         .config(|cfg| {
             cfg.set_borders(Borders::default());
             cfg.set_border(
-                pos(1, 0),
+                Position::new(1, 0),
                 Border {
                     right: Some('*'),
                     ..Default::default()

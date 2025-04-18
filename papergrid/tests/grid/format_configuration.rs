@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use papergrid::config::{pos, AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting, Position};
 
 use crate::util::grid;
 use testing_table::static_table;
@@ -776,10 +776,16 @@ fn formatting_test() {
     ];
 
     let grid = grid(3, 2)
-        .change_cell(pos(0, 0), "A long string")
-        .change_cell(pos(0, 1), "\n\n\nA\n    string\nwith\n new\nline\n\n\n")
-        .change_cell(pos(2, 0), "A one more\n    string\nwith\n new\nline")
-        .change_cell(pos(2, 1), "...");
+        .change_cell(Position::new(0, 0), "A long string")
+        .change_cell(
+            Position::new(0, 1),
+            "\n\n\nA\n    string\nwith\n new\nline\n\n\n",
+        )
+        .change_cell(
+            Position::new(2, 0),
+            "A one more\n    string\nwith\n new\nline",
+        )
+        .change_cell(Position::new(2, 1), "...");
 
     for (i, test) in tests.iter().enumerate() {
         let table = grid

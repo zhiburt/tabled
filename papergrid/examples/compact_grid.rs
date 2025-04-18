@@ -1,37 +1,26 @@
-//! This example demonstrates the flexibility of [`papergrid`] with manual configurations
-//! of [`Borders`], [`CompactConfig`], and column counts with [`IterRecords`].
-//!
-//! * For an alternative to [`CompactGrid`] and [`CompactGridDimension`] with
-//!   flexible row height, variable intra-column spans, and multiline cell support
-//!   see [`Grid`] and [`SpannedGridDimension`].
-
 use papergrid::{
-    config::compact::CompactConfig,
-    config::{AlignmentHorizontal, Borders, Indent, Sides},
-    dimension::compact::CompactGridDimension,
-    dimension::Estimate,
+    colors::NoColors,
+    config::{compact::CompactConfig, AlignmentHorizontal, Borders, Indent, Sides},
+    dimension::{compact::CompactGridDimension, Estimate},
     grid::compact::CompactGrid,
     records::IterRecords,
 };
 
 fn main() {
-    let cfg = generate_table_config();
-
     let data = [
         ["Papergrid", "is a library", "for printing tables", "!"],
-        [
-            "Just like this",
-            "NOTICE",
-            "that multiline is not supported",
-            "H\ne\nl\nl\no",
-        ],
+        ["Just like this", "", "", "!"],
+        ["NOTICE", "that multiline is not supported", "N\nO\n", "!"],
     ];
+
     let records = IterRecords::new(data, 4, None);
+
+    let cfg = generate_table_config();
 
     let mut dim = CompactGridDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = CompactGrid::new(records, &dim, &cfg);
+    let grid = CompactGrid::new(records, &cfg, &dim, NoColors);
 
     println!("{grid}");
 }

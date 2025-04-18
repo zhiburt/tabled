@@ -1,5 +1,12 @@
 /// Indent represent a filled space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+///
+/// # Example
+///
+/// ```
+/// # use papergrid::config::Indent;
+/// let pad = Indent::new(10, ' ');
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Indent {
     /// A fill character.
     pub fill: char,

@@ -57,46 +57,46 @@ fn set_span<R>(recs: &mut R, cfg: &mut SpannedConfig, span: isize, pos: Position
 where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
-    if !pos.is_covered(shape) {
+    if !shape.has_coverage(pos) {
         return;
     }
 
     match span.cmp(&0) {
         Ordering::Less => {
             // * got correct value [span, row]
-            // * clean the route from row to pos.row()
-            // * set the (row, pos.col()) to content from pos
+            // * clean the route from row to pos.row
+            // * set the (row, pos.col) to content from pos
             // * set span
 
             let span = span.unsigned_abs();
-            let (row, span) = if span > pos.row() {
-                (0, pos.row())
+            let (row, span) = if span > pos.row {
+                (0, pos.row)
             } else {
-                (pos.row() - span, span)
+                (pos.row - span, span)
             };
 
             let content = recs.get_text(pos).to_string();
 
             for i in row..span + 1 {
-                recs.set(Position::new(i, pos.col()), String::new());
+                recs.set(Position::new(i, pos.col), String::new());
             }
 
-            recs.set(Position::new(row, pos.col()), content);
-            cfg.set_row_span(Position::new(row, pos.col()), span + 1);
+            recs.set(Position::new(row, pos.col), content);
+            cfg.set_row_span(Position::new(row, pos.col), span + 1);
         }
         Ordering::Equal => {
             let content = recs.get_text(pos).to_string();
             let span = recs.count_rows();
 
             for i in 0..recs.count_rows() {
-                recs.set(Position::new(i, pos.col()), String::new());
+                recs.set(Position::new(i, pos.col), String::new());
             }
 
-            recs.set(Position::new(0, pos.col()), content);
-            cfg.set_row_span(Position::new(0, pos.col()), span);
+            recs.set(Position::new(0, pos.col), content);
+            cfg.set_row_span(Position::new(0, pos.col), span);
         }
         Ordering::Greater => {
-            let span = cmp::min(span as usize, shape.row() - pos.row());
+            let span = cmp::min(span as usize, shape.row - pos.row);
             if span_has_intersections(cfg, pos, span) {
                 return;
             }
@@ -108,13 +108,13 @@ where
 
 fn set_span_row(cfg: &mut SpannedConfig, p: Position, span: usize) {
     if span == 0 {
-        if p.col() == 0 {
+        if p.col == 0 {
             return;
         }
 
         if let Some(nearcol) = closest_visible(cfg, p - (0, 1)) {
-            let span = p.col() + 1 - nearcol;
-            cfg.set_row_span((p.row(), nearcol).into(), span);
+            let span = p.col + 1 - nearcol;
+            cfg.set_row_span((p.row, nearcol).into(), span);
         }
     }
 
@@ -124,10 +124,10 @@ fn set_span_row(cfg: &mut SpannedConfig, p: Position, span: usize) {
 fn closest_visible(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return Some(pos.row());
+            return Some(pos.row);
         }
 
-        if pos.row() == 0 {
+        if pos.row == 0 {
             // can happen if we have a above horizontal spanned cell
             return None;
         }
@@ -137,8 +137,8 @@ fn closest_visible(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
 }
 
 fn span_has_intersections(cfg: &SpannedConfig, p: Position, span: usize) -> bool {
-    for row in p.row()..p.row() + span {
-        if !cfg.is_cell_visible((row, p.col()).into()) {
+    for row in p.row..p.row + span {
+        if !cfg.is_cell_visible((row, p.col).into()) {
             return true;
         }
     }

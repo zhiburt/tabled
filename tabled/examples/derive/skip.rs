@@ -13,7 +13,6 @@ struct Country {
     name: String,
     #[tabled(skip)]
     capital: String,
-    #[tabled(skip)]
     area_km2: f32,
 }
 

@@ -26,18 +26,19 @@
 //!
 //! [`Table`]: crate::Table
 
+use core::iter::FromIterator;
 use std::{fmt, io};
 
 use crate::{
     grid::{
         colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides, SpannedConfig},
-        dimension::{CompactGridDimension, Dimension, DimensionValue, StaticDimension},
+        dimension::{CompactGridDimension, DimensionValue, StaticDimension, ZeroDimension},
         records::{
             into_records::{BufRecords, LimitColumns, LimitRows, TruncateContent},
             IntoRecords, IterRecords,
         },
-        Grid,
+        IterGrid,
     },
     settings::{Style, TableOption},
 };
@@ -57,26 +58,27 @@ use crate::util::utf8_writer::UTF8Writer;
 ///
 /// ```
 /// use tabled::{grid::records::IterRecords, tables::IterTable};
+/// use tabled::assert::assert_table;
 ///
 /// let data = vec![
 ///     vec!["First", "row"],
 ///     vec!["Second", "row"],
-///     vec!["Third", "big row"],
+///     vec!["Third", "big \n multiline row"],
 /// ];
 ///
 /// let records = IterRecords::new(data, 2, Some(2));
 /// let table = IterTable::new(records).sniff(1);
 ///
 /// // notice because of sniff 1 we have all rows after the first one being truncated
-/// assert_eq!(
+/// assert_table!(
 ///     table.to_string(),
-///     "+-------+-----+\n\
-///      | First | row |\n\
-///      +-------+-----+\n\
-///      | Secon | row |\n\
-///      +-------+-----+\n\
-///      | Third | big |\n\
-///      +-------+-----+",
+///     "+-------+-----+"
+///     "| First | row |"
+///     "+-------+-----+"
+///     "| Secon | row |"
+///     "+-------+-----+"
+///     "| Third | big |"
+///     "+-------+-----+"
 /// );
 /// ```
 ///
@@ -116,14 +118,16 @@ impl<I> IterTable<I> {
         }
     }
 
+    // TODO: REmove the SELF consumption????
+
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, StaticDimension>,
+        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, ZeroDimension>,
     {
         let count_columns = self.table.count_columns.unwrap_or(0);
         let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);
-        let mut dims = StaticDimension::new(DimensionValue::Exact(0), DimensionValue::Exact(1));
+        let mut dims = ZeroDimension::new();
         option.change(&mut records, &mut self.cfg, &mut dims);
 
         self
@@ -200,6 +204,21 @@ impl<I> IterTable<I> {
     }
 }
 
+impl<T> FromIterator<T> for IterTable<Vec<Vec<T::Item>>>
+where
+    T: IntoIterator,
+    T::Item: AsRef<str>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let data = iter
+            .into_iter()
+            .map(|row| row.into_iter().collect())
+            .collect();
+
+        Self::new(data)
+    }
+}
+
 fn build_grid<W, I>(f: W, iter: I, cfg: CompactConfig, opts: Settings) -> fmt::Result
 where
     W: fmt::Write,
@@ -230,22 +249,22 @@ where
     let count_columns = opts.count_columns.unwrap();
     let width = opts.width.unwrap();
     let height = opts.height.unwrap_or(1);
-    let contentw = WidthDimension::Exact(width);
     let pad = cfg.get_padding();
-    let w = DimensionValue::Exact(width + pad.left.size + pad.right.size);
-    let h = DimensionValue::Exact(height + pad.top.size + pad.bottom.size);
-    let dims = StaticDimension::new(w, h);
+    let contentw = DimensionValue::Exact(width);
+    let width = DimensionValue::Exact(width + pad.left.size + pad.right.size);
+    let height = DimensionValue::Exact(height + pad.top.size + pad.bottom.size);
+    let dims = StaticDimension::new(width, height);
     let cfg = SpannedConfig::from(cfg);
 
     match opts.count_rows {
         Some(limit) => {
             let records = LimitRows::new(iter, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(iter, contentw, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }
@@ -274,7 +293,7 @@ where
         width = std::iter::repeat_n(pad, count_columns).collect::<Vec<_>>();
     }
 
-    let content_width = WidthDimension::List(width.iter().map(|i| i.saturating_sub(pad)).collect());
+    let content_width = DimensionValue::List(width.iter().map(|i| i.saturating_sub(pad)).collect());
     let dims_width = DimensionValue::List(width);
 
     let height_exact = opts.height.unwrap_or(1) + padv;
@@ -291,11 +310,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, content_width, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(records, content_width, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }
@@ -316,7 +335,7 @@ where
     let count_columns = get_count_columns(&opts, records.as_slice());
 
     let width = opts.width.unwrap();
-    let contentw = WidthDimension::Exact(width);
+    let contentw = DimensionValue::Exact(width);
 
     let padding = cfg.get_padding();
     let pad = padding.left.size + padding.right.size;
@@ -333,11 +352,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(records, contentw, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }
@@ -363,34 +382,15 @@ const fn create_config() -> CompactConfig {
 
 fn build_records<I>(
     records: I,
-    width: WidthDimension,
+    width: DimensionValue,
     count_columns: usize,
     count_rows: Option<usize>,
-) -> IterRecords<LimitColumns<TruncateContent<I, WidthDimension>>>
+) -> IterRecords<LimitColumns<TruncateContent<I, StaticDimension>>>
 where
     I: IntoRecords,
 {
-    let records = TruncateContent::new(records, width);
+    let dims = StaticDimension::new(width, DimensionValue::Exact(0));
+    let records = TruncateContent::new(records, dims);
     let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
-}
-
-/// A dimension value.
-#[derive(Debug, Clone)]
-enum WidthDimension {
-    Exact(usize),
-    List(Vec<usize>),
-}
-
-impl Dimension for WidthDimension {
-    fn get_width(&self, column: usize) -> usize {
-        match self {
-            WidthDimension::Exact(value) => *value,
-            WidthDimension::List(list) => list[column],
-        }
-    }
-
-    fn get_height(&self, _row: usize) -> usize {
-        unreachable!("A height method is not supposed to be called");
-    }
 }

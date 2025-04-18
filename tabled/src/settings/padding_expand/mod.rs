@@ -2,7 +2,7 @@
 
 use papergrid::{
     config::{AlignmentHorizontal, AlignmentVertical},
-    dimension::spanned::SpannedGridDimension,
+    dimension::iterable::IterGridDimension,
     records::{ExactRecords, IntoRecords, PeekableRecords, Records},
 };
 
@@ -104,13 +104,13 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    let widths = SpannedGridDimension::width(&*records, cfg);
+    let widths = IterGridDimension::width(&*records, cfg);
 
     let count_rows = records.count_rows();
     let count_cols = records.count_columns();
 
     for pos in entity.iter(count_rows, count_cols) {
-        let col = pos.col();
+        let col = pos.col;
         let column_width = widths[col];
         let width = records.get_width(pos);
 
@@ -135,13 +135,13 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    let heights = SpannedGridDimension::height(&*records, cfg);
+    let heights = IterGridDimension::height(&*records, cfg);
 
     let count_rows = records.count_rows();
     let count_cols = records.count_columns();
 
     for pos in entity.iter(count_rows, count_cols) {
-        let row = pos.row();
+        let row = pos.row;
         let row_height = heights[row];
         let cell_height = records.count_lines(pos);
 

@@ -1,20 +1,13 @@
-//! This example demonstrates how [`Tables`](Table) can be comprised of other tables.
-//!
-//! * This first nested [`Table`] example showcases the [`Builder`] approach.
-//!
-//! * Note how a great deal of manual customizations have been applied to create a
-//!   highly unique display.
-//!
-//! * 🎉 Inspired by https://github.com/p-ranav/tabulate#nested-tables/
+// Inspired by https://github.com/p-ranav/tabulate#nested-tables/
 
 use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
     settings::{
-        object::{Rows, Segment},
+        object::Rows,
         style::{HorizontalLine, Style},
-        Alignment, Modify, Padding, Width,
+        Alignment, Padding, Width,
     },
     Table,
 };
@@ -32,25 +25,26 @@ fn main() {
         &["swim", "quack"],
     );
 
-    let data = [
-        [animal.to_string()],
-        [String::from("▲")],
-        [String::from("|")],
-        [String::from("|")],
-        [duck.to_string()],
-    ];
+    let data = [[animal], [create_connection(2)], [duck]];
 
     let mut table = Builder::from_iter(data).build();
 
     table
         .with(Style::ascii().remove_horizontal())
-        .with(Padding::new(5, 5, 0, 0))
+        .with(Padding::new(3, 3, 0, 0))
         .with(Alignment::center());
 
     println!("{table}");
 }
 
-fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
+fn create_connection(size: usize) -> String {
+    std::iter::once("▲")
+        .chain(std::iter::repeat_n("|", size))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> String {
     let fields = fields
         .iter()
         .map(|(field, t, d)| [format_field(field, t, d)]);
@@ -78,10 +72,10 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
 
     table
         .with(style)
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Rows::first()).with(Alignment::center()));
+        .with(Alignment::left())
+        .modify(Rows::first(), Alignment::center());
 
-    table
+    table.to_string()
 }
 
 fn format_field(field: &&str, field_type: &&str, default_value: &&str) -> String {
@@ -97,13 +91,8 @@ fn format_method(method: &str) -> String {
 }
 
 fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {
-    // We want to make a fields table and methods table to have the same width.
-    // To not set it to constant, we check a width of each of them and correct the other.
-    //
-    // it's safe to do .len() because we use ascii theme and no colors.
-
-    let table1_width = table1.to_string().lines().next().unwrap().len();
-    let table2_width = table2.to_string().lines().next().unwrap().len();
+    let table1_width = table1.total_width();
+    let table2_width = table2.total_width();
 
     match table1_width.cmp(&table2_width) {
         std::cmp::Ordering::Less => {
