@@ -335,7 +335,7 @@ where
 {
     for _ in 0..rowcfg.pad.top.space.size {
         print_indent(f, rowcfg.margin.left)?;
-        print_row_columns_empty(f, &rowcfg, rowcfg.pad.top.color)?;
+        print_row_columns_empty(f, rowcfg, rowcfg.pad.top.color)?;
         print_indent(f, rowcfg.margin.right)?;
 
         f.write_char('\n')?;
@@ -349,7 +349,7 @@ where
         f.write_char('\n')?;
 
         print_indent(f, rowcfg.margin.left)?;
-        print_row_columns_empty(f, &rowcfg, rowcfg.pad.bottom.color)?;
+        print_row_columns_empty(f, rowcfg, rowcfg.pad.bottom.color)?;
         print_indent(f, rowcfg.margin.right)?;
     }
 
