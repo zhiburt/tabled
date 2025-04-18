@@ -1,6 +1,4 @@
-//! The module contains a [`SpannedGridDimension`] for [`Grid`] height/width estimation.
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! The module contains a [`IterGridDimension`].
 
 use std::{
     cmp::{max, Ordering},
@@ -17,8 +15,6 @@ use crate::{
 use crate::config::spanned::SpannedConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
-///
-/// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct IterGridDimension {
     height: Vec<usize>,

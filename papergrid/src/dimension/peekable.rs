@@ -1,6 +1,4 @@
-//! The module contains a [`SpannedVecRecordsDimension`] for [`Grid`] height/width estimation.
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! The module contains a [`PeekableGridDimension`].
 
 use std::{
     cmp::{max, Ordering},
@@ -15,11 +13,11 @@ use crate::{
 
 use crate::config::spanned::SpannedConfig;
 
-/// A [`Dimension`] implementation which calculates exact column/row width/height for [`VecRecords`].
+/// A [`Dimension`] implementation which calculates exact column/row width/height for [`Records`] which used [`Cell`] cells.
 ///
-/// It is a specialization of [`SpannedGridDimension`] for [`VecRecords`].
+/// It is a specialization of [`IterGridDimension`].
 ///
-/// [`SpannedGridDimension`]: crate::dimension::spanned::SpannedGridDimension
+/// [`IterGridDimension`]: crate::dimension::iterable::IterGridDimension
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct PeekableGridDimension {
     height: Vec<usize>,

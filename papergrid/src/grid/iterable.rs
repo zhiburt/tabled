@@ -1,4 +1,4 @@
-//! The module contains a [`Grid`] structure.
+//! The module contains a [`IterGrid`] structure.
 
 use std::{
     borrow::{Borrow, Cow},

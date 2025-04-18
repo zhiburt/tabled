@@ -7,6 +7,8 @@ use crate::{
 };
 
 /// The structure is an implementation of [`Location`] to search for cells with a given content.
+///
+/// [`Location`]: crate::settings::location::Location
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByValue<O, F> {
     search: O,

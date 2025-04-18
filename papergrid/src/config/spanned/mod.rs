@@ -1,6 +1,4 @@
-//! A module which contains configuration options for a [`Grid`].
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! A module which contains configuration options for a grid.
 
 mod borders_config;
 mod entity_map;
@@ -50,8 +48,6 @@ pub struct SpannedConfig {
     justification: EntityMap<char>,
     justification_color: EntityMap<Option<ANSIBuf>>,
 }
-
-// TODO: Into<Position>
 
 impl Default for SpannedConfig {
     fn default() -> Self {
@@ -916,7 +912,7 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
 }
 
 /// A colorefull margin indent.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 struct MarginIndent {
     /// An indent value.
     indent: Indent,
