@@ -32,7 +32,9 @@ use crate::{
     grid::{
         colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides, SpannedConfig},
-        dimension::{CompactGridDimension, Dimension, DimensionValue, StaticDimension},
+        dimension::{
+            CompactGridDimension, Dimension, DimensionValue, StaticDimension, ZeroDimension,
+        },
         records::{
             into_records::{BufRecords, LimitColumns, LimitRows, TruncateContent},
             IntoRecords, IterRecords,
@@ -119,11 +121,11 @@ impl<I> IterTable<I> {
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, StaticDimension>,
+        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, ZeroDimension>,
     {
         let count_columns = self.table.count_columns.unwrap_or(0);
         let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);
-        let mut dims = StaticDimension::new(DimensionValue::Exact(0), DimensionValue::Exact(1));
+        let mut dims = ZeroDimension::new();
         option.change(&mut records, &mut self.cfg, &mut dims);
 
         self
