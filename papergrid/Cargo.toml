@@ -27,6 +27,10 @@ name = "papergrid_color"
 required-features = ["std", "ansi"]
 
 [[example]]
+name = "peekable_grid"
+required-features = ["std", "ansi"]
+
+[[example]]
 name = "color_map"
 required-features = ["std"]
 

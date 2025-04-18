@@ -473,11 +473,8 @@ impl Table {
             opt.change(&mut self.records, &mut self.config, entity);
         }
 
-        println!("{:?}", self.dimension);
-
         let hint = option.hint_change();
         self.dimension.reastimate(hint);
-        println!("{:?}", self.dimension);
 
         self
     }

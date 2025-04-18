@@ -79,7 +79,7 @@ fn build_grid(
     let mut dims = IterGridDimension::default();
     dims.estimate(&records, &cfg);
 
-    IterGrid::new(records, dims, cfg, NoColors)
+    IterGrid::new(records, cfg, dims, NoColors)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {

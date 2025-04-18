@@ -1438,6 +1438,8 @@ mod grid_spanned {
                 // means it's part of other a spanned cell
                 // so. we just need to use line from other cell.
 
+                prepare_coloring(f, None, &mut used_color)?;
+
                 let original_row = closest_visible_row(ctx.cfg, pos).unwrap();
 
                 // considering that the content will be printed instead horizontal lines so we can skip some lines.

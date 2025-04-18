@@ -30,7 +30,7 @@ pub struct IterGrid<R, D, G, C> {
 
 impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
+    pub fn new(records: R, config: G, dimension: D, colors: C) -> Self {
         IterGrid {
             records,
             config,
@@ -536,6 +536,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
+            prepare_coloring(f, None, &mut used_color)?;
             let (cell, _, _) = buf.get_mut(&col).unwrap();
             cell.display(f)?;
 

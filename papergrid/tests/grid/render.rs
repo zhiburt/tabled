@@ -55,7 +55,7 @@ test_table!(
         let mut cfg = SpannedConfig::default();
         cfg.set_borders(DEFAULT_BORDERS);
 
-        let grid = IterGrid::new(&data, &dims, &cfg, NoColors);
+        let grid = IterGrid::new(&data, &cfg, &dims, NoColors);
         grid.to_string()
     },
     "++"
@@ -80,7 +80,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = IterGrid::new(data, &dims, &cfg, NoColors);
+        let grid = IterGrid::new(data, &cfg, &dims, NoColors);
         grid.to_string()
     },
     "┌──────────┐"

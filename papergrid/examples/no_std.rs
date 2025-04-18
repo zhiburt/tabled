@@ -21,7 +21,7 @@ fn main() {
     let dim = ConstDims(&[20, 15, 40, 3], 1);
     let cfg = generate_table_config();
 
-    let grid = CompactGrid::new(records, &dim, &cfg, NoColors);
+    let grid = CompactGrid::new(records, &cfg, &dim, NoColors);
 
     println!("{grid}");
 }

@@ -30,7 +30,7 @@ pub struct CompactGrid<R, D, G, C> {
 
 impl<R, D, G, C> CompactGrid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
+    pub fn new(records: R, config: G, dimension: D, colors: C) -> Self {
         CompactGrid {
             records,
             config,

@@ -20,7 +20,7 @@ fn main() {
     let mut dim = CompactGridDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = CompactGrid::new(records, &dim, &cfg, NoColors);
+    let grid = CompactGrid::new(records, &cfg, &dim, NoColors);
 
     println!("{grid}");
 }

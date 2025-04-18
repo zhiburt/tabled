@@ -35,7 +35,7 @@ fn main() {
     colors.insert(Position::new(0, 0), Style::Blue);
     colors.insert(Position::new(1, 1), Style::Black);
 
-    let grid = IterGrid::new(records, &dims, &cfg, &colors);
+    let grid = IterGrid::new(records, &cfg, &dims, &colors);
     grid.build(StdoutWriter::new()).unwrap();
     println!();
 }

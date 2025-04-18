@@ -27,7 +27,7 @@ fn main() {
     let mut dim = IterGridDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = IterGrid::new(records, &dim, &cfg, NoColors);
+    let grid = IterGrid::new(records, &cfg, &dim, NoColors);
     let grid = grid.to_string();
 
     println!("{grid}");

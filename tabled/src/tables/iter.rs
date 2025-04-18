@@ -118,6 +118,8 @@ impl<I> IterTable<I> {
         }
     }
 
+    // TODO: REmove the SELF consumption????
+
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
@@ -243,11 +245,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(iter, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(iter, contentw, count_columns, None);
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }
@@ -293,11 +295,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, content_width, count_columns, Some(limit));
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(records, content_width, count_columns, None);
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }
@@ -335,11 +337,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
         None => {
             let records = build_records(records, contentw, count_columns, None);
-            IterGrid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, cfg, dims, NoColors).build(f)
         }
     }
 }

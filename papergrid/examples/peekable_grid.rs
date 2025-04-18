@@ -5,25 +5,32 @@ use papergrid::{
         spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity,
         Indent, Position, Sides,
     },
-    dimension::{iterable::IterGridDimension, Estimate},
-    grid::iterable::IterGrid,
-    records::IterRecords,
+    dimension::{peekable::PeekableGridDimension, Estimate},
+    grid::{iterable::IterGrid, peekable::PeekableGrid},
+    records::{
+        vec_records::{Text, VecRecords},
+        IterRecords, PeekableRecords,
+    },
 };
 
 fn main() {
-    let data = vec![
-        vec!["Papergrid", "is a library", "for printing tables", "!"],
-        vec!["", "Just like this", "", ""],
+    let data = [
+        ["Papergrid", "is a library", "for printing tables", "!"],
+        ["", "Just like this", "", ""],
     ];
+    let data = data
+        .iter()
+        .map(|row| row.iter().map(Text::new).collect())
+        .collect();
 
-    let records = IterRecords::new(data, 4, Some(2));
+    let records = VecRecords::new(data);
 
     let cfg = create_config();
 
-    let mut dim = IterGridDimension::default();
+    let mut dim = PeekableGridDimension::default();
     dim.estimate(&records, &cfg);
 
-    let grid = IterGrid::new(records, &cfg, &dim, NoColors).to_string();
+    let grid = PeekableGrid::new(records, &cfg, &dim, NoColors).to_string();
 
     println!("{grid}");
 }

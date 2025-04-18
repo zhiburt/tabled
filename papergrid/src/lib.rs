@@ -60,14 +60,14 @@
 //! let records = IterRecords::new(records, 2, None);
 //!
 //! // Estimate grid dimension.
-//! let mut dimension = IterGridDimension::default();
-//! dimension.estimate(&records, &cfg);
+//! let mut dims = IterGridDimension::default();
+//! dims.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = IterGrid::new(&records, &dimension, &cfg, NoColors).to_string();
+//! let grid = IterGrid::new(&records, &cfg, &dims, NoColors);
 //!
 //! assert_eq!(
-//!     grid,
+//!     grid.to_string(),
 //!     concat!(
 //!         "+-----+-----+\n",
 //!         "|Hello|World|\n",

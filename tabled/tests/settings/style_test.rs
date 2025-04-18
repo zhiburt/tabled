@@ -2834,3 +2834,20 @@ test_table!(
     "| 1 |   1-0    |   1-1    |"
     "+---+----------+----------+"
 );
+
+test_table!(
+    table_colored_border_with_span_row_0,
+    {
+        let mut t = Table::new(vec![("Hello\nWorld\n...", 1234)]);
+        t.modify((0, 0), Span::row(2));
+        t.modify((0, 0), Alignment::center());
+        t.modify((0, 0), Alignment::center_vertical());
+        t.modify((0, 0), BorderColor::filled(Color::FG_RED));
+        t
+    },
+    "\u{1b}[31m+------+\u{1b}[39m------+"
+    "\u{1b}[31m|\u{1b}[39m      \u{1b}[31m|\u{1b}[39m i32  |"
+    "\u{1b}[31m+\u{1b}[39m &str \u{1b}[31m+\u{1b}[39m------+"
+    "|      | 1234 |"
+    "+------+------+"
+);

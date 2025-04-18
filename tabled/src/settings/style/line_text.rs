@@ -331,9 +331,13 @@ fn set_horizontal_chars<D>(
                     None => return,
                 };
 
-                cfg.set_horizontal_char((line, col).into(), c, Offset::Start(off));
+                cfg.set_horizontal_char((line, col).into(), Offset::Start(off), c);
                 if let Some(color) = color.as_ref() {
-                    cfg.set_horizontal_color((line, col).into(), color.clone(), Offset::Start(off));
+                    cfg.set_horizontal_char_color(
+                        (line, col).into(),
+                        Offset::Start(off),
+                        color.clone(),
+                    );
                 }
             }
         }
@@ -427,10 +431,14 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line).into(), c, Offset::Start(off)); // todo: is this correct? I think it shall be off + i
+                cfg.set_vertical_char((row, line).into(), Offset::Start(off), c); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
-                    cfg.set_vertical_color((row, line).into(), color.clone(), Offset::Start(off));
+                    cfg.set_vertical_char_color(
+                        (row, line).into(),
+                        Offset::Start(off),
+                        color.clone(),
+                    );
                 }
             }
         }
