@@ -16,6 +16,63 @@ readme = "README.md"
 coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
 maintenance = { status = "actively-developed" }
 
+[features]
+default = ["derive", "macros", "assert"]
+std = ["papergrid/std", "testing_table/std"]
+derive = ["tabled_derive", "std"]
+ansi = ["papergrid/ansi", "testing_table/ansi", "ansi-str", "ansitok", "std"]
+macros = ["std"]
+assert = ["testing_table"]
+
+[dependencies]
+papergrid = { path = "../papergrid", default-features = false }
+tabled_derive = { path = "../tabled_derive", optional = true }
+ansi-str = { version = "0.9", optional = true }
+ansitok = { version = "0.3", optional = true }
+testing_table = { path = "../testing_table", default-features = false, optional = true }
+
+# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
+#
+# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
+[package.metadata.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu"]
+rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "text_color"
+required-features = ["ansi", "derive"]
+
+[[example]]
+name = "text_on_border"
+required-features = ["std"]
+
+[[example]]
+name = "layout"
+required-features = ["derive"]
+
+[[example]]
+name = "formatting"
+required-features = ["macros"]
+
+[[example]]
+name = "cowsay"
+required-features = ["macros"]
+
+[[example]]
+name = "colored_borders"
+required-features = ["derive"]
+
+[[example]]
+name = "colored_padding"
+path = "examples/colored_padding.rs"
+required-features = ["ansi", "derive"]
+
+[[example]]
+name = "disable"
+required-features = ["derive"]
+
 [[example]]
 name = "rename_all"
 path = "examples/derive/rename_all.rs"
@@ -81,26 +138,223 @@ name = "derive_map_inlined"
 path = "examples/derive/map_inlined.rs"
 required-features = ["derive"]
 
-[features]
-default = ["derive", "macros", "assert"]
-std = ["papergrid/std", "testing_table/std"]
-derive = ["tabled_derive", "std"]
-ansi = ["papergrid/ansi", "testing_table/ansi", "ansi-str", "ansitok", "std"]
-macros = ["std"]
-assert = ["testing_table"]
+[[example]]
+name = "table"
+path = "examples/table.rs"
+required-features = ["derive"]
 
-[dependencies]
-papergrid = { path = "../papergrid", default-features = false }
-tabled_derive = { path = "../tabled_derive", optional = true }
-ansi-str = { version = "0.9", optional = true }
-ansitok = { version = "0.3", optional = true }
-testing_table = { path = "../testing_table", default-features = false, optional = true }
+[[example]]
+name = "builder_index"
+path = "examples/builder_index.rs"
+required-features = ["derive"]
 
-# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
-#
-# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
-[package.metadata.docs.rs]
-all-features = true
-targets = ["x86_64-unknown-linux-gnu"]
-rustdoc-args = ["--cfg", "docsrs"]
-rustc-args = ["--cfg", "docsrs"]
+[[example]]
+name = "concat"
+path = "examples/concat.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "custom_style"
+path = "examples/custom_style.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "extended_display"
+path = "examples/extended_display.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "extract"
+path = "examples/extract.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "format"
+path = "examples/format.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "panel"
+path = "examples/panel.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "rotate"
+path = "examples/rotate.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "shadow"
+path = "examples/shadow.rs"
+required-features = ["macros"]
+
+[[example]]
+name = "nested_table_2"
+path = "examples/nested_table_2.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "nested_table_3"
+path = "examples/nested_table_3.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "col_row_macros"
+path = "examples/col_row_macros.rs"
+required-features = ["macros", "derive"]
+
+[[example]]
+name = "merge_duplicates_horizontal"
+path = "examples/merge_duplicates_horizontal.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "merge_duplicates_vertical"
+path = "examples/merge_duplicates_vertical.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "hyperlink"
+path = "examples/hyperlink.rs"
+required-features = ["derive", "ansi"]
+
+[[example]]
+name = "highlight"
+path = "examples/highlight.rs"
+required-features = ["std"]
+
+[[example]]
+name = "highlight_color"
+path = "examples/highlight_color.rs"
+required-features = ["std"]
+
+[[example]]
+name = "span"
+path = "examples/span.rs"
+required-features = ["std"]
+
+[[example]]
+name = "span_column"
+path = "examples/span_column.rs"
+required-features = ["std"]
+
+[[example]]
+name = "span_row"
+path = "examples/span_row.rs"
+required-features = ["std"]
+
+[[example]]
+name = "nested_table"
+path = "examples/nested_table.rs"
+required-features = ["std"]
+
+[[example]]
+name = "builder"
+path = "examples/builder.rs"
+required-features = ["std"]
+
+[[example]]
+name = "table_width"
+path = "examples/table_width.rs"
+required-features = ["std"]
+
+[[example]]
+name = "table_width_2"
+path = "examples/table_width_2.rs"
+required-features = ["std"]
+
+[[example]]
+name = "height"
+path = "examples/height.rs"
+required-features = ["std"]
+
+[[example]]
+name = "margin"
+path = "examples/margin.rs"
+required-features = ["std"]
+
+[[example]]
+name = "iter_table"
+path = "examples/iter_table.rs"
+required-features = ["std"]
+
+[[example]]
+name = "matrix"
+path = "examples/matrix.rs"
+required-features = ["std"]
+
+[[example]]
+name = "settings_list"
+path = "examples/settings_list.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "compact_table"
+path = "examples/compact_table.rs"
+required-features = []
+
+[[example]]
+name = "alphabet"
+path = "examples/alphabet.rs"
+required-features = ["std"]
+
+[[example]]
+name = "split"
+path = "examples/split.rs"
+required-features = ["std", "macros"]
+
+[[example]]
+name = "pool_table"
+path = "examples/pool_table.rs"
+required-features = ["std"]
+
+[[example]]
+name = "pool_table2"
+path = "examples/pool_table2.rs"
+required-features = ["std"]
+
+[[example]]
+name = "column_names"
+path = "examples/column_names.rs"
+required-features = ["std", "derive"]
+
+[[example]]
+name = "colorization"
+path = "examples/colorization.rs"
+required-features = ["std", "derive"]
+
+[[example]]
+name = "chess"
+path = "examples/chess.rs"
+required-features = ["std"]
+
+[[example]]
+name = "target_content"
+path = "examples/target_content.rs"
+required-features = ["std", "derive"]
+
+[[example]]
+name = "style_modern_rounded"
+path = "examples/style_modern_rounded.rs"
+required-features = ["std"]
+
+[[example]]
+name = "reverse"
+path = "examples/reverse.rs"
+required-features = ["std"]
+
+[[example]]
+name = "interactive"
+path = "examples/interactive.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "option"
+path = "examples/option.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "no_std"
+path = "examples/no_std.rs"
+required-features = ["assert"]
+no-default-features = true

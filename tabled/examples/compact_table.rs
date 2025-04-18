@@ -10,5 +10,6 @@ fn main() {
 
     let table = CompactTable::from(data).with(Style::ascii());
 
+    #[cfg(feature = "std")]
     println!("{}", table.to_string());
 }
