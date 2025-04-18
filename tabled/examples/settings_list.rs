@@ -7,6 +7,11 @@ use tabled::{
     Table, Tabled,
 };
 
+type TableSettings = Settings<
+    Settings<Settings<Settings, Style<On, On, On, On, On, On, 0, 0>>, Padding>,
+    ModifyList<FirstRow, Alignment>,
+>;
+
 #[derive(Tabled)]
 struct Editor {
     name: &'static str,
@@ -14,10 +19,7 @@ struct Editor {
     first_release: usize,
 }
 
-const THEME: Settings<
-    Settings<Settings<Settings, Style<On, On, On, On, On, On, 0, 0>>, Padding>,
-    ModifyList<FirstRow, Alignment>,
-> = Settings::empty()
+const THEME: TableSettings = Settings::empty()
     .with(Style::ascii())
     .with(Padding::new(1, 3, 0, 0))
     .with(Modify::list(Rows::first(), Alignment::center()));
