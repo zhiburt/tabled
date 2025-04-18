@@ -172,21 +172,11 @@ fn dims_reastimate(
     }
 }
 
-// TODO: WHAT IS THIS???
 fn dims_set_widths(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {
     match list {
-        Some(list) => match dims.width.take() {
-            Some(widths) => {
-                if widths == list {
-                    dims.width = None;
-                } else {
-                    dims.width = Some(Cow::Owned(list));
-                }
-            }
-            None => {
-                dims.width = Some(Cow::Owned(list));
-            }
-        },
+        Some(list) => {
+            dims.width = Some(Cow::Owned(list));
+        }
         None => {
             dims.width = None;
         }
@@ -195,18 +185,9 @@ fn dims_set_widths(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {
 
 fn dims_set_heights(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {
     match list {
-        Some(list) => match dims.height.take() {
-            Some(heights) => {
-                if heights == list {
-                    dims.height = None;
-                } else {
-                    dims.height = Some(Cow::Owned(list));
-                }
-            }
-            None => {
-                dims.height = Some(Cow::Owned(list));
-            }
-        },
+        Some(list) => {
+            dims.height = Some(Cow::Owned(list));
+        }
         None => {
             dims.height = None;
         }
