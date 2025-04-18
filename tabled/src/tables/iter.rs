@@ -26,6 +26,7 @@
 //!
 //! [`Table`]: crate::Table
 
+use core::iter::FromIterator;
 use std::{fmt, io};
 
 use crate::{
@@ -201,6 +202,21 @@ impl<I> IterTable<I> {
         I::Cell: AsRef<str>,
     {
         build_grid(writer, self.records, self.cfg, self.table)
+    }
+}
+
+impl<T> FromIterator<T> for IterTable<Vec<Vec<T::Item>>>
+where
+    T: IntoIterator,
+    T::Item: AsRef<str>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let data = iter
+            .into_iter()
+            .map(|row| row.into_iter().collect())
+            .collect();
+
+        Self::new(data)
     }
 }
 
