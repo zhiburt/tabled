@@ -85,8 +85,6 @@ fn add_char_vertical<I: Iterator<Item = Position>>(
     offset: Offset,
     cells: I,
 ) {
-    let offset = offset.into();
-
     for pos in cells {
         cfg.set_vertical_char(pos, c, offset);
     }
@@ -98,8 +96,6 @@ fn add_char_horizontal<I: Iterator<Item = Position>>(
     offset: Offset,
     cells: I,
 ) {
-    let offset = offset.into();
-
     for pos in cells {
         cfg.set_horizontal_char(pos, c, offset);
     }

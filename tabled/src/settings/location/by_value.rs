@@ -40,7 +40,7 @@ where
         let mut last_pos: Option<Position> = None;
 
         for e in cells.into_iter() {
-            for pos in e.iter(count_rows, count_cols).into_iter() {
+            for pos in e.iter(count_rows, count_cols) {
                 let text = records.get_text(pos);
                 match last {
                     Some(last_value) => {
