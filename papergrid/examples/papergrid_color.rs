@@ -5,7 +5,7 @@ use std::{
 
 use papergrid::{
     colors::NoColors, config::spanned::SpannedConfig, config::Borders,
-    dimension::spanned::SpannedGridDimension, dimension::Estimate, grid::iterable::Grid,
+    dimension::iterable::IterGridDimension, dimension::Estimate, grid::iterable::IterGrid,
     records::IterRecords,
 };
 
@@ -18,10 +18,10 @@ fn main() {
 
     let cfg = generate_table_config();
 
-    let mut dimension = SpannedGridDimension::default();
+    let mut dimension = IterGridDimension::default();
     dimension.estimate(&records, &cfg);
 
-    let grid = Grid::new(&records, &dimension, &cfg, NoColors);
+    let grid = IterGrid::new(&records, &dimension, &cfg, NoColors);
 
     grid.build(UTF8Stdout(io::stdout())).unwrap();
     println!();

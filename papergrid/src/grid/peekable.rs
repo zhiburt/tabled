@@ -19,6 +19,10 @@ use crate::{
     util::string::get_line_width,
 };
 
+// TODO: Do we actually need PeekableRecords?
+//       Maybe Cloned iterator will be faster?
+//       Even better &referenced Records
+
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
 pub struct PeekableGrid<R, G, D, C> {

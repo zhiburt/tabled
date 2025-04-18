@@ -37,7 +37,7 @@ use crate::{
             into_records::{BufRecords, LimitColumns, LimitRows, TruncateContent},
             IntoRecords, IterRecords,
         },
-        Grid,
+        IterGrid,
     },
     settings::{Style, TableOption},
 };
@@ -241,11 +241,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(iter, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
         None => {
             let records = build_records(iter, contentw, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
     }
 }
@@ -291,11 +291,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, content_width, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
         None => {
             let records = build_records(records, content_width, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
     }
 }
@@ -333,11 +333,11 @@ where
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, Some(limit));
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
         None => {
             let records = build_records(records, contentw, count_columns, None);
-            Grid::new(records, dims, cfg, NoColors).build(f)
+            IterGrid::new(records, dims, cfg, NoColors).build(f)
         }
     }
 }

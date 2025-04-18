@@ -409,13 +409,13 @@ fn total_width<D>(cfg: &CompactConfig, dims: &D, count_columns: usize) -> usize
 where
     D: Dimension,
 {
-    let content_width = total_columns_width(count_columns, dims);
+    let content_width = total_columns_width(dims, count_columns);
     let count_verticals = count_verticals(cfg, count_columns);
 
     content_width + count_verticals
 }
 
-fn total_columns_width<D>(count_columns: usize, dims: &D) -> usize
+fn total_columns_width<D>(dims: &D, count_columns: usize) -> usize
 where
     D: Dimension,
 {

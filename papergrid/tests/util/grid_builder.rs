@@ -6,8 +6,8 @@ use std::collections::HashMap;
 use papergrid::{
     colors::NoColors,
     config::{spanned::SpannedConfig, Borders, Position},
-    dimension::{spanned::SpannedGridDimension, Dimension, Estimate},
-    grid::iterable::Grid,
+    dimension::{iterable::IterGridDimension, Dimension, Estimate},
+    grid::iterable::IterGrid,
     records::{IterRecords, Records},
 };
 
@@ -73,13 +73,13 @@ fn build_grid(
     data: Vec<Vec<String>>,
     cfg: SpannedConfig,
     shape: (usize, usize),
-) -> Grid<IterRecords<Vec<Vec<String>>>, SpannedGridDimension, SpannedConfig, NoColors> {
+) -> IterGrid<IterRecords<Vec<Vec<String>>>, IterGridDimension, SpannedConfig, NoColors> {
     let records = IterRecords::new(data, shape.1, Some(shape.0));
 
-    let mut dims = SpannedGridDimension::default();
+    let mut dims = IterGridDimension::default();
     dims.estimate(&records, &cfg);
 
-    Grid::new(records, dims, cfg, NoColors)
+    IterGrid::new(records, dims, cfg, NoColors)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {

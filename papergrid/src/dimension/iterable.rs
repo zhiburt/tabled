@@ -20,12 +20,12 @@ use crate::config::spanned::SpannedConfig;
 ///
 /// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct SpannedGridDimension {
+pub struct IterGridDimension {
     height: Vec<usize>,
     width: Vec<usize>,
 }
 
-impl SpannedGridDimension {
+impl IterGridDimension {
     /// Calculates height of rows.
     pub fn height<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
     where
@@ -68,7 +68,7 @@ impl SpannedGridDimension {
     }
 }
 
-impl Dimension for SpannedGridDimension {
+impl Dimension for IterGridDimension {
     fn get_width(&self, column: usize) -> usize {
         self.width[column]
     }
@@ -78,7 +78,7 @@ impl Dimension for SpannedGridDimension {
     }
 }
 
-impl<R> Estimate<R, SpannedConfig> for SpannedGridDimension
+impl<R> Estimate<R, SpannedConfig> for IterGridDimension
 where
     R: Records,
     <R::Iter as IntoRecords>::Cell: AsRef<str>,

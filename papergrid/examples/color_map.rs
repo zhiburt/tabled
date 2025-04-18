@@ -7,8 +7,8 @@ use std::{
 use papergrid::{
     ansi::ANSIFmt,
     config::{spanned::SpannedConfig, Borders, Position},
-    dimension::{spanned::SpannedGridDimension, Estimate},
-    grid::iterable::Grid,
+    dimension::{iterable::IterGridDimension, Estimate},
+    grid::iterable::IterGrid,
     records::IterRecords,
 };
 
@@ -28,14 +28,14 @@ fn main() {
         ..Default::default()
     });
 
-    let mut dims = SpannedGridDimension::default();
+    let mut dims = IterGridDimension::default();
     dims.estimate(records, &cfg);
 
     let mut colors = HashMap::default();
     colors.insert(Position::new(0, 0), Style::Blue);
     colors.insert(Position::new(1, 1), Style::Black);
 
-    let grid = Grid::new(records, &dims, &cfg, &colors);
+    let grid = IterGrid::new(records, &dims, &cfg, &colors);
     grid.build(StdoutWriter::new()).unwrap();
     println!();
 }

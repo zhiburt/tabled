@@ -51,6 +51,8 @@ pub struct SpannedConfig {
     justification_color: EntityMap<Option<ANSIBuf>>,
 }
 
+// TODO: Into<Position>
+
 impl Default for SpannedConfig {
     fn default() -> Self {
         Self {

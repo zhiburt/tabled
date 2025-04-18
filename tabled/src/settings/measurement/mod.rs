@@ -2,7 +2,7 @@
 
 use crate::{
     grid::config::SpannedConfig,
-    grid::dimension::SpannedGridDimension,
+    grid::dimension::IterGridDimension,
     grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records},
     grid::util::string::{self, get_text_width},
     settings::{Height, Width},
@@ -97,7 +97,7 @@ impl Measurement<Width> for Percent {
         R: Records,
         <R::Iter as IntoRecords>::Cell: AsRef<str>,
     {
-        let total = SpannedGridDimension::width_total(records, cfg);
+        let total = IterGridDimension::width_total(records, cfg);
         (total * self.0) / 100
     }
 }
@@ -108,7 +108,7 @@ impl Measurement<Height> for Percent {
         R: Records + ExactRecords,
         <R::Iter as IntoRecords>::Cell: AsRef<str>,
     {
-        let total = SpannedGridDimension::height_total(records, cfg);
+        let total = IterGridDimension::height_total(records, cfg);
         (total * self.0) / 100
     }
 }

@@ -4,17 +4,12 @@ use papergrid::{
         spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity, Indent,
         Sides,
     },
-    dimension::{spanned::SpannedGridDimension, Estimate},
+    dimension::{peekable::PeekableGridDimension, Estimate},
     grid::peekable::PeekableGrid,
     records::vec_records::{Text, VecRecords},
 };
 
 fn main() {
-    let data = [
-        ["Papergrid", "is a library", "for print tables", "!"],
-        ["", "Just like this", "", ""],
-    ];
-
     let mut cfg = SpannedConfig::default();
     cfg.set_borders(Borders {
         top: Some('-'),
@@ -47,6 +42,11 @@ fn main() {
         ),
     );
 
+    let data = [
+        ["Papergrid", "is a library", "for print tables", "!"],
+        ["", "Just like this", "", ""],
+    ];
+
     let data = data
         .iter()
         .map(|row| row.iter().map(Text::new).collect())
@@ -54,7 +54,7 @@ fn main() {
 
     let records = VecRecords::new(data);
 
-    let mut dims = SpannedGridDimension::default();
+    let mut dims = PeekableGridDimension::default();
     dims.estimate(&records, &cfg);
 
     let grid = PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string();

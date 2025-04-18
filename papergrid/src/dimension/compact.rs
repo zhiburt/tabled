@@ -17,7 +17,6 @@ use crate::config::compact::CompactConfig;
 /// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct CompactGridDimension {
-    height: Vec<usize>,
     width: Vec<usize>,
 }
 
@@ -55,8 +54,8 @@ impl Dimension for CompactGridDimension {
         self.width[column]
     }
 
-    fn get_height(&self, row: usize) -> usize {
-        self.height[row]
+    fn get_height(&self, _: usize) -> usize {
+        1
     }
 }
 
@@ -66,9 +65,7 @@ where
     <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn estimate(&mut self, records: R, cfg: &CompactConfig) {
-        let (w, h) = build_dimension(records, cfg);
-        self.width = w;
-        self.height = h;
+        self.width = build_width(records, cfg);
     }
 }
 

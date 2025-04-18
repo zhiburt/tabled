@@ -3,7 +3,7 @@ use std::cmp;
 use crate::{
     grid::{
         config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
-        dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
+        dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
@@ -251,14 +251,12 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
-    for ColumnNames
-{
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>> for ColumnNames {
     fn change(
         self,
         records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
+        dims: &mut CompleteDimension<'_>,
     ) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
@@ -297,7 +295,7 @@ fn set_column_text(
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimensionVecRecords<'_>,
+    dims: &mut CompleteDimension<'_>,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);
@@ -333,7 +331,7 @@ fn set_row_text(
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimensionVecRecords<'_>,
+    dims: &mut CompleteDimension<'_>,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);

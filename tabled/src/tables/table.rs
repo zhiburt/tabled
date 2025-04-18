@@ -11,7 +11,7 @@ use crate::{
             AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Indent, Sides,
             SpannedConfig,
         },
-        dimension::{CompleteDimensionVecRecords, Dimension, Estimate, PeekableDimension},
+        dimension::{CompleteDimension, Dimension, Estimate, PeekableGridDimension},
         records::{
             vec_records::{Text, VecRecords},
             ExactRecords, Records,
@@ -87,7 +87,7 @@ use crate::{
 pub struct Table {
     records: VecRecords<Text<String>>,
     config: ColoredConfig,
-    dimension: CompleteDimensionVecRecords<'static>,
+    dimension: CompleteDimension<'static>,
 }
 
 impl Table {
@@ -230,7 +230,7 @@ impl Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimensionVecRecords::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 
@@ -370,7 +370,7 @@ impl Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimensionVecRecords::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 
@@ -443,16 +443,14 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        for<'a> O:
-            TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimensionVecRecords<'a>>,
+        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
     {
         let reastimation_hint = option.hint_change();
-        let mut dims = self.dimension.from_origin();
+        let mut dims = self.dimension.inherit();
 
         option.change(&mut self.records, &mut self.config, &mut dims);
 
-        let (widths, heights) = dims.into_inner();
-        dimension_reastimate(&mut self.dimension, widths, heights, reastimation_hint);
+        self.dimension.combine(dims.into_owned(), reastimation_hint);
 
         self
     }
@@ -475,8 +473,8 @@ impl Table {
             opt.change(&mut self.records, &mut self.config, entity);
         }
 
-        let reastimation_hint = option.hint_change();
-        dimension_reastimate_likely(&mut self.dimension, reastimation_hint);
+        let hint = option.hint_change();
+        self.dimension.reastimate(hint);
 
         self
     }
@@ -504,7 +502,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
+        let mut dims = self.dimension.inherit();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
@@ -519,7 +517,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
+        let mut dims = self.dimension.inherit();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
@@ -553,12 +551,12 @@ impl Table {
     }
 
     /// Returns a dimension.
-    pub fn get_dimension(&self) -> &CompleteDimensionVecRecords<'static> {
+    pub fn get_dimension(&self) -> &CompleteDimension<'static> {
         &self.dimension
     }
 
     /// Returns a dimension.
-    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimensionVecRecords<'static> {
+    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimension<'static> {
         &mut self.dimension
     }
 }
@@ -568,7 +566,7 @@ impl Default for Table {
         Self {
             records: VecRecords::default(),
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimensionVecRecords::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 }
@@ -588,7 +586,7 @@ impl fmt::Display for Table {
 
             print_grid(f, &self.records, &config, &dims, colors)
         } else {
-            let mut dims = PeekableDimension::default();
+            let mut dims = PeekableGridDimension::default();
             dims.estimate(&self.records, &config);
 
             print_grid(f, &self.records, &config, &dims, colors)
@@ -614,7 +612,7 @@ impl From<Builder> for Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimensionVecRecords::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 }
@@ -759,84 +757,5 @@ fn print_grid<F: fmt::Write, D: Dimension>(
         PeekableGrid::new(records, cfg, &dims, colors).build(f)
     } else {
         PeekableGrid::new(records, cfg, &dims, NoColors).build(f)
-    }
-}
-
-fn dimension_reastimate(
-    dims: &mut CompleteDimensionVecRecords<'_>,
-    widths: Option<Vec<usize>>,
-    heights: Option<Vec<usize>>,
-    hint: Option<Entity>,
-) {
-    let hint = match hint {
-        Some(hint) => hint,
-        None => return,
-    };
-
-    match hint {
-        Entity::Global | Entity::Cell(_, _) => {
-            dims_set_widths(dims, widths);
-            dims_set_heights(dims, heights);
-        }
-        Entity::Column(_) => {
-            dims_set_widths(dims, widths);
-        }
-        Entity::Row(_) => {
-            dims_set_heights(dims, heights);
-        }
-    }
-}
-
-fn dims_set_widths(dims: &mut CompleteDimensionVecRecords<'_>, list: Option<Vec<usize>>) {
-    match list {
-        Some(list) => match dims.get_widths() {
-            Some(widths) => {
-                if widths == list {
-                    dims.clear_width();
-                } else {
-                    dims.set_widths(list);
-                }
-            }
-            None => dims.set_widths(list),
-        },
-        None => {
-            dims.clear_width();
-        }
-    }
-}
-
-fn dims_set_heights(dims: &mut CompleteDimensionVecRecords<'_>, list: Option<Vec<usize>>) {
-    match list {
-        Some(list) => match dims.get_heights() {
-            Some(heights) => {
-                if heights == list {
-                    dims.clear_height();
-                } else {
-                    dims.set_heights(list);
-                }
-            }
-            None => dims.set_heights(list),
-        },
-        None => {
-            dims.clear_height();
-        }
-    }
-}
-
-fn dimension_reastimate_likely(dims: &mut CompleteDimensionVecRecords<'_>, hint: Option<Entity>) {
-    let hint = match hint {
-        Some(hint) => hint,
-        None => return,
-    };
-
-    match hint {
-        Entity::Global | Entity::Cell(_, _) => {
-            dims.clear_width();
-            dims.clear_height()
-        }
-        Entity::Column(_) => {
-            dims.clear_width();
-        }
-        Entity::Row(_) => dims.clear_height(),
     }
 }

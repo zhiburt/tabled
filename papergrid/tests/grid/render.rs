@@ -19,7 +19,7 @@ use papergrid::{
     config::{
         spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity, Position,
     },
-    grid::iterable::Grid,
+    grid::iterable::IterGrid,
     records::IterRecords,
 };
 
@@ -55,7 +55,7 @@ test_table!(
         let mut cfg = SpannedConfig::default();
         cfg.set_borders(DEFAULT_BORDERS);
 
-        let grid = Grid::new(&data, &dims, &cfg, NoColors);
+        let grid = IterGrid::new(&data, &dims, &cfg, NoColors);
         grid.to_string()
     },
     "++"
@@ -80,7 +80,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = Grid::new(data, &dims, &cfg, NoColors);
+        let grid = IterGrid::new(data, &dims, &cfg, NoColors);
         grid.to_string()
     },
     "┌──────────┐"

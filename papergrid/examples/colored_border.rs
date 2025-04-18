@@ -5,8 +5,8 @@ use papergrid::{
         spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global,
         Indent, Position, Sides,
     },
-    dimension::{spanned::SpannedGridDimension, Estimate},
-    grid::iterable::Grid,
+    dimension::{iterable::IterGridDimension, Estimate},
+    grid::iterable::IterGrid,
     records::IterRecords,
 };
 
@@ -22,10 +22,10 @@ fn main() {
 
     let cfg = create_config();
 
-    let mut dim = SpannedGridDimension::default();
+    let mut dim = IterGridDimension::default();
     dim.estimate(&records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg, NoColors).to_string();
+    let grid = IterGrid::new(records, &dim, &cfg, NoColors).to_string();
 
     println!("{grid}");
 }

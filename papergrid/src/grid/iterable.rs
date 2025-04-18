@@ -19,21 +19,19 @@ use crate::{
     util::string::{count_lines, get_line_width, get_lines, get_text_width, Lines},
 };
 
-// TODO: Rename to IterGrid
-
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
-pub struct Grid<R, D, G, C> {
+pub struct IterGrid<R, D, G, C> {
     records: R,
     config: G,
     dimension: D,
     colors: C,
 }
 
-impl<R, D, G, C> Grid<R, D, G, C> {
+impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
     pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
-        Grid {
+        IterGrid {
             records,
             config,
             dimension,
@@ -42,7 +40,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
     }
 }
 
-impl<R, D, G, C> Grid<R, D, G, C> {
+impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// Builds a table.
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where

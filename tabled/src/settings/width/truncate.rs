@@ -7,7 +7,7 @@ use std::{borrow::Cow, iter};
 use crate::{
     grid::{
         config::{ColoredConfig, Entity, Position, SpannedConfig},
-        dimension::CompleteDimensionVecRecords,
+        dimension::CompleteDimension,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{get_line_width, get_text_width},
     },
@@ -229,7 +229,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension<'_>> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -237,12 +237,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }

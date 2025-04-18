@@ -1,6 +1,6 @@
 use crate::grid::{
     config::SpannedConfig,
-    dimension::SpannedGridDimension,
+    dimension::IterGridDimension,
     records::{ExactRecords, IntoRecords, Records},
 };
 
@@ -14,10 +14,12 @@ where
     let margin = cfg.get_margin();
     let margin_size = margin.top.size + margin.bottom.size;
 
-    let list = SpannedGridDimension::height(records, cfg);
+    let list = IterGridDimension::height(records, cfg);
     let total = list.iter().sum::<usize>();
 
     let total = total + count_horizontals + margin_size;
 
     (total, list)
 }
+
+// TODO: peekable

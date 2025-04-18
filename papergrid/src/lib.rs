@@ -27,9 +27,9 @@
 //!     dimension::{Estimate},
 //!     config::Borders,
 //!     colors::NoColors,
-//!     grid::iterable::Grid,
+//!     grid::iterable::IterGrid,
 //!     config::spanned::SpannedConfig,
-//!     dimension::spanned::SpannedGridDimension,
+//!     dimension::iterable::IterGridDimension,
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -60,11 +60,11 @@
 //! let records = IterRecords::new(records, 2, None);
 //!
 //! // Estimate grid dimension.
-//! let mut dimension = SpannedGridDimension::default();
+//! let mut dimension = IterGridDimension::default();
 //! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = Grid::new(&records, &dimension, &cfg, NoColors).to_string();
+//! let grid = IterGrid::new(&records, &dimension, &cfg, NoColors).to_string();
 //!
 //! assert_eq!(
 //!     grid,

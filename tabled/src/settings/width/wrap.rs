@@ -6,7 +6,7 @@
 use crate::{
     grid::{
         config::{ColoredConfig, Entity, Position, SpannedConfig},
-        dimension::CompleteDimensionVecRecords,
+        dimension::CompleteDimension,
         records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{get_char_width, get_string_width, get_text_width},
     },
@@ -41,7 +41,6 @@ use super::util::{get_table_widths, get_table_widths_with_total};
 #[derive(Debug, Clone)]
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
-    // TODO: change treatment of space -- if we moving the word we can ignore space I think
     keep_words: bool,
     priority: P,
 }
@@ -98,7 +97,7 @@ impl Wrap<(), ()> {
     }
 }
 
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Wrap<W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension<'_>> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -106,12 +105,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }
