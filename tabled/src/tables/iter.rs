@@ -67,7 +67,8 @@ use crate::util::utf8_writer::UTF8Writer;
 /// ];
 ///
 /// let records = IterRecords::new(data, 2, Some(2));
-/// let table = IterTable::new(records).sniff(1);
+/// let mut table = IterTable::new(records);
+/// table.sniff(1);
 ///
 /// // notice because of sniff 1 we have all rows after the first one being truncated
 /// assert_table!(
@@ -83,14 +84,14 @@ use crate::util::utf8_writer::UTF8Writer;
 /// ```
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IterTable<I> {
     records: I,
     cfg: CompactConfig,
     table: Settings,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 struct Settings {
     sniff: usize,
     count_columns: Option<usize>,
@@ -119,28 +120,27 @@ impl<I> IterTable<I> {
     }
 
     // TODO: REmove the SELF consumption????
+    // TODO: Change setters to ZeroDimension configuration
 
     /// With is a generic function which applies options to the [`IterTable`].
-    pub fn with<O>(mut self, option: O) -> Self
+    pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, ZeroDimension>,
+        O: TableOption<I, CompactConfig, ZeroDimension>,
     {
-        let count_columns = self.table.count_columns.unwrap_or(0);
-        let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);
         let mut dims = ZeroDimension::new();
-        option.change(&mut records, &mut self.cfg, &mut dims);
+        option.change(&mut self.records, &mut self.cfg, &mut dims);
 
         self
     }
 
     /// Limit a number of columns.
-    pub fn columns(mut self, count_columns: usize) -> Self {
+    pub fn columns(&mut self, count_columns: usize) -> &mut Self {
         self.table.count_columns = Some(count_columns);
         self
     }
 
     /// Limit a number of rows.
-    pub fn rows(mut self, count_rows: usize) -> Self {
+    pub fn rows(&mut self, count_rows: usize) -> &mut Self {
         self.table.count_rows = Some(count_rows);
         self
     }
@@ -148,19 +148,19 @@ impl<I> IterTable<I> {
     /// Limit an amount of rows will be read for dimension estimations.
     ///
     /// By default it's 1000.
-    pub fn sniff(mut self, count: usize) -> Self {
+    pub fn sniff(&mut self, count: usize) -> &mut Self {
         self.table.sniff = count;
         self
     }
 
     /// Set a height for each row.
-    pub fn height(mut self, size: usize) -> Self {
+    pub fn height(&mut self, size: usize) -> &mut Self {
         self.table.height = Some(size);
         self
     }
 
     /// Set a width for each column.
-    pub fn width(mut self, size: usize) -> Self {
+    pub fn width(&mut self, size: usize) -> &mut Self {
         self.table.width = Some(size);
         self
     }

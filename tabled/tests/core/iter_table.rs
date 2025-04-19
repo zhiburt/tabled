@@ -20,7 +20,7 @@ test_table!(
 
 test_table!(
     iter_table_cols,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(3),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(3).clone(),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -32,7 +32,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_less,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(2),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(2).clone(),
     "+-----+-----+"
     "| 0-0 | 0-1 |"
     "+-----+-----+"
@@ -44,7 +44,9 @@ test_table!(
 
 test_table!(
     iter_table_cols_zero,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(0),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(0)
+        .clone(),
     ""
 );
 
@@ -66,7 +68,7 @@ test_table!(
 
 test_table!(
     iter_table_width,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).width(2),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).width(2).clone(),
     "+----+----+----+"
     "| 0- | 0- | 0- |"
     "+----+----+----+"
@@ -78,7 +80,7 @@ test_table!(
 
 test_table!(
     iter_table_height_does_not_work,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).height(5),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).height(5).clone(),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "|     |     |     |"
@@ -102,7 +104,9 @@ test_table!(
 
 test_table!(
     iter_table_sniff_0,
-    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).sniff(0),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .sniff(0)
+        .clone(),
     ""
 );
 
@@ -136,7 +140,8 @@ test_table!(
             vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"]
         ]
     )
-    .sniff(1),
+    .sniff(1)
+    .clone(),
     "+---+---+---+---+\n| 0 | 1 | 2 | 3 |\n+---+---+---+---+\n| 0\n1\n2\n3\n4 | 0\n1\n2\n\n\n3\n4 | 0\n1\n2\n3\n4\n\n\n | 0\n1\n2\n\n\n3\n4\n |\n+---+---+---+---+"
 );
 
@@ -149,7 +154,8 @@ test_table!(
             vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"],
         ]
     )
-    .sniff(2),
+    .sniff(2)
+    .clone(),
     "+---+---+---+---+\n| 0 | 1 | 2 | 3 |\n+---+---+---+---+\n| 0 | 0 | 0 | 0 |\n| 1 | 1 | 1 | 1 |\n| 2 | 2 | 2 | 2 |\n| 3 |   | 3 |   |\n| 4 |   | 4 |   |\n|   | 3 |   | 3 |\n|   | 4 |   | 4 |\n|   |   |   |   |\n+---+---+---+---+\n| 0\n1\n2\n3\n4 | 0\n1\n2\n\n\n3\n4 | 0\n1\n2\n3\n4\n\n\n | 0\n1\n2\n\n\n3\n4\n |\n+---+---+---+---+"
 );
 
@@ -162,7 +168,7 @@ test_table!(
         ]
     )
     .height(3)
-    ,
+    .clone(),
     "+---+---+---+---+"
     "| 0 | 1 | 2 | 3 |"
     "|   |   |   |   |"
@@ -184,7 +190,7 @@ test_table!(
         ]
     )
     .sniff(2)
-    ,
+    .clone(),
     "+----+----+----+----+"
     "| 12 | 12 | 22 | 32 |"
     "+----+----+----+----+"
@@ -204,7 +210,8 @@ test_table!(
             vec!["000000", "000000", "000000", "000000"],
         ]
     )
-    .sniff(2),
+    .sniff(2)
+    .clone(),
     "+-----+-----+-----+-----+"
     "| 023 | 123 | 223 | 323 |"
     "+-----+-----+-----+-----+"

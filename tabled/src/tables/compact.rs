@@ -1,12 +1,10 @@
 //! This module contains a [`CompactTable`] table.
 
-use core::cmp::max;
-use core::fmt;
-
-use papergrid::colors::NoColors;
+use core::{cmp::max, fmt};
 
 use crate::{
     grid::{
+        colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides},
         dimension::{ConstDimension, ConstSize, Dimension},
         records::{
