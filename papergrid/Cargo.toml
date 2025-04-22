@@ -28,7 +28,7 @@ required-features = ["std", "ansi"]
 
 [[example]]
 name = "peekable_grid"
-required-features = ["std", "ansi"]
+required-features = ["std"]
 
 [[example]]
 name = "iter_grid"

@@ -6,11 +6,8 @@ use papergrid::{
         Indent, Position, Sides,
     },
     dimension::{peekable::PeekableGridDimension, Estimate},
-    grid::{iterable::IterGrid, peekable::PeekableGrid},
-    records::{
-        vec_records::{Text, VecRecords},
-        IterRecords, PeekableRecords,
-    },
+    grid::peekable::PeekableGrid,
+    records::vec_records::{Text, VecRecords},
 };
 
 fn main() {
