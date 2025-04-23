@@ -1,4 +1,4 @@
-//! This module contains [`BorderSpanCorrection`] structure, which can be useful when [`Span`] is used, and
+//! This module contains [`BorderCorrection`] structure, which can be useful when [`Span`] is used, and
 //! you want to fix the intersections symbols which are left intact by default.
 //!
 //! [`Span`]: crate::settings::span::Span
@@ -25,10 +25,8 @@ use crate::{
 /// ```
 /// use tabled::{
 ///     Table,
-///     settings::{
-///         Modify, style::{Style, BorderSpanCorrection},
-///         Format, Span, object::Cell
-///     }
+///     settings::{Span, Alignment, themes::BorderCorrection},
+///     assert::assert_table,
 /// };
 ///
 /// let data = vec![
@@ -37,46 +35,51 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::new(data);
-/// table.with(Modify::new((0, 0)).with("date").with(Span::column(3)));
-///
-/// assert_eq!(
-///     table.to_string(),
-///     concat!(
-///         "+----+------+------+\n",
-///         "| date             |\n",
-///         "+----+------+------+\n",
-///         "| 09 | June | 2022 |\n",
-///         "+----+------+------+\n",
-///         "| 10 | July | 2022 |\n",
-///         "+----+------+------+",
-///     )
+/// table.modify(
+///     (0, 0),
+///     ("My callendar", Span::column(3), Alignment::center()),
 /// );
 ///
-/// table.with(BorderSpanCorrection);
+/// assert_table!(
+///     table,
+///     "+----+------+------+"
+///     "|   My callendar   |"
+///     "+----+------+------+"
+///     "| 09 | June | 2022 |"
+///     "+----+------+------+"
+///     "| 10 | July | 2022 |"
+///     "+----+------+------+"
+/// );
 ///
-/// assert_eq!(
-///     table.to_string(),
-///     concat!(
-///         "+------------------+\n",
-///         "| date             |\n",
-///         "+----+------+------+\n",
-///         "| 09 | June | 2022 |\n",
-///         "+----+------+------+\n",
-///         "| 10 | July | 2022 |\n",
-///         "+----+------+------+",
-///     )
+/// table.with(BorderCorrection::span());
+///
+/// assert_table!(
+///     table,
+///     "+------------------+"
+///     "|   My callendar   |"
+///     "+----+------+------+"
+///     "| 09 | June | 2022 |"
+///     "+----+------+------+"
+///     "| 10 | July | 2022 |"
+///     "+----+------+------+"
 /// );
 /// ```
-/// See [`BorderSpanCorrection`].
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::settings::span::Span
 /// [`Style`]: crate::settings::Style
-/// [`Style::correct_spans`]: crate::settings::style::BorderSpanCorrection
 #[derive(Debug)]
-pub struct BorderSpanCorrection;
+pub struct BorderCorrection {}
 
-impl<R, D> TableOption<R, ColoredConfig, D> for BorderSpanCorrection
+impl BorderCorrection {
+    /// Constructs an object which will adjust borders affected by spans if any was set.
+    /// See [`BorderCorrection`].
+    pub fn span() -> Self {
+        Self {}
+    }
+}
+
+impl<R, D> TableOption<R, ColoredConfig, D> for BorderCorrection
 where
     R: Records + ExactRecords,
 {
@@ -88,18 +91,18 @@ where
 
 fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
     for (p, span) in cfg.get_column_spans() {
-        for col in p.col()..p.col() + span {
+        for col in p.col..p.col + span {
             if col == 0 {
                 continue;
             }
 
-            let is_first = col == p.col();
-            let has_up = p.row() > 0 && has_left(cfg, (p.row() - 1, col).into(), shape);
-            let has_down = p.row() + 1 < shape.0 && has_left(cfg, (p.row() + 1, col).into(), shape);
+            let is_first = col == p.col;
+            let has_up = p.row > 0 && has_left(cfg, (p.row - 1, col).into(), shape);
+            let has_down = p.row + 1 < shape.0 && has_left(cfg, (p.row + 1, col).into(), shape);
 
             let borders = cfg.get_borders();
 
-            let mut border = cfg.get_border((p.row(), col).into(), shape);
+            let mut border = cfg.get_border((p.row, col).into(), shape);
 
             let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
             if has_top_border {
@@ -127,7 +130,7 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
                 }
             }
 
-            cfg.set_border((p.row(), col).into(), border);
+            cfg.set_border((p.row, col).into(), border);
         }
     }
 

@@ -1,8 +1,8 @@
-//! This module contains a different functions which are used by the [`Grid`].
+//! This module contains a different functions which are used by the [`IterGrid`].
 //!
-//! You should use it if you want to comply with how [`Grid`].
+//! You should use it if you want to comply with how [`IterGrid`].
 //!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! [`IterGrid`]: crate::grid::iterable::IterGrid
 
 /// Returns string width and count lines of a string.
 /// It's a combination of [`get_text_width`] and [`count_lines`].

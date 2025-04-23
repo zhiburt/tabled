@@ -1,9 +1,3 @@
-//! This example demonstrates using the [`Highlight`] [`TableOption`] to
-//! decorate sections of a [`Table`] with a unique [`Border`].
-//!
-//! * Note how [`Highlight`] arguments can be chained together to
-//!   create cross-sections and non-symmetrical shapes.
-
 use tabled::{
     settings::{
         object::{Columns, Object, Rows},

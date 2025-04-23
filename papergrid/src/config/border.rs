@@ -14,7 +14,7 @@
 ///                             |
 ///                        bottom border
 /// ```
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct Border<T> {
     /// A character for a top.
     pub top: Option<T>,

@@ -1,10 +1,10 @@
 //! This module contains a [`CompactTable`] table.
 
-use core::cmp::max;
-use core::fmt;
+use core::{cmp::max, fmt};
 
 use crate::{
     grid::{
+        colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides},
         dimension::{ConstDimension, ConstSize, Dimension},
         records::{
@@ -278,7 +278,7 @@ fn build_grid<W, I, D>(
     config: CompactConfig,
     cols: usize,
     rows: Option<usize>,
-) -> Result<(), fmt::Error>
+) -> fmt::Result
 where
     W: fmt::Write,
     I: IntoRecords,
@@ -290,12 +290,12 @@ where
             let records = LimitRows::new(records, limit);
             let records = LimitColumns::new(records, cols);
             let records = IterRecords::new(records, cols, rows);
-            CompactGrid::new(records, dims, config).build(writer)
+            CompactGrid::new(records, config, dims, NoColors).build(writer)
         }
         None => {
             let records = LimitColumns::new(records, cols);
             let records = IterRecords::new(records, cols, rows);
-            CompactGrid::new(records, dims, config).build(writer)
+            CompactGrid::new(records, config, dims, NoColors).build(writer)
         }
     }
 }

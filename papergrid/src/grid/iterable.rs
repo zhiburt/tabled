@@ -1,4 +1,4 @@
-//! The module contains a [`Grid`] structure.
+//! The module contains a [`IterGrid`] structure.
 
 use std::{
     borrow::{Borrow, Cow},
@@ -11,8 +11,8 @@ use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
-        spanned::{Offset, SpannedConfig},
-        AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
+        Position, Sides,
     },
     dimension::Dimension,
     records::{IntoRecords, Records},
@@ -21,17 +21,17 @@ use crate::{
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
-pub struct Grid<R, D, G, C> {
+pub struct IterGrid<R, D, G, C> {
     records: R,
     config: G,
     dimension: D,
     colors: C,
 }
 
-impl<R, D, G, C> Grid<R, D, G, C> {
+impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
-        Grid {
+    pub fn new(records: R, config: G, dimension: D, colors: C) -> Self {
+        IterGrid {
             records,
             config,
             dimension,
@@ -40,7 +40,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
     }
 }
 
-impl<R, D, G, C> Grid<R, D, G, C> {
+impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// Builds a table.
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where
@@ -536,6 +536,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
+            prepare_coloring(f, None, &mut used_color)?;
             let (cell, _, _) = buf.get_mut(&col).unwrap();
             cell.display(f)?;
 
@@ -574,7 +575,7 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     shape: (usize, usize),
     used_color: &mut Option<&'a ANSIBuf>,
 ) -> fmt::Result {
-    if !cfg.has_vertical(pos.col(), shape.1) {
+    if !cfg.has_vertical(pos.col, shape.1) {
         return Ok(());
     }
 
@@ -1097,7 +1098,7 @@ fn print_margin_vertical<F: Write>(
     }
 
     match offset {
-        Offset::Begin(mut offset) => {
+        Offset::Start(mut offset) => {
             if let Some(max) = height {
                 offset = cmp::min(offset, max);
             }
@@ -1139,7 +1140,7 @@ fn print_indent_lines<F: Write>(
     }
 
     let (start_offset, end_offset) = match offset {
-        Offset::Begin(start) => (*start, 0),
+        Offset::Start(start) => (*start, 0),
         Offset::End(end) => (0, *end),
     };
 
@@ -1232,10 +1233,10 @@ fn count_verticals_in_range(cfg: &SpannedConfig, start: usize, end: usize, max: 
 fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return Some(pos.row());
+            return Some(pos.row);
         }
 
-        if pos.row() == 0 {
+        if pos.row == 0 {
             return None;
         }
 

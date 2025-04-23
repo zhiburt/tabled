@@ -1,5 +1,3 @@
-//! This example demonstrates [`Locator`] usage to colorize certain cells.
-
 use tabled::{
     settings::{location::Locator, style::Style, Color},
     Table, Tabled,

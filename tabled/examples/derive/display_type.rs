@@ -1,21 +1,11 @@
-use tabled::Tabled;
+use tabled::{Table, Tabled};
 
 #[derive(Tabled)]
-#[tabled(display(Option, "display_option", "UNKNOWN"))]
+#[tabled(display(Option, "tabled::derive::display::option", "UNKNOWN"))]
 pub struct Country {
     name: String,
     capital: Option<String>,
     currency: Option<String>,
-}
-
-fn display_option<T>(opt: &Option<T>, default: &str) -> String
-where
-    T: ToString,
-{
-    match opt {
-        Some(val) => val.to_string().to_uppercase(),
-        None => default.to_string(),
-    }
 }
 
 fn main() {
@@ -37,7 +27,7 @@ fn main() {
         },
     ];
 
-    let table = tabled::Table::new(data);
+    let table = Table::new(data);
 
     println!("{}", table);
 }

@@ -1,11 +1,3 @@
-//! This example demonstrates using the [`Concat`] [`TableOption`] to concatenate
-//! [`tables`](Table) together.
-//!
-//! * [`Concat`] supports appending tables vertically and horizontally.
-//!
-//! * Note how the base tables style settings take take precedence over the appended table.
-//!   If the two tables are of unequal shape, additional blank cells are added as needed.
-
 use tabled::{
     settings::{Alignment, Concat, Style},
     Table, Tabled,
@@ -24,19 +16,11 @@ struct Location(
 );
 
 fn main() {
+    #[rustfmt::skip]
     let weather_data = [
-        Weather {
-            temperature_c: 1.0,
-            wind_ms: 3.0,
-        },
-        Weather {
-            temperature_c: -20.0,
-            wind_ms: 30.0,
-        },
-        Weather {
-            temperature_c: 40.0,
-            wind_ms: 100.0,
-        },
+        Weather { temperature_c: 1.0, wind_ms: 3.0 },
+        Weather { temperature_c: -20.0, wind_ms: 30.0 },
+        Weather { temperature_c: 40.0, wind_ms: 100.0 },
     ];
 
     let location_data = [

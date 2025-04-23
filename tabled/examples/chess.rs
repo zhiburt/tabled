@@ -1,12 +1,4 @@
-//! This example demonstrates using the [`Color`] [setting](tabled::settings) to
-//! stylize text, backgrounds, and borders.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note how [`Format::content()`] is used to break out [`CellOption`]
-//!   specifications. This is helpful for organizing extensive [`Table`] configurations.
-
-use std::iter::FromIterator;
+use std::iter;
 
 use tabled::{
     builder::Builder,
@@ -14,21 +6,20 @@ use tabled::{
 };
 
 fn main() {
-    let board = [
-        ["♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜"],
-        ["♟", "♟", "♟", "♟", "♟", "♟", "♟", "♟"],
-        ["", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", ""],
-        ["♙", "♙", "♙", "♙", "♙", "♙", "♙", "♙"],
-        ["♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"],
-    ];
+    let mut b = Builder::new();
+    b.extend(["♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜"]);
+    b.extend(["♟", "♟", "♟", "♟", "♟", "♟", "♟", "♟"]);
+    b.extend(iter::empty::<String>());
+    b.extend(iter::empty::<String>());
+    b.extend(iter::empty::<String>());
+    b.extend(iter::empty::<String>());
+    b.extend(["♙", "♙", "♙", "♙", "♙", "♙", "♙", "♙"]);
+    b.extend(["♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"]);
 
-    let mut table = Builder::from_iter(board).build();
-    table
+    let mut board = b.build();
+    board
         .with(Style::empty())
         .with(Colorization::chess(Color::BG_WHITE, Color::BG_BLACK));
 
-    println!("{table}");
+    println!("{board}");
 }

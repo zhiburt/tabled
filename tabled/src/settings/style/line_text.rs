@@ -1,9 +1,9 @@
-use papergrid::config::{AlignmentHorizontal, AlignmentVertical};
-
 use crate::{
     grid::{
         ansi::ANSIBuf,
-        config::{self, ColoredConfig, Entity, SpannedConfig},
+        config::{
+            AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, SpannedConfig,
+        },
         dimension::{Dimension, Estimate},
         records::{ExactRecords, Records},
         util::string::get_text_width,
@@ -17,7 +17,10 @@ use crate::{
     },
 };
 
-use super::Offset;
+// TODO: reorder theme/style modules?
+//       maybe they belong together?
+//       NO? I mean maybe style inside themes as a folder?
+// TODO: this does not belong to style 100%
 
 /// [`LineText`] writes a custom text on a border.
 ///
@@ -79,7 +82,7 @@ impl<Line> LineText<Line> {
         LineText {
             line,
             text: text.into(),
-            offset: Offset::Begin(0),
+            offset: Offset::Start(0),
             color: None,
             alignment: None,
         }
@@ -242,8 +245,10 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        let line = records.count_rows();
-        change_vertical_chars(records, dims, cfg, create_line(self, line))
+        let line = self.line.cells(records).next();
+        if let Some(Entity::Column(line)) = line {
+            change_vertical_chars(records, dims, cfg, create_line(self, line))
+        }
     }
 }
 
@@ -326,12 +331,12 @@ fn set_horizontal_chars<D>(
                     None => return,
                 };
 
-                cfg.set_horizontal_char((line, col).into(), c, config::Offset::Begin(off));
+                cfg.set_horizontal_char((line, col).into(), Offset::Start(off), c);
                 if let Some(color) = color.as_ref() {
-                    cfg.set_horizontal_color(
+                    cfg.set_horizontal_char_color(
                         (line, col).into(),
+                        Offset::Start(off),
                         color.clone(),
-                        config::Offset::Begin(off),
                     );
                 }
             }
@@ -426,13 +431,13 @@ fn set_vertical_chars<D>(
                     None => return,
                 };
 
-                cfg.set_vertical_char((row, line).into(), c, config::Offset::Begin(off)); // todo: is this correct? I think it shall be off + i
+                cfg.set_vertical_char((row, line).into(), Offset::Start(off), c); // todo: is this correct? I think it shall be off + i
 
                 if let Some(color) = color.as_ref() {
-                    cfg.set_vertical_color(
+                    cfg.set_vertical_char_color(
                         (row, line).into(),
+                        Offset::Start(off),
                         color.clone(),
-                        config::Offset::Begin(off),
                     );
                 }
             }
@@ -465,7 +470,7 @@ fn set_vertical_chars<D>(
 
 fn get_start_pos(offset: Offset, total: usize) -> Option<usize> {
     match offset {
-        Offset::Begin(i) => {
+        Offset::Start(i) => {
             if i > total {
                 None
             } else {
@@ -497,9 +502,9 @@ fn get_horizontal_alignment_offset(
                 off = center.saturating_sub(text_center);
             }
 
-            Offset::Begin(off)
+            Offset::Start(off)
         }
-        AlignmentHorizontal::Left => Offset::Begin(0),
+        AlignmentHorizontal::Left => Offset::Start(0),
         AlignmentHorizontal::Right => {
             let width = get_text_width(text);
             Offset::End(width)
@@ -518,18 +523,18 @@ fn get_vertical_alignment_offset(text: &str, alignment: AlignmentVertical, total
                 off = center.saturating_sub(text_center);
             }
 
-            Offset::Begin(off)
+            Offset::Start(off)
         }
-        AlignmentVertical::Top => Offset::Begin(0),
+        AlignmentVertical::Top => Offset::Start(0),
         AlignmentVertical::Bottom => Offset::End(0),
     }
 }
 
 fn offset_sum(orig: Offset, and: Offset) -> Offset {
     match (orig, and) {
-        (Offset::Begin(a), Offset::Begin(b)) => Offset::Begin(a + b),
-        (Offset::Begin(a), Offset::End(b)) => Offset::Begin(a.saturating_sub(b)),
-        (Offset::End(a), Offset::Begin(b)) => Offset::End(a + b),
+        (Offset::Start(a), Offset::Start(b)) => Offset::Start(a + b),
+        (Offset::Start(a), Offset::End(b)) => Offset::Start(a.saturating_sub(b)),
+        (Offset::End(a), Offset::Start(b)) => Offset::End(a + b),
         (Offset::End(a), Offset::End(b)) => Offset::End(a.saturating_sub(b)),
     }
 }

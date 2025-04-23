@@ -22,7 +22,7 @@ use super::Position;
 ///   Which indexes are 0, 1.
 ///
 /// In [`Entity`] terms, all cells on the grid we call `Global`.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum Entity {
     /// All cells on the grid.
     Global,
@@ -43,7 +43,7 @@ impl Entity {
 
 impl From<Position> for Entity {
     fn from(pos: Position) -> Self {
-        Self::Cell(pos.row(), pos.col())
+        Self::Cell(pos.row, pos.col)
     }
 }
 

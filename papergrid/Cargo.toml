@@ -27,31 +27,34 @@ name = "papergrid_color"
 required-features = ["std", "ansi"]
 
 [[example]]
+name = "peekable_grid"
+required-features = ["std"]
+
+[[example]]
+name = "iter_grid"
+required-features = ["std"]
+
+[[example]]
 name = "color_map"
-path = "examples/color_map.rs"
 required-features = ["std"]
 
 [[example]]
 name = "colored_border"
-path = "examples/colored_border.rs"
 required-features = ["std"]
 
 [[example]]
-name = "common_grid"
-path = "examples/common_grid.rs"
+name = "compact_grid"
 required-features = ["std"]
 
 [[example]]
 name = "span_usage"
-path = "examples/span_usage.rs"
 required-features = ["std"]
 
 [[example]]
-name = "common_grid_no_std"
-path = "examples/common_grid_no_std.rs"
+name = "no_std"
 required-features = []
 
 [[example]]
 name = "hello_world"
-path = "examples/hello_world.rs"
 required-features = ["std"]
+

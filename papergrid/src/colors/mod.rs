@@ -1,6 +1,10 @@
 //! A module which contains [Colors] trait and its blanket implementations.
 
+mod nocolors;
+
 use crate::{ansi::ANSIFmt, config::Position};
+
+pub use nocolors::*;
 
 /// A trait which represents map of colors.
 pub trait Colors {
@@ -74,35 +78,5 @@ where
 
     fn is_empty(&self) -> bool {
         self.is_empty() && self.as_ref().is_none()
-    }
-}
-
-/// The structure represents empty [`Colors`] map.
-#[derive(Debug, Default, Clone)]
-pub struct NoColors;
-
-impl Colors for NoColors {
-    type Color = EmptyColor;
-
-    fn get_color(&self, _: Position) -> Option<&Self::Color> {
-        None
-    }
-
-    fn is_empty(&self) -> bool {
-        true
-    }
-}
-
-/// A color which is actually has not value.
-#[derive(Debug)]
-pub struct EmptyColor;
-
-impl ANSIFmt for EmptyColor {
-    fn fmt_ansi_prefix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
-        Ok(())
-    }
-
-    fn fmt_ansi_suffix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
-        Ok(())
     }
 }

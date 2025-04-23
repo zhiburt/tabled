@@ -1,6 +1,4 @@
-//! The module contains a [`SpannedVecRecordsDimension`] for [`Grid`] height/width estimation.
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! The module contains a [`IterGridDimension`].
 
 use std::{
     cmp::{max, Ordering},
@@ -10,37 +8,54 @@ use std::{
 use crate::{
     config::Position,
     dimension::{Dimension, Estimate},
-    records::{
-        vec_records::{Cell, VecRecords},
-        Records,
-    },
+    records::{IntoRecords, Records},
+    util::string::{count_lines, get_text_dimension, get_text_width},
 };
 
 use crate::config::spanned::SpannedConfig;
 
-/// A [`Dimension`] implementation which calculates exact column/row width/height for [`VecRecords`].
-///
-/// It is a specialization of [`SpannedGridDimension`] for [`VecRecords`].
-///
-/// [`SpannedGridDimension`]: crate::dimension::spanned::SpannedGridDimension
+/// A [`Dimension`] implementation which calculates exact column/row width/height.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct SpannedVecRecordsDimension {
+pub struct IterGridDimension {
     height: Vec<usize>,
     width: Vec<usize>,
 }
 
-impl SpannedVecRecordsDimension {
+impl IterGridDimension {
     /// Calculates height of rows.
-    pub fn height<T: Cell + AsRef<str>>(
-        records: &VecRecords<T>,
-        cfg: &SpannedConfig,
-    ) -> Vec<usize> {
+    pub fn height<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
         build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize> {
+    pub fn width<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
         build_width(records, cfg)
+    }
+
+    /// Calculates width of columns.
+    pub fn width_total<R>(records: R, cfg: &SpannedConfig) -> usize
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
+        get_width_total(records, cfg)
+    }
+
+    /// Calculates height of rows.
+    pub fn height_total<R>(records: R, cfg: &SpannedConfig) -> usize
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
+        get_height_total(records, cfg)
     }
 
     /// Return width and height lists.
@@ -49,7 +64,7 @@ impl SpannedVecRecordsDimension {
     }
 }
 
-impl Dimension for SpannedVecRecordsDimension {
+impl Dimension for IterGridDimension {
     fn get_width(&self, column: usize) -> usize {
         self.width[column]
     }
@@ -59,21 +74,23 @@ impl Dimension for SpannedVecRecordsDimension {
     }
 }
 
-impl<T> Estimate<&VecRecords<T>, SpannedConfig> for SpannedVecRecordsDimension
+impl<R> Estimate<R, SpannedConfig> for IterGridDimension
 where
-    T: Cell + AsRef<str>,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn estimate(&mut self, records: &VecRecords<T>, cfg: &SpannedConfig) {
+    fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
         self.height = height;
     }
 }
 
-fn build_dimensions<T: Cell + AsRef<str>>(
-    records: &VecRecords<T>,
-    cfg: &SpannedConfig,
-) -> (Vec<usize>, Vec<usize>) {
+fn build_dimensions<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>)
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
@@ -82,16 +99,16 @@ fn build_dimensions<T: Cell + AsRef<str>>(
     let mut vspans = HashMap::new();
     let mut hspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().enumerate() {
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
         let mut row_height = 0;
-        for (col, cell) in columns.iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let width = cell.width();
-            let height = cell.count_lines();
+            let text = cell.as_ref();
+            let (height, width) = get_text_dimension(text);
             let pad = cfg.get_padding(pos);
             let width = width + pad.left.size + pad.right.size;
             let height = height + pad.top.size + pad.bottom.size;
@@ -132,14 +149,14 @@ fn adjust_hspans(
         return;
     }
 
-    let mut spans_ordered = spans.iter().map(|(k, v)| (*k, *v)).collect::<Vec<_>>();
+    let mut spans_ordered = spans.iter().map(|(k, v)| (k, *v)).collect::<Vec<_>>();
     spans_ordered.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
     });
 
     for (pos, (span, height)) in spans_ordered {
-        adjust_row_range(cfg, height, len, pos.row(), pos.row() + span, heights);
+        adjust_row_range(cfg, height, len, pos.row, pos.row + span, heights);
     }
 }
 
@@ -178,6 +195,12 @@ fn count_horizontal_borders(cfg: &SpannedConfig, len: usize, start: usize, end: 
         .count()
 }
 
+fn get_cell_height(cell: &str, cfg: &SpannedConfig, pos: Position) -> usize {
+    let count_lines = max(1, count_lines(cell));
+    let padding = cfg.get_padding(pos);
+    count_lines + padding.top.size + padding.bottom.size
+}
+
 fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
     if list.is_empty() {
         return;
@@ -212,14 +235,14 @@ fn adjust_vspans(
     // The overall width distribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans_ordered = spans.iter().map(|(k, v)| (*k, *v)).collect::<Vec<_>>();
+    let mut spans_ordered = spans.iter().map(|(k, v)| (k, *v)).collect::<Vec<_>>();
     spans_ordered.sort_unstable_by(|a, b| match a.1 .0.cmp(&b.1 .0) {
-        Ordering::Equal => a.0.cmp(&b.0),
+        Ordering::Equal => a.0.cmp(b.0),
         o => o,
     });
 
     for (pos, (span, width)) in spans_ordered {
-        adjust_column_range(cfg, width, len, pos.col(), pos.col() + span, widths);
+        adjust_column_range(cfg, width, len, pos.col, pos.col + span, widths);
     }
 }
 
@@ -239,14 +262,15 @@ fn adjust_column_range(
     inc_range(widths, max_span_width - range_width, start, end);
 }
 
-fn get_cell_padding_horizontal(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos);
-    padding.left.size + padding.right.size
+fn get_cell_width(text: &str, cfg: &SpannedConfig, pos: Position) -> usize {
+    let padding = get_cell_padding(cfg, pos);
+    let width = get_text_width(text);
+    width + padding
 }
 
-fn get_cell_vertical_padding(cfg: &SpannedConfig, pos: Position) -> usize {
+fn get_cell_padding(cfg: &SpannedConfig, pos: Position) -> usize {
     let padding = cfg.get_padding(pos);
-    padding.top.size + padding.bottom.size
+    padding.left.size + padding.right.size
 }
 
 fn range_width(
@@ -268,19 +292,23 @@ fn count_vertical_borders(cfg: &SpannedConfig, len: usize, start: usize, end: us
         .count()
 }
 
-fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize> {
+fn build_height<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let mut heights = vec![];
     let mut hspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().enumerate() {
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
         let mut row_height = 0;
-        for (col, cell) in columns.iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let height = cell.count_lines() + get_cell_vertical_padding(cfg, pos);
+            let height = get_cell_height(cell.as_ref(), cfg, pos);
             match cfg.get_row_span(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
@@ -297,23 +325,24 @@ fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConf
     heights
 }
 
-fn build_width<T>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize>
+fn build_width<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
 where
-    T: Cell + AsRef<str>,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().enumerate() {
-        for (col, cell) in columns.iter().enumerate() {
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let width = cell.width() + get_cell_padding_horizontal(cfg, pos);
+            let width = get_cell_width(cell.as_ref(), cfg, pos);
             match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));
@@ -326,4 +355,32 @@ where
     adjust_vspans(cfg, count_columns, &vspans, &mut widths);
 
     widths
+}
+
+fn get_width_total<R>(records: R, cfg: &SpannedConfig) -> usize
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
+    let widths = build_width(records, cfg);
+    let count_columns = widths.len();
+
+    let total = widths.into_iter().sum::<usize>();
+    let count_verticals = cfg.count_vertical(count_columns);
+
+    total + count_verticals
+}
+
+fn get_height_total<R>(records: R, cfg: &SpannedConfig) -> usize
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
+    let heights = build_height(records, cfg);
+    let count_rows = heights.len();
+
+    let total = heights.into_iter().sum::<usize>();
+    let count_horizontals = cfg.count_horizontal(count_rows);
+
+    total + count_horizontals
 }

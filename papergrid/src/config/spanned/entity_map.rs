@@ -52,8 +52,8 @@ impl<T> EntityMap<T> {
 
         self.cells
             .get(&pos)
-            .or_else(|| self.columns.get(&pos.col()))
-            .or_else(|| self.rows.get(&pos.row()))
+            .or_else(|| self.columns.get(&pos.col))
+            .or_else(|| self.rows.get(&pos.row))
             .unwrap_or(&self.global)
     }
 
@@ -65,8 +65,8 @@ impl<T> EntityMap<T> {
                 self.rows.clear();
                 self.columns.clear();
             }
-            Entity::Column(col) => self.cells.retain(|pos, _| pos.col() != col),
-            Entity::Row(row) => self.cells.retain(|pos, _| pos.row() != row),
+            Entity::Column(col) => self.cells.retain(|pos, _| pos.col != col),
+            Entity::Row(row) => self.cells.retain(|pos, _| pos.row != row),
             Entity::Cell(row, col) => {
                 self.cells.remove(&Position::new(row, col));
             }

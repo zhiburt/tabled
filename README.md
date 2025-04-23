@@ -1338,7 +1338,9 @@ The resulting table would be the following.
 
 ### Span
 
-It's possible to set a horizontal(column) span and vertical(row) span to a cell. For certain look and feel, this might cause visual artifacts on  table borders (see #399). This can be fixed by using tabled::settings::style::BorderSpanCorrection.
+It's possible to set a horizontal(column) span and vertical(row) span to a cell.
+For certain look and feel, this might cause visual artifacts on  table borders (see #399).
+This can be fixed by using `tabled::settings::themes::BorderCorrection`.
 
 #### Horizontal span
 

@@ -1,7 +1,7 @@
 use crate::{
     grid::{
-        config::{ColoredConfig, Entity},
-        dimension::CompleteDimensionVecRecords,
+        config::{ColoredConfig, Entity, Position},
+        dimension::CompleteDimension,
         records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
     },
@@ -52,9 +52,10 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 
@@ -71,19 +72,14 @@ where
     }
 }
 
-impl<R, W> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for CellHeightLimit<W>
+impl<R, W> TableOption<R, ColoredConfig, CompleteDimension<'_>> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)
     }
