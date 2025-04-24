@@ -1,6 +1,6 @@
 [package]
 name = "toml_to_table"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 repository = "https://github.com/zhiburt/tabled"
@@ -19,7 +19,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 toml = "0.8"
-tabled = { path = "../tabled", features = ["std"], default-features = false }
+tabled = { version = "0.19", features = ["std"], default-features = false }
 
 [dev-dependencies]
-tabled = { path = "../tabled", features = ["std", "assert"], default-features = false }
+tabled = { version = "0.19", features = ["std", "assert"], default-features = false }
