@@ -163,6 +163,7 @@ fn convert_value_to_table_value(value: &Value, ctx: CollapseCtx) -> TableValue {
                 Number::U64(num) => num.to_string(),
                 Number::F32(num) => num.get().to_string(),
                 Number::F64(num) => num.get().to_string(),
+                _ => num.into_f64().to_string(),
             };
 
             TableValue::Cell(value)
@@ -415,6 +416,7 @@ fn _plain_table(value: &Value, cfg: &RonTable, outer: bool) -> String {
                 Number::U64(num) => num.to_string(),
                 Number::F32(num) => num.get().to_string(),
                 Number::F64(num) => num.get().to_string(),
+                _ => num.into_f64().to_string(),
             };
 
             string_table(value, config, outer)

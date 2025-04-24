@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.19.0] - 2025-24-04
+
+### Added
+
+- Added `tabled::assert` module.
+- Added `#[tabled(map)]` macro.
+- Added `derive::display::bool` function.
+- Added `derive::display::wrap` and `derive::display::truncate` function.
+- Added `Locator::value`.
+- Added `Table::get_dimension` function.
+- Added `ANSI` link handling in `Width::truncate`.
+- Added `Upper Title Case` and `lower title case` options for `rename_all`.
+- Added `no_std` in `testing_table`.
+
+### Changed
+
+- Changed `Reverse` interface.
+- Changed `Position` interface.
+- Changed `tabled::grid::dimension` structures.
+- Changed `IterTable` interface.
+- Migrated `ron` to `0.10`.
+- Renamed `ColumnNames::default()` into `ColumnsNames::head()`.
+- Renamed `BorderSpanCorrection` into `BorderCorrection::span()`.
+- Renamed `Offset::Begin` into `Offset::Start`.
+- Moved `Offset` out of `tabled` into `papergrid`.
+- Imroved wrap logic.
+- Switch underlying hash algorithm.
+- Improved README (by [@romanz](https://github.com/romanz)).
+- Improved README (by [@Diddy42](https://github.com/Diddy42)).
+
+### Fixed
+
+- Fixed `no_std` build (in actuall `no_std` env).
+- Fixed wrap emojie issue (releated to int overlap).
+- Fixed `LineText<LastColumn>`.
+
 ## [0.18.0] - 2025-07-02
 
 ### Added

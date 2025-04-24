@@ -97,6 +97,14 @@ impl Justification {
         }
     }
 
+    /// Creates new [`Justification`] object.
+    pub fn colored(c: char, color: Color) -> Self {
+        Self {
+            c: Some(c),
+            color: Some(color.into()),
+        }
+    }
+
     /// Sets a color for a justification.
     pub fn color(self, color: Color) -> Self {
         Self {
