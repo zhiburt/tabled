@@ -46,7 +46,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
 
 impl<R, G, D, C> PeekableGrid<R, G, D, C> {
     /// Builds a table.
-    pub fn build<F>(self, mut f: F) -> fmt::Result
+    pub fn build<F>(&self, mut f: F) -> fmt::Result
     where
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
@@ -67,21 +67,17 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
 
         print_grid(&mut f, ctx)
     }
+}
 
-    /// Builds a table into string.
-    ///
-    /// Notice that it consumes self.
-    #[allow(clippy::inherent_to_string)]
-    pub fn to_string(self) -> String
-    where
-        R: Records + PeekableRecords + ExactRecords,
-        D: Dimension,
-        G: Borrow<SpannedConfig>,
-        C: Colors,
-    {
-        let mut buf = String::new();
-        self.build(&mut buf).expect("It's guaranteed to never happen otherwise it's considered an stdlib error or impl error");
-        buf
+impl<R, G, D, C> fmt::Display for PeekableGrid<R, G, D, C>
+where
+    R: Records + PeekableRecords + ExactRecords,
+    D: Dimension,
+    C: Colors,
+    G: Borrow<SpannedConfig>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.build(f)
     }
 }
 
