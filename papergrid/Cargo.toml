@@ -15,9 +15,17 @@ ansi = ["ansi-str", "ansitok"]
 [dependencies]
 unicode-width = "0.2"
 bytecount = "0.6"
-ahash = { version = "0.8", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true  }
+
+[dependencies.ahash]
+version = "0.8"
+optional = true
+default-features = false
+# `compile-time-rng` is necessary to allow building on wasm32,
+# we cannot use `runtime-rng` for platforms due to this known bug:
+# https://github.com/rust-lang/cargo/issues/1197
+features = ["std", "compile-time-rng"]
 
 [dev-dependencies]
 testing_table = { version = "0.2", features = ["ansi"] }
