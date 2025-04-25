@@ -11,7 +11,7 @@ use tabled::{
         object::{Columns, Rows, Segment},
         style::{Border, BorderColor, HorizontalLine, LineChar, LineText, On, Style, VerticalLine},
         themes::{BorderCorrection, Theme},
-        Alignment, Color, Format, Highlight, Modify, Padding, Span,
+        Alignment, Color, Format, Highlight, Modify, Padding, Span, Width,
     },
     Table,
 };
@@ -2850,4 +2850,19 @@ test_table!(
     "\u{1b}[31m+\u{1b}[39m &str \u{1b}[31m+\u{1b}[39m------+"
     "|      | 1234 |"
     "+------+------+"
+);
+
+test_table!(
+    appling_style_after_width_ctrl,
+    Matrix::new(3, 3).with(Width::wrap(30)).with(Style::modern()),
+    "┌──┬───────┬────────┬────────┐"
+    "│  │ colum │ column │ column │"
+    "│  │ n 0   │  1     │  2     │"
+    "├──┼───────┼────────┼────────┤"
+    "│  │  0-0  │  0-1   │  0-2   │"
+    "├──┼───────┼────────┼────────┤"
+    "│  │  1-0  │  1-1   │  1-2   │"
+    "├──┼───────┼────────┼────────┤"
+    "│  │  2-0  │  2-1   │  2-2   │"
+    "└──┴───────┴────────┴────────┘"
 );
