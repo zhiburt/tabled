@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "std"), allow(dead_code))]
+#![cfg_attr(not(feature = "std"), allow(unused_variables))]
 
 use tabled::{settings::style::Style, tables::CompactTable};
 
