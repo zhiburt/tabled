@@ -1,7 +1,6 @@
 // TODO: simplify this module it's too complex for what it is
 #![allow(unused_imports, dead_code)]
 
-
 use std::{
     fmt::{self, Display},
     iter::FromIterator,
