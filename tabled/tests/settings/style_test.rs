@@ -811,6 +811,18 @@ test_table!(
     "  1    1-0       1-1     "
 );
 
+test_table!(
+    border_empty_global,
+    Matrix::table(2, 2)
+        .with(Style::ascii())
+        .with(Border::empty()),
+    " N | column 0 | column 1 "
+    "---+----------+----------"
+    " 0 |   0-0    |   0-1    "
+    "---+----------+----------"
+    " 1 |   1-0    |   1-1    "
+);
+
 #[test]
 fn custom_style_test() {
     macro_rules! test_style {
