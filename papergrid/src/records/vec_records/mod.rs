@@ -125,3 +125,9 @@ impl<T> From<VecRecords<T>> for Vec<Vec<T>> {
         records.data
     }
 }
+
+impl<T> From<Vec<Vec<T>>> for VecRecords<T> {
+    fn from(records: Vec<Vec<T>>) -> Self {
+        Self::new(records)
+    }
+}
