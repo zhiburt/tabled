@@ -7,3 +7,6 @@ pub mod iterable;
 
 #[cfg(feature = "std")]
 pub mod peekable;
+
+#[cfg(feature = "std")]
+pub mod writable;
