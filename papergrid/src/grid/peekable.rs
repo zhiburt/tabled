@@ -403,7 +403,6 @@ mod grid_basic {
         let indent = calculate_indent(cfg.alignment, cell_width, available);
         print_text_padded(f, &line, cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
         repeat_char(f, ' ', rest_width)?;
 
