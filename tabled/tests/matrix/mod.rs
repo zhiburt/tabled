@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 #[allow(clippy::module_inception)]
 mod matrix;
 mod matrix_list;

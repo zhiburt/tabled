@@ -43,6 +43,10 @@ name = "iter_grid"
 required-features = ["std"]
 
 [[example]]
+name = "writable_grid"
+required-features = ["std"]
+
+[[example]]
 name = "color_map"
 required-features = ["std"]
 
