@@ -43,8 +43,7 @@ where
     }
 }
 
-impl Cell for str
-{
+impl Cell for str {
     fn text(&self) -> &str {
         self
     }
@@ -67,8 +66,7 @@ impl Cell for str
     }
 }
 
-impl Cell for &str
-{
+impl Cell for &str {
     fn text(&self) -> &str {
         self
     }
@@ -91,8 +89,7 @@ impl Cell for &str
     }
 }
 
-impl Cell for String
-{
+impl Cell for String {
     fn text(&self) -> &str {
         self
     }

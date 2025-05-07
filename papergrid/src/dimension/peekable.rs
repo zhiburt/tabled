@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{
-    config::{Position, spanned::SpannedConfig},
+    config::{spanned::SpannedConfig, Position},
     dimension::{Dimension, Estimate},
     records::{vec_records::Cell, IntoRecords, Records},
 };

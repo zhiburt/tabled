@@ -15,7 +15,7 @@ pub use cell::Cell;
 pub use text::{StrWithWidth, Text};
 
 /// A [Records] implementation based on allocated buffers.
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VecRecords<T> {
     data: Vec<Vec<T>>,
     count_rows: usize,
