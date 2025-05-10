@@ -1057,7 +1057,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
         let color = cfg.get_margin_color();
-        let color = color.top.as_ref();
+        let color = color.top;
         print_indent_lines(f, indent, offset, color, width)
     }
 
@@ -1068,7 +1068,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
         let color = cfg.get_margin_color();
-        let color = color.bottom.as_ref();
+        let color = color.bottom;
         print_indent_lines(f, indent, offset, color, width)
     }
 
@@ -1084,7 +1084,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
         let color = cfg.get_margin_color();
-        let color = color.left.as_ref();
+        let color = color.left;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1100,7 +1100,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
         let color = cfg.get_margin_color();
-        let color = color.right.as_ref();
+        let color = color.right;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1922,7 +1922,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
         let color = cfg.get_margin_color();
-        let color = color.top.as_ref();
+        let color = color.top;
         print_indent_lines(f, &indent, &offset, color, width)
     }
 
@@ -1933,7 +1933,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
         let color = cfg.get_margin_color();
-        let color = color.bottom.as_ref();
+        let color = color.bottom;
         print_indent_lines(f, &indent, &offset, color, width)
     }
 
@@ -1949,7 +1949,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
         let color = cfg.get_margin_color();
-        let color = color.left.as_ref();
+        let color = color.left;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1965,7 +1965,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
         let color = cfg.get_margin_color();
-        let color = color.right.as_ref();
+        let color = color.right;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 

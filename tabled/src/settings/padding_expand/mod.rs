@@ -120,7 +120,7 @@ where
             let available_width = column_width - width;
             let (left, right) = split_horizontal_space(alignment, available_width);
 
-            let mut pad = cfg.get_padding(pos);
+            let mut pad = *cfg.get_padding(pos);
             pad.left.size = left;
             pad.right.size = right;
 
@@ -151,7 +151,7 @@ where
             let available_width = row_height - cell_height;
             let (top, bottom) = split_vertical_space(alignment, available_width);
 
-            let mut pad = cfg.get_padding(pos);
+            let mut pad = *cfg.get_padding(pos);
             pad.top.size = top;
             pad.bottom.size = bottom;
 

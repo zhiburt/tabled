@@ -20,7 +20,7 @@ use crate::{
 };
 
 /// Grid provides a set of methods for building a text-based table.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct IterGrid<R, D, G, C> {
     records: R,
     config: G,
@@ -38,9 +38,7 @@ impl<R, D, G, C> IterGrid<R, D, G, C> {
             colors,
         }
     }
-}
 
-impl<R, D, G, C> IterGrid<R, D, G, C> {
     /// Builds a table.
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where
@@ -236,7 +234,7 @@ fn print_multiline_columns<'a, F, I, D, C>(
     line: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
-    buf: &mut Vec<Cell<I::Item, &'a C::Color>>,
+    buf: &mut Vec<Cell<'a, I::Item, &'a C::Color>>,
 ) -> fmt::Result
 where
     F: Write,
@@ -330,7 +328,7 @@ fn print_single_line_column<F: Write, C: ANSIFmt>(
 #[allow(clippy::too_many_arguments)]
 fn print_columns_lines<T, F: Write, C: ANSIFmt>(
     f: &mut F,
-    buf: &mut [Cell<T, C>],
+    buf: &mut [Cell<'_, T, C>],
     height: usize,
     cfg: &SpannedConfig,
     line: usize,
@@ -361,9 +359,9 @@ fn print_columns_lines<T, F: Write, C: ANSIFmt>(
 }
 
 fn collect_columns<'a, I, D, C>(
-    buf: &mut Vec<Cell<I::Item, &'a C::Color>>,
+    buf: &mut Vec<Cell<'a, I::Item, &'a C::Color>>,
     iter: I,
-    cfg: &SpannedConfig,
+    cfg: &'a SpannedConfig,
     colors: &'a C,
     dimension: &D,
     height: usize,
@@ -515,7 +513,7 @@ where
 
 fn print_split_line_spanned<S, F: Write, D: Dimension, C: ANSIFmt>(
     f: &mut F,
-    buf: &mut BTreeMap<usize, (Cell<S, C>, usize, usize)>,
+    buf: &mut BTreeMap<usize, (Cell<'_, S, C>, usize, usize)>,
     cfg: &SpannedConfig,
     dimension: &D,
     row: usize,
@@ -592,9 +590,9 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn print_spanned_columns<'a, F, I, D, C>(
     f: &mut F,
-    buf: &mut BTreeMap<usize, (Cell<I::Item, &'a C::Color>, usize, usize)>,
+    buf: &mut BTreeMap<usize, (Cell<'a, I::Item, &'a C::Color>, usize, usize)>,
     iter: I,
-    cfg: &SpannedConfig,
+    cfg: &'a SpannedConfig,
     colors: &'a C,
     dimension: &D,
     this_height: usize,
@@ -766,40 +764,39 @@ fn print_horizontal_border<F: Write>(
     Ok(())
 }
 
-struct Cell<T, C> {
+struct Cell<'a, T, C> {
     lines: LinesIter<T>,
     width: usize,
     indent_top: usize,
     indent_left: Option<usize>,
     alignh: AlignmentHorizontal,
     fmt: Formatting,
-    pad: Sides<Indent>,
-    pad_color: Sides<Option<ANSIBuf>>,
+    pad: &'a Sides<Indent>,
+    pad_color: &'a Sides<Option<ANSIBuf>>,
     color: Option<C>,
-    justification: (char, Option<ANSIBuf>),
+    justification: char,
+    justification_color: Option<&'a ANSIBuf>,
 }
 
-impl<T, C> Cell<T, C>
-where
-    T: AsRef<str>,
-{
+impl<'a, T, C> Cell<'a, T, C> {
     fn new(
         text: T,
         width: usize,
         height: usize,
-        cfg: &SpannedConfig,
+        cfg: &'a SpannedConfig,
         color: Option<C>,
         pos: Position,
-    ) -> Cell<T, C> {
+    ) -> Cell<'a, T, C>
+    where
+        T: AsRef<str>,
+    {
         let fmt = cfg.get_formatting(pos);
         let pad = cfg.get_padding(pos);
-        let pad_color = cfg.get_padding_color(pos).clone();
+        let pad_color = cfg.get_padding_color(pos);
         let alignh = *cfg.get_alignment_horizontal(pos);
         let alignv = *cfg.get_alignment_vertical(pos);
-        let justification = (
-            cfg.get_justification(pos),
-            cfg.get_justification_color(pos).cloned(),
-        );
+        let justification = cfg.get_justification(pos);
+        let justification_color = cfg.get_justification_color(pos);
 
         let (count_lines, skip) = if fmt.vertical_trim {
             let (len, top, _) = count_empty_lines(text.as_ref());
@@ -833,15 +830,15 @@ where
             pad_color,
             color,
             justification,
+            justification_color,
         }
     }
-}
 
-impl<T, C> Cell<T, C>
-where
-    C: ANSIFmt,
-{
-    fn display<F: Write>(&mut self, f: &mut F) -> fmt::Result {
+    fn display<F>(&mut self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+        C: ANSIFmt,
+    {
         if self.indent_top > 0 {
             self.indent_top -= 1;
             print_padding_n(f, &self.pad.top, self.pad_color.top.as_ref(), self.width)?;
@@ -873,14 +870,11 @@ where
             (left, available_width - line_width - left)
         };
 
-        let (justification, justification_color) =
-            (self.justification.0, self.justification.1.as_ref());
-
         print_padding(f, &self.pad.left, self.pad_color.left.as_ref())?;
 
-        print_indent(f, justification, left, justification_color)?;
+        print_indent(f, self.justification, left, self.justification_color)?;
         print_text(f, &line, self.color.as_ref())?;
-        print_indent(f, justification, right, justification_color)?;
+        print_indent(f, self.justification, right, self.justification_color)?;
 
         print_padding(f, &self.pad.right, self.pad_color.right.as_ref())?;
 
@@ -1047,7 +1041,7 @@ fn print_margin_top<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -> f
     let indent = cfg.get_margin().top;
     let offset = cfg.get_margin_offset().top;
     let color = cfg.get_margin_color();
-    let color = color.top.as_ref();
+    let color = color.top;
     print_indent_lines(f, &indent, &offset, color, width)
 }
 
@@ -1055,7 +1049,7 @@ fn print_margin_bottom<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -
     let indent = cfg.get_margin().bottom;
     let offset = cfg.get_margin_offset().bottom;
     let color = cfg.get_margin_color();
-    let color = color.bottom.as_ref();
+    let color = color.bottom;
     print_indent_lines(f, &indent, &offset, color, width)
 }
 
@@ -1068,7 +1062,7 @@ fn print_margin_left<F: Write>(
     let indent = cfg.get_margin().left;
     let offset = cfg.get_margin_offset().left;
     let color = cfg.get_margin_color();
-    let color = color.left.as_ref();
+    let color = color.left;
     print_margin_vertical(f, indent, offset, color, line, height)
 }
 
@@ -1081,7 +1075,7 @@ fn print_margin_right<F: Write>(
     let indent = cfg.get_margin().right;
     let offset = cfg.get_margin_offset().right;
     let color = cfg.get_margin_color();
-    let color = color.right.as_ref();
+    let color = color.right;
     print_margin_vertical(f, indent, offset, color, line, height)
 }
 

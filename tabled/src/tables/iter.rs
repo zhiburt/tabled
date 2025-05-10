@@ -119,9 +119,6 @@ impl<I> IterTable<I> {
         }
     }
 
-    // TODO: REmove the SELF consumption????
-    // TODO: Change setters to ZeroDimension configuration
-
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where

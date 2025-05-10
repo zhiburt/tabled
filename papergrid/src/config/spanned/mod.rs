@@ -116,12 +116,12 @@ impl SpannedConfig {
     }
 
     /// Returns a margin color value currently set.
-    pub fn get_margin_color(&self) -> Sides<Option<ANSIBuf>> {
+    pub fn get_margin_color(&self) -> Sides<Option<&ANSIBuf>> {
         Sides::new(
-            self.margin.left.color.clone(),
-            self.margin.right.color.clone(),
-            self.margin.top.color.clone(),
-            self.margin.bottom.color.clone(),
+            self.margin.left.color.as_ref(),
+            self.margin.right.color.as_ref(),
+            self.margin.top.color.as_ref(),
+            self.margin.bottom.color.as_ref(),
         )
     }
 
@@ -432,13 +432,13 @@ impl SpannedConfig {
     }
 
     /// Get a padding for a given cell by [Position].
-    pub fn get_padding(&self, pos: Position) -> Sides<Indent> {
-        *self.padding.get(pos)
+    pub fn get_padding(&self, pos: Position) -> &Sides<Indent> {
+        self.padding.get(pos)
     }
 
     /// Get a padding color for a given cell by [Position].
-    pub fn get_padding_color(&self, pos: Position) -> Sides<Option<ANSIBuf>> {
-        self.padding_color.get(pos).clone()
+    pub fn get_padding_color(&self, pos: Position) -> &Sides<Option<ANSIBuf>> {
+        self.padding_color.get(pos)
     }
 
     /// Set a formatting to a given cells.
