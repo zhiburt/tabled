@@ -333,7 +333,7 @@ mod grid_basic {
             cell_height = height;
         }
 
-        let indent = top_indent(&pad, valignment, cell_height, height);
+        let indent = top_indent(pad, valignment, cell_height, height);
         if indent > line {
             return repeat_char(f, pad.top.fill, width);
         }
@@ -849,7 +849,7 @@ mod grid_not_spanned {
             cell_height = height;
         }
 
-        let indent = top_indent(&pad, valignment, cell_height, height);
+        let indent = top_indent(pad, valignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
         }
@@ -1702,7 +1702,7 @@ mod grid_spanned {
         let pad = ctx.cfg.get_padding(pos);
         let pad_color = ctx.cfg.get_padding_color(pos);
         let alignment = ctx.cfg.get_alignment_vertical(pos);
-        let indent = top_indent(&pad, *alignment, cell_height, height);
+        let indent = top_indent(pad, *alignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
         }
