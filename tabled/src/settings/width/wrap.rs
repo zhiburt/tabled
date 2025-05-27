@@ -172,23 +172,27 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    let shape = (records.count_rows(), records.count_columns());
-    let min_widths = get_table_widths(EmptyRecords::from(shape), cfg);
+    let count_rows = records.count_rows();
+    let count_columns = records.count_columns();
+    // TODO: Could be optimized by calculating width and min_width together
+    //       I just don't like the boiler plate we will add :(
+    //       But the benefit is clear.
+    let min_widths = get_table_widths(EmptyRecords::new(count_rows, count_columns), cfg);
 
     decrease_widths(&mut widths, &min_widths, total_width, width, priority);
 
-    let points = get_decrease_cell_list(cfg, &widths, &min_widths, shape);
+    let points = get_decrease_cell_list(cfg, &widths, &min_widths, count_rows, count_columns);
 
-    for ((row, col), width) in points {
-        let mut wrap = Wrap::new(width);
-        wrap.keep_words = keep_words;
-        <Wrap as CellOption<_, _>>::change(wrap, records, cfg, (row, col).into());
+    for (pos, width) in points {
+        let text = records.get_text(pos);
+        let wrapped = wrap_text(text, width, keep_words);
+        records.set(pos, wrapped);
     }
 
     widths
 }
 
-pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
+fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         return String::new();
     }
@@ -196,7 +200,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     #[cfg(not(feature = "ansi"))]
     {
         if keep_words {
-            wrap_text_keeping_words(text, width)
+            wrap_text_keeping_words_noansi(text, width)
         } else {
             wrap_text_basic(text, width)
         }
@@ -350,8 +354,7 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
     buf
 }
 
-#[cfg(not(feature = "ansi"))]
-fn wrap_text_keeping_words(text: &str, width: usize) -> String {
+fn wrap_text_keeping_words_noansi(text: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     if width == 0 || text.is_empty() {
@@ -641,11 +644,15 @@ fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str)
         return String::new();
     }
 
+    let stripped = ansi_str::AnsiStr::ansi_strip(text);
+    let is_simple_text = stripped.len() == text.len() && prefix.is_empty() && suffix.is_empty();
+    if is_simple_text {
+        return wrap_text_keeping_words_noansi(text, width);
+    }
+
     let mut buf = String::with_capacity(width + prefix.len() + suffix.len());
     let mut line_width = 0;
     let mut blocks = Blocks::new(text);
-
-    let stripped = ansi_str::AnsiStr::ansi_strip(text);
 
     buf.push_str(prefix);
 
@@ -793,31 +800,35 @@ fn get_decrease_cell_list(
     cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
-    shape: (usize, usize),
-) -> Vec<((usize, usize), usize)> {
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<(Position, usize)> {
     let mut points = Vec::new();
-    (0..shape.1).for_each(|col| {
-        (0..shape.0)
-            .filter(|&row| cfg.is_cell_visible((row, col).into()))
-            .for_each(|row| {
-                let (width, width_min) = match cfg.get_column_span((row, col).into()) {
-                    Some(span) => {
-                        let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                        let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                        let count_borders = count_borders(cfg, col, col + span, shape.1);
-                        (width + count_borders, min_width + count_borders)
-                    }
-                    None => (widths[col], min_widths[col]),
-                };
+    for col in 0..count_columns {
+        for row in 0..count_rows {
+            let pos = Position::new(row, col);
+            if !cfg.is_cell_visible(pos) {
+                continue;
+            }
 
-                if width >= width_min {
-                    let padding = cfg.get_padding((row, col).into());
-                    let width = width.saturating_sub(padding.left.size + padding.right.size);
-
-                    points.push(((row, col), width));
+            let (width, width_min) = match cfg.get_column_span(pos) {
+                Some(span) => {
+                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                    let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                    let count_borders = count_borders(cfg, col, col + span, count_columns);
+                    (width + count_borders, min_width + count_borders)
                 }
-            });
-    });
+                None => (widths[col], min_widths[col]),
+            };
+
+            if width >= width_min {
+                let padding = cfg.get_padding(pos);
+                let width = width.saturating_sub(padding.left.size + padding.right.size);
+
+                points.push((pos, width));
+            }
+        }
+    }
 
     points
 }
@@ -894,7 +905,7 @@ mod tests {
     #[test]
     fn split_by_line_keeping_words_test() {
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
@@ -1087,7 +1098,7 @@ mod tests {
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
         assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
@@ -1368,7 +1379,7 @@ mod tests {
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
         let text = "修复 zlib 软件包中 CMake 配置不一致的问题，该问题先前导致部分软件无法正常构建";
         assert_eq!(
@@ -1382,7 +1393,7 @@ mod tests {
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
         let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
         assert_eq!(
@@ -1399,7 +1410,7 @@ mod tests {
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
         let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
         assert_eq!(

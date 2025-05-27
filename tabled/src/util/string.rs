@@ -7,40 +7,54 @@ use crate::grid::util::string::get_char_width;
 pub(crate) fn split_str(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
     #[cfg(feature = "ansi")]
     {
-        const REPLACEMENT: char = '\u{FFFD}';
-
-        let stripped = ansi_str::AnsiStr::ansi_strip(s);
-        let (length, cutwidth, csize) = split_at_width(&stripped, width);
-        let (mut lhs, mut rhs) = ansi_str::AnsiStr::ansi_split_at(s, length);
-
-        if csize > 0 {
-            let mut buf = lhs.into_owned();
-            let count_unknowns = width - cutwidth;
-            buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
-            lhs = Cow::Owned(buf);
-            rhs = Cow::Owned(ansi_str::AnsiStr::ansi_cut(rhs.as_ref(), csize..).into_owned());
-        }
-
-        (lhs, rhs)
+        split_str_colored(s, width)
     }
 
     #[cfg(not(feature = "ansi"))]
     {
-        const REPLACEMENT: char = '\u{FFFD}';
-
-        let (length, cutwidth, csize) = split_at_width(s, width);
-        let (lhs, rhs) = s.split_at(length);
-
-        if csize == 0 {
-            return (Cow::Borrowed(lhs), Cow::Borrowed(rhs));
-        }
-
-        let count_unknowns = width - cutwidth;
-        let mut buf = lhs.to_owned();
-        buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
-
-        (Cow::Owned(buf), Cow::Borrowed(&rhs[csize..]))
+        split_str_basic(s, width)
     }
+}
+
+fn split_str_basic(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let (length, cutwidth, csize) = split_at_width(s, width);
+    let (lhs, rhs) = s.split_at(length);
+
+    if csize == 0 {
+        return (Cow::Borrowed(lhs), Cow::Borrowed(rhs));
+    }
+
+    let count_unknowns = width - cutwidth;
+    let mut buf = lhs.to_owned();
+    buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
+
+    (Cow::Owned(buf), Cow::Borrowed(&rhs[csize..]))
+}
+
+#[cfg(feature = "ansi")]
+fn split_str_colored(s: &str, width: usize) -> (Cow<'_, str>, Cow<'_, str>) {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let stripped = ansi_str::AnsiStr::ansi_strip(s);
+    let is_simple_string = stripped.len() == s.len();
+    if is_simple_string {
+        return split_str_basic(s, width);
+    }
+
+    let (length, cutwidth, csize) = split_at_width(&stripped, width);
+    let (mut lhs, mut rhs) = ansi_str::AnsiStr::ansi_split_at(s, length);
+
+    if csize > 0 {
+        let mut buf = lhs.into_owned();
+        let count_unknowns = width - cutwidth;
+        buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
+        lhs = Cow::Owned(buf);
+        rhs = Cow::Owned(ansi_str::AnsiStr::ansi_cut(rhs.as_ref(), csize..).into_owned());
+    }
+
+    (lhs, rhs)
 }
 
 /// The function cuts the string to a specific width.
@@ -57,7 +71,6 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     }
 }
 
-#[cfg(not(feature = "ansi"))]
 fn cut_str_basic(text: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
@@ -75,19 +88,23 @@ fn cut_str_basic(text: &str, width: usize) -> Cow<'_, str> {
     Cow::Owned(buf)
 }
 
-// TODO: Cow::Borrow if no ansi is used.
 #[cfg(feature = "ansi")]
 fn cut_str_colored(text: &str, width: usize) -> Cow<'_, str> {
     use crate::util::string::{build_link, strip_osc};
 
     const REPLACEMENT: char = '\u{FFFD}';
 
-    let (text, url) = strip_osc(text);
+    let (cleaned_text, url) = strip_osc(text);
     let (prefix, suffix) = build_link(url);
 
-    let stripped = ansi_str::AnsiStr::ansi_strip(&text);
+    let stripped = ansi_str::AnsiStr::ansi_strip(&cleaned_text);
+    let is_simple_string = text.len() == stripped.len();
+    if is_simple_string {
+        return cut_str_basic(text, width);
+    }
+
     let (length, cutwidth, csize) = split_at_width(&stripped, width);
-    let mut buf = ansi_str::AnsiStr::ansi_cut(&text, ..length);
+    let mut buf = ansi_str::AnsiStr::ansi_cut(&cleaned_text, ..length);
 
     if csize != 0 {
         let mut b = buf.into_owned();
