@@ -4,6 +4,7 @@
 use tabled::{
     assert::test_table,
     settings::{formatting::Justification, object::Columns, Color, Modify},
+    Table,
 };
 
 use crate::matrix::Matrix;
@@ -68,4 +69,22 @@ test_table!(
     "+---+----------+----------+----------+"
     "| 2 | \u{1b}[44m##\u{1b}[49m2-0\u{1b}[44m###\u{1b}[49m | \u{1b}[41m@@\u{1b}[49m2-1\u{1b}[41m@@@\u{1b}[49m | \u{1b}[47m$$\u{1b}[49m2-2\u{1b}[47m$$$\u{1b}[49m |"
     "+---+----------+----------+----------+"
+);
+
+test_table!(
+    justification_multiline,
+    Table::new(["Hello\nW\nor\nld", "yes", "no"])
+        .with(Justification::new('*')),
+    "+-------+"
+    "| &str* |"
+    "+-------+"
+    "| Hello |"
+    "| W**** |"
+    "| or*** |"
+    "| ld*** |"
+    "+-------+"
+    "| yes** |"
+    "+-------+"
+    "| no*** |"
+    "+-------+"
 );

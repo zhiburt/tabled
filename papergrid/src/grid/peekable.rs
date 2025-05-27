@@ -404,7 +404,7 @@ mod grid_basic {
         print_text_padded(f, &line, cfg.justification, indent)?;
 
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        repeat_char(f, cfg.justification, rest_width)?;
 
         Ok(())
     }
@@ -905,7 +905,7 @@ mod grid_not_spanned {
         if cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), cfg.color);
-            return print_text_padded(f, text, cfg.justification, indent);
+            return print_text_padded(f, &text, &cfg.justification, indent);
         }
 
         let cell_width = if cfg.formatting.horizontal_trim {
@@ -920,19 +920,18 @@ mod grid_not_spanned {
 
         let indent = calculate_indent(cfg.alignment, cell_width, available);
         let text = Colored::new(line.as_ref(), cfg.color);
-        print_text_padded(f, text, cfg.justification, indent)?;
+        print_text_padded(f, &text, &cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        print_indent2(f, &cfg.justification, rest_width)?;
 
         Ok(())
     }
 
     fn print_text_padded<F, C, C1>(
         f: &mut F,
-        text: Colored<&str, C>,
-        justification: Colored<char, C1>,
+        text: &Colored<&str, C>,
+        justification: &Colored<char, C1>,
         indent: HIndent,
     ) -> fmt::Result
     where
@@ -947,12 +946,12 @@ mod grid_not_spanned {
         Ok(())
     }
 
-    fn print_text2<F, C>(f: &mut F, text: Colored<&str, C>) -> fmt::Result
+    fn print_text2<F, C>(f: &mut F, text: &Colored<&str, C>) -> fmt::Result
     where
         F: Write,
         C: ANSIFmt,
     {
-        match text.color {
+        match &text.color {
             Some(color) => {
                 color.fmt_ansi_prefix(f)?;
                 f.write_str(text.data)?;
@@ -1771,7 +1770,7 @@ mod grid_spanned {
         if text_cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(text_cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), text_cfg.color);
-            return print_text_with_pad(f, text, text_cfg.justification, indent);
+            return print_text_with_pad(f, &text, &text_cfg.justification, indent);
         }
 
         let cell_width = if text_cfg.formatting.horizontal_trim {
@@ -1785,20 +1784,24 @@ mod grid_spanned {
         };
 
         let indent = calculate_indent(text_cfg.alignment, cell_width, available);
-        let text = Colored::new(line.as_ref(), text_cfg.color);
-        print_text_with_pad(f, text, text_cfg.justification, indent)?;
+        let text = Colored::new(line.as_ref(), text_cfg.color.as_ref());
+        print_text_with_pad(f, &text, &text_cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        print_indent(
+            f,
+            text_cfg.justification.data,
+            rest_width,
+            text_cfg.justification.color.as_ref(),
+        )?;
 
         Ok(())
     }
 
     fn print_text_with_pad<F, C, C1>(
         f: &mut F,
-        text: Colored<&str, C>,
-        space: Colored<char, C1>,
+        text: &Colored<&str, C>,
+        space: &Colored<char, C1>,
         indent: HIndent,
     ) -> fmt::Result
     where
@@ -1807,7 +1810,7 @@ mod grid_spanned {
         C1: ANSIFmt,
     {
         print_indent(f, space.data, indent.left, space.color.as_ref())?;
-        print_text(f, text.data, text.color)?;
+        print_text(f, text.data, text.color.as_ref())?;
         print_indent(f, space.data, indent.right, space.color.as_ref())?;
         Ok(())
     }
