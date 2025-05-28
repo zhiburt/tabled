@@ -91,6 +91,11 @@ impl CompleteDimension<'_> {
     pub fn reastimate(&mut self, hint: Option<Entity>) {
         dims_reastimate_likely(self, hint);
     }
+
+    /// Return inner width list.
+    pub fn get_widths(&self) -> Option<&[usize]> {
+        self.width.as_deref()
+    }
 }
 
 impl Dimension for CompleteDimension<'_> {

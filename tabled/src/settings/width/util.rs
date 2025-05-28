@@ -1,28 +1,6 @@
-use crate::{
-    grid::config::SpannedConfig,
-    grid::dimension::IterGridDimension,
-    grid::records::{IntoRecords, Records},
-};
+use crate::grid::config::SpannedConfig;
 
-pub(crate) fn get_table_widths<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
-where
-    R: Records,
-    <R::Iter as IntoRecords>::Cell: AsRef<str>,
-{
-    IterGridDimension::width(records, cfg)
-}
-
-pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
-where
-    R: Records,
-    <R::Iter as IntoRecords>::Cell: AsRef<str>,
-{
-    let widths = IterGridDimension::width(records, cfg);
-    let total_width = get_table_total_width(&widths, cfg);
-    (widths, total_width)
-}
-
-fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
+pub(crate) fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
     let margin = cfg.get_margin();
     list.iter().sum::<usize>()
         + cfg.count_vertical(list.len())

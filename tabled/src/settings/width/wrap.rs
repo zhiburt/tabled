@@ -3,12 +3,17 @@
 //!
 //! [`Table`]: crate::Table
 
+use papergrid::dimension::{iterable::IterGridDimension, Estimate};
+
 use crate::{
     grid::{
         config::{ColoredConfig, Entity, Position, SpannedConfig},
         dimension::CompleteDimension,
-        records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::{get_char_width, get_string_width, get_text_width},
+        records::{
+            vec_records::Cell, EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records,
+            RecordsMut,
+        },
+        util::string::{get_char_width, get_string_width},
     },
     settings::{
         measurement::Measurement,
@@ -18,7 +23,7 @@ use crate::{
     },
 };
 
-use super::util::{get_table_widths, get_table_widths_with_total};
+use super::util::get_table_total_width;
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -103,7 +108,7 @@ where
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
-    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
@@ -111,16 +116,24 @@ where
         }
 
         let width = self.width.measure(&*records, cfg);
-        let (widths, total) = get_table_widths_with_total(&*records, cfg);
+
+        dims.estimate(&*records, cfg);
+        let widths = dims.get_widths().expect("must be found");
+
+        let total = get_table_total_width(widths, cfg);
         if width >= total {
             return;
         }
 
-        let priority = self.priority;
-        let keep_words = self.keep_words;
-        let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
+        let w = Wrap {
+            keep_words: self.keep_words,
+            priority: self.priority,
+            width,
+        };
+        let widths = wrap_total_width(records, cfg, widths, total, w);
 
         dims.set_widths(widths);
+        dims.clear_height();
     }
 }
 
@@ -132,25 +145,23 @@ where
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let width = self.width.measure(&*records, cfg);
-
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
         let max_pos = Position::new(count_rows, count_columns);
+
+        let width = self.width.measure(&*records, cfg);
 
         for pos in entity.iter(count_rows, count_columns) {
             if !max_pos.has_coverage(pos) {
                 continue;
             }
 
-            // TODO: use CELL trait? Clearly can benefit but we can't yet use SPECIALIZATION
-
-            let text = records.get_text(pos);
-            let cell_width = get_text_width(text);
+            let cell_width = records.get_width(pos);
             if cell_width <= width {
                 continue;
             }
 
+            let text = records.get_text(pos);
             let wrapped = wrap_text(text, width, self.keep_words);
             records.set(pos, wrapped);
         }
@@ -160,11 +171,9 @@ where
 fn wrap_total_width<R, P>(
     records: &mut R,
     cfg: &mut ColoredConfig,
-    mut widths: Vec<usize>,
-    total_width: usize,
-    width: usize,
-    keep_words: bool,
-    priority: P,
+    widths: &[usize],
+    total: usize,
+    w: Wrap<usize, P>,
 ) -> Vec<usize>
 where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -174,18 +183,20 @@ where
 {
     let count_rows = records.count_rows();
     let count_columns = records.count_columns();
+
     // TODO: Could be optimized by calculating width and min_width together
     //       I just don't like the boiler plate we will add :(
     //       But the benefit is clear.
-    let min_widths = get_table_widths(EmptyRecords::new(count_rows, count_columns), cfg);
+    let min_widths = IterGridDimension::width(EmptyRecords::new(count_rows, count_columns), cfg);
 
-    decrease_widths(&mut widths, &min_widths, total_width, width, priority);
+    let mut widths = widths.to_vec();
+    decrease_widths(&mut widths, &min_widths, total, w.width, w.priority);
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, count_rows, count_columns);
 
     for (pos, width) in points {
         let text = records.get_text(pos);
-        let wrapped = wrap_text(text, width, keep_words);
+        let wrapped = wrap_text(text, width, w.keep_words);
         records.set(pos, wrapped);
     }
 
