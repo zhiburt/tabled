@@ -87,7 +87,7 @@ where
     }
 
     fn hint_change(&self) -> Option<Entity> {
-        Some(Entity::Row(0))
+        TableHeightIncrease::new(0).hint_change()
     }
 }
 

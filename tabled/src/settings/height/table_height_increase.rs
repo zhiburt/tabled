@@ -69,7 +69,8 @@ where
     }
 
     fn hint_change(&self) -> Option<Entity> {
-        Some(Entity::Row(0))
+        // NOTE: We set correct heights and did not touched widths
+        None
     }
 }
 

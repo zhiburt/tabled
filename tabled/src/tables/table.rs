@@ -226,11 +226,13 @@ impl Table {
         }
 
         let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
         }
     }
 
@@ -446,11 +448,11 @@ impl Table {
         for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
     {
         let reastimation_hint = option.hint_change();
-        let mut dims = self.dimension.inherit();
 
-        option.change(&mut self.records, &mut self.config, &mut dims);
+        option.change(&mut self.records, &mut self.config, &mut self.dimension);
+        self.dimension.reastimate(reastimation_hint);
 
-        self.dimension.combine(dims.into_owned(), reastimation_hint);
+        println!("self.dimension={:?}", self.dimension);
 
         self
     }

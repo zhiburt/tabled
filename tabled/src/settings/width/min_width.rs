@@ -164,7 +164,17 @@ where
         let widths = get_increase_list(widths, minwidth, total_width, self.priority);
         dims.set_widths(widths);
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE:
+        // We set proper widths,
+        // While keeping height unchanged,
+        // So we can safely assume nothing needs reestimation.
+        None
+    }
 }
+
+// todo:  Rename MinWidth?
 
 fn get_increase_list<F>(
     widths: &[usize],

@@ -5,9 +5,7 @@ use std::iter::FromIterator;
 use tabled::{
     assert::test_table,
     builder::Builder,
-    settings::{
-        formatting::Charset, Height, Highlight, Modify, Padding, Settings, Shadow, Style, Width,
-    },
+    settings::{formatting::Charset, Height, Highlight, Modify, Padding, Shadow, Style, Width},
     Table,
 };
 
@@ -870,7 +868,8 @@ test_table!(
     {
         Builder::from_iter(vec![vec![""]]).build()
             .with(Style::modern())
-            .with(Settings::new(Height::limit(0), Width::increase(10)))
+            .with(Width::increase(10))
+            .with(Height::limit(0))
     },
     "┌────────┐"
     "└────────┘"

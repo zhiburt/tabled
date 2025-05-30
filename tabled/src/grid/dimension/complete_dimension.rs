@@ -10,6 +10,7 @@ use crate::grid::{
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone)]
+// todo; change to vec ....
 pub struct CompleteDimension<'a> {
     width: Option<Cow<'a, [usize]>>,
     height: Option<Cow<'a, [usize]>>,
@@ -81,10 +82,10 @@ impl CompleteDimension<'_> {
     }
 
     /// Copies a reference from self.
-    pub fn combine(&mut self, rhs: CompleteDimension<'_>, hint: Option<Entity>) {
+    pub fn combine(&mut self, rhs: CompleteDimension<'_>) {
         let widths = rhs.width.map(|v| v.into_owned());
         let heights = rhs.height.map(|v| v.into_owned());
-        dims_reastimate(self, widths, heights, hint);
+        dims_reastimate(self, widths, heights);
     }
 
     /// Copies a reference from self.
@@ -156,25 +157,9 @@ fn dims_reastimate(
     dims: &mut CompleteDimension<'_>,
     widths: Option<Vec<usize>>,
     heights: Option<Vec<usize>>,
-    hint: Option<Entity>,
 ) {
-    let hint = match hint {
-        Some(hint) => hint,
-        None => return,
-    };
-
-    match hint {
-        Entity::Global | Entity::Cell(_, _) => {
-            dims_set_widths(dims, widths);
-            dims_set_heights(dims, heights);
-        }
-        Entity::Column(_) => {
-            dims_set_widths(dims, widths);
-        }
-        Entity::Row(_) => {
-            dims_set_heights(dims, heights);
-        }
-    }
+    dims_set_widths(dims, widths);
+    dims_set_heights(dims, heights);
 }
 
 fn dims_set_widths(dims: &mut CompleteDimension<'_>, list: Option<Vec<usize>>) {

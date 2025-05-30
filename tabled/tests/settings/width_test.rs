@@ -2133,7 +2133,7 @@ mod derived {
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Alignment::left())
             .with(Width::wrap(57).keep_words(true))
             .to_string();
 

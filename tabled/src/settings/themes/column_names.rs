@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, Position},
         dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
@@ -251,6 +251,8 @@ impl ColumnNames {
     }
 }
 
+// TODO: Split into ColumnNames and RowNames
+
 impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>> for ColumnNames {
     fn change(
         self,
@@ -286,6 +288,16 @@ impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>>
         let names = vec_set_size(names, records.count_columns());
         let alignment = ListValue::Static(AlignmentHorizontal::Left);
         set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        let alignment_vertical: Option<ListValue<AlignmentVertical>> =
+            convert_alignment_value(self.alignments.clone());
+        if alignment_vertical.is_some() {
+            Some(Entity::Column(0))
+        } else {
+            Some(Entity::Row(0))
+        }
     }
 }
 

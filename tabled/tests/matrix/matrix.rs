@@ -17,6 +17,8 @@ use tabled::{
 
 use super::matrix_list::MatrixList;
 
+// TODO: Remove the structure and make it a construction factory instead for original Table.
+
 /// A helper table factory.
 ///
 /// It uses center alignment by default, because it's more complex and may spot more issues.

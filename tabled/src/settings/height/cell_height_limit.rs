@@ -83,6 +83,10 @@ where
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        TableHeightLimit::new(0).hint_change()
+    }
 }
 
 fn limit_lines(s: &str, n: usize) -> String {

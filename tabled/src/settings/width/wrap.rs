@@ -133,7 +133,12 @@ where
         let widths = wrap_total_width(records, cfg, widths, total, w);
 
         dims.set_widths(widths);
-        dims.clear_height();
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE: We need to recalculate heights
+        // TODO: It's actually could be fixed; we sort of already have new strings
+        Some(Entity::Row(0))
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::{
     grid::{
-        config::ColoredConfig,
+        config::{ColoredConfig, Entity},
         dimension::CompleteDimension,
         records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
@@ -85,6 +85,12 @@ where
         }
 
         dims.set_heights(heights);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE: we set correct heights but we don't change widths
+        //       so it must be normal to not have recalculations
+        None
     }
 }
 

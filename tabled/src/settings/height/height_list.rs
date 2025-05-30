@@ -44,4 +44,9 @@ where
 
         dims.set_heights(self.list);
     }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        // NOTE: is this correct?
+        None
+    }
 }

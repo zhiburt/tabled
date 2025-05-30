@@ -265,6 +265,11 @@ where
         dims.set_widths(widths);
         dims.clear_height(); // TODO: Can be optimized -- we must know the proper height already since we did wrap
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE: We properly set widths and heights so nothign got need reastimation
+        None
+    }
 }
 
 fn truncate_multiline<'a>(
