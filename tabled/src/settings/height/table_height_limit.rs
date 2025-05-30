@@ -45,7 +45,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension<'_>> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -53,7 +53,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

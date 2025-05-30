@@ -44,7 +44,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension<'_>> for TableHeightIncrease<W, P>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension> for TableHeightIncrease<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -52,7 +52,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }

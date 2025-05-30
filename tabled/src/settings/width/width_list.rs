@@ -32,11 +32,11 @@ impl FromIterator<usize> for WidthList {
     }
 }
 
-impl<R, C> TableOption<R, C, CompleteDimension<'_>> for WidthList
+impl<R, C> TableOption<R, C, CompleteDimension> for WidthList
 where
     R: Records,
 {
-    fn change(self, records: &mut R, _: &mut C, dimension: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, _: &mut C, dimension: &mut CompleteDimension) {
         if self.list.len() < records.count_columns() {
             return;
         }

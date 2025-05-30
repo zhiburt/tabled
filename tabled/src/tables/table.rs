@@ -87,7 +87,7 @@ use crate::{
 pub struct Table {
     records: VecRecords<Text<String>>,
     config: ColoredConfig,
-    dimension: CompleteDimension<'static>,
+    dimension: CompleteDimension,
 }
 
 impl Table {
@@ -445,7 +445,7 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
+        O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension>,
     {
         let reastimation_hint = option.hint_change();
 
@@ -504,7 +504,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = self.dimension.inherit();
+        let mut dims = self.dimension.clone();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
@@ -519,7 +519,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = self.dimension.inherit();
+        let mut dims = self.dimension.clone();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
@@ -553,12 +553,12 @@ impl Table {
     }
 
     /// Returns a dimension.
-    pub fn get_dimension(&self) -> &CompleteDimension<'static> {
+    pub fn get_dimension(&self) -> &CompleteDimension {
         &self.dimension
     }
 
     /// Returns a dimension.
-    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimension<'static> {
+    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimension {
         &mut self.dimension
     }
 }

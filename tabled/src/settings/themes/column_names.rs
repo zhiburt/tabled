@@ -253,12 +253,12 @@ impl ColumnNames {
 
 // TODO: Split into ColumnNames and RowNames
 
-impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>> for ColumnNames {
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension> for ColumnNames {
     fn change(
         self,
         records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'_>,
+        dims: &mut CompleteDimension,
     ) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
@@ -307,7 +307,7 @@ fn set_column_text(
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimension<'_>,
+    dims: &mut CompleteDimension,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);
@@ -343,7 +343,7 @@ fn set_row_text(
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimension<'_>,
+    dims: &mut CompleteDimension,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);

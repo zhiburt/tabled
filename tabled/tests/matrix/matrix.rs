@@ -98,7 +98,7 @@ impl Matrix {
 
     pub fn with<O>(self, opt: O) -> Table
     where
-        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
+        O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension>,
     {
         let mut table = self.to_table();
         table.with(opt);

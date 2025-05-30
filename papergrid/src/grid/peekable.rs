@@ -939,9 +939,9 @@ mod grid_not_spanned {
         C: ANSIFmt,
         C1: ANSIFmt,
     {
-        print_indent2(f, &justification, indent.left)?;
+        print_indent2(f, justification, indent.left)?;
         print_text2(f, text)?;
-        print_indent2(f, &justification, indent.right)?;
+        print_indent2(f, justification, indent.right)?;
 
         Ok(())
     }

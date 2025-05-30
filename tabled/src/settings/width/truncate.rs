@@ -230,7 +230,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension<'_>> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -238,7 +238,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }
