@@ -443,6 +443,29 @@ impl Table {
     /// It's a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::Style};
+    /// use tabled::assert::assert_table;
+    ///
+    /// let data = vec![
+    ///     ("number", "name"),
+    ///     ("285-324-7322", "Rosalia"),
+    ///     ("564.549.6468", "Mary"),
+    /// ];
+    ///
+    /// let mut table = Table::new(data);
+    /// table.with(Style::markdown());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "| &str         | &str    |"
+    ///     "|--------------|---------|"
+    ///     "| number       | name    |"
+    ///     "| 285-324-7322 | Rosalia |"
+    ///     "| 564.549.6468 | Mary    |"
+    /// );
+    /// ```
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
         O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension>,
@@ -461,6 +484,34 @@ impl Table {
     /// Target cells using [`Object`]s such as [`Cell`], [`Rows`], [`Location`] and more.
     ///
     /// It applies settings immediately.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{object::Columns, Alignment}};
+    /// use tabled::assert::assert_table;
+    ///
+    /// let data = vec![
+    ///     ("number", "name"),
+    ///     ("285-324-7322", "Rosalia"),
+    ///     ("564.549.6468", "Mary"),
+    /// ];
+    ///
+    /// let mut table = Table::new(data);
+    /// table.modify(Columns::first(), Alignment::right());
+    /// table.modify(Columns::single(1), Alignment::center());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------------+---------+"
+    ///     "|         &str |  &str   |"
+    ///     "+--------------+---------+"
+    ///     "|       number |  name   |"
+    ///     "+--------------+---------+"
+    ///     "| 285-324-7322 | Rosalia |"
+    ///     "+--------------+---------+"
+    ///     "| 564.549.6468 |  Mary   |"
+    ///     "+--------------+---------+"
+    /// );
+    /// ```
     ///
     /// [`Cell`]: crate::settings::object::Cell
     /// [`Rows`]: crate::settings::object::Rows
