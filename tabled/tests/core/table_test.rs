@@ -933,3 +933,15 @@ test_table!(
     "| world |"
     "+-------+"
 );
+
+test_table!(
+    table_with_capacity,
+    Table::with_capacity(vec!["hello", "world"], 2),
+    "+-------+"
+    "| &str  |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+);

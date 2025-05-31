@@ -125,6 +125,46 @@ impl Table {
     /// );
     /// ```
     ///
+    /// ## Don't hesitate to use iterators.
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     person: String,
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     Relationship { person: String::from("Clara"), love: true },
+    ///     Relationship { person: String::from("Greg"), love: false },
+    /// ];
+    ///
+    /// // Maybe don't love but don't hate :)
+    /// let iter = list.into_iter()
+    ///     .map(|mut rel| {
+    ///         if !rel.love {
+    ///             rel.love = true;
+    ///         }
+    ///
+    ///         rel
+    ///     });
+    ///
+    /// let table = Table::new(iter);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------+------+"
+    ///     "| person | love |"
+    ///     "+--------+------+"
+    ///     "| Clara  | true |"
+    ///     "+--------+------+"
+    ///     "| Greg   | true |"
+    ///     "+--------+------+"
+    /// );
+    /// ```
+    ///
     /// ## Notice that you can pass tuples.
     ///
     /// ```
@@ -151,30 +191,6 @@ impl Table {
     ///     "+------+-------+"
     ///     "|      | false |"
     ///     "+------+-------+"
-    /// );
-    /// ```
-    ///
-    /// ## Notice that you can pass const arrays as well.
-    ///
-    /// ```
-    /// use tabled::{Table, assert::assert_table};
-    ///
-    /// let list = [
-    ///     ["Kate", "+", "+", "+", "-"],
-    ///     ["", "-", "-", "-", "-"],
-    /// ];
-    ///
-    /// let table = Table::new(list);
-    ///
-    /// assert_table!(
-    ///     table,
-    ///     "+------+---+---+---+---+"
-    ///     "| 0    | 1 | 2 | 3 | 4 |"
-    ///     "+------+---+---+---+---+"
-    ///     "| Kate | + | + | + | - |"
-    ///     "+------+---+---+---+---+"
-    ///     "|      | - | - | - | - |"
-    ///     "+------+---+---+---+---+"
     /// );
     /// ```
     ///
@@ -237,12 +253,81 @@ impl Table {
     }
 
     /// Creates a Table instance, from a list of [`Tabled`] values.
-    /// 
+    ///
+    /// It's an optimized version of [`Table::new`].
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     person: String,
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     Relationship { person: String::from("Clara"), love: true },
+    ///     Relationship { person: String::from("Greg"), love: false },
+    /// ];
+    ///
+    /// let table = Table::with_capacity(&list, list.len());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------+-------+"
+    ///     "| person | love  |"
+    ///     "+--------+-------+"
+    ///     "| Clara  | true  |"
+    ///     "+--------+-------+"
+    ///     "| Greg   | false |"
+    ///     "+--------+-------+"
+    /// );
+    /// ```
+    pub fn with_capacity<I, T>(iter: I, count_rows: usize) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Tabled,
+    {
+        let mut header = Vec::with_capacity(T::LENGTH);
+        for text in T::headers() {
+            let text = text.into_owned();
+            let cell = Text::new(text);
+            header.push(cell);
+        }
+
+        let mut records = Vec::with_capacity(count_rows + 1);
+        records.push(header);
+
+        for row in iter.into_iter() {
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                let text = text.into_owned();
+                let cell = Text::new(text);
+
+                list.push(cell);
+            }
+
+            records.push(list);
+        }
+
+        let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
+
+        Self {
+            records,
+            config,
+            dimension,
+        }
+    }
+
+    /// Creates a Table instance, from a list of [`Tabled`] values.
+    ///
     /// Compared to [`Table::new`] it does not use a "header" (first line).
     ///
     /// If you use a reference iterator you'd better use [`FromIterator`] instead.
     /// As it has a different lifetime constraints and make less copies therefore.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```
