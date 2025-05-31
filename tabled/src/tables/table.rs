@@ -159,7 +159,7 @@ impl Table {
     /// ```
     /// use tabled::{Table, assert::assert_table};
     ///
-    /// let list = vec![
+    /// let list = [
     ///     ["Kate", "+", "+", "+", "-"],
     ///     ["", "-", "-", "-", "-"],
     /// ];
@@ -213,6 +213,68 @@ impl Table {
         }
 
         let mut records = vec![header];
+        for row in iter.into_iter() {
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                let text = text.into_owned();
+                let cell = Text::new(text);
+
+                list.push(cell);
+            }
+
+            records.push(list);
+        }
+
+        let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
+
+        Self {
+            records,
+            config,
+            dimension,
+        }
+    }
+
+    /// Creates a Table instance, from a list of [`Tabled`] values.
+    /// 
+    /// Compared to [`Table::new`] it does not use a "header" (first line).
+    ///
+    /// If you use a reference iterator you'd better use [`FromIterator`] instead.
+    /// As it has a different lifetime constraints and make less copies therefore.
+    /// 
+    /// # Examples
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     ("Kate", Relationship { love: true }),
+    ///     ("", Relationship { love: false }),
+    /// ];
+    ///
+    /// let table = Table::nohead(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+------+-------+"
+    ///     "| Kate | true  |"
+    ///     "+------+-------+"
+    ///     "|      | false |"
+    ///     "+------+-------+"
+    /// );
+    /// ```
+    pub fn nohead<I, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Tabled,
+    {
+        let mut records = vec![];
         for row in iter.into_iter() {
             let mut list = Vec::with_capacity(T::LENGTH);
             for text in row.fields().into_iter() {
@@ -294,7 +356,7 @@ impl Table {
     /// );
     /// ```
     ///
-    /// A more complex example with a subtle style.
+    /// Next you'll find a more complex example with a subtle style.
     ///
     /// ```
     /// use tabled::{Table, Tabled, settings::Style};
@@ -368,11 +430,13 @@ impl Table {
         }
 
         let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
         }
     }
 
@@ -430,7 +494,7 @@ impl Table {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let mut builder = Builder::with_capacity(0, T::LENGTH);
+        let mut builder = Builder::with_capacity(1, T::LENGTH);
         builder.push_record(T::headers());
 
         for row in iter {
@@ -474,8 +538,6 @@ impl Table {
 
         option.change(&mut self.records, &mut self.config, &mut self.dimension);
         self.dimension.reastimate(reastimation_hint);
-
-        println!("self.dimension={:?}", self.dimension);
 
         self
     }
@@ -661,11 +723,13 @@ impl From<Builder> for Table {
     fn from(builder: Builder) -> Self {
         let data = builder.into();
         let records = VecRecords::new(data);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
         }
     }
 }
