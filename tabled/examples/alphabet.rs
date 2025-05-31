@@ -1,39 +1,8 @@
-use tabled::{
-    grid::{
-        config::ColoredConfig,
-        records::vec_records::{Text, VecRecords},
-    },
-    settings::{Color, TableOption},
-    Table,
-};
+use std::iter::FromIterator;
 
-struct LookupMARKUP {
-    pattern: String,
-}
-
-impl<D> TableOption<VecRecords<Text<String>>, ColoredConfig, D> for LookupMARKUP {
-    fn change(self, records: &mut VecRecords<Text<String>>, cfg: &mut ColoredConfig, _: &mut D) {
-        for (row, cells) in records.iter().enumerate() {
-            for (col, text) in cells.iter().enumerate() {
-                if text.as_ref().contains(&self.pattern) {
-                    cfg.set_color((row, col).into(), Color::BG_BLUE.into());
-                }
-            }
-        }
-    }
-}
+use tabled::Table;
 
 fn main() {
-    let data = vec![
-        ("number", "name"),
-        ("285-324-7322", "Rosalia"),
-        ("564.549.6468", "Mary"),
-    ];
-
-    let mut table = Table::builder(data).build();
-    table.with(LookupMARKUP {
-        pattern: String::from("7322"),
-    });
-
+    let table = Table::from_iter(['a'..='z']);
     println!("{table}");
 }
