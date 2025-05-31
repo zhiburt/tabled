@@ -40,9 +40,9 @@ test_table!(
 test_table!(
     justification_columns,
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(1)).with(Justification::new('#')))
-        .with(Modify::new(Columns::single(2)).with(Justification::new('@')))
-        .with(Modify::new(Columns::single(3)).with(Justification::new('$'))),
+        .with(Modify::new(Columns::one(1)).with(Justification::new('#')))
+        .with(Modify::new(Columns::one(2)).with(Justification::new('@')))
+        .with(Modify::new(Columns::one(3)).with(Justification::new('$'))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -57,9 +57,9 @@ test_table!(
 test_table!(
     justification_color_columns,
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(1)).with(Justification::new('#').color(Color::BG_BLUE)))
-        .with(Modify::new(Columns::single(2)).with(Justification::new('@').color(Color::BG_RED)))
-        .with(Modify::new(Columns::single(3)).with(Justification::new('$').color(Color::BG_WHITE))),
+        .with(Modify::new(Columns::one(1)).with(Justification::new('#').color(Color::BG_BLUE)))
+        .with(Modify::new(Columns::one(2)).with(Justification::new('@').color(Color::BG_RED)))
+        .with(Modify::new(Columns::one(3)).with(Justification::new('$').color(Color::BG_WHITE))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"

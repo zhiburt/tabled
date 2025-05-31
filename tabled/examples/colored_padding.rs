@@ -62,8 +62,8 @@ fn main() {
         .modify(Segment::all(), BorderColor::filled(border_color))
         .modify(Rows::first(), header_settings)
         .modify(Rows::first().inverse(), data_settings)
-        .modify(Columns::single(1).not(Rows::first()), value_settings)
-        .modify(Columns::single(3).not(Rows::first()), unit_settings);
+        .modify(Columns::one(1).not(Rows::first()), value_settings)
+        .modify(Columns::one(3).not(Rows::first()), unit_settings);
 
     println!("{table}");
 }

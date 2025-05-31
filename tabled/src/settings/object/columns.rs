@@ -36,7 +36,7 @@ impl Columns<()> {
     /// Returns a new instance of [`Columns`] for a single column.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn single(index: usize) -> Column {
+    pub fn one(index: usize) -> Column {
         Column(index)
     }
 

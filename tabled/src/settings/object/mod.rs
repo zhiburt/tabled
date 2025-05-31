@@ -744,11 +744,11 @@ mod tests {
             [Entity::Cell(0, 1), Entity::Cell(0, 2)]
         );
         assert_eq!(
-            vec_cells(Columns::single(1).not(Rows::one(1)), 3, 3),
+            vec_cells(Columns::one(1).not(Rows::one(1)), 3, 3),
             [Entity::Cell(0, 1), Entity::Cell(2, 1)]
         );
         assert_eq!(
-            vec_cells(Rows::one(1).not(Columns::single(1)), 3, 3),
+            vec_cells(Rows::one(1).not(Columns::one(1)), 3, 3),
             [Entity::Cell(1, 0), Entity::Cell(1, 2)]
         );
     }
@@ -772,10 +772,7 @@ mod tests {
             [Entity::Cell(0, 0)]
         );
         // maybe we somehow shall not limit the rows/columns by the max count?
-        assert_eq!(
-            vec_cells(Rows::one(1).intersect(Columns::single(1)), 2, 1),
-            []
-        );
+        assert_eq!(vec_cells(Rows::one(1).intersect(Columns::one(1)), 2, 1), []);
     }
 
     #[test]

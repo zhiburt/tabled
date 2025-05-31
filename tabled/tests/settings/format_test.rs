@@ -56,7 +56,7 @@ test_table!(
     formatting_column_test,
     Matrix::new(3, 3)
         .with(Style::psql())
-        .with(Modify::new(Columns::single(0)).with(Format::content(|s| format!("(x) {s}")))),
+        .with(Modify::new(Columns::one(0)).with(Format::content(|s| format!("(x) {s}")))),
     " (x) N | column 0 | column 1 | column 2 "
     "-------+----------+----------+----------"
     " (x) 0 |   0-0    |   0-1    |   0-2    "
@@ -106,7 +106,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(
-            Modify::new(Columns::single(0).and(Rows::one(0)))
+            Modify::new(Columns::one(0).and(Rows::one(0)))
                 .with(Format::content(|s| format!("(x) {s}"))),
         ),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -121,7 +121,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(
-            Modify::new(Columns::single(0).and(Rows::one(0)).not(Cell::new(0, 0)))
+            Modify::new(Columns::one(0).and(Rows::one(0)).not(Cell::new(0, 0)))
                 .with(Format::content(|s| format!("(x) {s}"))),
         ),
     "   N   | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -135,7 +135,7 @@ test_table!(
     formatting_combination_inverse_test,
     Matrix::new(3, 3)
         .with(Style::psql())
-        .with(Modify::new(Columns::single(0).inverse()).with(Format::content(|s| format!("(x) {s}")))),
+        .with(Modify::new(Columns::one(0).inverse()).with(Format::content(|s| format!("(x) {s}")))),
     " N | (x) column 0 | (x) column 1 | (x) column 2 "
     "---+--------------+--------------+--------------"
     " 0 |   (x) 0-0    |   (x) 0-1    |   (x) 0-2    "

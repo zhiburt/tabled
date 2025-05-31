@@ -814,7 +814,7 @@ test_table!(
     Matrix::table(2, 2)
         .with(Style::empty())
         .with(Modify::new(Rows::one(1)).with(Border::filled('*').top('#')))
-        .with(Modify::new(Columns::single(1)).with(Border::empty())),
+        .with(Modify::new(Columns::one(1)).with(Border::empty())),
     "  N  column 0  column 1  "
     "*###          ##########*"
     "* 0    0-0       0-1    *"
@@ -2465,7 +2465,7 @@ test_table!(
     override_vertical_border_on_line,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::single(1))
+        .with(Modify::new(Columns::one(1))
             .with(LineChar::vertical(':', Offset::Start(0)))
     ),
     "| N : column 0 | column 1 | column 2 |"
@@ -2479,7 +2479,7 @@ test_table!(
     override_vertical_border_on_line_1,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::single(1))
+        .with(Modify::new(Columns::one(1))
             .with(LineChar::vertical(':', Offset::End(0)))
     ),
     "| N : column 0 | column 1 | column 2 |"
@@ -2494,7 +2494,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Modify::new(Rows::one(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
-        .with(Modify::new(Columns::single(1))
+        .with(Modify::new(Columns::one(1))
             .with(LineChar::vertical(':', Offset::Start(4)))
     ),
     "|     N     | column 0  | column 1  | column 2  |"
@@ -2515,7 +2515,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Modify::new(Rows::one(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
-        .with(Modify::new(Columns::single(1))
+        .with(Modify::new(Columns::one(1))
             .with(LineChar::vertical(':', Offset::End(4)))
     ),
     "|     N     | column 0  | column 1  | column 2  |"
@@ -2536,8 +2536,8 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Padding::new(1, 1, 1, 1))
-        .modify(Columns::single(1), LineChar::vertical(':', Offset::Start(0)))
-        .modify(Columns::single(1), LineChar::vertical(':', Offset::End(0))),
+        .modify(Columns::one(1), LineChar::vertical(':', Offset::Start(0)))
+        .modify(Columns::one(1), LineChar::vertical(':', Offset::End(0))),
     "|   :          |          |          |"
     "| N | column 0 | column 1 | column 2 |"
     "|   :          |          |          |"
@@ -2750,7 +2750,7 @@ test_table!(
 
 test_table!(
     line_text_vertical_2,
-    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::single(2))),
+    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::one(2))),
     "+---+---------------------+"
     "| N | column 0 T column 1 |"
     "+---+----------a----------+"
@@ -2762,7 +2762,7 @@ test_table!(
 
 test_table!(
     line_text_vertical_3,
-    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::single(2)).offset(2)),
+    Matrix::table(2, 2).with(LineText::new("-Tablex", Columns::one(2)).offset(2)),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+---------------------+"
@@ -2776,7 +2776,7 @@ test_table!(
     line_text_vertical_4,
     Matrix::table(2, 2)
         .with(Padding::new(0, 0, 2, 2))
-        .with(LineText::new("-Tablex", Columns::single(2)).offset(2).color(Color::BG_RED)),
+        .with(LineText::new("-Tablex", Columns::one(2)).offset(2).color(Color::BG_RED)),
     "+-+--------+--------+"
     "| |        |        |"
     "| |        \u{1b}[41m-\u{1b}[49m        |"

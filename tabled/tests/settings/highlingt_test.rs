@@ -73,8 +73,8 @@ test_table!(
     highlingt_column,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::new(Columns::single(0)).border(Border::filled('+')))
-        .with(Highlight::new(Columns::single(2)).border(Border::filled('*'))),
+        .with(Highlight::new(Columns::one(0)).border(Border::filled('+')))
+        .with(Highlight::new(Columns::one(2)).border(Border::filled('*'))),
     "+++++──────────************──────────┐"
     "+ N + column 0 * column 1 * column 2 │"
     "+───+──────────*──────────*──────────┤"
@@ -185,7 +185,7 @@ test_table!(
         .with(Style::modern())
         .with(Highlight::outline(Frame, '*'))
         .with(Highlight::outline(Cell::new(1, 1), '#'))
-        .with(Highlight::outline(Columns::single(3), 'x')),
+        .with(Highlight::outline(Columns::one(3), 'x')),
     "**************************xxxxxxxxxxxx"
     "* N │ column 0 │ column 1 x column 2 x"
     "*───############──────────x──────────x"
@@ -257,7 +257,7 @@ fn highlingt_complex_figures() {
     test_highlight!(
         Segment::all()
             .not(Segment::new(0..1, 1..3))
-            .not(Columns::single(0)),
+            .not(Columns::one(0)),
         static_table!(
             "┌───┬──────────┬──────────*++++++++++#"
             "│ N │ column 0 │ column 1 + column 2 +"
@@ -335,7 +335,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Columns::single(0).and(Columns::single(3)),
+        Columns::one(0).and(Columns::one(3)),
         static_table!(
             "*+++#──────────┬──────────*++++++++++#"
             "+ N + column 0 │ column 1 + column 2 +"

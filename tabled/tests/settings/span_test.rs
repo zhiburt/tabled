@@ -24,7 +24,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(2))),
+        .with(Modify::new(Columns::one(0)).with(Span::column(2))),
     " N | column 1 | column 2 "
     "-+-+----------+----------"
     " 0 | 0-1      | 0-2      "
@@ -50,7 +50,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(4))),
+        .with(Modify::new(Columns::one(0)).with(Span::column(4))),
     " N "
     "+++"
     " 0 "
@@ -406,7 +406,7 @@ fn span_column_exceeds_boundaries_test() {
     // todo: determine if it's the right behaviour
 
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(0)).with(Span::column(100)))
+        .with(Modify::new(Columns::one(0)).with(Span::column(100)))
         .to_string();
 }
 
@@ -1044,7 +1044,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new((1, 1)).with(Span::row(3)))
             .with(Style::modern())
-            .with(Highlight::outline(Columns::single(1), '*'))
+            .with(Highlight::outline(Columns::one(1), '*'))
             .to_string();
 
         assert_eq!(
