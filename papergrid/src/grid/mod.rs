@@ -8,5 +8,6 @@ pub mod iterable;
 #[cfg(feature = "std")]
 pub mod peekable;
 
+#[doc(hidden)]
 #[cfg(feature = "std")]
 pub mod writable;
