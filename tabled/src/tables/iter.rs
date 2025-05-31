@@ -186,7 +186,7 @@ impl<I> IterTable<I> {
         I::Cell: AsRef<str>,
     {
         let writer = UTF8Writer::new(writer);
-        self.fmt(writer).map_err(|err| io::Error::other(err))
+        self.fmt(writer).map_err(io::Error::other)
     }
 
     /// Format table into [fmt::Write]er.

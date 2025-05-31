@@ -222,7 +222,7 @@ impl<I, D> CompactTable<I, D> {
         W: std::io::Write,
     {
         let writer = crate::util::utf8_writer::UTF8Writer::new(writer);
-        self.fmt(writer).map_err(|err| std::io::Error::other(err))
+        self.fmt(writer).map_err(std::io::Error::other)
     }
 
     /// Build a string.
