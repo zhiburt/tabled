@@ -106,7 +106,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(
-            Modify::new(Columns::single(0).and(Rows::single(0)))
+            Modify::new(Columns::single(0).and(Rows::one(0)))
                 .with(Format::content(|s| format!("(x) {s}"))),
         ),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -121,7 +121,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(
-            Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell::new(0, 0)))
+            Modify::new(Columns::single(0).and(Rows::one(0)).not(Cell::new(0, 0)))
                 .with(Format::content(|s| format!("(x) {s}"))),
         ),
     "   N   | (x) column 0 | (x) column 1 | (x) column 2 "

@@ -56,8 +56,8 @@ test_table!(
     highlingt_row,
     Matrix::new(3, 3)
         .with(Style::modern())
-        .with(Highlight::outline(Rows::single(0), '+'))
-        .with(Highlight::outline(Rows::single(3), '*')),
+        .with(Highlight::outline(Rows::one(0), '+'))
+        .with(Highlight::outline(Rows::one(3), '*')),
     "++++++++++++++++++++++++++++++++++++++"
     "+ N │ column 0 │ column 1 │ column 2 +"
     "++++++++++++++++++++++++++++++++++++++"
@@ -320,7 +320,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Rows::single(0).and(Rows::single(3)),
+        Rows::one(0).and(Rows::one(3)),
         static_table!(
             "*++++++++++++++++++++++++++++++++++++#"
             "+ N │ column 0 │ column 1 │ column 2 +"
@@ -365,7 +365,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Rows::single(0)
+        Rows::one(0)
             .and(Cell::new(1, 1).and(Cell::new(1, 2)))
             .and(Cell::new(2, 3)),
         static_table!(

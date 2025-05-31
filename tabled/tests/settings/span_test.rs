@@ -598,7 +598,7 @@ mod row {
                 .clone()
                 .with(Style::ascii())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(2)))
                 .to_string();
 
             assert_eq!(
@@ -618,7 +618,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(2)))
                 .to_string();
 
             assert_eq!(
@@ -653,7 +653,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(4)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(4)))
                 .to_string();
 
             assert_eq!(table, " N + column 0 + column 1 + column 2 ");
