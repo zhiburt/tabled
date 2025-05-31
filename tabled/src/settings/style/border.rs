@@ -31,9 +31,9 @@ use crate::{
 /// ```rust,no_run
 /// # use tabled::{Table, settings::{style::{Style, Border}, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Style::ascii())
-///     .modify(Rows::single(0), Border::new().top('x'));
+/// let mut table = Table::new(&data);
+/// table.with(Style::ascii());
+/// table.modify(Rows::one(0), Border::new().top('x'));
 /// ```
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Border<T, B, L, R> {

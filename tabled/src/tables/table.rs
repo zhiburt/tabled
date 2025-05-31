@@ -497,7 +497,7 @@ impl Table {
     ///
     /// let mut table = Table::new(data);
     /// table.modify(Columns::first(), Alignment::right());
-    /// table.modify(Columns::single(1), Alignment::center());
+    /// table.modify(Columns::one(1), Alignment::center());
     ///
     /// assert_table!(
     ///     table,

@@ -1100,7 +1100,7 @@ You can remove certain rows or columns from the table by `Remove`.
 use tabled::settings::{object::{Columns, Rows}, Remove};
 
 table.with(Remove::row(Rows::first()));
-table.with(Remove::column(Columns::single(2)));
+table.with(Remove::column(Columns::one(2)));
 ```
 
 If the above example be applied for a first example in a file it would look like this.
@@ -1279,7 +1279,7 @@ let data = vec![["A", "B", "C"], ["D", "E", "F"]];
 let mut table = Table::new(data);
 table.with(Style::modern());
 table.with(
-    Highlight::new(Rows::first().and(Columns::single(2).and((1, 1))))
+    Highlight::new(Rows::first().and(Columns::one(2)).and((1, 1)))
         .border(Border::filled('*')),
 );
 
@@ -1990,8 +1990,8 @@ use tabled::{format::Format, object::Columns, Style, Table};
 let mut table = Table::new(&data);
 table
     .with(Style::psql())
-    .modify(Columns::single(0), Color::FG_RED)
-    .modify(Columns::single(1), Color::FG_BLUE)
+    .modify(Columns::one(0), Color::FG_RED)
+    .modify(Columns::one(1), Color::FG_BLUE)
     .modify(Columns::new(2..), Color::FG_GREEN);
 ```
 
@@ -2084,7 +2084,7 @@ You can apply settings to a subgroup of cells using `and` and `not` methods for 
 use tabled::settings::object::{Object, Segment, Cell, Rows, Columns};
 Segment::all().not(Rows::first()); // select all cells except header.
 Columns::first().and(Columns::last()); // select cells from first and last columns.
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
+Rows::first().and(Columns::one(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
 ```
 
 Also you can target a column via its name using `ByColumnName`.

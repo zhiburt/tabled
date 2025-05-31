@@ -77,7 +77,7 @@ impl Format {
     /// ];
     ///
     /// let table = Table::new(&data)
-    ///                .modify(Rows::single(0), Format::positioned(|_, p| p.col.to_string()))
+    ///                .modify(Rows::one(0), Format::positioned(|_, p| p.col.to_string()))
     ///                .to_string();
     ///
     /// assert_eq!(

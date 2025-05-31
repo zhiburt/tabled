@@ -427,10 +427,10 @@ test_table!(
 test_table!(
     border_text_colored,
     Matrix::table(2, 2)
-        .with(LineText::new("-Table", Rows::single(1)))
-        .with(LineText::new("-Table213123", Rows::single(2)))
-        .modify(Rows::single(1), BorderColor::new().bottom(Color::FG_RED))
-        .modify(Rows::single(2), BorderColor::new().bottom(Color::FG_BLUE | Color::BG_GREEN)),
+        .with(LineText::new("-Table", Rows::one(1)))
+        .with(LineText::new("-Table213123", Rows::one(2)))
+        .modify(Rows::one(1), BorderColor::new().bottom(Color::FG_RED))
+        .modify(Rows::one(2), BorderColor::new().bottom(Color::FG_BLUE | Color::BG_GREEN)),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "-Table---------+----------+"
@@ -2161,10 +2161,10 @@ fn border_colored_test() {
     let table = Matrix::table(2, 2)
         .with(Style::ascii())
         .modify(
-            Rows::single(1),
+            Rows::one(1),
             BorderColor::filled(Color::FG_BLUE).top(Color::rgb_fg(12, 220, 100)),
         )
-        .modify(Rows::single(1), Border::filled('*').top('#'))
+        .modify(Rows::one(1), Border::filled('*').top('#'))
         .to_string();
 
     assert_eq!(
@@ -2196,10 +2196,10 @@ fn border_colored_test() {
     let table = Matrix::table(2, 2)
         .with(Style::empty())
         .modify(
-            Rows::single(1),
+            Rows::one(1),
             BorderColor::filled(Color::FG_BLUE).top(Color::rgb_fg(12, 220, 100)),
         )
-        .modify(Rows::single(1), Border::filled('*').top('#'))
+        .modify(Rows::one(1), Border::filled('*').top('#'))
         .to_string();
 
     assert_eq!(
