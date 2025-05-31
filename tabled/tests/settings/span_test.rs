@@ -17,7 +17,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     span_column_test_0,

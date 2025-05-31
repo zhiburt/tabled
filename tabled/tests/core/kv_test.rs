@@ -9,7 +9,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 mod default_types {
     use super::*;

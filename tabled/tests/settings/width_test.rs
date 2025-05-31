@@ -14,7 +14,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
 use ::{ansi_str::AnsiStr, tabled::settings::Color};

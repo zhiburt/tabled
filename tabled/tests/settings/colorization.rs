@@ -10,7 +10,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     chess_2x3,

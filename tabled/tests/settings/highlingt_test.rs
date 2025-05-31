@@ -11,7 +11,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     highlingt_object_exceeds_boundaries,

@@ -11,7 +11,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[test]
 fn test_rotate() {

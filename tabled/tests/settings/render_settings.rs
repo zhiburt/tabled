@@ -10,7 +10,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::{Matrix, MatrixList};
+use crate::util::{Matrix, MatrixList};
 
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;
