@@ -42,3 +42,72 @@ where
         T::line_width(self, line)
     }
 }
+
+impl Cell for str {
+    fn text(&self) -> &str {
+        self
+    }
+
+    fn line(&self, line: usize) -> &str {
+        self.lines().nth(line).expect("must be found")
+    }
+
+    fn count_lines(&self) -> usize {
+        self.lines().count()
+    }
+
+    fn width(&self) -> usize {
+        crate::util::string::get_text_width(self)
+    }
+
+    fn line_width(&self, line: usize) -> usize {
+        let line = self.line(line);
+        crate::util::string::get_line_width(line)
+    }
+}
+
+impl Cell for &str {
+    fn text(&self) -> &str {
+        self
+    }
+
+    fn line(&self, line: usize) -> &str {
+        self.lines().nth(line).expect("must be found")
+    }
+
+    fn count_lines(&self) -> usize {
+        self.lines().count()
+    }
+
+    fn width(&self) -> usize {
+        crate::util::string::get_text_width(self)
+    }
+
+    fn line_width(&self, line: usize) -> usize {
+        let line = self.line(line);
+        crate::util::string::get_line_width(line)
+    }
+}
+
+impl Cell for String {
+    fn text(&self) -> &str {
+        self
+    }
+
+    fn line(&self, line: usize) -> &str {
+        self.lines().nth(line).expect("must be found")
+    }
+
+    fn count_lines(&self) -> usize {
+        self.lines().count()
+    }
+
+    fn width(&self) -> usize {
+        crate::util::string::get_text_width(self)
+    }
+
+    fn line_width(&self, line: usize) -> usize {
+        let line = self.line(line);
+        crate::util::string::get_line_width(line)
+    }
+}

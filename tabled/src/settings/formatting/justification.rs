@@ -67,8 +67,8 @@ use crate::{
 /// };
 ///
 /// let mut table = Table::new(&[("Hello", ""), ("", "World")]);
-/// table.with(Modify::new(Columns::single(0)).with(Justification::new('#')));
-/// table.with(Modify::new(Columns::single(1)).with(Justification::new('@')));
+/// table.with(Modify::new(Columns::one(0)).with(Justification::new('#')));
+/// table.with(Modify::new(Columns::one(1)).with(Justification::new('@')));
 ///
 /// assert_eq!(
 ///     table.to_string(),

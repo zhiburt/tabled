@@ -4,7 +4,7 @@ use std::iter::FromIterator;
 
 use tabled::{assert::test_table, tables::IterTable};
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     iter_table,

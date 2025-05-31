@@ -1,30 +1,20 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use std::hint::black_box;
 
-use tabled::{
-    settings::{object::Segment, Alignment, Modify, Padding, Style},
-    Table, Tabled,
-};
+use criterion::{criterion_group, criterion_main, Criterion};
+
+use tabled::{Table, Tabled};
 
 macro_rules! table_bench {
     ($name:ident, $table:expr, $( $modificator:expr ),*) => {
         pub fn $name(c: &mut Criterion) {
-            let mut group = c.benchmark_group(stringify!($name));
             for size in [1, 4, 8, 64, 512, 1024] {
-                group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
-                    let entry = $table;
-                    let data = vec![entry; size];
+                let entry = $table;
+                let data = vec![&entry; size];
+                let table = Table::new(data);
 
-                    #[allow(unused_mut)]
-                    let mut table = Table::new(data);
-
-                    $(table.with($modificator);)*
-
-                    b.iter(|| {
-                        let _ = black_box(table.to_string());
-                    });
-                });
+                let id = format!("{}_to_string_{}", stringify!($name), size);
+                c.bench_function(&id, |b| b.iter(|| black_box(&table).to_string()));
             }
-            group.finish();
         }
     };
     ($name:ident, $table:expr) => {
@@ -47,17 +37,7 @@ table_bench!(small_table, {
     }
 });
 
-table_bench!(
-    small_table_stylish,
-    [0; 3],
-    Style::modern(),
-    Modify::new(Segment::all())
-        .with(Alignment::left())
-        .with(Alignment::top())
-        .with(Padding::new(1, 1, 0, 2))
-);
+table_bench!(big_table, [0; 100]);
 
-table_bench!(big_table, { [0; 16] });
-
-criterion_group!(benches, small_table, big_table, small_table_stylish);
+criterion_group!(benches, small_table, big_table);
 criterion_main!(benches);

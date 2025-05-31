@@ -32,7 +32,7 @@
 //! table.modify(Locator::column("link"), Alignment::right());
 //! table.modify(Locator::content("todo"), "todo,1");
 //! table.modify(
-//!     Columns::single(1).intersect(Locator::by(|text| text.contains("todo"))),
+//!     Columns::one(1).intersect(Locator::by(|text| text.contains("todo"))),
 //!     Padding::new(4, 0, 0, 0),
 //! );
 //!

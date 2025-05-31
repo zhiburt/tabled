@@ -166,19 +166,19 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
 
     #[rustfmt::skip]
     let formatting_actions: Vec<Action> = vec![
-        action(|t| { t.modify(Columns::single(0), Alignment::right()); }),
-        action(|t| { t.modify(Columns::single(1), Alignment::right()); }),
-        action(|t| { t.modify(Columns::single(2), Alignment::right()); }),
-        action(|t| { t.modify(Columns::single(3), Alignment::right()); }),
-        action(|t| { t.modify(Columns::single(4), Alignment::right()); }),
-        action(|t| { t.modify(Columns::single(5), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(0), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(1), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(2), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(3), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(4), Alignment::right()); }),
+        action(|t| { t.modify(Columns::one(5), Alignment::right()); }),
         //
-        action(|t| { t.modify(Columns::single(0), Alignment::left()); }),
-        action(|t| { t.modify(Columns::single(1), Alignment::left()); }),
-        action(|t| { t.modify(Columns::single(2), Alignment::left()); }),
-        action(|t| { t.modify(Columns::single(3), Alignment::left()); }),
-        action(|t| { t.modify(Columns::single(4), Alignment::left()); }),
-        action(|t| { t.modify(Columns::single(5), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(0), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(1), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(2), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(3), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(4), Alignment::left()); }),
+        action(|t| { t.modify(Columns::one(5), Alignment::left()); }),
     ];
 
     #[rustfmt::skip]
@@ -201,8 +201,8 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
             t.modify(Rows::first(), Alignment::center());
         }),
         action(|t| {
-            t.with(Highlight::new(Rows::single(2)).color(BorderColor::default().top(Color::FG_YELLOW)));
-            t.with(Highlight::new(Rows::single(2)).border(Border::new().top('━')));
+            t.with(Highlight::new(Rows::one(2)).color(BorderColor::default().top(Color::FG_YELLOW)));
+            t.with(Highlight::new(Rows::one(2)).border(Border::new().top('━')));
         }),
         action(|t| {
             t.with(Highlight::new(Rows::last()).color(BorderColor::default().top(Color::FG_YELLOW)));
@@ -216,11 +216,11 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
 
     #[rustfmt::skip]
     let colorization_actions: Vec<Action> = vec![
-        action(|t| { t.modify(Rows::single(1).and(Rows::last()).intersect(Columns::single(0)), Format::content(|s| s.white().bold().to_string())); }),
-        action(|t| { t.modify(Rows::single(1).and(Rows::last()).intersect(Columns::single(1)), Format::content(|s| s.white().bold().to_string())); }),
-        action(|t| { t.modify(Rows::single(1).and(Rows::last()).intersect(Columns::single(2)), Format::content(|s| s.red().bold().to_string())); }),
-        action(|t| { t.modify(Rows::single(1).and(Rows::last()).intersect(Columns::single(3)), Format::content(|s| s.green().bold().to_string())); }),
-        action(|t| { t.modify(Rows::single(1).and(Rows::last()).intersect(Columns::single(4)), Format::content(|s| s.blue().bold().to_string())); }),
+        action(|t| { t.modify(Rows::one(1).and(Rows::last()).intersect(Columns::one(0)), Format::content(|s| s.white().bold().to_string())); }),
+        action(|t| { t.modify(Rows::one(1).and(Rows::last()).intersect(Columns::one(1)), Format::content(|s| s.white().bold().to_string())); }),
+        action(|t| { t.modify(Rows::one(1).and(Rows::last()).intersect(Columns::one(2)), Format::content(|s| s.red().bold().to_string())); }),
+        action(|t| { t.modify(Rows::one(1).and(Rows::last()).intersect(Columns::one(3)), Format::content(|s| s.green().bold().to_string())); }),
+        action(|t| { t.modify(Rows::one(1).and(Rows::last()).intersect(Columns::one(4)), Format::content(|s| s.blue().bold().to_string())); }),
     ];
 
     #[rustfmt::skip]

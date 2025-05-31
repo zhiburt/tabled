@@ -1,8 +1,10 @@
 //! This module contains [`Justify`] structure, used to set an exact width to each column.
 
 use crate::{
-    grid::config::ColoredConfig,
-    grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
+    grid::{
+        config::{ColoredConfig, Entity},
+        records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
+    },
     settings::{
         measurement::{Max, Measurement, Min},
         CellOption, TableOption, Width,
@@ -88,10 +90,13 @@ where
 
         for row in 0..count_rows {
             for col in 0..count_columns {
-                let pos = (row, col).into();
+                let pos = Entity::Cell(row, col);
                 CellOption::change(Width::increase(width), records, cfg, pos);
                 CellOption::change(Width::truncate(width), records, cfg, pos);
             }
         }
     }
 }
+
+// TODO: explore whether it's actually usefull
+//       Maybe rework it?

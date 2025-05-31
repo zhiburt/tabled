@@ -1,6 +1,6 @@
 use crate::{
     grid::{
-        config::ColoredConfig,
+        config::{ColoredConfig, Entity},
         dimension::CompleteDimension,
         records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
@@ -45,7 +45,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension<'_>> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimension> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -53,7 +53,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -85,6 +85,12 @@ where
         }
 
         dims.set_heights(heights);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE: we set correct heights but we don't change widths
+        //       so it must be normal to not have recalculations
+        None
     }
 }
 

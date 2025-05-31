@@ -7,7 +7,7 @@ use tabled::{
     tables::{PoolTable, TableValue},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
 use tabled::{grid::ansi::ANSIStr, settings::PaddingColor};

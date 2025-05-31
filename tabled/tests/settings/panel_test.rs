@@ -14,7 +14,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     panel_has_no_style_by_default,

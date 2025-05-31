@@ -6,7 +6,7 @@ use tabled::{
     settings::{Concat, Style},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     join_vertical_0,

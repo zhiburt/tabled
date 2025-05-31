@@ -36,7 +36,7 @@ impl Rows<()> {
     /// Returns a new instance of [`Rows`] with a single row.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub const fn single(index: usize) -> Row {
+    pub const fn one(index: usize) -> Row {
         Row { index }
     }
 

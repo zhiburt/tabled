@@ -29,9 +29,9 @@ use crate::{
 /// ```rust,no_run
 /// # use tabled::{Table, settings::{style::{Style, BorderColor}, object::Rows, Color}};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Style::ascii())
-///     .modify(Rows::single(0), BorderColor::new().top(Color::FG_RED));
+/// let mut table = Table::new(&data);
+/// table.with(Style::ascii());
+/// table.modify(Rows::one(0), BorderColor::new().top(Color::FG_RED));
 /// ```
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BorderColor {

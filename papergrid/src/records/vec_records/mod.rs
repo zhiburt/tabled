@@ -15,10 +15,11 @@ pub use cell::Cell;
 pub use text::{StrWithWidth, Text};
 
 /// A [Records] implementation based on allocated buffers.
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VecRecords<T> {
     data: Vec<Vec<T>>,
-    shape: (usize, usize),
+    count_rows: usize,
+    count_cols: usize,
 }
 
 impl<T> VecRecords<T> {
@@ -26,11 +27,19 @@ impl<T> VecRecords<T> {
     ///
     /// It assumes that data vector has all rows has the same length().
     pub fn new(data: Vec<Vec<T>>) -> Self {
-        let count_columns = data.first().map_or(0, |row| row.len());
+        let count_cols = data.first().map_or(0, |row| row.len());
         let count_rows = data.len();
-        let shape = (count_rows, count_columns);
 
-        Self { data, shape }
+        Self::with_size(data, count_rows, count_cols)
+    }
+
+    /// Creates new [`VecRecords`] structure.
+    pub fn with_size(data: Vec<Vec<T>>, count_rows: usize, count_cols: usize) -> Self {
+        Self {
+            data,
+            count_cols,
+            count_rows,
+        }
     }
 }
 
@@ -42,11 +51,11 @@ impl<T> Records for VecRecords<T> {
     }
 
     fn count_columns(&self) -> usize {
-        self.shape.1
+        self.count_cols
     }
 
     fn hint_count_rows(&self) -> Option<usize> {
-        Some(self.shape.0)
+        Some(self.count_rows)
     }
 }
 
@@ -58,17 +67,17 @@ impl<'a, T> Records for &'a VecRecords<T> {
     }
 
     fn count_columns(&self) -> usize {
-        self.shape.1
+        self.count_cols
     }
 
     fn hint_count_rows(&self) -> Option<usize> {
-        Some(self.shape.0)
+        Some(self.count_rows)
     }
 }
 
 impl<T> ExactRecords for VecRecords<T> {
     fn count_rows(&self) -> usize {
-        self.shape.0
+        self.count_rows
     }
 }
 
@@ -114,5 +123,11 @@ impl<T> DerefMut for VecRecords<T> {
 impl<T> From<VecRecords<T>> for Vec<Vec<T>> {
     fn from(records: VecRecords<T>) -> Self {
         records.data
+    }
+}
+
+impl<T> From<Vec<Vec<T>>> for VecRecords<T> {
+    fn from(records: Vec<Vec<T>>) -> Self {
+        Self::new(records)
     }
 }

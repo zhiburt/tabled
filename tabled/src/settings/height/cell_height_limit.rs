@@ -72,16 +72,20 @@ where
     }
 }
 
-impl<R, W> TableOption<R, ColoredConfig, CompleteDimension<'_>> for CellHeightLimit<W>
+impl<R, W> TableOption<R, ColoredConfig, CompleteDimension> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        TableHeightLimit::new(0).hint_change()
     }
 }
 

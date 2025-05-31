@@ -23,6 +23,14 @@ impl ColoredConfig {
         }
     }
 
+    /// Set a list of colors.
+    pub fn with_colors(config: SpannedConfig, colors: EntityMap<ANSIBuf>) -> Self {
+        Self {
+            colors: ColorMap(Some(colors)),
+            config,
+        }
+    }
+
     /// Set a color for a given cell.
     ///
     /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
@@ -42,10 +50,9 @@ impl ColoredConfig {
         self
     }
 
-    /// Set a list of colors.
-    pub fn set_colors(&mut self, colors: EntityMap<ANSIBuf>) -> &mut Self {
-        self.colors = ColorMap(Some(colors));
-        self
+    /// Get color.
+    pub fn get_color(&mut self, pos: Position) -> Option<&ANSIBuf> {
+        self.colors.0.as_ref().map(|colors| colors.get(pos))
     }
 
     /// Remove a color for a given cell.

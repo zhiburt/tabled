@@ -4,9 +4,10 @@
 use tabled::{
     assert::test_table,
     settings::{formatting::Justification, object::Columns, Color, Modify},
+    Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     justification,
@@ -39,9 +40,9 @@ test_table!(
 test_table!(
     justification_columns,
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(1)).with(Justification::new('#')))
-        .with(Modify::new(Columns::single(2)).with(Justification::new('@')))
-        .with(Modify::new(Columns::single(3)).with(Justification::new('$'))),
+        .with(Modify::new(Columns::one(1)).with(Justification::new('#')))
+        .with(Modify::new(Columns::one(2)).with(Justification::new('@')))
+        .with(Modify::new(Columns::one(3)).with(Justification::new('$'))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -56,9 +57,9 @@ test_table!(
 test_table!(
     justification_color_columns,
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(1)).with(Justification::new('#').color(Color::BG_BLUE)))
-        .with(Modify::new(Columns::single(2)).with(Justification::new('@').color(Color::BG_RED)))
-        .with(Modify::new(Columns::single(3)).with(Justification::new('$').color(Color::BG_WHITE))),
+        .with(Modify::new(Columns::one(1)).with(Justification::new('#').color(Color::BG_BLUE)))
+        .with(Modify::new(Columns::one(2)).with(Justification::new('@').color(Color::BG_RED)))
+        .with(Modify::new(Columns::one(3)).with(Justification::new('$').color(Color::BG_WHITE))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -68,4 +69,22 @@ test_table!(
     "+---+----------+----------+----------+"
     "| 2 | \u{1b}[44m##\u{1b}[49m2-0\u{1b}[44m###\u{1b}[49m | \u{1b}[41m@@\u{1b}[49m2-1\u{1b}[41m@@@\u{1b}[49m | \u{1b}[47m$$\u{1b}[49m2-2\u{1b}[47m$$$\u{1b}[49m |"
     "+---+----------+----------+----------+"
+);
+
+test_table!(
+    justification_multiline,
+    Table::new(["Hello\nW\nor\nld", "yes", "no"])
+        .with(Justification::new('*')),
+    "+-------+"
+    "| &str* |"
+    "+-------+"
+    "| Hello |"
+    "| W**** |"
+    "| or*** |"
+    "| ld*** |"
+    "+-------+"
+    "| yes** |"
+    "+-------+"
+    "| no*** |"
+    "+-------+"
 );

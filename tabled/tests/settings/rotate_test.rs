@@ -11,7 +11,7 @@ use tabled::{
     },
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[test]
 fn test_rotate() {
@@ -139,7 +139,7 @@ test_table!(
 test_table!(
     rotate_preserve_border_styles_test_0,
     Matrix::iter([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
-        .with(Highlight::new(Rows::single(0)).border(Border::new().top('*')))
+        .with(Highlight::new(Rows::one(0)).border(Border::new().top('*')))
         .with(Rotate::Left),
     "+*****************+-----+"
     "| i32 | 789 | 891 | 333 |"

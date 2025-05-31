@@ -3,7 +3,7 @@
 
 use tabled::{assert::test_table, grid::config::Offset, settings::Reverse};
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     test_0x0_reverse_rows,

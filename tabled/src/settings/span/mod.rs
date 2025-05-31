@@ -6,8 +6,8 @@
 //! ```rust,no_run
 //! # use tabled::{Table, settings::{Style, Span, Modify, object::Columns}};
 //! # let data: Vec<&'static str> = Vec::new();
-//! let table = Table::new(&data)
-//!     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
+//! let mut table = Table::new(&data);
+//! table.modify(Columns::one(0), Span::column(2));
 //! ```
 
 mod column;
@@ -20,27 +20,25 @@ pub use row::RowSpan;
 ///
 /// ```
 /// use tabled::{settings::{Span, Modify}, Table};
+/// use tabled::assert::assert_table;
 ///
 /// let data = [[1, 2, 3], [4, 5, 6]];
 ///
-/// let table = Table::new(data)
-///     .modify((0, 0), Span::row(2))
-///     .modify((0, 1), Span::column(2))
-///     .modify((2, 0), Span::column(1000))
-///     .to_string();
+/// let mut table = Table::new(data);
+/// table.modify((0, 0), Span::row(2));
+/// table.modify((0, 1), Span::column(2));
+/// table.modify((2, 0), Span::column(1000));
 ///
-/// assert_eq!(
+/// assert_table!(
 ///     table,
-///     concat!(
-///         "+---+---+---+\n",
-///         "| 0 | 1     |\n",
-///         "+   +---+---+\n",
-///         "|   | 2 | 3 |\n",
-///         "+---+---+---+\n",
-///         "| 4         |\n",
-///         "+---+---+---+",
-///     )
-/// )
+///     "+---+---+---+"
+///     "| 0 | 1     |"
+///     "+   +---+---+"
+///     "|   | 2 | 3 |"
+///     "+---+---+---+"
+///     "| 4         |"
+///     "+---+---+---+"
+/// );
 /// ```
 ///
 /// [`Table`]: crate::Table

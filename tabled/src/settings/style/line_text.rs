@@ -63,8 +63,8 @@ impl<Line> LineText<Line> {
     /// use tabled::{Table, settings::style::LineText, settings::object::Columns};
     ///
     /// let mut table = Table::new(["Hello World"]);
-    /// table.with(LineText::new("TABLE", Columns::single(0)));
-    /// table.with(LineText::new("TABLE", Columns::single(1)));
+    /// table.with(LineText::new("TABLE", Columns::one(0)));
+    /// table.with(LineText::new("TABLE", Columns::one(1)));
     ///
     /// assert_eq!(
     ///     table.to_string(),

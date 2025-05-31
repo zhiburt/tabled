@@ -9,7 +9,7 @@ use tabled::{
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {

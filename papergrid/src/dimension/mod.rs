@@ -38,3 +38,12 @@ pub trait Estimate<R, C> {
     /// Estimates a metric.
     fn estimate(&mut self, records: R, config: &C);
 }
+
+impl<T, R, C> Estimate<R, C> for &mut T
+where
+    T: Estimate<R, C>,
+{
+    fn estimate(&mut self, records: R, config: &C) {
+        T::estimate(self, records, config)
+    }
+}

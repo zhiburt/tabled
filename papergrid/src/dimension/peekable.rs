@@ -6,12 +6,10 @@ use std::{
 };
 
 use crate::{
-    config::Position,
+    config::{spanned::SpannedConfig, Position},
     dimension::{Dimension, Estimate},
     records::{vec_records::Cell, IntoRecords, Records},
 };
-
-use crate::config::spanned::SpannedConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height for [`Records`] which used [`Cell`] cells.
 ///

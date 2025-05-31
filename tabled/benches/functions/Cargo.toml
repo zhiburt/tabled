@@ -10,9 +10,8 @@ edition = "2021"
 [dependencies]
 
 [dev-dependencies]
-criterion = { version = "0.4.0", features = ["html_reports"] }
-tabled = { path = "../../..", features = ["ansi"] }
-tabled_master = { version = "0.10.0", features = ["ansi"], package = "tabled"}
+criterion = { version = "0.6.0", features = ["html_reports"] }
+tabled = { path = "../..", features = ["ansi"] }
 
 [[bench]]
 name = "strings"

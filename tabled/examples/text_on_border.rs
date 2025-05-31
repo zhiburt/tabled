@@ -27,7 +27,7 @@ fn main() {
     table
         .with(theme)
         .with(LineText::new("Columns", Rows::first()).offset(1))
-        .with(LineText::new("Numbers", Rows::single(1)).offset(1))
+        .with(LineText::new("Numbers", Rows::one(1)).offset(1))
         .with(LineText::new("end", Rows::last() + 1).offset(1))
         .with(LineText::new("Data", Columns::last() + 1).align(Alignment::center_vertical()));
 
