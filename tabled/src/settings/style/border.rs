@@ -1,13 +1,13 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::config::{Border as GridBorder, Position},
+    grid::config::Border as GridBorder,
     settings::style::{On, Style},
 };
 
 #[cfg(feature = "std")]
 use crate::{
-    grid::config::{ColoredConfig, Entity},
+    grid::config::{ColoredConfig, Entity, Position},
     grid::records::{ExactRecords, Records},
     settings::{CellOption, TableOption},
 };
