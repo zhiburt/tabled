@@ -116,7 +116,7 @@ jobs:
       - run: cargo check --manifest-path=./tabled_derive/Cargo.toml --all-targets
 
   check-tabled-wasm:
-    name: Check tabled
+    name: Check tabled (WASM)
     strategy:
       fail-fast: false
       matrix:
