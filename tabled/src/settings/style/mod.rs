@@ -41,7 +41,7 @@
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(LineText::new("Santa", Rows::single(1)))
+//!     .with(LineText::new("Santa", Rows::one(1)))
 //!     .to_string();
 //!
 //! assert_eq!(

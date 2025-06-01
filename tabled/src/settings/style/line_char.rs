@@ -20,7 +20,7 @@ use crate::{
 /// table
 ///     .with(Style::markdown())
 ///     .modify(
-///         Rows::single(1),
+///         Rows::one(1),
 ///         (LineChar::horizontal(':', Offset::Start(0)), LineChar::horizontal(':', Offset::End(0))),
 ///     )
 ///     .modify((1, 0).and((1, 1)), LineChar::vertical('#', Offset::Start(0)));

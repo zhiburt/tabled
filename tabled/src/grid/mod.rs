@@ -22,3 +22,8 @@ pub use papergrid::grid::iterable::IterGrid;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use papergrid::grid::peekable::PeekableGrid;
+
+#[doc(hidden)]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub use papergrid::grid::writable::{Typewriter, WritableGrid};

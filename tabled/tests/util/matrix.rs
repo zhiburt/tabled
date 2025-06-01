@@ -1,3 +1,6 @@
+// TODO: simplify this module it's too complex for what it is
+#![allow(unused_imports, dead_code)]
+
 use std::{
     fmt::{self, Display},
     iter::FromIterator,
@@ -13,6 +16,8 @@ use tabled::{
 };
 
 use super::matrix_list::MatrixList;
+
+// TODO: Remove the structure and make it a construction factory instead for original Table.
 
 /// A helper table factory.
 ///
@@ -93,7 +98,7 @@ impl Matrix {
 
     pub fn with<O>(self, opt: O) -> Table
     where
-        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
+        O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension>,
     {
         let mut table = self.to_table();
         table.with(opt);
@@ -155,3 +160,89 @@ fn create_list<const ROWS: usize, const COLUMNS: usize>() -> Vec<MatrixList<COLU
 
     arr
 }
+
+// // TODO: simplify this module it's too complex for what it is
+// #![allow(unused_imports, dead_code)]
+
+// // todo: remame mod to util.
+
+// use std::{
+//     fmt::{self, Display},
+//     iter::FromIterator,
+//     string::ToString,
+// };
+
+// use tabled::{
+//     builder::Builder,
+//     grid::{
+//         config::ColoredConfig,
+//         dimension::CompleteDimension,
+//         records::vec_records::{Text, VecRecords},
+//     },
+//     settings::{object::Segment, Alignment, Modify, TableOption},
+//     Table, Tabled,
+// };
+
+// /// A helper table factory.
+// ///
+// /// It uses center alignment by default, because it's more complex and may spot more issues.
+// #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+// pub struct Matrix;
+
+// impl Matrix {
+//     pub fn empty() -> Table {
+//         Builder::new().build()
+//     }
+
+//     pub fn noframe(rows: usize, columns: usize) -> Table {
+//         let data = create_matrix(rows, columns, false, false);
+//         Builder::from(data).build()
+//     }
+
+//     pub fn with_index(rows: usize, columns: usize) -> Table {
+//         let data = create_matrix(rows, columns, false, true);
+//         Builder::from(data).build()
+//     }
+
+//     pub fn with_head(rows: usize, columns: usize) -> Table {
+//         let data = create_matrix(rows, columns, false, false);
+//         Builder::from(data).build()
+//     }
+
+//     pub fn new(rows: usize, columns: usize) -> Table {
+//         let data = create_matrix(rows, columns, true, true);
+//         Builder::from(data).build()
+//     }
+// }
+
+// fn create_matrix(rows: usize, columns: usize, head: bool, index: bool) -> Vec<Vec<Text<String>>> {
+//     let mut arr = Vec::with_capacity(rows + head as usize);
+
+//     if head {
+//         let mut data = Vec::with_capacity(columns + index as usize);
+//         if index {
+//             let text = Text::new(format!("N"));
+//             data.push(text);
+//         }
+
+//         data.extend((0..columns).map(|n| Text::new(format!("column {n}"))));
+//     }
+
+//     for row in 0..rows {
+//         let mut data = Vec::with_capacity(columns + index as usize);
+
+//         if index {
+//             let text = Text::new(format!("{row}"));
+//             data.push(text);
+//         }
+
+//         for column in 0..columns {
+//             let text = Text::new(format!("{row}-{column}"));
+//             data.push(text);
+//         }
+
+//         arr.push(data);
+//     }
+
+//     arr
+// }

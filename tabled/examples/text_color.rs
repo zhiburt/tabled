@@ -30,11 +30,11 @@ fn main() {
         .modify(Rows::first(), Color::BG_BLUE)
         .modify(Locator::content("false"), Color::BG_RED)
         .modify(
-            Locator::value(Columns::single(1).not(Rows::first()), |new, old| new > old),
+            Locator::value(Columns::one(1).not(Rows::first()), |new, old| new > old),
             Color::BG_GREEN,
         )
         .modify(
-            Locator::value(Columns::single(1).not(Rows::first()), |new, old| new < old),
+            Locator::value(Columns::one(1).not(Rows::first()), |new, old| new < old),
             Color::BG_GREEN,
         );
 

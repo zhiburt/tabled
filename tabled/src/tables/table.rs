@@ -87,7 +87,7 @@ use crate::{
 pub struct Table {
     records: VecRecords<Text<String>>,
     config: ColoredConfig,
-    dimension: CompleteDimension<'static>,
+    dimension: CompleteDimension,
 }
 
 impl Table {
@@ -125,6 +125,46 @@ impl Table {
     /// );
     /// ```
     ///
+    /// ## Don't hesitate to use iterators.
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     person: String,
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     Relationship { person: String::from("Clara"), love: true },
+    ///     Relationship { person: String::from("Greg"), love: false },
+    /// ];
+    ///
+    /// // Maybe don't love but don't hate :)
+    /// let iter = list.into_iter()
+    ///     .map(|mut rel| {
+    ///         if !rel.love {
+    ///             rel.love = true;
+    ///         }
+    ///
+    ///         rel
+    ///     });
+    ///
+    /// let table = Table::new(iter);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------+------+"
+    ///     "| person | love |"
+    ///     "+--------+------+"
+    ///     "| Clara  | true |"
+    ///     "+--------+------+"
+    ///     "| Greg   | true |"
+    ///     "+--------+------+"
+    /// );
+    /// ```
+    ///
     /// ## Notice that you can pass tuples.
     ///
     /// ```
@@ -151,30 +191,6 @@ impl Table {
     ///     "+------+-------+"
     ///     "|      | false |"
     ///     "+------+-------+"
-    /// );
-    /// ```
-    ///
-    /// ## Notice that you can pass const arrays as well.
-    ///
-    /// ```
-    /// use tabled::{Table, assert::assert_table};
-    ///
-    /// let list = vec![
-    ///     ["Kate", "+", "+", "+", "-"],
-    ///     ["", "-", "-", "-", "-"],
-    /// ];
-    ///
-    /// let table = Table::new(list);
-    ///
-    /// assert_table!(
-    ///     table,
-    ///     "+------+---+---+---+---+"
-    ///     "| 0    | 1 | 2 | 3 | 4 |"
-    ///     "+------+---+---+---+---+"
-    ///     "| Kate | + | + | + | - |"
-    ///     "+------+---+---+---+---+"
-    ///     "|      | - | - | - | - |"
-    ///     "+------+---+---+---+---+"
     /// );
     /// ```
     ///
@@ -226,11 +242,144 @@ impl Table {
         }
 
         let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
+        }
+    }
+
+    /// Creates a Table instance, from a list of [`Tabled`] values.
+    ///
+    /// It's an optimized version of [`Table::new`].
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     person: String,
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     Relationship { person: String::from("Clara"), love: true },
+    ///     Relationship { person: String::from("Greg"), love: false },
+    /// ];
+    ///
+    /// let table = Table::with_capacity(&list, list.len());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------+-------+"
+    ///     "| person | love  |"
+    ///     "+--------+-------+"
+    ///     "| Clara  | true  |"
+    ///     "+--------+-------+"
+    ///     "| Greg   | false |"
+    ///     "+--------+-------+"
+    /// );
+    /// ```
+    pub fn with_capacity<I, T>(iter: I, count_rows: usize) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Tabled,
+    {
+        let mut header = Vec::with_capacity(T::LENGTH);
+        for text in T::headers() {
+            let text = text.into_owned();
+            let cell = Text::new(text);
+            header.push(cell);
+        }
+
+        let mut records = Vec::with_capacity(count_rows + 1);
+        records.push(header);
+
+        for row in iter.into_iter() {
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                let text = text.into_owned();
+                let cell = Text::new(text);
+
+                list.push(cell);
+            }
+
+            records.push(list);
+        }
+
+        let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
+
+        Self {
+            records,
+            config,
+            dimension,
+        }
+    }
+
+    /// Creates a Table instance, from a list of [`Tabled`] values.
+    ///
+    /// Compared to [`Table::new`] it does not use a "header" (first line).
+    ///
+    /// If you use a reference iterator you'd better use [`FromIterator`] instead.
+    /// As it has a different lifetime constraints and make less copies therefore.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled, assert::assert_table};
+    ///
+    /// #[derive(Tabled)]
+    /// struct Relationship {
+    ///     love: bool
+    /// }
+    ///
+    /// let list = vec![
+    ///     ("Kate", Relationship { love: true }),
+    ///     ("", Relationship { love: false }),
+    /// ];
+    ///
+    /// let table = Table::nohead(list);
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+------+-------+"
+    ///     "| Kate | true  |"
+    ///     "+------+-------+"
+    ///     "|      | false |"
+    ///     "+------+-------+"
+    /// );
+    /// ```
+    pub fn nohead<I, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        T: Tabled,
+    {
+        let mut records = vec![];
+        for row in iter.into_iter() {
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                let text = text.into_owned();
+                let cell = Text::new(text);
+
+                list.push(cell);
+            }
+
+            records.push(list);
+        }
+
+        let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
+
+        Self {
+            records,
+            config,
+            dimension,
         }
     }
 
@@ -292,7 +441,7 @@ impl Table {
     /// );
     /// ```
     ///
-    /// A more complex example with a subtle style.
+    /// Next you'll find a more complex example with a subtle style.
     ///
     /// ```
     /// use tabled::{Table, Tabled, settings::Style};
@@ -366,11 +515,13 @@ impl Table {
         }
 
         let records = VecRecords::new(records);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
         }
     }
 
@@ -428,7 +579,7 @@ impl Table {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let mut builder = Builder::with_capacity(0, T::LENGTH);
+        let mut builder = Builder::with_capacity(1, T::LENGTH);
         builder.push_record(T::headers());
 
         for row in iter {
@@ -441,16 +592,37 @@ impl Table {
     /// It's a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::Style};
+    /// use tabled::assert::assert_table;
+    ///
+    /// let data = vec![
+    ///     ("number", "name"),
+    ///     ("285-324-7322", "Rosalia"),
+    ///     ("564.549.6468", "Mary"),
+    /// ];
+    ///
+    /// let mut table = Table::new(data);
+    /// table.with(Style::markdown());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "| &str         | &str    |"
+    ///     "|--------------|---------|"
+    ///     "| number       | name    |"
+    ///     "| 285-324-7322 | Rosalia |"
+    ///     "| 564.549.6468 | Mary    |"
+    /// );
+    /// ```
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        for<'a> O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'a>>,
+        O: TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension>,
     {
         let reastimation_hint = option.hint_change();
-        let mut dims = self.dimension.inherit();
 
-        option.change(&mut self.records, &mut self.config, &mut dims);
-
-        self.dimension.combine(dims.into_owned(), reastimation_hint);
+        option.change(&mut self.records, &mut self.config, &mut self.dimension);
+        self.dimension.reastimate(reastimation_hint);
 
         self
     }
@@ -459,6 +631,34 @@ impl Table {
     /// Target cells using [`Object`]s such as [`Cell`], [`Rows`], [`Location`] and more.
     ///
     /// It applies settings immediately.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{object::Columns, Alignment}};
+    /// use tabled::assert::assert_table;
+    ///
+    /// let data = vec![
+    ///     ("number", "name"),
+    ///     ("285-324-7322", "Rosalia"),
+    ///     ("564.549.6468", "Mary"),
+    /// ];
+    ///
+    /// let mut table = Table::new(data);
+    /// table.modify(Columns::first(), Alignment::right());
+    /// table.modify(Columns::one(1), Alignment::center());
+    ///
+    /// assert_table!(
+    ///     table,
+    ///     "+--------------+---------+"
+    ///     "|         &str |  &str   |"
+    ///     "+--------------+---------+"
+    ///     "|       number |  name   |"
+    ///     "+--------------+---------+"
+    ///     "| 285-324-7322 | Rosalia |"
+    ///     "+--------------+---------+"
+    ///     "| 564.549.6468 |  Mary   |"
+    ///     "+--------------+---------+"
+    /// );
+    /// ```
     ///
     /// [`Cell`]: crate::settings::object::Cell
     /// [`Rows`]: crate::settings::object::Rows
@@ -502,7 +702,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = self.dimension.inherit();
+        let mut dims = self.dimension.clone();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
@@ -517,7 +717,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = self.dimension.inherit();
+        let mut dims = self.dimension.clone();
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
@@ -551,12 +751,12 @@ impl Table {
     }
 
     /// Returns a dimension.
-    pub fn get_dimension(&self) -> &CompleteDimension<'static> {
+    pub fn get_dimension(&self) -> &CompleteDimension {
         &self.dimension
     }
 
     /// Returns a dimension.
-    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimension<'static> {
+    pub fn get_dimension_mut(&mut self) -> &mut CompleteDimension {
         &mut self.dimension
     }
 }
@@ -608,11 +808,13 @@ impl From<Builder> for Table {
     fn from(builder: Builder) -> Self {
         let data = builder.into();
         let records = VecRecords::new(data);
+        let config = ColoredConfig::new(configure_grid());
+        let dimension = CompleteDimension::default();
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            config,
+            dimension,
         }
     }
 }

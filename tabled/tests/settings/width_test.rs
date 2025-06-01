@@ -14,7 +14,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
 use ::{ansi_str::AnsiStr, tabled::settings::Color};
@@ -23,7 +23,7 @@ test_table!(
     max_width,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::truncate(1))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |    0     |    0     |    0     |"
@@ -36,7 +36,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(1..).not(Rows::single(0)))
+            Modify::new(Columns::new(1..).not(Rows::one(0)))
                 .with(Width::truncate(2).suffix("...")),
         ),
     "| N | column 0 | column 1 | column 2 |"
@@ -50,7 +50,7 @@ test_table!(
     max_width_doesnt_increase_width_if_it_is_smaller,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::truncate(50))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -62,7 +62,7 @@ test_table!(
     max_width_wrapped,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::wrap(2))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |    0-    |    0-    |    0-    |"
@@ -77,7 +77,7 @@ test_table!(
     max_width_wrapped_does_nothing_if_str_is_smaller,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::wrap(100))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -493,7 +493,7 @@ test_table!(
     min_width_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12)),
+        .modify(Rows::one(0), MinWidth::new(12)),
     "| N            | column 0     | column 1     | column 2     |"
     "|--------------|--------------|--------------|--------------|"
     "|      0       |     0-0      |     0-1      |     0-2      |"
@@ -505,7 +505,7 @@ test_table!(
     min_width_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12))
+        .modify(Rows::one(0), MinWidth::new(12))
         .modify(Segment::all(), TrimStrategy::None),
     "| N            | column 0     | column 1     | column 2     |"
     "|--------------|--------------|--------------|--------------|"
@@ -518,7 +518,7 @@ test_table!(
     min_width_with_filler,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12).fill_with('.'))
+        .modify(Rows::one(0), MinWidth::new(12).fill_with('.'))
         .to_string(),
     "| N........... | column 0.... | column 1.... | column 2.... |"
     "|--------------|--------------|--------------|--------------|"
@@ -556,7 +556,7 @@ test_table!(
     min_width_on_smaller_content,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(1))
+        .modify(Rows::one(0), MinWidth::new(1))
         .to_string(),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
@@ -569,8 +569,8 @@ test_table!(
     min_with_max_width_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3))),
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3))),
     "| N   | col | col | col |"
     "|-----|-----|-----|-----|"
     "|  0  | 0-0 | 0-1 | 0-2 |"
@@ -582,8 +582,8 @@ test_table!(
     min_with_max_width_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3)))
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3)))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
     "| N   | col | col | col |"
     "|-----|-----|-----|-----|"
@@ -596,8 +596,8 @@ test_table!(
     min_with_max_width_truncate_suffix_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("..."))),
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3).suffix("..."))),
     "| N   | ... | ... | ... |"
     "|-----|-----|-----|-----|"
     "|  0  | 0-0 | 0-1 | 0-2 |"
@@ -609,8 +609,8 @@ test_table!(
     min_with_max_width_truncate_suffix_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")))
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3).suffix("...")))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
     "| N   | ... | ... | ... |"
     "|-----|-----|-----|-----|"
@@ -624,7 +624,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("...")
                 .suffix_limit(SuffixLimit::Replace('x'))
@@ -642,7 +642,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("qwert")
                 .suffix_limit(SuffixLimit::Cut)
@@ -659,7 +659,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("qwert")
                 .suffix_limit(SuffixLimit::Ignore),
@@ -1873,7 +1873,7 @@ test_table!(
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .modify(
-            Columns::new(1..2).not(Rows::single(0)),
+            Columns::new(1..2).not(Rows::one(0)),
             Width::truncate(1).multiline(true),
         ),
     "| N | column 0 |  column 1   | column 2 |"
@@ -1894,7 +1894,7 @@ test_table!(
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(1..2).not(Rows::single(0)))
+            Modify::new(Columns::new(1..2).not(Rows::one(0)))
                 .with(Width::truncate(1).multiline(true).suffix(".")),
         ),
     "| N | column 0 |  column 1   | column 2 |"
@@ -2046,7 +2046,7 @@ test_table!(
 test_table!(
     wrap_issue_0,
     {
-        tabled::Table::new(vec![
+        Table::new(vec![
             ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
         ])
         .with(Width::wrap(40).keep_words(true))
@@ -2067,11 +2067,10 @@ test_table!(
 test_table!(
     wrap_issue_1,
     {
-        tabled::Table::new(vec![
-            ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
-        ])
-        .with(Width::wrap(40).keep_words(false))
-        .to_string()
+        let text = "x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx";
+        Table::new(vec![(text)])
+            .with(Width::wrap(40).keep_words(false))
+            .to_string()
     },
     "+--------------------------------------+"
     "| &str                                 |"
@@ -2134,7 +2133,7 @@ mod derived {
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Alignment::left())
             .with(Width::wrap(57).keep_words(true))
             .to_string();
 
@@ -2305,7 +2304,7 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::new(data)
+            Table::new(data)
                 .with(
                     Modify::new(Segment::all())
                         .with(Width::wrap(5).keep_words(true))
@@ -2385,7 +2384,7 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::new(data)
+            Table::new(data)
                 .with(
                     Modify::new(Segment::all())
                         .with(Width::wrap(6).keep_words(true))

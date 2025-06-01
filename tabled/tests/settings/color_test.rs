@@ -6,7 +6,7 @@ use tabled::{
     settings::{Color, Modify},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     color_global,

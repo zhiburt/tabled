@@ -11,7 +11,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 mod default_types {
     use super::*;
@@ -922,4 +922,26 @@ test_table!(
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+);
+
+test_table!(
+    table_nohead,
+    Table::nohead(vec!["hello", "world"]),
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+);
+
+test_table!(
+    table_with_capacity,
+    Table::with_capacity(vec!["hello", "world"], 2),
+    "+-------+"
+    "| &str  |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
 );

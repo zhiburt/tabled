@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Offset, Position},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, Position},
         dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
@@ -251,12 +251,14 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>> for ColumnNames {
+// TODO: Split into ColumnNames and RowNames
+
+impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension> for ColumnNames {
     fn change(
         self,
         records: &mut VecRecords<Text<String>>,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'_>,
+        dims: &mut CompleteDimension,
     ) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
@@ -287,6 +289,16 @@ impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension<'_>>
         let alignment = ListValue::Static(AlignmentHorizontal::Left);
         set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        let alignment_vertical: Option<ListValue<AlignmentVertical>> =
+            convert_alignment_value(self.alignments.clone());
+        if alignment_vertical.is_some() {
+            Some(Entity::Column(0))
+        } else {
+            Some(Entity::Row(0))
+        }
+    }
 }
 
 fn set_column_text(
@@ -295,7 +307,7 @@ fn set_column_text(
     alignments: ListValue<AlignmentHorizontal>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimension<'_>,
+    dims: &mut CompleteDimension,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);
@@ -331,7 +343,7 @@ fn set_row_text(
     alignments: ListValue<AlignmentVertical>,
     colors: Option<ListValue<Color>>,
     records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimension<'_>,
+    dims: &mut CompleteDimension,
     cfg: &mut ColoredConfig,
 ) {
     dims.estimate(&*records, cfg);

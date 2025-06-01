@@ -72,7 +72,9 @@ pub mod tabled_current_iter {
         let mut data = data;
         data.insert(0, columns);
 
-        IterTable::new(data).columns(count_columns).to_string()
+        let mut table = IterTable::new(data);
+        table.columns(count_columns);
+        table.to_string()
     }
 }
 

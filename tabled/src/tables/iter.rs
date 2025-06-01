@@ -119,9 +119,6 @@ impl<I> IterTable<I> {
         }
     }
 
-    // TODO: REmove the SELF consumption????
-    // TODO: Change setters to ZeroDimension configuration
-
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
@@ -189,8 +186,7 @@ impl<I> IterTable<I> {
         I::Cell: AsRef<str>,
     {
         let writer = UTF8Writer::new(writer);
-        self.fmt(writer)
-            .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+        self.fmt(writer).map_err(io::Error::other)
     }
 
     /// Format table into [fmt::Write]er.

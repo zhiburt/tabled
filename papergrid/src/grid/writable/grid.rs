@@ -1,41 +1,32 @@
-//! The module contains a [`PeekableGrid`] structure.
-
-use core::borrow::Borrow;
 use std::{
-    borrow::Cow,
-    cmp,
-    fmt::{self, Write},
+    borrow::{Borrow, Cow},
+    cmp, fmt,
 };
 
 use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
-    config::{
-        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
-        Position, Sides,
-    },
+    config::{spanned::SpannedConfig, Formatting},
+    config::{AlignmentHorizontal, AlignmentVertical, Indent, Offset, Position, Sides},
     dimension::Dimension,
+    grid::writable::Typewriter,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::get_line_width,
 };
 
-// TODO: Do we actually need PeekableRecords?
-//       Maybe Cloned iterator will be faster?
-//       Even better &referenced Records
-
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
-pub struct PeekableGrid<R, G, D, C> {
+pub struct WritableGrid<R, G, D, C> {
     records: R,
     config: G,
     dimension: D,
     colors: C,
 }
 
-impl<R, G, D, C> PeekableGrid<R, G, D, C> {
+impl<R, G, D, C> WritableGrid<R, G, D, C> {
     /// The new method creates a grid instance with default styles.
     pub fn new(records: R, config: G, dimension: D, colors: C) -> Self {
-        PeekableGrid {
+        WritableGrid {
             records,
             config,
             dimension,
@@ -44,7 +35,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
     }
 }
 
-impl<R, G, D, C> PeekableGrid<R, G, D, C> {
+impl<R, G, D, C> WritableGrid<R, G, D, C> {
     /// Builds a table.
     pub fn build<F>(&self, mut f: F) -> fmt::Result
     where
@@ -52,7 +43,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
         D: Dimension,
         C: Colors,
         G: Borrow<SpannedConfig>,
-        F: Write,
+        F: Typewriter,
     {
         if self.records.count_columns() == 0 || self.records.hint_count_rows() == Some(0) {
             return Ok(());
@@ -69,18 +60,6 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
     }
 }
 
-impl<R, G, D, C> fmt::Display for PeekableGrid<R, G, D, C>
-where
-    R: Records + PeekableRecords + ExactRecords,
-    D: Dimension,
-    C: Colors,
-    G: Borrow<SpannedConfig>,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.build(f)
-    }
-}
-
 #[derive(Debug, Copy, Clone)]
 struct PrintCtx<'a, R, D, C> {
     records: &'a R,
@@ -91,7 +70,7 @@ struct PrintCtx<'a, R, D, C> {
 
 fn print_grid<F, R, D, C>(f: &mut F, ctx: PrintCtx<'_, R, D, C>) -> fmt::Result
 where
-    F: Write,
+    F: Typewriter,
     R: Records + PeekableRecords + ExactRecords,
     D: Dimension,
     C: Colors,
@@ -142,7 +121,7 @@ mod grid_basic {
 
     pub(super) fn build_grid<F, R, D, C>(f: &mut F, ctx: PrintCtx<'_, R, D, C>) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
@@ -159,7 +138,7 @@ mod grid_basic {
             let has_horizontal = ctx.cfg.has_horizontal(row, shape.count_rows);
 
             if new_line && (has_horizontal || height > 0) {
-                f.write_char('\n')?;
+                f.reset()?;
                 new_line = false;
             }
 
@@ -167,7 +146,7 @@ mod grid_basic {
                 print_split_line(f, ctx.cfg, ctx.dims, row, shape)?;
 
                 if height > 0 {
-                    f.write_char('\n')?;
+                    f.reset()?;
                 } else {
                     new_line = true;
                 }
@@ -177,8 +156,7 @@ mod grid_basic {
                 print_grid_line(f, &ctx, shape, height, row, 0)?;
 
                 for i in 1..height {
-                    f.write_char('\n')?;
-
+                    f.reset()?;
                     print_grid_line(f, &ctx, shape, height, row, i)?;
                 }
 
@@ -187,7 +165,7 @@ mod grid_basic {
         }
 
         if ctx.cfg.has_horizontal(shape.count_rows, shape.count_rows) {
-            f.write_char('\n')?;
+            f.reset()?;
             print_split_line(f, ctx.cfg, ctx.dims, shape.count_rows, shape)?;
         }
 
@@ -203,7 +181,7 @@ mod grid_basic {
         line: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
@@ -227,7 +205,7 @@ mod grid_basic {
         shape: Shape,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         D: Dimension,
     {
         print_vertical_intersection(f, cfg, (row, 0).into(), shape)?;
@@ -259,7 +237,7 @@ mod grid_basic {
         shape: Shape,
     ) -> fmt::Result
     where
-        F: fmt::Write,
+        F: Typewriter,
     {
         let intersection = cfg.get_intersection(pos, (shape.count_rows, shape.count_columns));
         let intersection = match intersection {
@@ -288,7 +266,7 @@ mod grid_basic {
         count_columns: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let symbol = match cfg.get_vertical(pos, count_columns) {
             Some(c) => c,
@@ -308,7 +286,7 @@ mod grid_basic {
         line: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
@@ -372,7 +350,7 @@ mod grid_basic {
         cfg: TextCfg,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords,
     {
         let line = records.get_line(pos, index);
@@ -387,7 +365,7 @@ mod grid_basic {
 
         if cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(cfg.alignment, line_width, available);
-            return print_text_padded(f, &line, cfg.justification, indent);
+            return print_text_padded(f, &line, cfg.justification, indent, line_width);
         }
 
         let cell_width = if cfg.formatting.horizontal_trim {
@@ -401,7 +379,7 @@ mod grid_basic {
         };
 
         let indent = calculate_indent(cfg.alignment, cell_width, available);
-        print_text_padded(f, &line, cfg.justification, indent)?;
+        print_text_padded(f, &line, cfg.justification, indent, line_width)?;
 
         let rest_width = cell_width - line_width;
         repeat_char(f, cfg.justification, rest_width)?;
@@ -409,12 +387,18 @@ mod grid_basic {
         Ok(())
     }
 
-    fn print_text_padded<F>(f: &mut F, text: &str, space: char, indent: HIndent) -> fmt::Result
+    fn print_text_padded<F>(
+        f: &mut F,
+        text: &str,
+        space: char,
+        indent: HIndent,
+        width: usize,
+    ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         repeat_char(f, space, indent.left)?;
-        f.write_str(text)?;
+        f.write_str(text, width)?;
         repeat_char(f, space, indent.right)?;
 
         Ok(())
@@ -458,7 +442,7 @@ mod grid_basic {
 
     fn repeat_char<F>(f: &mut F, c: char, n: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         for _ in 0..n {
             f.write_char(c)?;
@@ -536,7 +520,7 @@ mod grid_not_spanned {
 
     pub(super) fn build_grid<F, R, D, C>(f: &mut F, ctx: PrintCtx<'_, R, D, C>) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
         C: Colors,
@@ -555,7 +539,7 @@ mod grid_not_spanned {
 
         if margin.top.size > 0 {
             print_margin_top(f, ctx.cfg, total_width_with_margin)?;
-            f.write_char('\n')?;
+            f.reset()?;
         }
 
         let mut table_line = 0;
@@ -565,7 +549,7 @@ mod grid_not_spanned {
 
             if ctx.cfg.has_horizontal(row, shape.count_rows) {
                 if prev_empty_horizontal {
-                    f.write_char('\n')?;
+                    f.reset()?;
                 }
 
                 print_margin_left(f, ctx.cfg, table_line, total_height)?;
@@ -573,7 +557,7 @@ mod grid_not_spanned {
                 print_margin_right(f, ctx.cfg, table_line, total_height)?;
 
                 if height > 0 {
-                    f.write_char('\n')?;
+                    f.reset()?;
                     prev_empty_horizontal = false;
                 } else {
                     prev_empty_horizontal = true;
@@ -581,7 +565,7 @@ mod grid_not_spanned {
 
                 table_line += 1;
             } else if height > 0 && prev_empty_horizontal {
-                f.write_char('\n')?;
+                f.reset()?;
                 prev_empty_horizontal = false;
             }
 
@@ -605,7 +589,7 @@ mod grid_not_spanned {
                 let is_last_line = i + 1 == height;
                 let is_last_row = row + 1 == shape.count_rows;
                 if !(is_last_line && is_last_row) {
-                    f.write_char('\n')?;
+                    f.reset()?;
                 }
 
                 table_line += 1;
@@ -613,14 +597,14 @@ mod grid_not_spanned {
         }
 
         if ctx.cfg.has_horizontal(shape.count_rows, shape.count_rows) {
-            f.write_char('\n')?;
+            f.reset()?;
             print_margin_left(f, ctx.cfg, table_line, total_height)?;
             print_split_line(f, ctx.cfg, ctx.dims, shape.count_rows, shape)?;
             print_margin_right(f, ctx.cfg, table_line, total_height)?;
         }
 
         if margin.bottom.size > 0 {
-            f.write_char('\n')?;
+            f.reset()?;
             print_margin_bottom(f, ctx.cfg, total_width_with_margin)?;
         }
 
@@ -635,7 +619,7 @@ mod grid_not_spanned {
         shape: Shape,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         D: Dimension,
     {
         let mut used_color = None;
@@ -650,8 +634,8 @@ mod grid_not_spanned {
                 let main = cfg.get_horizontal(pos, shape.count_rows);
                 match main {
                     Some(c) => {
-                        let clr = cfg.get_horizontal_color(pos, shape.count_rows);
-                        prepare_coloring(f, clr, &mut used_color)?;
+                        let color = cfg.get_horizontal_color(pos, shape.count_rows);
+                        prepare_coloring(f, color, &mut used_color)?;
                         print_horizontal_border(f, cfg, pos, width, c, &used_color)?;
                     }
                     None => repeat_char(f, ' ', width)?,
@@ -662,8 +646,8 @@ mod grid_not_spanned {
             print_vertical_intersection(f, cfg, pos, shape, &mut used_color)?;
         }
 
-        if let Some(clr) = used_color.take() {
-            clr.fmt_ansi_suffix(f)?;
+        if let Some(color) = used_color.take() {
+            f.colorize_stop(color)?;
         }
 
         Ok(())
@@ -677,7 +661,7 @@ mod grid_not_spanned {
         used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
-        F: fmt::Write,
+        F: Typewriter,
     {
         let intersection = match cfg.get_intersection(pos, (shape.count_rows, shape.count_columns))
         {
@@ -703,29 +687,29 @@ mod grid_not_spanned {
 
     fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a ANSIBuf>,
-        used_color: &mut Option<&'a ANSIBuf>,
+        new_color: Option<&'a ANSIBuf>,
+        old_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
-        match clr {
-            Some(clr) => match used_color.as_mut() {
-                Some(used_clr) => {
-                    if **used_clr != *clr {
-                        used_clr.fmt_ansi_suffix(f)?;
-                        clr.fmt_ansi_prefix(f)?;
-                        *used_clr = clr;
+        match new_color {
+            Some(new_color) => match old_color.as_mut() {
+                Some(old_color) => {
+                    if **old_color != *new_color {
+                        f.colorize_stop(*old_color)?;
+                        f.colorize_start(new_color)?;
+                        *old_color = new_color;
                     }
                 }
                 None => {
-                    clr.fmt_ansi_prefix(f)?;
-                    *used_color = Some(clr);
+                    f.colorize_start(new_color)?;
+                    *old_color = Some(new_color);
                 }
             },
             None => {
-                if let Some(clr) = used_color.take() {
-                    clr.fmt_ansi_suffix(f)?
+                if let Some(old_color) = old_color.take() {
+                    f.colorize_stop(old_color)?;
                 }
             }
         }
@@ -742,7 +726,7 @@ mod grid_not_spanned {
         count_columns: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let symbol = match cfg.get_vertical(pos, count_columns) {
             Some(c) => c,
@@ -758,10 +742,10 @@ mod grid_not_spanned {
             .or_else(|| cfg.lookup_vertical_color(pos, line, count_lines));
 
         match color {
-            Some(clr) => {
-                clr.fmt_ansi_prefix(f)?;
+            Some(color) => {
+                f.colorize_start(color)?;
                 f.write_char(symbol)?;
-                clr.fmt_ansi_suffix(f)?;
+                f.colorize_stop(color)?;
             }
             None => f.write_char(symbol)?,
         }
@@ -778,7 +762,7 @@ mod grid_not_spanned {
         used_color: &Option<&ANSIBuf>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if !cfg.is_overridden_horizontal(pos) {
             return repeat_char(f, c, width);
@@ -786,22 +770,28 @@ mod grid_not_spanned {
 
         for i in 0..width {
             let c = cfg.lookup_horizontal_char(pos, i, width).unwrap_or(c);
-            match cfg.lookup_horizontal_color(pos, i, width) {
-                Some(color) => match used_color {
-                    Some(clr) => {
-                        clr.fmt_ansi_suffix(f)?;
-                        color.fmt_ansi_prefix(f)?;
-                        f.write_char(c)?;
-                        color.fmt_ansi_suffix(f)?;
-                        clr.fmt_ansi_prefix(f)?;
-                    }
-                    None => {
-                        color.fmt_ansi_prefix(f)?;
-                        f.write_char(c)?;
-                        color.fmt_ansi_suffix(f)?;
-                    }
-                },
-                _ => f.write_char(c)?,
+            let color = match cfg.lookup_horizontal_color(pos, i, width) {
+                Some(color) => color,
+                None => {
+                    // TODO: Seems like we must check old_color here?
+                    f.write_char(c)?;
+                    continue;
+                }
+            };
+
+            match used_color {
+                Some(old_color) => {
+                    f.colorize_stop(old_color)?;
+                    f.colorize_start(color)?;
+                    f.write_char(c)?;
+                    f.colorize_stop(color)?;
+                    f.colorize_start(old_color)?;
+                }
+                None => {
+                    f.colorize_start(color)?;
+                    f.write_char(c)?;
+                    f.colorize_stop(color)?;
+                }
             }
         }
 
@@ -816,7 +806,7 @@ mod grid_not_spanned {
         line: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         C: Colors,
         D: Dimension,
@@ -888,7 +878,7 @@ mod grid_not_spanned {
         cfg: TextCfg<C, &'_ ANSIBuf>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords,
         C: ANSIFmt,
     {
@@ -905,7 +895,7 @@ mod grid_not_spanned {
         if cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), cfg.color);
-            return print_text_padded(f, &text, &cfg.justification, indent);
+            return print_text_padded(f, text, &cfg.justification, indent, line_width);
         }
 
         let cell_width = if cfg.formatting.horizontal_trim {
@@ -920,7 +910,7 @@ mod grid_not_spanned {
 
         let indent = calculate_indent(cfg.alignment, cell_width, available);
         let text = Colored::new(line.as_ref(), cfg.color);
-        print_text_padded(f, &text, &cfg.justification, indent)?;
+        print_text_padded(f, text, &cfg.justification, indent, line_width)?;
 
         let rest_width = cell_width - line_width;
         print_indent2(f, &cfg.justification, rest_width)?;
@@ -930,35 +920,40 @@ mod grid_not_spanned {
 
     fn print_text_padded<F, C, C1>(
         f: &mut F,
-        text: &Colored<&str, C>,
+        text: Colored<&str, C>,
         justification: &Colored<char, C1>,
         indent: HIndent,
+        width: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
         C1: ANSIFmt,
     {
         print_indent2(f, justification, indent.left)?;
-        print_text2(f, text)?;
+        print_text(f, text, width)?;
         print_indent2(f, justification, indent.right)?;
 
         Ok(())
     }
 
-    fn print_text2<F, C>(f: &mut F, text: &Colored<&str, C>) -> fmt::Result
+    fn print_text<F, C>(f: &mut F, text: Colored<&str, C>, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
     {
-        match &text.color {
+        match text.color {
             Some(color) => {
-                color.fmt_ansi_prefix(f)?;
-                f.write_str(text.data)?;
-                color.fmt_ansi_suffix(f)
+                f.colorize_start(&color)?;
+                f.write_str(text.data, width)?;
+                f.colorize_stop(&color)?;
             }
-            None => f.write_str(text.data),
+            None => {
+                f.write_str(text.data, width)?;
+            }
         }
+
+        Ok(())
     }
 
     fn top_indent(
@@ -999,7 +994,7 @@ mod grid_not_spanned {
 
     fn repeat_char<F>(f: &mut F, c: char, n: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         for _ in 0..n {
             f.write_char(c)?;
@@ -1051,7 +1046,7 @@ mod grid_not_spanned {
 
     fn print_margin_top<F>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
@@ -1062,7 +1057,7 @@ mod grid_not_spanned {
 
     fn print_margin_bottom<F>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
@@ -1078,7 +1073,7 @@ mod grid_not_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
@@ -1094,7 +1089,7 @@ mod grid_not_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
@@ -1112,7 +1107,7 @@ mod grid_not_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if indent.size == 0 {
             return Ok(());
@@ -1150,7 +1145,7 @@ mod grid_not_spanned {
         width: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if indent.size == 0 {
             return Ok(());
@@ -1188,7 +1183,7 @@ mod grid_not_spanned {
 
     fn print_indent<F, C>(f: &mut F, c: char, n: usize, color: Option<C>) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
     {
         if n == 0 {
@@ -1197,9 +1192,10 @@ mod grid_not_spanned {
 
         match color {
             Some(color) => {
-                color.fmt_ansi_prefix(f)?;
+                f.colorize_start(&color)?;
                 repeat_char(f, c, n)?;
-                color.fmt_ansi_suffix(f)
+                f.colorize_stop(&color)?;
+                Ok(())
             }
             None => repeat_char(f, c, n),
         }
@@ -1207,21 +1203,10 @@ mod grid_not_spanned {
 
     fn print_indent2<F, C>(f: &mut F, c: &Colored<char, C>, n: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
     {
-        if n == 0 {
-            return Ok(());
-        }
-
-        match &c.color {
-            Some(color) => {
-                color.fmt_ansi_prefix(f)?;
-                repeat_char(f, c.data, n)?;
-                color.fmt_ansi_suffix(f)
-            }
-            None => repeat_char(f, c.data, n),
-        }
+        print_indent(f, c.data, n, c.color.as_ref())
     }
 
     /// Trims a string.
@@ -1272,7 +1257,7 @@ mod grid_spanned {
 
     pub(super) fn build_grid<F, R, D, C>(f: &mut F, ctx: PrintCtx<'_, R, D, C>) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
         C: Colors,
@@ -1347,6 +1332,7 @@ mod grid_spanned {
                     if ctx.cfg.is_cell_covered_by_row_span(pos) {
                         // means it's part of other a spanned cell
                         // so. we just need to use line from other cell.
+
                         let original_row = closest_visible_row(ctx.cfg, pos).unwrap();
 
                         // considering that the content will be printed instead horizontal lines so we can skip some lines.
@@ -1412,7 +1398,7 @@ mod grid_spanned {
         shape: Shape,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + ExactRecords + PeekableRecords,
         D: Dimension,
         C: Colors,
@@ -1473,8 +1459,8 @@ mod grid_spanned {
                 let main = ctx.cfg.get_horizontal(pos, shape.count_rows);
                 match main {
                     Some(c) => {
-                        let clr = ctx.cfg.get_horizontal_color(pos, shape.count_rows);
-                        prepare_coloring(f, clr, &mut used_color)?;
+                        let color = ctx.cfg.get_horizontal_color(pos, shape.count_rows);
+                        prepare_coloring(f, color, &mut used_color)?;
                         print_horizontal_border(f, ctx.cfg, pos, width, c, &used_color)?;
                     }
                     None => repeat_char(f, ' ', width)?,
@@ -1485,8 +1471,8 @@ mod grid_spanned {
             print_vertical_intersection(f, ctx.cfg, pos, shape, &mut used_color)?;
         }
 
-        if let Some(clr) = used_color {
-            clr.fmt_ansi_suffix(f)?;
+        if let Some(color) = used_color {
+            f.colorize_stop(color)?;
         }
 
         Ok(())
@@ -1501,7 +1487,7 @@ mod grid_spanned {
         count_columns: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let symbol = match cfg.get_vertical(pos, count_columns) {
             Some(c) => c,
@@ -1517,10 +1503,10 @@ mod grid_spanned {
             .or_else(|| cfg.lookup_vertical_color(pos, line, count_lines));
 
         match color {
-            Some(clr) => {
-                clr.fmt_ansi_prefix(f)?;
+            Some(color) => {
+                f.colorize_start(color)?;
                 f.write_char(symbol)?;
-                clr.fmt_ansi_suffix(f)?;
+                f.colorize_stop(color)?;
             }
             None => f.write_char(symbol)?,
         }
@@ -1536,7 +1522,7 @@ mod grid_spanned {
         used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
-        F: fmt::Write,
+        F: Typewriter,
     {
         let intersection = match cfg.get_intersection(pos, (shape.count_rows, shape.count_columns))
         {
@@ -1562,29 +1548,29 @@ mod grid_spanned {
 
     fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a ANSIBuf>,
-        used_color: &mut Option<&'a ANSIBuf>,
+        new_color: Option<&'a ANSIBuf>,
+        old_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
-        match clr {
-            Some(clr) => match used_color.as_mut() {
-                Some(used_clr) => {
-                    if **used_clr != *clr {
-                        used_clr.fmt_ansi_suffix(f)?;
-                        clr.fmt_ansi_prefix(f)?;
-                        *used_clr = clr;
+        match new_color {
+            Some(new_color) => match old_color.as_mut() {
+                Some(old_color) => {
+                    if **old_color != *new_color {
+                        f.colorize_stop(*old_color)?;
+                        f.colorize_start(new_color)?;
+                        *old_color = new_color;
                     }
                 }
                 None => {
-                    clr.fmt_ansi_prefix(f)?;
-                    *used_color = Some(clr);
+                    f.colorize_start(new_color)?;
+                    *old_color = Some(new_color);
                 }
             },
             None => {
-                if let Some(clr) = used_color.take() {
-                    clr.fmt_ansi_suffix(f)?
+                if let Some(color) = old_color.take() {
+                    f.colorize_stop(color)?;
                 }
             }
         }
@@ -1600,7 +1586,7 @@ mod grid_spanned {
         shape: Shape,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         D: Dimension,
     {
         let mut used_color = None;
@@ -1627,8 +1613,8 @@ mod grid_spanned {
             print_vertical_intersection(f, cfg, pos, shape, &mut used_color)?;
         }
 
-        if let Some(clr) = used_color.take() {
-            clr.fmt_ansi_suffix(f)?;
+        if let Some(color) = used_color.take() {
+            f.colorize_stop(color)?;
         }
 
         Ok(())
@@ -1643,7 +1629,7 @@ mod grid_spanned {
         used_color: &Option<&ANSIBuf>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if !cfg.is_overridden_horizontal(pos) {
             return repeat_char(f, c, width);
@@ -1651,22 +1637,28 @@ mod grid_spanned {
 
         for i in 0..width {
             let c = cfg.lookup_horizontal_char(pos, i, width).unwrap_or(c);
-            match cfg.lookup_horizontal_color(pos, i, width) {
-                Some(color) => match used_color {
-                    Some(clr) => {
-                        clr.fmt_ansi_suffix(f)?;
-                        color.fmt_ansi_prefix(f)?;
-                        f.write_char(c)?;
-                        color.fmt_ansi_suffix(f)?;
-                        clr.fmt_ansi_prefix(f)?;
-                    }
-                    None => {
-                        color.fmt_ansi_prefix(f)?;
-                        f.write_char(c)?;
-                        color.fmt_ansi_suffix(f)?;
-                    }
-                },
-                _ => f.write_char(c)?,
+            let color = match cfg.lookup_horizontal_color(pos, i, width) {
+                Some(color) => color,
+                None => {
+                    // TODO: Seems like we must check old_color here?
+                    f.write_char(c)?;
+                    continue;
+                }
+            };
+
+            match used_color {
+                Some(old_color) => {
+                    f.colorize_stop(old_color)?;
+                    f.colorize_start(color)?;
+                    f.write_char(c)?;
+                    f.colorize_stop(color)?;
+                    f.colorize_start(old_color)?;
+                }
+                None => {
+                    f.colorize_start(color)?;
+                    f.write_char(c)?;
+                    f.colorize_stop(color)?;
+                }
             }
         }
 
@@ -1682,7 +1674,7 @@ mod grid_spanned {
         line: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords + ExactRecords,
         C: Colors,
     {
@@ -1752,7 +1744,7 @@ mod grid_spanned {
         text_cfg: TextCfg<C, C1>,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         R: Records + PeekableRecords,
         C: ANSIFmt,
         C1: ANSIFmt,
@@ -1770,7 +1762,7 @@ mod grid_spanned {
         if text_cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(text_cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), text_cfg.color);
-            return print_text_with_pad(f, &text, &text_cfg.justification, indent);
+            return print_text_with_pad(f, text, &text_cfg.justification, indent, line_width);
         }
 
         let cell_width = if text_cfg.formatting.horizontal_trim {
@@ -1784,15 +1776,15 @@ mod grid_spanned {
         };
 
         let indent = calculate_indent(text_cfg.alignment, cell_width, available);
-        let text = Colored::new(line.as_ref(), text_cfg.color.as_ref());
-        print_text_with_pad(f, &text, &text_cfg.justification, indent)?;
+        let text = Colored::new(line.as_ref(), text_cfg.color);
+        print_text_with_pad(f, text, &text_cfg.justification, indent, line_width)?;
 
         let rest_width = cell_width - line_width;
         print_indent(
             f,
             text_cfg.justification.data,
             rest_width,
-            text_cfg.justification.color.as_ref(),
+            text_cfg.justification.color,
         )?;
 
         Ok(())
@@ -1800,33 +1792,35 @@ mod grid_spanned {
 
     fn print_text_with_pad<F, C, C1>(
         f: &mut F,
-        text: &Colored<&str, C>,
+        text: Colored<&str, C>,
         space: &Colored<char, C1>,
         indent: HIndent,
+        width: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
         C1: ANSIFmt,
     {
         print_indent(f, space.data, indent.left, space.color.as_ref())?;
-        print_text(f, text.data, text.color.as_ref())?;
+        print_text(f, text.data, text.color, width)?;
         print_indent(f, space.data, indent.right, space.color.as_ref())?;
         Ok(())
     }
 
-    fn print_text<F, C>(f: &mut F, text: &str, clr: Option<C>) -> fmt::Result
+    fn print_text<F, C>(f: &mut F, text: &str, clr: Option<C>, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
     {
         match clr {
             Some(color) => {
-                color.fmt_ansi_prefix(f)?;
-                f.write_str(text)?;
-                color.fmt_ansi_suffix(f)
+                f.colorize_start(&color)?;
+                f.write_str(text, width)?;
+                f.colorize_stop(&color)?;
+                Ok(())
             }
-            None => f.write_str(text),
+            None => f.write_str(text, width),
         }
     }
 
@@ -1868,7 +1862,7 @@ mod grid_spanned {
 
     fn repeat_char<F>(f: &mut F, c: char, n: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         for _ in 0..n {
             f.write_char(c)?;
@@ -1920,7 +1914,7 @@ mod grid_spanned {
 
     fn print_margin_top<F>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
@@ -1931,7 +1925,7 @@ mod grid_spanned {
 
     fn print_margin_bottom<F>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
@@ -1947,7 +1941,7 @@ mod grid_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
@@ -1963,7 +1957,7 @@ mod grid_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
@@ -1981,7 +1975,7 @@ mod grid_spanned {
         height: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if indent.size == 0 {
             return Ok(());
@@ -2019,7 +2013,7 @@ mod grid_spanned {
         width: usize,
     ) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
     {
         if indent.size == 0 {
             return Ok(());
@@ -2057,7 +2051,7 @@ mod grid_spanned {
 
     fn print_indent<F, C>(f: &mut F, c: char, n: usize, color: Option<C>) -> fmt::Result
     where
-        F: Write,
+        F: Typewriter,
         C: ANSIFmt,
     {
         if n == 0 {
@@ -2066,9 +2060,10 @@ mod grid_spanned {
 
         match color {
             Some(color) => {
-                color.fmt_ansi_prefix(f)?;
+                f.colorize_start(&color)?;
                 repeat_char(f, c, n)?;
-                color.fmt_ansi_suffix(f)
+                f.colorize_stop(&color)?;
+                Ok(())
             }
             None => repeat_char(f, c, n),
         }

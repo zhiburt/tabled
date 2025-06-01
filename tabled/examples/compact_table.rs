@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "std"), allow(unused_variables))]
+
 use tabled::{settings::style::Style, tables::CompactTable};
 
 fn main() {

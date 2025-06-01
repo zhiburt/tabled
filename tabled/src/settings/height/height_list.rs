@@ -33,15 +33,20 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, C, CompleteDimension<'_>> for HeightList
+impl<R, C> TableOption<R, C, CompleteDimension> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimension<'_>) {
+    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimension) {
         if self.list.len() < records.count_rows() {
             return;
         }
 
         dims.set_heights(self.list);
+    }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        // NOTE: is this correct?
+        None
     }
 }

@@ -5,10 +5,13 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
+//! # use tabled::{settings::{Style, Padding, object::Rows}, Table};
 //! # let data: Vec<&'static str> = Vec::new();
-//! let table = Table::new(&data)
-//!     .with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
+//! let mut table = Table::new(&data);
+//! table.modify(
+//!     Rows::one(0),
+//!     Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V'),
+//! );
 //! ```
 //!
 //! [`Table`]: crate::Table
