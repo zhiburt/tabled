@@ -115,6 +115,34 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - run: cargo check --manifest-path=./tabled_derive/Cargo.toml --all-targets
 
+  check-tabled-wasm:
+    name: Check tabled
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        features:
+          [
+            "",
+            "std",
+            "ansi",
+            "derive",
+            "macros",
+            "ansi,derive",
+            "ansi,macros",
+            "macros,derive",
+            "ansi,derive,macros",
+          ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: wasm32-unknown-unknown
+      - run: cargo check --manifest-path=./tabled/Cargo.toml --target wasm32-unknown-unknown --all-targets --no-default-features --features=${{ matrix.features }}
+
   msrv:
     name: MSRV
     runs-on: ubuntu-latest
@@ -163,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, wasm32-unknown-unknown]
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
         features: ["", "ansi"]
     steps:
       - uses: actions/checkout@v4
