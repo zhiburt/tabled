@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ahash::AHashMap;
+use fnv::FnvHashMap;
 
 use crate::config::{Entity, Position};
 
@@ -10,9 +10,9 @@ pub struct EntityMap<T> {
     // we have a global type to allocate in on stack.
     // because most of the time no changes are made to the [`EntityMap`].
     global: T,
-    columns: AHashMap<usize, T>,
-    rows: AHashMap<usize, T>,
-    cells: AHashMap<Position, T>,
+    columns: FnvHashMap<usize, T>,
+    rows: FnvHashMap<usize, T>,
+    cells: FnvHashMap<Position, T>,
 }
 
 impl<T> EntityMap<T> {
