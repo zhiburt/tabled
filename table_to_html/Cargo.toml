@@ -17,7 +17,7 @@ derive = ["tabled/derive"]
 macros = ["tabled/macros"]
 
 [dependencies]
-tabled = { version = "0.19", features = ["std"], default-features = false }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
-tabled = { version = "0.19", features = ["std", "derive", "assert"], default-features = false }
+tabled = { path = "../tabled", features = ["std", "derive", "assert"], default-features = false }

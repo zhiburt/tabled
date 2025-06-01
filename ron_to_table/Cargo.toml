@@ -19,7 +19,7 @@ macros = ["tabled/macros"]
 
 [dependencies]
 ron = "0.10"
-tabled = { version = "0.19", features = ["std"], default-features = false }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
-tabled = { version = "0.19", features = ["std", "assert"], default-features = false }
+tabled = { path = "../tabled", features = ["std", "assert"], default-features = false }
