@@ -135,7 +135,7 @@ test_table!(
     "| &str              |"
     "|-------------------|"
     "| this is a long    |"
-    "| sentence          |"
+    "|  sentence         |"
 );
 
 test_table!(
@@ -172,7 +172,7 @@ test_table!(
     "| &str              |"
     "|-------------------|"
     "| this is a longlon |"
-    "| sentence          |"
+    "|  sentence         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -283,7 +283,7 @@ test_table!(
     "| String            |"
     "|-------------------|"
     "| this is a long    |"
-    "| sentence          |"
+    "|  sentence         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -296,7 +296,7 @@ test_table!(
     "| String            |"
     "|-------------------|"
     "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
-    "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+    "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -2057,7 +2057,7 @@ test_table!(
     "+--------------------------------------+"
     "| x xxx xx xxxxxxx xxxxxxxx xx xxxx    |"
     "| xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx |"
-    "| xx xxxxxxx x xx xxxxxx x xxxxxx      |"
+    "|  xx xxxxxxx x xx xxxxxx x xxxxxx     |"
     "| xxxxxxxxxxxx xx xxxxxx xxx xxx       |"
     "| xxxxxx xxxxxxx. xx xxxxxxxx xx xx    |"
     "| xxxxxxxxxx                           |"
@@ -2359,12 +2359,12 @@ mod derived {
                 "+-------+-------+"
                 "| asd D | true  |"
                 "| ebian |       |"
-                "| 2     |       |"
+                "|  2    |       |"
                 "| links |       |"
-                "| in a  |       |"
-                "| strin |       |"
-                "| g Deb |       |"
-                "| ian   |       |"
+                "|  in a |       |"
+                "|  stri |       |"
+                "| ng De |       |"
+                "| bian  |       |"
                 "+-------+-------+"
             )
         );
@@ -2420,7 +2420,7 @@ mod derived {
                 "|        | erlink |"
                 "+--------+--------+"
                 "| Debian | true   |"
-                "| :link  |        |"
+                "|  :link |        |"
                 "+--------+--------+"
             )
         );
@@ -2439,10 +2439,11 @@ mod derived {
                 "+--------+--------+"
                 "| asd    | true   |"
                 "| Debian |        |"
-                "| 2      |        |"
+                "|  2     |        |"
                 "| links  |        |"
                 "| in a   |        |"
                 "| string |        |"
+                "|        |        |"
                 "| Debian |        |"
                 "+--------+--------+"
             )

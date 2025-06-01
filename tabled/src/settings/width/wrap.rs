@@ -380,11 +380,17 @@ fn wrap_text_keeping_words_noansi(text: &str, width: usize) -> String {
     let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
-    for word in text.split(' ') {
+    for (i, word) in text.split(' ').enumerate() {
         // restore space char
-        if line_width > 0 {
-            let line_has_space = line_width < width;
+        let line_has_space = line_width < width;
+        if i > 0 {
             if line_has_space {
+                buf.push(' ');
+                line_width += 1;
+            } else {
+                buf.push('\n');
+                line_width = 0;
+
                 buf.push(' ');
                 line_width += 1;
             }
@@ -672,32 +678,25 @@ fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str)
 
     buf.push_str(prefix);
 
-    for word in stripped.split(' ') {
+    for (i, word) in stripped.split(' ').enumerate() {
         let word_width = get_string_width(word);
         let word_size = word.len();
 
         // restore space char if we can
-        if line_width > 0 {
+        if i > 0 {
             let line_has_space = line_width < width;
             if line_has_space {
                 blocks.read(&mut buf, 1);
                 line_width += 1;
             } else {
-                // special case where we want to keep ' ' space
-                if width == 1 {
-                    blocks.finish(&mut buf);
-                    buf.push_str(suffix);
-                    buf.push('\n');
-                    buf.push_str(prefix);
-                    blocks.start(&mut buf);
-                    blocks.read(&mut buf, 1);
-                    line_width = 1;
-                } else {
-                    blocks.skip(&mut buf, 1);
-                }
+                blocks.finish(&mut buf);
+                buf.push_str(suffix);
+                buf.push('\n');
+                buf.push_str(prefix);
+                blocks.start(&mut buf);
+                blocks.read(&mut buf, 1);
+                line_width = 1;
             }
-        } else if word_width == 0 {
-            blocks.skip(&mut buf, 1);
         }
 
         if word_width == 0 {
@@ -940,7 +939,7 @@ mod tests {
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
-        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m“v\u{1b}[39m\n\u{1b}[36mac\u{1b}[39m\n\u{1b}[36man\u{1b}[39m\n\u{1b}[36mcy\u{1b}[39m\n\u{1b}[36m” \u{1b}[39m\n\u{1b}[36mbu\u{1b}[39m\n\u{1b}[36mtt\u{1b}[39m\n\u{1b}[36mon\u{1b}[39m");
+        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
 
@@ -965,16 +964,23 @@ mod tests {
                 "\u{1b}[37mua\u{1b}[39m",
                 "\u{1b}[37mdo\u{1b}[39m",
                 "\u{1b}[37mr \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37mOM\u{1b}[39m",
                 "\u{1b}[37mYA\u{1b}[39m",
-                "\u{1b}[37mAn\u{1b}[39m",
-                "\u{1b}[37mdi\u{1b}[39m",
-                "\u{1b}[37mna\u{1b}[39m",
+                "\u{1b}[37m A\u{1b}[39m",
+                "\u{1b}[37mnd\u{1b}[39m",
+                "\u{1b}[37min\u{1b}[39m",
+                "\u{1b}[37ma \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37m38\u{1b}[39m",
                 "\u{1b}[37m24\u{1b}[39m",
                 "\u{1b}[37m90\u{1b}[39m",
                 "\u{1b}[37m99\u{1b}[39m",
                 "\u{1b}[37m99\u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37mCa\u{1b}[39m",
                 "\u{1b}[37mlc\u{1b}[39m",
                 "\u{1b}[37miu\u{1b}[39m",
@@ -984,6 +990,9 @@ mod tests {
                 "\u{1b}[37mon\u{1b}[39m",
                 "\u{1b}[37mat\u{1b}[39m",
                 "\u{1b}[37me \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
+                "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37mCo\u{1b}[39m",
                 "\u{1b}[37mlo\u{1b}[39m",
                 "\u{1b}[37mmb\u{1b}[39m",
@@ -1093,7 +1102,7 @@ mod tests {
         );
         assert_eq!(
             split("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
-            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37ma long \u{1b}[39m\n\u{1b}[37msentenc\u{1b}[39m\n\u{1b}[37me\u{1b}[39m"
+            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m"
         );
         assert_eq!(
             split("\u{1b}[37mHello World\u{1b}[0m", 7),
@@ -1193,16 +1202,23 @@ mod tests {
                 "^\u{1b}[37mua\u{1b}[39m$",
                 "^\u{1b}[37mdo\u{1b}[39m$",
                 "^\u{1b}[37mr \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37mOM\u{1b}[39m$",
                 "^\u{1b}[37mYA\u{1b}[39m$",
-                "^\u{1b}[37mAn\u{1b}[39m$",
-                "^\u{1b}[37mdi\u{1b}[39m$",
-                "^\u{1b}[37mna\u{1b}[39m$",
+                "^\u{1b}[37m A\u{1b}[39m$",
+                "^\u{1b}[37mnd\u{1b}[39m$",
+                "^\u{1b}[37min\u{1b}[39m$",
+                "^\u{1b}[37ma \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37m38\u{1b}[39m$",
                 "^\u{1b}[37m24\u{1b}[39m$",
                 "^\u{1b}[37m90\u{1b}[39m$",
                 "^\u{1b}[37m99\u{1b}[39m$",
                 "^\u{1b}[37m99\u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37mCa\u{1b}[39m$",
                 "^\u{1b}[37mlc\u{1b}[39m$",
                 "^\u{1b}[37miu\u{1b}[39m$",
@@ -1212,6 +1228,9 @@ mod tests {
                 "^\u{1b}[37mon\u{1b}[39m$",
                 "^\u{1b}[37mat\u{1b}[39m$",
                 "^\u{1b}[37me \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37mCo\u{1b}[39m$",
                 "^\u{1b}[37mlo\u{1b}[39m$",
                 "^\u{1b}[37mmb\u{1b}[39m$",
