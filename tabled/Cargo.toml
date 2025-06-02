@@ -18,9 +18,9 @@ maintenance = { status = "actively-developed" }
 
 [features]
 default = ["derive", "macros", "assert"]
-std = ["papergrid/std", "testing_table/std"]
+std = ["papergrid/std", "testing_table?/std"]
 derive = ["tabled_derive", "std"]
-ansi = ["papergrid/ansi", "testing_table/ansi", "ansi-str", "ansitok", "std"]
+ansi = ["papergrid/ansi", "testing_table?/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 assert = ["testing_table"]
 
