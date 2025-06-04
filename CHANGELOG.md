@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.20.0] - 2025-05-06
+
+### Added
+
+- Added `Table::nohead` function just like `Table::new` but with no header.
+- Added `Table::with_capacity` function just like `Table::new` but with an exact number of rows.
+
+### Changed
+
+- Changed `with(Border)` logic to set only outer border instead of border of all cells.
+- Made a number of refactorings of `tabled::grid::dimension::*` modules.
+- Made small optimization of `Wrap::text` and `Truncate::text`.
+- Made small optimization of `Text::new`.
+- Brought up to date benchmarks.
+- Renamed `Columns::single` into `Columns::one`.
+- Renamed `Rows::single` into `Rows::one`.
+- Moved back to `fnv` from `ahash` cause of WASM build.
+- Moved back to old `Wrap::keep_words` logic where we preserving all content.
+
+### Fixed
+
+- Fixed dependency `testing_table` inclusion (by [@klensy](https://github.com/klensy)).
+- Fixed `WASM` build (by [@cptpiepmatz](https://github.com/cptpiepmatz)).
+- Fixed not properly working caching logic of `TableOption::hint`.
+
+
 ## [0.19.0] - 2025-24-04
 
 ### Added
