@@ -150,7 +150,7 @@ fn create_text<S: AsRef<str>>(text: S) -> Text<S> {
     // We check if there's only 1 line in which case we don't allocate lines Vec
     let count_lines = count_lines(info.text.as_ref());
     if count_lines < 2 {
-        info.width = string::get_text_width(info.text.as_ref());
+        info.width = string::get_line_width(info.text.as_ref());
         return info;
     }
 
@@ -170,11 +170,12 @@ fn create_text<S: AsRef<str>>(text: S) -> Text<S> {
         ))
     };
 
-    info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
-    for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
-        i.width = get_line_width(&line);
-        i.text = line;
-        info.width = max(info.width, i.width);
+    info.lines = Vec::with_capacity(count_lines);
+    for line in get_lines(text) {
+        let line_width = get_line_width(&line);
+        let line = StrWithWidth::new(line, line_width);
+        info.width = max(info.width, line_width);
+        info.lines.push(line);
     }
 
     info
