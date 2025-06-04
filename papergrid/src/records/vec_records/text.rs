@@ -93,10 +93,10 @@ where
         let mut cell = Self {
             text: self.text.clone(),
             width: self.width,
-            lines: vec![StrWithWidth::default(); self.lines.len()],
+            lines: Vec::with_capacity(self.lines.len()),
         };
 
-        for (i, line) in self.lines.iter().enumerate() {
+        for line in self.lines.iter() {
             // We need to redirect pointers to the original string.
             //
             // # Safety
@@ -116,8 +116,8 @@ where
                 ))
             };
 
-            cell.lines[i].width = line.width;
-            cell.lines[i].text = Cow::Borrowed(text);
+            let newline = StrWithWidth::new(Cow::Borrowed(text), line.width);
+            cell.lines.push(newline);
         }
 
         cell
