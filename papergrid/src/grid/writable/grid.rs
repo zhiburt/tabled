@@ -1174,7 +1174,7 @@ mod grid_not_spanned {
             }
 
             if i + 1 != indent.size {
-                f.write_char('\n')?;
+                f.reset()?;
             }
         }
 
@@ -1276,7 +1276,7 @@ mod grid_spanned {
 
         if margin.top.size > 0 {
             print_margin_top(f, ctx.cfg, total_width_with_margin)?;
-            f.write_char('\n')?;
+            f.reset()?;
         }
 
         let mut table_line = 0;
@@ -1286,7 +1286,7 @@ mod grid_spanned {
 
             if ctx.cfg.has_horizontal(row, shape.count_rows) {
                 if prev_empty_horizontal {
-                    f.write_char('\n')?;
+                    f.reset()?;
                 }
 
                 print_margin_left(f, ctx.cfg, table_line, total_height)?;
@@ -1294,7 +1294,7 @@ mod grid_spanned {
                 print_margin_right(f, ctx.cfg, table_line, total_height)?;
 
                 if count_lines > 0 {
-                    f.write_char('\n')?;
+                    f.reset()?;
                     prev_empty_horizontal = false;
                 } else {
                     prev_empty_horizontal = true;
@@ -1302,7 +1302,7 @@ mod grid_spanned {
 
                 table_line += 1;
             } else if count_lines > 0 && prev_empty_horizontal {
-                f.write_char('\n')?;
+                f.reset()?;
                 prev_empty_horizontal = false;
             }
 
@@ -1369,7 +1369,7 @@ mod grid_spanned {
                 let is_last_line = i + 1 == count_lines;
                 let is_last_row = row + 1 == shape.count_rows;
                 if !(is_last_line && is_last_row) {
-                    f.write_char('\n')?;
+                    f.reset()?;
                 }
 
                 table_line += 1;
@@ -1377,14 +1377,14 @@ mod grid_spanned {
         }
 
         if ctx.cfg.has_horizontal(shape.count_rows, shape.count_rows) {
-            f.write_char('\n')?;
+            f.reset()?;
             print_margin_left(f, ctx.cfg, table_line, total_height)?;
             print_split_line(f, ctx.cfg, ctx.dims, shape.count_rows, shape)?;
             print_margin_right(f, ctx.cfg, table_line, total_height)?;
         }
 
         if margin.bottom.size > 0 {
-            f.write_char('\n')?;
+            f.reset()?;
             print_margin_bottom(f, ctx.cfg, total_width_with_margin)?;
         }
 
@@ -2042,7 +2042,7 @@ mod grid_spanned {
             }
 
             if i + 1 != indent.size {
-                f.write_char('\n')?;
+                f.reset()?;
             }
         }
 
