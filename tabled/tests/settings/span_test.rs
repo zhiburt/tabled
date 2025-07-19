@@ -1406,6 +1406,40 @@ test_table!(
     "+---+-----+-----+-----+"
 );
 
+test_table!(
+    border_correction_right_bottom_corner_0,
+    Matrix::new(3, 3)
+        .with(Style::modern())
+        .modify((1, 1), (Span::column(3), Span::row(3)))
+        .with(BorderCorrection::span()),
+    "┌───┬──────────┬──────────┬──────────┐"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "├───┼──────────┴──────────┴──────────┤"
+    "│ 0 │              0-0               │"
+    "├───┤                                │"
+    "│ 1 │                                │"
+    "├───┤                                │"
+    "│ 2 │                                │"
+    "└───┴────────────────────────────────┘"
+);
+
+test_table!(
+    border_correction_right_bottom_corner_1,
+    Matrix::new(3, 3)
+        .with(Style::modern())
+        .modify((2, 2), (Span::column(2), Span::row(2)))
+        .with(BorderCorrection::span()),
+    "┌───┬──────────┬──────────┬──────────┐"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "├───┼──────────┼──────────┼──────────┤"
+    "│ 0 │   0-0    │   0-1    │   0-2    │"
+    "├───┼──────────┼──────────┴──────────┤"
+    "│ 1 │   1-0    │         1-1         │"
+    "├───┼──────────┤                     │"
+    "│ 2 │   2-0    │                     │"
+    "└───┴──────────┴─────────────────────┘"
+);
+
 fn create_span_list(count_rows: usize, count_cols: usize) -> impl Iterator<Item = Position> {
     (0..count_rows).flat_map(move |r| (0..count_cols).map(move |c| (r, c).into()))
 }
