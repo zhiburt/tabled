@@ -26,5 +26,5 @@ fn main() {
     let output2 = table2.to_string();
     let output = Table::new([(output1, output2)]);
 
-    println!("{}", output);
+    println!("{output}");
 }

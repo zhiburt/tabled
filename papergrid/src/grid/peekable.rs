@@ -1328,6 +1328,13 @@ mod grid_spanned {
                     let pos = (row, col).into();
 
                     if ctx.cfg.is_cell_covered_by_both_spans(pos) {
+                        let is_last_column = col + 1 == shape.count_columns;
+                        if is_last_column {
+                            let pos = (row, col + 1).into();
+                            let count_columns = shape.count_columns;
+                            print_vertical_char(f, ctx.cfg, pos, i, count_lines, count_columns)?;
+                        }
+
                         continue;
                     }
 

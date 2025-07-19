@@ -178,6 +178,7 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
 
         let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1).into(), shape);
         let has_up = has_left(cfg, (row - 1, col).into(), shape);
+        let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col).into(), shape);
 
         if has_up && !has_right {
             border.right_top_corner = borders.right_intersection;
@@ -187,9 +188,13 @@ fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
             border.right_top_corner = borders.left_intersection;
         }
 
-        let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col).into(), shape);
         if has_down {
             border.left_bottom_corner = borders.top_intersection;
+        }
+
+        if !has_down && !has_up && !has_right {
+            border.right_top_corner = borders.vertical;
+            border.left_bottom_corner = borders.bottom;
         }
 
         cfg.set_border((row, col).into(), border);
