@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// A records iterator which truncates all cells to a given width.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Hash, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TruncateContent<I, D> {
     records: I,
     dimension: D,

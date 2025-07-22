@@ -22,7 +22,7 @@ use super::Position;
 ///   Which indexes are 0, 1.
 ///
 /// In [`Entity`] terms, all cells on the grid we call `Global`.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Entity {
     /// All cells on the grid.
     Global,
@@ -56,7 +56,7 @@ impl From<(usize, usize)> for Entity {
 /// An iterator over cells.
 ///
 /// Produced from [`Entity::iter`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EntityIterator {
     entity: Entity,
     count_rows: usize,

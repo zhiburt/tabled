@@ -11,7 +11,7 @@ use super::util::bounds_to_usize;
 /// Column denotes a set of cells on given columns on a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Columns<R> {
     range: R,
 }
@@ -73,7 +73,7 @@ where
 }
 
 /// `FirstColumn` represents the first column on a grid.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FirstColumn;
 
 impl<I> Object<I> for FirstColumn
@@ -100,7 +100,7 @@ impl Add<usize> for FirstColumn {
 }
 
 /// `LastColumn` represents the last column on a grid.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LastColumn;
 
 impl<I> Object<I> for LastColumn
@@ -128,7 +128,7 @@ impl Sub<usize> for LastColumn {
 }
 
 /// Column represents a single column on a grid.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Column(usize);
 
 impl<I> Object<I> for Column {
@@ -152,7 +152,7 @@ impl From<Column> for usize {
 }
 
 /// `LastColumnOffset` represents a single column on a grid indexed via offset from the last column.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LastColumnOffset {
     offset: usize,
 }
@@ -181,7 +181,7 @@ where
 /// An [`Iterator`] which goes goes over columns of a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ColumnsIter {
     start: usize,
     end: usize,

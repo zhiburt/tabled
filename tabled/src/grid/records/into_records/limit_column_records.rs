@@ -3,7 +3,7 @@
 use crate::grid::records::IntoRecords;
 
 /// An iterator which limits amount of columns.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LimitColumns<I> {
     records: I,
     limit: usize,

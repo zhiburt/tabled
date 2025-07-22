@@ -3,7 +3,7 @@
 use crate::grid::records::IntoRecords;
 
 /// [`LimitRows`] is an records iterator which limits amount of rows.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LimitRows<I> {
     records: I,
     limit: usize,
