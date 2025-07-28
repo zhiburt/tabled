@@ -16,7 +16,7 @@ ansi = ["ansi-str", "ansitok"]
 unicode-width = "0.2"
 bytecount = "0.6"
 ansi-str = { version = "0.9", optional = true }
-ansitok = { version = "0.3", optional = true  }
+ansitok = { git = "https://gitlab.com/zhiburt/ansitok/", rev = "099ebf7960bd298f0154d793720741f8cd1e898b", optional = true  }
 fnv = { version = "1.0", optional = true }
 
 [dev-dependencies]
