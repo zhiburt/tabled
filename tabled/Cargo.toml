@@ -28,8 +28,8 @@ assert = ["testing_table"]
 papergrid = { path = "../papergrid", default-features = false }
 tabled_derive = { version = "0.11", optional = true }
 testing_table = { version = "0.3", default-features = false, optional = true }
-ansi-str = { version = "0.9", optional = true }
-ansitok = { version = "0.3", optional = true }
+ansi-str = { git = "https://github.com/zhiburt/ansi-str/", rev = "cf2b7a2cddfbb4aabf44dcc6f25a7b8bbb991d7d", optional = true }
+ansitok = { git = "https://gitlab.com/zhiburt/ansitok/", rev = "099ebf7960bd298f0154d793720741f8cd1e898b", optional = true }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
