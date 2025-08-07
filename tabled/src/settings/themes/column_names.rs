@@ -13,7 +13,7 @@ use crate::{
     settings::{
         object::{Column, Row},
         style::LineText,
-        Alignment, Color, TableOption,
+        Alignment, Color, Padding, TableOption,
     },
 };
 
@@ -75,9 +75,12 @@ use crate::{
 /// ```
 #[derive(Debug, Clone)]
 pub struct ColumnNames {
-    names: Option<Vec<String>>,
+    // todo: In case of vertical column names we shall delete column right????
+    delete_head: bool,
+    names: Vec<String>,
     colors: Option<ListValue<Color>>,
     alignments: ListValue<Alignment>,
+    paddings: ListValue<Padding>,
     line: usize,
 }
 
@@ -108,9 +111,11 @@ impl ColumnNames {
     /// ```
     pub fn head() -> Self {
         Self {
+            delete_head: true,
             names: Default::default(),
             colors: Default::default(),
             line: Default::default(),
+            paddings: ListValue::Static(Padding::zero()),
             alignments: ListValue::Static(Alignment::left()),
         }
     }
@@ -139,12 +144,14 @@ impl ColumnNames {
     pub fn new<I>(names: I) -> Self
     where
         I: IntoIterator,
-        I::Item: Into<String>,
+        I::Item: AsRef<str>,
     {
-        let names = names.into_iter().map(Into::into).collect::<Vec<_>>();
+        let names = collect_first_lines(names);
 
         Self {
-            names: Some(names),
+            names,
+            delete_head: false,
+            paddings: ListValue::Static(Padding::zero()),
             alignments: ListValue::Static(Alignment::left()),
             colors: Default::default(),
             line: 0,
@@ -180,7 +187,9 @@ impl ColumnNames {
     {
         Self {
             names: self.names,
+            delete_head: self.delete_head,
             line: self.line,
+            paddings: self.paddings,
             alignments: self.alignments,
             colors: Some(color.into()),
         }
@@ -209,9 +218,11 @@ impl ColumnNames {
     pub fn line(self, i: usize) -> Self {
         Self {
             names: self.names,
-            line: i,
+            delete_head: self.delete_head,
+            paddings: self.paddings,
             alignments: self.alignments,
             colors: self.colors,
+            line: i,
         }
     }
 
@@ -244,11 +255,24 @@ impl ColumnNames {
     {
         Self {
             names: self.names,
+            delete_head: self.delete_head,
+            paddings: self.paddings,
             line: self.line,
-            alignments: alignment.into(),
             colors: self.colors,
+            alignments: alignment.into(),
         }
     }
+}
+
+fn collect_first_lines<I>(names: I) -> Vec<String>
+where
+    I: IntoIterator,
+    I::Item: AsRef<str>,
+{
+    names
+        .into_iter()
+        .map(|name| name.as_ref().lines().next().unwrap_or("").to_string())
+        .collect::<Vec<_>>()
 }
 
 // TODO: Split into ColumnNames and RowNames
@@ -268,31 +292,35 @@ impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension> for
         }
 
         let alignment_horizontal = convert_alignment_value(self.alignments.clone());
-        let alignment_vertical = convert_alignment_value(self.alignments.clone());
+        let alignment_vertical = convert_alignment_value(self.alignments);
+        let is_vertical = alignment_vertical.is_some();
 
-        if let Some(alignment) = alignment_horizontal {
-            let names = get_column_names(records, self.names);
-            let names = vec_set_size(names, records.count_columns());
-            set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
-            return;
+        let mut names = self.names;
+        if self.delete_head {
+            names = collect_head(records);
         }
 
+        let size = if is_vertical {
+            records.count_rows()
+        } else {
+            records.count_columns()
+        };
+
+        ensure_vector_size(&mut names, size);
+
         if let Some(alignment) = alignment_vertical {
-            let names = get_column_names(records, self.names);
-            let names = vec_set_size(names, records.count_rows());
             set_row_text(names, self.line, alignment, self.colors, records, dims, cfg);
             return;
         }
 
-        let names = get_column_names(records, self.names);
-        let names = vec_set_size(names, records.count_columns());
-        let alignment = ListValue::Static(AlignmentHorizontal::Left);
+        let alignment =
+            alignment_horizontal.unwrap_or(ListValue::Static(AlignmentHorizontal::Left));
         set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
     }
 
     fn hint_change(&self) -> Option<Entity> {
-        let alignment_vertical: Option<ListValue<AlignmentVertical>> =
-            convert_alignment_value(self.alignments.clone());
+        let alignment_vertical =
+            convert_alignment_value::<AlignmentVertical>(self.alignments.clone());
         if alignment_vertical.is_some() {
             Some(Entity::Column(0))
         } else {
@@ -373,20 +401,7 @@ fn set_row_text(
     }
 }
 
-fn get_column_names(
-    records: &mut VecRecords<Text<String>>,
-    opt: Option<Vec<String>>,
-) -> Vec<String> {
-    match opt {
-        Some(names) => names
-            .into_iter()
-            .map(|name| name.lines().next().unwrap_or("").to_string())
-            .collect::<Vec<_>>(),
-        None => collect_head(records),
-    }
-}
-
-fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
+fn ensure_vector_size(data: &mut Vec<String>, size: usize) {
     match data.len().cmp(&size) {
         cmp::Ordering::Equal => {}
         cmp::Ordering::Less => {
@@ -397,8 +412,6 @@ fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
             data.truncate(size);
         }
     }
-
-    data
 }
 
 fn collect_head(records: &mut VecRecords<Text<String>>) -> Vec<String> {
