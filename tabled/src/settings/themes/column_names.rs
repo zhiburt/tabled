@@ -2,7 +2,9 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, Position},
+        config::{
+            AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, Position, Sides,
+        },
         dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
@@ -11,7 +13,7 @@ use crate::{
         util::string::{get_char_width, get_line_width},
     },
     settings::{
-        object::{Column, Row},
+        object::{Columns, Rows},
         style::LineText,
         Alignment, Color, Padding, TableOption,
     },
@@ -262,6 +264,43 @@ impl ColumnNames {
             alignments: alignment.into(),
         }
     }
+
+    /// Set an padding for the names.
+    ///
+    /// By default it's 0.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::iter::FromIterator;
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{themes::ColumnNames, Alignment},
+    /// };
+    ///
+    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
+    /// table.with(ColumnNames::new(["head1", "head2"]).alignment(Alignment::right()));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+--head1+--head2+\n\
+    ///      | Hello | World |\n\
+    ///      +-------+-------+"
+    /// );
+    /// ```
+    pub fn padding<T>(self, padding: T) -> Self
+    where
+        T: Into<ListValue<Padding>>,
+    {
+        Self {
+            names: self.names,
+            delete_head: self.delete_head,
+            line: self.line,
+            colors: self.colors,
+            alignments: self.alignments,
+            paddings: padding.into(),
+        }
+    }
 }
 
 fn collect_first_lines<I>(names: I) -> Vec<String>
@@ -366,33 +405,44 @@ fn set_column_text(
 ) {
     dims.estimate(&*records, cfg);
 
-    let count_columns = info.names.len();
-    let widths = info
-        .names
-        .iter()
-        .enumerate()
-        .map(|(col, name)| (cmp::max(get_line_width(name), dims.get_width(col))))
-        .collect::<Vec<_>>();
+    let count_columns = records.count_columns();
 
-    dims.set_widths(widths.clone());
+    let mut widths = Vec::with_capacity(count_columns);
+    for (col, name) in info.names.iter().enumerate() {
+        let pad = Sides::from(info.paddings.get_or_else(col, || Padding::zero()));
+        let name_width = get_line_width(name) + pad.left.size + pad.right.size;
+        let column_width = dims.get_width(col);
 
-    let mut total_width = 0;
-    for (column, (width, name)) in widths.into_iter().zip(info.names).enumerate() {
+        let width = cmp::max(name_width, column_width);
+
+        widths.push(width);
+    }
+
+    let mut global_offset = 0;
+    for (column, (name, width)) in info.names.into_iter().zip(widths.iter()).enumerate() {
         let color = get_color(&info.colors, column);
         let alignment = info
             .alignments
-            .get(column)
-            .unwrap_or(AlignmentHorizontal::Left);
-        let left_vertical = get_vertical_width(cfg, (info.line, column).into(), count_columns);
-        let grid_offset =
-            total_width + left_vertical + get_horizontal_indent(&name, alignment, width);
-        let line = Row::from(info.line);
+            .get_or_else(column, || AlignmentHorizontal::Left);
+        let padding = Sides::from(info.paddings.get_or_else(column, || Padding::zero()));
+        let vertical_pos = (info.line, column).into();
+        let left_vertical = get_vertical_width(cfg, vertical_pos, count_columns);
+        let width_without_padding = *width - padding.left.size - padding.right.size;
+        let text_indent = get_horizontal_indent(&name, alignment, width_without_padding);
+        let offset = global_offset + left_vertical + padding.left.size + text_indent;
 
-        let linetext = create_line_text(&name, grid_offset, color, line);
+        // We set widths on each iteration because LineText will invalidate it....
+        // TODO: Test LineText hint
+        dims.set_widths(widths.clone());
+
+        let linetext = create_line_text(&name, offset, color, Rows::one(info.line));
         linetext.change(records, cfg, dims);
 
-        total_width += width + left_vertical;
+        global_offset += width + left_vertical;
     }
+
+    // We set widths second time because LineText does not have a hint - so it will invalidate it.
+    dims.set_widths(widths);
 }
 
 #[derive(Debug, Clone)]
@@ -431,29 +481,38 @@ fn set_row_text(
     dims.estimate(&*records, cfg);
 
     let count_rows = info.names.len();
-    let heights = info
-        .names
-        .iter()
-        .enumerate()
-        .map(|(row, name)| (cmp::max(get_line_width(name), dims.get_height(row))))
-        .collect::<Vec<_>>();
 
-    dims.set_heights(heights.clone());
+    let mut heights = Vec::with_capacity(count_rows);
+    for (row, name) in info.names.iter().enumerate() {
+        let pad = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
+        let name_height = get_line_width(name) + pad.top.size + pad.bottom.size;
+        let row_height = dims.get_height(row);
 
-    let mut total_height = 0;
-    for (row, (row_height, name)) in heights.into_iter().zip(info.names).enumerate() {
+        let height = cmp::max(name_height, row_height);
+
+        heights.push(height);
+    }
+
+    let mut global_offset = 0;
+    for (row, (name, row_height)) in info.names.into_iter().zip(heights.iter()).enumerate() {
         let color = get_color(&info.colors, row);
-        let alignment = info.alignments.get(row).unwrap_or(AlignmentVertical::Top);
-        let top_horizontal = get_horizontal_width(cfg, (row, info.line).into(), count_rows);
-        let cell_indent = get_vertical_indent(&name, alignment, row_height);
-        let grid_offset = total_height + top_horizontal + cell_indent;
-        let line = Column::from(info.line);
+        let alignment = info.alignments.get_or_else(row, || AlignmentVertical::Top);
+        let padding = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
+        let horizontal_pos = (row, info.line).into();
+        let top_horizontal = get_horizontal_width(cfg, horizontal_pos, count_rows);
+        let height = row_height - padding.top.size - padding.bottom.size;
+        let cell_indent = get_vertical_indent(&name, alignment, height);
+        let offset = global_offset + top_horizontal + cell_indent + padding.top.size;
 
-        let linetext = create_line_text(&name, grid_offset, color, line);
+        dims.set_heights(heights.clone());
+
+        let linetext = create_line_text(&name, offset, color, Columns::one(info.line));
         linetext.change(records, cfg, dims);
 
-        total_height += row_height + top_horizontal;
+        global_offset += row_height + top_horizontal;
     }
+
+    dims.set_heights(heights);
 }
 
 fn ensure_vector_size(data: &mut Vec<String>, size: usize) {
@@ -565,6 +624,14 @@ impl<T> ListValue<T> {
             ListValue::List(list) => list.get(i).copied(),
             ListValue::Static(alignment) => Some(*alignment),
         }
+    }
+
+    fn get_or_else<F>(&self, i: usize, default: F) -> T
+    where
+        F: FnOnce() -> T,
+        T: Copy,
+    {
+        self.get(i).unwrap_or_else(default)
     }
 }
 
