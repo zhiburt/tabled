@@ -144,3 +144,15 @@ impl<R, D> TableOption<R, CompactMultilineConfig, D> for Padding {
         cfg.set_padding(self.indent);
     }
 }
+
+impl From<Padding> for Sides<Indent> {
+    fn from(value: Padding) -> Self {
+        value.indent
+    }
+}
+
+impl From<Sides<Indent>> for Padding {
+    fn from(indent: Sides<Indent>) -> Self {
+        Self { indent }
+    }
+}
