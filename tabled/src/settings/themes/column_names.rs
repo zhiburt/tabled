@@ -2,9 +2,7 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{
-            AlignmentHorizontal, AlignmentVertical, ColoredConfig, Entity, Offset, Position, Sides,
-        },
+        config::{AlignmentHorizontal, ColoredConfig, Entity, Offset, Position, Sides},
         dimension::{CompleteDimension, Dimension, Estimate},
         records::{
             vec_records::{Text, VecRecords},
@@ -12,11 +10,7 @@ use crate::{
         },
         util::string::{get_char_width, get_line_width},
     },
-    settings::{
-        object::{Columns, Rows},
-        style::LineText,
-        Alignment, Color, Padding, TableOption,
-    },
+    settings::{object::Rows, style::LineText, Alignment, Color, Padding, TableOption},
 };
 
 /// [`ColumnNames`] sets strings on horizontal lines for the columns.
@@ -330,43 +324,23 @@ impl TableOption<VecRecords<Text<String>>, ColoredConfig, CompleteDimension> for
             return;
         }
 
-        let alignment_horizontal = convert_alignment_value(self.alignments.clone());
-        let alignment_vertical = convert_alignment_value(self.alignments);
-        let is_vertical = alignment_vertical.is_some();
-
-        let mut names = self.names;
-        if self.delete_head {
-            names = collect_head(records);
-        }
-
-        let size = if is_vertical {
-            records.count_rows()
+        let mut names = if self.delete_head {
+            collect_head(records)
         } else {
-            records.count_columns()
+            self.names
         };
 
+        let size = records.count_columns();
         ensure_vector_size(&mut names, size);
 
-        if let Some(alignment) = alignment_vertical {
-            let info = RowInfo::new(names, self.colors, alignment, self.paddings, self.line);
-            set_row_text(records, dims, cfg, info);
-            return;
-        }
-
-        let alignment =
-            alignment_horizontal.unwrap_or(ListValue::Static(AlignmentHorizontal::Left));
+        let alignment = convert_alignment_value(self.alignments.clone())
+            .unwrap_or(ListValue::Static(AlignmentHorizontal::Left));
         let info = ColumnsInfo::new(names, self.colors, alignment, self.paddings, self.line);
         set_column_text(records, dims, cfg, info);
     }
 
     fn hint_change(&self) -> Option<Entity> {
-        let alignment_vertical =
-            convert_alignment_value::<AlignmentVertical>(self.alignments.clone());
-        if alignment_vertical.is_some() {
-            Some(Entity::Column(0))
-        } else {
-            Some(Entity::Row(0))
-        }
+        Some(Entity::Row(0))
     }
 }
 
@@ -445,76 +419,6 @@ fn set_column_text(
     dims.set_widths(widths);
 }
 
-#[derive(Debug, Clone)]
-struct RowInfo {
-    names: Vec<String>,
-    colors: Option<ListValue<Color>>,
-    alignments: ListValue<AlignmentVertical>,
-    paddings: ListValue<Padding>,
-    line: usize,
-}
-
-impl RowInfo {
-    fn new(
-        names: Vec<String>,
-        colors: Option<ListValue<Color>>,
-        alignments: ListValue<AlignmentVertical>,
-        paddings: ListValue<Padding>,
-        line: usize,
-    ) -> Self {
-        Self {
-            names,
-            colors,
-            alignments,
-            paddings,
-            line,
-        }
-    }
-}
-
-fn set_row_text(
-    records: &mut VecRecords<Text<String>>,
-    dims: &mut CompleteDimension,
-    cfg: &mut ColoredConfig,
-    info: RowInfo,
-) {
-    dims.estimate(&*records, cfg);
-
-    let count_rows = info.names.len();
-
-    let mut heights = Vec::with_capacity(count_rows);
-    for (row, name) in info.names.iter().enumerate() {
-        let pad = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
-        let name_height = get_line_width(name) + pad.top.size + pad.bottom.size;
-        let row_height = dims.get_height(row);
-
-        let height = cmp::max(name_height, row_height);
-
-        heights.push(height);
-    }
-
-    let mut global_offset = 0;
-    for (row, (name, row_height)) in info.names.into_iter().zip(heights.iter()).enumerate() {
-        let color = get_color(&info.colors, row);
-        let alignment = info.alignments.get_or_else(row, || AlignmentVertical::Top);
-        let padding = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
-        let horizontal_pos = (row, info.line).into();
-        let top_horizontal = get_horizontal_width(cfg, horizontal_pos, count_rows);
-        let height = row_height - padding.top.size - padding.bottom.size;
-        let cell_indent = get_vertical_indent(&name, alignment, height);
-        let offset = global_offset + top_horizontal + cell_indent + padding.top.size;
-
-        dims.set_heights(heights.clone());
-
-        let linetext = create_line_text(&name, offset, color, Columns::one(info.line));
-        linetext.change(records, cfg, dims);
-
-        global_offset += row_height + top_horizontal;
-    }
-
-    dims.set_heights(heights);
-}
-
 fn ensure_vector_size(data: &mut Vec<String>, size: usize) {
     match data.len().cmp(&size) {
         cmp::Ordering::Equal => {}
@@ -569,22 +473,8 @@ fn get_horizontal_indent(text: &str, align: AlignmentHorizontal, available: usiz
     }
 }
 
-fn get_vertical_indent(text: &str, align: AlignmentVertical, available: usize) -> usize {
-    match align {
-        AlignmentVertical::Top => 0,
-        AlignmentVertical::Bottom => available - get_line_width(text),
-        AlignmentVertical::Center => (available - get_line_width(text)) / 2,
-    }
-}
-
 fn get_vertical_width(cfg: &mut ColoredConfig, pos: Position, count_columns: usize) -> usize {
     cfg.get_vertical(pos, count_columns)
-        .map(get_char_width)
-        .unwrap_or(0)
-}
-
-fn get_horizontal_width(cfg: &mut ColoredConfig, pos: Position, count_rows: usize) -> usize {
-    cfg.get_horizontal(pos, count_rows)
         .map(get_char_width)
         .unwrap_or(0)
 }
