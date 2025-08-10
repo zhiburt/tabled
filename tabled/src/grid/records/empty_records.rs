@@ -2,10 +2,12 @@
 
 use core::iter::{repeat_n, RepeatN};
 
+use crate::grid::records::ExactRecords;
+
 use super::Records;
 
 /// Empty representation of [`Records`].
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct EmptyRecords {
     rows: usize,
     cols: usize,
@@ -37,5 +39,11 @@ impl Records for EmptyRecords {
 
     fn hint_count_rows(&self) -> Option<usize> {
         Some(self.rows)
+    }
+}
+
+impl ExactRecords for EmptyRecords {
+    fn count_rows(&self) -> usize {
+        self.rows
     }
 }

@@ -4,7 +4,7 @@ use crate::grid::records::IntoRecords;
 
 /// BufRecords inspects [`IntoRecords`] iterator and keeps read data buffered.
 /// So it can be checking before hand.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct BufRecords<I, T> {
     iter: I,
     buf: Vec<Vec<T>>,

@@ -6,7 +6,7 @@ use crate::{
 
 /// Frame includes cells which are on the edges of each side.
 /// Therefore it's [`Object`] implementation returns a subset of cells which are present in frame.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Frame;
 
 impl<I> Object<I> for Frame
@@ -23,7 +23,7 @@ where
 /// An [`Iterator`] which goes goes over all cell on a frame of a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FrameIter {
     rows: usize,
     cols: usize,

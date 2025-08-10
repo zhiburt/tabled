@@ -116,7 +116,7 @@ pub trait Object<R> {
 /// Combines 2 sets of cells into one.
 ///
 /// Duplicates are removed from the output set.
-#[derive(Debug)]
+#[derive(Debug, Default, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UnionCombination<L, R, I> {
     lhs: L,
     rhs: R,
@@ -149,10 +149,24 @@ where
     }
 }
 
+impl<L, R, I> Clone for UnionCombination<L, R, I>
+where
+    L: Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            lhs: self.lhs.clone(),
+            rhs: self.rhs.clone(),
+            _records: PhantomData,
+        }
+    }
+}
+
 /// Difference struct used for chaining [`Object`]'s.
 ///
 /// Returns cells from 1st set with removed ones from the 2nd set.
-#[derive(Debug)]
+#[derive(Debug, Default, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DiffCombination<L, R, I> {
     lhs: L,
     rhs: R,
@@ -185,11 +199,25 @@ where
     }
 }
 
+impl<L, R, I> Clone for DiffCombination<L, R, I>
+where
+    L: Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            lhs: self.lhs.clone(),
+            rhs: self.rhs.clone(),
+            _records: PhantomData,
+        }
+    }
+}
+
 /// Intersection struct used for chaining [`Object`]'s.
 ///
 /// Returns cells which are present in 2 sets.
 /// But not in one of them
-#[derive(Debug)]
+#[derive(Debug, Default, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IntersectionCombination<L, R, I> {
     lhs: L,
     rhs: R,
@@ -222,11 +250,25 @@ where
     }
 }
 
+impl<L, R, I> Clone for IntersectionCombination<L, R, I>
+where
+    L: Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            lhs: self.lhs.clone(),
+            rhs: self.rhs.clone(),
+            _records: PhantomData,
+        }
+    }
+}
+
 /// Inversion struct used for chaining [`Object`]'s.
 ///
 /// Returns cells which are present in 2 sets.
 /// But not in one of them
-#[derive(Debug)]
+#[derive(Debug, Default, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InversionCombination<O, I> {
     obj: O,
     _records: PhantomData<I>,
@@ -255,8 +297,20 @@ where
     }
 }
 
+impl<O, I> Clone for InversionCombination<O, I>
+where
+    O: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            obj: self.obj.clone(),
+            _records: PhantomData,
+        }
+    }
+}
+
 /// An [`Iterator`] which goes over a combination [`Object::Iter`].
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct UnionIter<L, R> {
     lhs: Option<L>,
     rhs: R,
@@ -340,7 +394,7 @@ where
 }
 
 /// An [`Iterator`] which goes over only cells which are present in first [`Object::Iter`] but not second.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct DiffIter<L> {
     lhs: L,
     seen: HashSet<Position>,
@@ -408,7 +462,7 @@ where
 }
 
 /// An [`Iterator`] which goes goes over cells which are present in both [`Object::Iter`]ators.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct IntersectIter<L> {
     lhs: L,
     seen: HashSet<Position>,
@@ -476,7 +530,7 @@ where
 }
 
 /// An [`Iterator`] which goes goes over cells which are not present an [`Object::Iter`]ator.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct InversionIter {
     all: SectorCellsIter,
     seen: HashSet<Position>,
@@ -519,7 +573,7 @@ impl Iterator for InversionIter {
 
 #[cfg(test)]
 mod tests {
-    use crate::grid::records::vec_records::VecRecords;
+    use crate::grid::records::{vec_records::VecRecords, EmptyRecords};
 
     use super::*;
 
@@ -793,6 +847,63 @@ mod tests {
             [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
         assert_eq!(vec_cells(Rows::first().inverse(), 0, 0), []);
+    }
+
+    #[test]
+    #[ignore = "compile time check"]
+    fn object_test_copy_op() {
+        macro_rules! __copy {
+            ($a:expr) => {
+                #[allow(unused)]
+                {
+                    let expr1 = $a;
+                    let expr2 = expr1;
+                    let _ = (expr1, expr2);
+                }
+            };
+        }
+
+        __copy!(Rows::first());
+        __copy!(Rows::last());
+        __copy!(Columns::first());
+        __copy!(Columns::last());
+        __copy!(Segment::all());
+        __copy!(Cell::new(0, 0));
+        __copy!(Object::<EmptyRecords>::intersect(
+            Rows::first(),
+            Rows::last()
+        ));
+        __copy!(Object::<EmptyRecords>::inverse(Rows::first()));
+        __copy!(Object::<EmptyRecords>::not(Rows::first(), Rows::last()));
+    }
+
+    #[test]
+    #[ignore = "compile time check"]
+    fn object_test_clone_op() {
+        macro_rules! __clone {
+            ($a:expr) => {
+                #[allow(unused)]
+                {
+                    let expr1 = $a;
+                    let expr2 = expr1.clone();
+                    let _ = (expr1, expr2);
+                }
+            };
+        }
+
+        __clone!(Rows::first());
+        __clone!(Rows::last());
+        __clone!(Columns::first());
+        __clone!(Columns::last());
+        __clone!(Segment::all());
+        __clone!(Cell::new(0, 0));
+        __clone!(Object::<EmptyRecords>::intersect(
+            Rows::first(),
+            Rows::last()
+        ));
+        __clone!(Object::<EmptyRecords>::inverse(Rows::first()));
+        __clone!(Object::<EmptyRecords>::not(Rows::first(), Rows::last()));
+        __clone!(Object::<EmptyRecords>::and(Rows::first(), Rows::last()));
     }
 
     fn vec_cells<O: Object<VecRecords<String>>>(

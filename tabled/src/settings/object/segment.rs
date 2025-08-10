@@ -13,7 +13,7 @@ use super::util::bounds_to_usize;
 /// This structure represents a sub table of [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Segment<C, R> {
     columns: C,
     rows: R,
@@ -63,7 +63,7 @@ where
 /// This is a segment which contains all cells on the table.
 ///
 /// Can be created from [`Segment::all`].
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SegmentAll;
 
 impl<I> Object<I> for SegmentAll {
@@ -77,7 +77,7 @@ impl<I> Object<I> for SegmentAll {
 /// An [`Iterator`] which goes goes over all cell in a sector in a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SectorIter {
     iter: SectorCellsIter,
 }
@@ -98,7 +98,7 @@ impl Iterator for SectorIter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct SectorCellsIter {
     rows_end: usize,
     cols_start: usize,

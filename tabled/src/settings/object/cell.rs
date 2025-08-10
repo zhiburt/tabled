@@ -17,7 +17,7 @@ use crate::{
 /// ```
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Cell(usize, usize);
 
 impl Cell {
@@ -70,7 +70,7 @@ impl<I> Object<I> for (usize, usize) {
 }
 
 /// An [`Iterator`] which returns an entity once.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EntityOnce {
     entity: Option<Entity>,
 }

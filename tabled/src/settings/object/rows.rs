@@ -11,7 +11,7 @@ use super::util::bounds_to_usize;
 /// Row denotes a set of cells on given rows on a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rows<R> {
     range: R,
 }
@@ -102,7 +102,7 @@ impl From<usize> for Row {
 /// It's often contains headers data.
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FirstRow;
 
 impl<I> Object<I> for FirstRow
@@ -131,7 +131,7 @@ impl Add<usize> for FirstRow {
 /// This structure represents the last row of a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LastRow;
 
 impl<I> Object<I> for LastRow
