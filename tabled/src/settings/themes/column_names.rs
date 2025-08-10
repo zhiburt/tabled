@@ -383,7 +383,7 @@ fn set_column_text(
 
     let mut widths = Vec::with_capacity(count_columns);
     for (col, name) in info.names.iter().enumerate() {
-        let pad = Sides::from(info.paddings.get_or_else(col, || Padding::zero()));
+        let pad = Sides::from(info.paddings.get_or_else(col, Padding::zero));
         let name_width = get_line_width(name) + pad.left.size + pad.right.size;
         let column_width = dims.get_width(col);
 
@@ -398,7 +398,7 @@ fn set_column_text(
         let alignment = info
             .alignments
             .get_or_else(column, || AlignmentHorizontal::Left);
-        let padding = Sides::from(info.paddings.get_or_else(column, || Padding::zero()));
+        let padding = Sides::from(info.paddings.get_or_else(column, Padding::zero));
         let vertical_pos = (info.line, column).into();
         let left_vertical = get_vertical_width(cfg, vertical_pos, count_columns);
         let width_without_padding = *width - padding.left.size - padding.right.size;

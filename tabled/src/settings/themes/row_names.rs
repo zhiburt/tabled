@@ -347,7 +347,7 @@ fn set_row_text(
 
     let mut heights = Vec::with_capacity(count_rows);
     for (row, name) in info.names.iter().enumerate() {
-        let pad = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
+        let pad = Sides::from(info.paddings.get_or_else(row, Padding::zero));
         let name_height = get_line_width(name) + pad.top.size + pad.bottom.size;
         let row_height = dims.get_height(row);
 
@@ -360,7 +360,7 @@ fn set_row_text(
     for (row, (name, row_height)) in info.names.into_iter().zip(heights.iter()).enumerate() {
         let color = get_color(&info.colors, row);
         let alignment = info.alignments.get_or_else(row, || AlignmentVertical::Top);
-        let padding = Sides::from(info.paddings.get_or_else(row, || Padding::zero()));
+        let padding = Sides::from(info.paddings.get_or_else(row, Padding::zero));
         let horizontal_pos = (row, info.line).into();
         let top_horizontal = get_horizontal_width(cfg, horizontal_pos, count_rows);
         let height = row_height - padding.top.size - padding.bottom.size;
