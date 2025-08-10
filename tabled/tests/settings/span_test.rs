@@ -10,20 +10,21 @@ use tabled::{
     grid::config::Position,
     settings::{
         object::{Columns, Segment},
-        style::{BorderSpanCorrection, Style},
+        style::Style,
+        themes::BorderCorrection,
         Alignment, Highlight, Modify, Padding, Panel, Span,
     },
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     span_column_test_0,
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(2))),
+        .with(Modify::new(Columns::one(0)).with(Span::column(2))),
     " N | column 1 | column 2 "
     "-+-+----------+----------"
     " 0 | 0-1      | 0-2      "
@@ -49,7 +50,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(4))),
+        .with(Modify::new(Columns::one(0)).with(Span::column(4))),
     " N "
     "+++"
     " 0 "
@@ -351,7 +352,7 @@ test_table!(
         .with(Panel::horizontal(0,"Tabled Releases"))
         .with(Modify::new((1, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(BorderSpanCorrection),
+        .with(BorderCorrection::span()),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -367,7 +368,7 @@ test_table!(
         .with(Panel::horizontal(0,"Tabled Releases"))
         .with(Modify::new((2, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(BorderSpanCorrection),
+        .with(BorderCorrection::span()),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----+-----+-----+"
@@ -386,7 +387,7 @@ test_table!(
         .with(Modify::new((1, 0)).with(Span::column(2)))
         .with(Modify::new((2, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(BorderSpanCorrection),
+        .with(BorderCorrection::span()),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -405,7 +406,7 @@ fn span_column_exceeds_boundaries_test() {
     // todo: determine if it's the right behaviour
 
     Matrix::new(3, 3)
-        .with(Modify::new(Columns::single(0)).with(Span::column(100)))
+        .with(Modify::new(Columns::one(0)).with(Span::column(100)))
         .to_string();
 }
 
@@ -597,7 +598,7 @@ mod row {
                 .clone()
                 .with(Style::ascii())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(2)))
                 .to_string();
 
             assert_eq!(
@@ -617,7 +618,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(2)))
                 .to_string();
 
             assert_eq!(
@@ -652,7 +653,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(4)))
+                .with(Modify::new(Rows::one(0)).with(Span::row(4)))
                 .to_string();
 
             assert_eq!(table, " N + column 0 + column 1 + column 2 ");
@@ -915,7 +916,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new((0, 0)).with(Span::row(2)))
             .with(Style::ascii())
-            .with(BorderSpanCorrection)
+            .with(BorderCorrection::span())
             .to_string();
 
         assert_eq!(
@@ -934,7 +935,7 @@ mod row {
             .with(Modify::new((1, 0)).with(Span::row(2)))
             .with(Modify::new((0, 2)).with(Span::row(3)))
             .with(Style::ascii())
-            .with(BorderSpanCorrection)
+            .with(BorderCorrection::span())
             .to_string();
 
         assert_eq!(
@@ -956,7 +957,7 @@ mod row {
             .with(Modify::new((0, 2)).with(Span::row(3)))
             .with(Modify::new((0, 1)).with(Span::row(2)))
             .with(Style::ascii())
-            .with(BorderSpanCorrection)
+            .with(BorderCorrection::span())
             .to_string();
 
         assert_eq!(
@@ -976,7 +977,7 @@ mod row {
             .with(Modify::new((1, 0)).with(Span::row(2)))
             .with(Modify::new((0, 1)).with(Span::row(2)).with(Span::column(2)))
             .with(Style::ascii())
-            .with(BorderSpanCorrection)
+            .with(BorderCorrection::span())
             .to_string();
 
         assert_eq!(
@@ -1008,7 +1009,7 @@ mod row {
             .with(v_span(2, 3, 3).with(String::from("just 1 column\nspan\n3\ncolumns")))
             .with(h_span(3, 1, 2))
             .with(Style::modern())
-            .with(BorderSpanCorrection)
+            .with(BorderCorrection::span())
             .with(Modify::new(Segment::all()).with(Alignment::center_vertical()))
             .to_string();
 
@@ -1043,7 +1044,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new((1, 1)).with(Span::row(3)))
             .with(Style::modern())
-            .with(Highlight::outline(Columns::single(1), '*'))
+            .with(Highlight::outline(Columns::one(1), '*'))
             .to_string();
 
         assert_eq!(
@@ -1237,7 +1238,7 @@ test_table!(
         .modify((3, 1), Span::row(2))
         .modify((3, 1), Span::column(2))
         .with(Style::modern())
-        .with(BorderSpanCorrection)
+        .with(BorderCorrection::span())
         .with(Alignment::center_vertical())
         .to_string(),
     "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐"
@@ -1278,7 +1279,7 @@ test_table!(
         table.modify((5, 1), Span::column(0));
         table.modify((6, 2), Span::column(0));
         table.modify((4, 0), Span::column(1));
-        table.with(BorderSpanCorrection);
+        table.with(BorderCorrection::span());
         table.with(Alignment::center());
 
         table.to_string()
@@ -1354,7 +1355,7 @@ test_table!(
         table.modify((2, 6), Span::row(0));
         table.modify((0, 4), Span::row(1));
         table.with(Style::modern_rounded());
-        table.with(BorderSpanCorrection);
+        table.with(BorderCorrection::span());
         table.with(Alignment::center_vertical());
         table.to_string()
     },
@@ -1403,6 +1404,40 @@ test_table!(
     "+---+     +     +     +"
     "| 2 |     |     |     |"
     "+---+-----+-----+-----+"
+);
+
+test_table!(
+    border_correction_right_bottom_corner_0,
+    Matrix::new(3, 3)
+        .with(Style::modern())
+        .modify((1, 1), (Span::column(3), Span::row(3)))
+        .with(BorderCorrection::span()),
+    "┌───┬──────────┬──────────┬──────────┐"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "├───┼──────────┴──────────┴──────────┤"
+    "│ 0 │              0-0               │"
+    "├───┤                                │"
+    "│ 1 │                                │"
+    "├───┤                                │"
+    "│ 2 │                                │"
+    "└───┴────────────────────────────────┘"
+);
+
+test_table!(
+    border_correction_right_bottom_corner_1,
+    Matrix::new(3, 3)
+        .with(Style::modern())
+        .modify((2, 2), (Span::column(2), Span::row(2)))
+        .with(BorderCorrection::span()),
+    "┌───┬──────────┬──────────┬──────────┐"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "├───┼──────────┼──────────┼──────────┤"
+    "│ 0 │   0-0    │   0-1    │   0-2    │"
+    "├───┼──────────┼──────────┴──────────┤"
+    "│ 1 │   1-0    │         1-1         │"
+    "├───┼──────────┤                     │"
+    "│ 2 │   2-0    │                     │"
+    "└───┴──────────┴─────────────────────┘"
 );
 
 fn create_span_list(count_rows: usize, count_cols: usize) -> impl Iterator<Item = Position> {

@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.20.0] - 2025-05-06
+
+### Added
+
+- Added `Table::nohead` function just like `Table::new` but with no header.
+- Added `Table::with_capacity` function just like `Table::new` but with an exact number of rows.
+
+### Changed
+
+- Changed `with(Border)` logic to set only outer border instead of border of all cells.
+- Made a number of refactorings of `tabled::grid::dimension::*` modules.
+- Made small optimization of `Wrap::text` and `Truncate::text`.
+- Made small optimization of `Text::new`.
+- Brought up to date benchmarks.
+- Renamed `Columns::single` into `Columns::one`.
+- Renamed `Rows::single` into `Rows::one`.
+- Moved back to `fnv` from `ahash` cause of WASM build.
+- Moved back to old `Wrap::keep_words` logic where we preserving all content.
+
+### Fixed
+
+- Fixed dependency `testing_table` inclusion (by [@klensy](https://github.com/klensy)).
+- Fixed `WASM` build (by [@cptpiepmatz](https://github.com/cptpiepmatz)).
+- Fixed not properly working caching logic of `TableOption::hint`.
+
+
+## [0.19.0] - 2025-24-04
+
+### Added
+
+- Added `tabled::assert` module.
+- Added `#[tabled(map)]` macro.
+- Added `derive::display::bool` function.
+- Added `derive::display::wrap` and `derive::display::truncate` function.
+- Added `Locator::value`.
+- Added `Table::get_dimension` function.
+- Added `ANSI` link handling in `Width::truncate`.
+- Added `Upper Title Case` and `lower title case` options for `rename_all`.
+- Added `no_std` in `testing_table`.
+
+### Changed
+
+- Changed `Reverse` interface.
+- Changed `Position` interface.
+- Changed `tabled::grid::dimension` structures.
+- Changed `IterTable` interface.
+- Migrated `ron` to `0.10`.
+- Renamed `ColumnNames::default()` into `ColumnsNames::head()`.
+- Renamed `BorderSpanCorrection` into `BorderCorrection::span()`.
+- Renamed `Offset::Begin` into `Offset::Start`.
+- Moved `Offset` out of `tabled` into `papergrid`.
+- Imroved wrap logic.
+- Switch underlying hash algorithm.
+- Improved README (by [@romanz](https://github.com/romanz)).
+- Improved README (by [@Diddy42](https://github.com/Diddy42)).
+
+### Fixed
+
+- Fixed `no_std` build (in actuall `no_std` env).
+- Fixed wrap emojie issue (releated to int overlap).
+- Fixed `LineText<LastColumn>`.
+
 ## [0.18.0] - 2025-07-02
 
 ### Added

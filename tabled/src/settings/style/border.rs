@@ -7,7 +7,7 @@ use crate::{
 
 #[cfg(feature = "std")]
 use crate::{
-    grid::config::{ColoredConfig, Entity},
+    grid::config::{ColoredConfig, Entity, Position},
     grid::records::{ExactRecords, Records},
     settings::{CellOption, TableOption},
 };
@@ -31,9 +31,9 @@ use crate::{
 /// ```rust,no_run
 /// # use tabled::{Table, settings::{style::{Style, Border}, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Style::ascii())
-///     .modify(Rows::single(0), Border::new().top('x'));
+/// let mut table = Table::new(&data);
+/// table.with(Style::ascii());
+/// table.modify(Rows::one(0), Border::new().top('x'));
 /// ```
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Border<T, B, L, R> {
@@ -274,72 +274,29 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<R, D> TableOption<R, ColoredConfig, D> for GridBorder<char>
-where
-    R: Records + ExactRecords,
-{
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let count_rows = records.count_rows();
-        let count_columns = records.count_columns();
-        let shape = (count_rows, count_columns);
+impl<R, D> TableOption<R, ColoredConfig, D> for GridBorder<char> {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.top = self.top;
+        borders.bottom = self.bottom;
+        borders.left = self.left;
+        borders.right = self.right;
+        borders.top_left = self.left_top_corner;
+        borders.top_right = self.right_top_corner;
+        borders.bottom_left = self.left_bottom_corner;
+        borders.bottom_right = self.right_bottom_corner;
 
-        if count_rows == 0 || count_columns == 0 {
-            return;
+        if borders.has_vertical() {
+            borders.top_intersection = self.top;
+            borders.bottom_intersection = self.bottom;
         }
 
-        let border = self;
-
-        for col in 0..count_columns {
-            let pos = (0, col).into();
-            let mut b = cfg.get_border(pos, shape);
-            b.top = border.top;
-            b.right_top_corner = border.top;
-            cfg.set_border(pos, b);
-
-            let pos = (count_rows - 1, col).into();
-            let mut b = cfg.get_border(pos, shape);
-            b.bottom = border.bottom;
-            b.right_bottom_corner = border.bottom;
-            cfg.set_border(pos, b);
+        if borders.has_horizontal() {
+            borders.left_intersection = self.left;
+            borders.right_intersection = self.right;
         }
 
-        for row in 0..count_rows {
-            let pos = (row, 0).into();
-            let mut b = cfg.get_border(pos, shape);
-            b.left = border.left;
-            b.left_bottom_corner = border.left;
-            cfg.set_border(pos, b);
-
-            let pos = (row, count_columns - 1).into();
-            let mut b = cfg.get_border(pos, shape);
-            b.right = border.right;
-            b.right_bottom_corner = border.right;
-            cfg.set_border(pos, b);
-        }
-
-        let pos = (0, 0).into();
-        let mut b = cfg.get_border(pos, shape);
-        b.left_top_corner = border.left_top_corner;
-        cfg.remove_border(pos, shape);
-        cfg.set_border(pos, b);
-
-        let pos = (0, count_columns - 1).into();
-        let mut b = cfg.get_border(pos, shape);
-        b.right_top_corner = border.right_top_corner;
-        cfg.remove_border(pos, shape);
-        cfg.set_border(pos, b);
-
-        let pos = (count_rows - 1, 0).into();
-        let mut b = cfg.get_border(pos, shape);
-        b.left_bottom_corner = border.left_bottom_corner;
-        cfg.remove_border(pos, shape);
-        cfg.set_border(pos, b);
-
-        let pos = (count_rows - 1, count_columns - 1).into();
-        let mut b = cfg.get_border(pos, shape);
-        b.right_bottom_corner = border.right_bottom_corner;
-        cfg.remove_border(pos, shape);
-        cfg.set_border(pos, b);
+        cfg.set_borders(borders);
     }
 }
 
@@ -356,6 +313,102 @@ where
 
         for pos in entity.iter(shape.0, shape.1) {
             cfg.remove_border(pos, shape);
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R, D> TableOption<R, ColoredConfig, D> for EmptyBorder
+where
+    R: Records + ExactRecords,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let count_rows = records.count_rows();
+        let count_columns = records.count_columns();
+        let shape = (count_rows, count_columns);
+
+        if count_rows == 0 || count_columns == 0 {
+            return;
+        }
+
+        let mut borders = *cfg.get_borders();
+        borders.top = None;
+        borders.top_intersection = None;
+        borders.top_left = None;
+        borders.top_right = None;
+        borders.bottom = None;
+        borders.bottom_intersection = None;
+        borders.bottom_left = None;
+        borders.bottom_right = None;
+        borders.left = None;
+        borders.left_intersection = None;
+        borders.right = None;
+        borders.right_intersection = None;
+
+        cfg.set_borders(borders);
+
+        for col in 0..count_columns {
+            let pos = Position::new(0, col);
+            let mut border = cfg.get_border(pos, shape);
+            if border.top.is_some() || border.right_top_corner.is_some() {
+                border.top = None;
+                border.right_top_corner = None;
+                cfg.set_border(pos, border);
+            }
+
+            let pos = Position::new(count_rows - 1, col);
+            let mut border = cfg.get_border(pos, shape);
+            if border.bottom.is_some() || border.right_bottom_corner.is_some() {
+                border.bottom = None;
+                border.right_bottom_corner = None;
+                cfg.set_border(pos, border);
+            }
+        }
+
+        for row in 0..count_rows {
+            let pos = Position::new(row, 0);
+            let mut border = cfg.get_border(pos, shape);
+            if border.left.is_some() || border.left_bottom_corner.is_some() {
+                border.left = None;
+                border.left_bottom_corner = None;
+                cfg.set_border(pos, border);
+            }
+
+            let pos = Position::new(row, count_columns - 1);
+            let mut border = cfg.get_border(pos, shape);
+            if border.right.is_some() || border.right_bottom_corner.is_some() {
+                border.right = None;
+                border.right_bottom_corner = None;
+                cfg.set_border(pos, border);
+            }
+        }
+
+        let pos = Position::new(0, 0);
+        let mut b = cfg.get_border(pos, shape);
+        if b.left_top_corner.is_some() {
+            b.left_top_corner = None;
+            cfg.set_border(pos, b);
+        }
+
+        let pos = Position::new(0, count_columns - 1);
+        let mut b = cfg.get_border(pos, shape);
+        if b.right_top_corner.is_some() {
+            b.right_top_corner = None;
+            cfg.set_border(pos, b);
+        }
+
+        let pos = Position::new(count_rows - 1, 0);
+        let mut b = cfg.get_border(pos, shape);
+        if b.left_bottom_corner.is_some() {
+            b.left_bottom_corner = None;
+            cfg.set_border(pos, b);
+        }
+
+        let pos = Position::new(count_rows - 1, count_columns - 1);
+        let mut b = cfg.get_border(pos, shape);
+        if b.right_bottom_corner.is_some() {
+            b.right_bottom_corner = None;
+            cfg.set_border(pos, b);
         }
     }
 }

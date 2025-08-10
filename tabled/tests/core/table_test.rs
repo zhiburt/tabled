@@ -11,7 +11,7 @@ use tabled::{
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 mod default_types {
     use super::*;
@@ -838,19 +838,18 @@ test_table!(
 );
 
 test_table!(
-    table_2x2_empty_height_list_together_with_width_list_dont_work_0,
+    table_2x2_empty_height_list_together_with_width_list_work_0,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
             .with(Style::modern())
             .with(Padding::zero())
             .with(Height::list([1, 0]))
-            .with(Width::list([1, 0]))
+            .with(Width::list([1, 1]))
     },
-    "┌─┬┐"
-    "│ ││"
-    "├─┼┤"
-    "│ ││"
-    "└─┴┘"
+    "┌─┬─┐"
+    "│ │ │"
+    "├─┼─┤"
+    "└─┴─┘"
 );
 
 test_table!(
@@ -862,10 +861,10 @@ test_table!(
             .with(Width::list([1, 0]))
             .with(Height::list([1, 0]))
     },
-    "┌┬┐"
-    "│││"
-    "├┼┤"
-    "└┴┘"
+    "┌─┬┐"
+    "│ ││"
+    "├─┼┤"
+    "└─┴┘"
 );
 
 test_table!(
@@ -923,4 +922,26 @@ test_table!(
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
     " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
+);
+
+test_table!(
+    table_nohead,
+    Table::nohead(vec!["hello", "world"]),
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+);
+
+test_table!(
+    table_with_capacity,
+    Table::with_capacity(vec!["hello", "world"], 2),
+    "+-------+"
+    "| &str  |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
 );

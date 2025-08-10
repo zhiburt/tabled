@@ -1,3 +1,5 @@
+// TODO: Move it out.
+
 /// PoolTableDimension is a dimension resolve strategy for [`PoolTable`]
 ///
 /// [`PoolTable`]: crate::tables::PoolTable

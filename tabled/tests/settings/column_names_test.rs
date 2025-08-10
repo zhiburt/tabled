@@ -3,11 +3,14 @@
 
 use tabled::{
     assert::test_table,
-    settings::{themes::ColumnNames, Alignment, Color, Padding},
+    settings::{
+        themes::{ColumnNames, RowNames},
+        Alignment, Color, Padding,
+    },
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     new,
@@ -67,7 +70,7 @@ test_table!(
 
 test_table!(
     default,
-    Matrix::new(3, 3).with(ColumnNames::default()),
+    Matrix::new(3, 3).with(ColumnNames::head()),
     "+N--+column 0+column 1+column 2+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+---+--------+--------+--------+"
@@ -80,7 +83,7 @@ test_table!(
 test_table!(
     alignment_left,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::left())),
+        .with(ColumnNames::head().alignment(Alignment::left())),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -92,7 +95,7 @@ test_table!(
 test_table!(
     alignment_right,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::right())),
+        .with(ColumnNames::head().alignment(Alignment::right())),
     "+---&str+------&str+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -104,7 +107,7 @@ test_table!(
 test_table!(
     alignment_center,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(Alignment::center())),
+        .with(ColumnNames::head().alignment(Alignment::center())),
     "+-&str--+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -130,7 +133,7 @@ test_table!(
 test_table!(
     alignment_array,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(vec![Alignment::right(), Alignment::center()])),
+        .with(ColumnNames::head().alignment(vec![Alignment::right(), Alignment::center()])),
     "+---&str+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -141,7 +144,7 @@ test_table!(
 
 test_table!(
     line,
-    Matrix::new(3, 3).with(ColumnNames::default().line(1)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(1)),
     "+---+--------+--------+--------+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+N--+column 0+column 1+column 2+"
@@ -153,7 +156,7 @@ test_table!(
 
 test_table!(
     line_max_out,
-    Matrix::new(3, 3).with(ColumnNames::default().line(100)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(100)),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -167,7 +170,7 @@ test_table!(
 
 test_table!(
     line_0,
-    Matrix::new(3, 3).with(ColumnNames::default().line(0)),
+    Matrix::new(3, 3).with(ColumnNames::head().line(0)),
     "+N--+column 0+column 1+column 2+"
     "| 0 |  0-0   |  0-1   |  0-2   |"
     "+---+--------+--------+--------+"
@@ -180,7 +183,7 @@ test_table!(
 test_table!(
     colors_some_some,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::BG_BLACK, Color::BG_BLUE])),
+        .with(ColumnNames::head().color(vec![Color::BG_BLACK, Color::BG_BLUE])),
     "+\u{1b}[40m&\u{1b}[49m\u{1b}[40ms\u{1b}[49m\u{1b}[40mt\u{1b}[49m\u{1b}[40mr\u{1b}[49m---+\u{1b}[44m&\u{1b}[49m\u{1b}[44ms\u{1b}[49m\u{1b}[44mt\u{1b}[49m\u{1b}[44mr\u{1b}[49m------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -192,7 +195,7 @@ test_table!(
 test_table!(
     colors_none_some,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::default(), Color::BG_BLUE])),
+        .with(ColumnNames::head().color(vec![Color::default(), Color::BG_BLUE])),
         "+&str---+\u{1b}[44m&\u{1b}[49m\u{1b}[44ms\u{1b}[49m\u{1b}[44mt\u{1b}[49m\u{1b}[44mr\u{1b}[49m------+"
         "| Hello | World    |"
         "+-------+----------+"
@@ -204,7 +207,7 @@ test_table!(
 test_table!(
     colors_none_none,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color(vec![Color::default(), Color::default()])),
+        .with(ColumnNames::head().color(vec![Color::default(), Color::default()])),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -216,7 +219,7 @@ test_table!(
 test_table!(
     colors_empty,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().color({ Color::default(); vec![] as std::vec::Vec<tabled::settings::Color> })),
+        .with(ColumnNames::head().color({ Color::default(); vec![] as std::vec::Vec<tabled::settings::Color> })),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -227,7 +230,7 @@ test_table!(
 
 test_table!(
     new_vertical,
-    Matrix::new(3, 3).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
+    Matrix::new(3, 3).with(RowNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
     "+---+----------+----------+----------+"
     "1 N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -241,7 +244,7 @@ test_table!(
 
 test_table!(
     new_vertical_1,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(RowNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
     "+---+----------+----------+"
     "1   |          |          |"
     "|   |          |          |"
@@ -265,7 +268,7 @@ test_table!(
 
 test_table!(
     new_vertical_2,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::bottom())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(RowNames::new(["1", "2", "3", "4"]).alignment(Alignment::bottom())),
     "+---+----------+----------+"
     "|   |          |          |"
     "|   |          |          |"
@@ -289,7 +292,7 @@ test_table!(
 
 test_table!(
     new_vertical_3,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::center_vertical())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(RowNames::new(["1", "2", "3", "4"]).alignment(Alignment::center_vertical())),
     "+---+----------+----------+"
     "|   |          |          |"
     "|   |          |          |"
@@ -312,73 +315,229 @@ test_table!(
 );
 
 test_table!(
-    new_vertical_default_0,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::top())),
-    "+---+-----+-----+"
-    "N   |     |     |"
-    "|   |     |     |"
-    "| 0 | 0-0 | 0-1 |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "+---+-----+-----+"
-    "c   |     |     |"
-    "o   |     |     |"
-    "l 1 | 1-0 | 1-1 |"
-    "u   |     |     |"
-    "m   |     |     |"
-    "n   |     |     |"
-    "    |     |     |"
-    "0   |     |     |"
-    "+---+-----+-----+"
+    right_padding_array,
+    Matrix::new(3, 3)
+        .with(
+            ColumnNames::new(["1", "2", "3", "4"])
+                .alignment(
+                    vec![
+                        Alignment::right(),
+                        Alignment::left(),
+                        Alignment::right(),
+                        Alignment::center(),
+                    ]
+                )
+        ),
+    "+--1+2---------+---------3+----4-----+"
+    "| N | column 0 | column 1 | column 2 |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "+---+----------+----------+----------+"
 );
 
 test_table!(
-    new_vertical_default_2,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::bottom())),
-    "+---+-----+-----+"
-    "|   |     |     |"
-    "|   |     |     |"
-    "| 0 | 0-0 | 0-1 |"
-    "|   |     |     |"
-    "N   |     |     |"
-    "+---+-----+-----+"
-    "c   |     |     |"
-    "o   |     |     |"
-    "l 1 | 1-0 | 1-1 |"
-    "u   |     |     |"
-    "m   |     |     |"
-    "n   |     |     |"
-    "    |     |     |"
-    "0   |     |     |"
-    "+---+-----+-----+"
+    right_padding_array_and_padding,
+    Matrix::new(3, 3)
+        .with(
+            ColumnNames::new(["111111111", "2", "3", "4"])
+                .line(0)
+                .padding(Padding::new(1, 2, 0, 0))
+                .alignment(
+                    vec![
+                        Alignment::right(),
+                        Alignment::left(),
+                        Alignment::right(),
+                        Alignment::center(),
+                    ]
+                )
+        ),
+    "+-111111111--+-2--------+-------3--+----4-----+"
+    "|     N      | column 0 | column 1 | column 2 |"
+    "+------------+----------+----------+----------+"
+    "|     0      |   0-0    |   0-1    |   0-2    |"
+    "+------------+----------+----------+----------+"
+    "|     1      |   1-0    |   1-1    |   1-2    |"
+    "+------------+----------+----------+----------+"
+    "|     2      |   2-0    |   2-1    |   2-2    |"
+    "+------------+----------+----------+----------+"
 );
 
 test_table!(
-    new_vertical_default_1,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 5, 5)).with(ColumnNames::default().alignment(Alignment::center_vertical())),
-    "+---+-----+-----+"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "N 0 | 0-0 | 0-1 |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "+---+-----+-----+"
-    "|   |     |     |"
-    "c   |     |     |"
-    "o   |     |     |"
-    "l   |     |     |"
-    "u   |     |     |"
-    "m 1 | 1-0 | 1-1 |"
-    "n   |     |     |"
-    "    |     |     |"
-    "0   |     |     |"
-    "|   |     |     |"
-    "|   |     |     |"
-    "+---+-----+-----+"
+    right_padding_array_and_padding_1,
+    Matrix::new(3, 3)
+        .with(
+            ColumnNames::new(["1", "2", "3", "4"])
+                .line(0)
+                .padding(vec![Padding::new(3, 0, 0, 0), Padding::new(0, 3, 0, 0), Padding::new(1, 1, 0, 0), Padding::new(2, 2, 0, 0)])
+                .alignment(
+                    vec![
+                        Alignment::right(),
+                        Alignment::left(),
+                        Alignment::right(),
+                        Alignment::center(),
+                    ]
+                )
+        ),
+    "+---1+2---------+--------3-+----4-----+"
+    "| N  | column 0 | column 1 | column 2 |"
+    "+----+----------+----------+----------+"
+    "| 0  |   0-0    |   0-1    |   0-2    |"
+    "+----+----------+----------+----------+"
+    "| 1  |   1-0    |   1-1    |   1-2    |"
+    "+----+----------+----------+----------+"
+    "| 2  |   2-0    |   2-1    |   2-2    |"
+    "+----+----------+----------+----------+"
+);
+
+test_table!(
+    right_padding_array_and_color,
+    Matrix::new(3, 3)
+        .with(
+            ColumnNames::new(["1", "2", "3", "4"])
+                .color(Color::BG_BLUE)
+                .alignment(
+                    vec![
+                        Alignment::right(),
+                        Alignment::left(),
+                        Alignment::right(),
+                        Alignment::center(),
+                    ]
+                )
+        ),
+    "+--\u{1b}[44m1\u{1b}[49m+\u{1b}[44m2\u{1b}[49m---------+---------\u{1b}[44m3\u{1b}[49m+----\u{1b}[44m4\u{1b}[49m-----+"
+    "| N | column 0 | column 1 | column 2 |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "+---+----------+----------+----------+"
+);
+
+test_table!(
+    right_padding_array_and_padding_vertical,
+    Matrix::new(3, 3)
+        .with(
+            RowNames::new(["111111111", "2", "3", "4"])
+                .line(0)
+                .padding(vec![Padding::new(0, 0, 1, 2), Padding::new(0, 0, 1, 3), Padding::new(0, 0, 1, 0), Padding::new(0, 0, 1, 1)])
+                .alignment(
+                    vec![
+                        Alignment::top(),
+                        Alignment::bottom(),
+                        Alignment::top(),
+                        Alignment::center_vertical(),
+                    ]
+                )
+        ),
+    "+---+----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "1   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "2   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "3   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "4   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+);
+
+test_table!(
+    right_padding_array_and_padding_1_vertical,
+    Matrix::new(3, 3)
+        .with(
+            RowNames::new(["1", "2", "3", "4"])
+                .line(0)
+                .padding(Padding::new(0, 0, 1, 3))
+                .alignment(
+                    vec![
+                        Alignment::top(),
+                        Alignment::center_vertical(),
+                        Alignment::bottom(),
+                        Alignment::top(),
+                    ]
+                )
+        ),
+    "+---+----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "1   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "2   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "3   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "4   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+);
+
+test_table!(
+    right_padding_array_and_color_vertical,
+    Matrix::new(3, 3)
+        .with(
+            RowNames::new(["1", "2", "3", "4"])
+                .color(Color::BG_BLUE)
+                .padding(Padding::new(1, 1, 1, 1))
+                .alignment(
+                    vec![
+                        Alignment::top(),
+                        Alignment::center_vertical(),
+                        Alignment::bottom(),
+                        Alignment::bottom(),
+                    ]
+                )
+        ),
+    "+---+----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "\u{1b}[44m1\u{1b}[49m   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "\u{1b}[44m2\u{1b}[49m   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "\u{1b}[44m3\u{1b}[49m   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "\u{1b}[44m4\u{1b}[49m   |          |          |          |"
+    "|   |          |          |          |"
+    "+---+----------+----------+----------+"
 );

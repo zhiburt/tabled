@@ -1,10 +1,11 @@
 use std::{
     cmp::{self, max},
     collections::HashMap,
-    iter::repeat,
+    iter::repeat_n,
 };
 
 use serde_json::Map;
+
 use tabled::{
     builder::Builder,
     grid::{
@@ -672,7 +673,7 @@ impl<R, D> TableOption<R, ColoredConfig, D> for SetTopChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &split in self.0 {
             let offset = split;
-            cfg.set_horizontal_char(Position::new(0, 0), self.1, Offset::Begin(offset));
+            cfg.set_horizontal_char(Position::new(0, 0), Offset::Start(offset), self.1);
         }
     }
 }
@@ -682,7 +683,7 @@ struct SetLeftChars<'a>(&'a [usize], char);
 impl<R, D> TableOption<R, ColoredConfig, D> for SetLeftChars<'_> {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for &offset in self.0 {
-            cfg.set_vertical_char(Position::new(0, 0), self.1, Offset::Begin(offset));
+            cfg.set_vertical_char(Position::new(0, 0), Offset::Start(offset), self.1);
         }
     }
 }
@@ -933,21 +934,21 @@ fn set_string_dimension(
 
     let (top, bottom) = indent_vertical(av, height, count_lines);
 
-    out.extend(repeat(String::new()).take(top));
+    out.extend(repeat_n(String::new(), top));
 
     for line in get_lines(text) {
         let w = get_line_width(&line);
         let (left, right) = indent_horizontal(ah, width, w);
 
         let mut buf = String::new();
-        buf.extend(repeat(' ').take(left));
+        buf.extend(repeat_n(' ', left));
         buf.push_str(&line);
-        buf.extend(repeat(' ').take(right));
+        buf.extend(repeat_n(' ', right));
 
         out.push(buf);
     }
 
-    out.extend(repeat(String::new()).take(bottom));
+    out.extend(repeat_n(String::new(), bottom));
 
     out.join("\n")
 }

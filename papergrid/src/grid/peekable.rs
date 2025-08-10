@@ -11,14 +11,17 @@ use crate::{
     ansi::{ANSIBuf, ANSIFmt},
     colors::Colors,
     config::{
-        spanned::{Offset, SpannedConfig},
-        Formatting,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Offset,
+        Position, Sides,
     },
-    config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::get_line_width,
 };
+
+// TODO: Do we actually need PeekableRecords?
+//       Maybe Cloned iterator will be faster?
+//       Even better &referenced Records
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -43,7 +46,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
 
 impl<R, G, D, C> PeekableGrid<R, G, D, C> {
     /// Builds a table.
-    pub fn build<F>(self, mut f: F) -> fmt::Result
+    pub fn build<F>(&self, mut f: F) -> fmt::Result
     where
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
@@ -64,21 +67,17 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
 
         print_grid(&mut f, ctx)
     }
+}
 
-    /// Builds a table into string.
-    ///
-    /// Notice that it consumes self.
-    #[allow(clippy::inherent_to_string)]
-    pub fn to_string(self) -> String
-    where
-        R: Records + PeekableRecords + ExactRecords,
-        D: Dimension,
-        G: Borrow<SpannedConfig>,
-        C: Colors,
-    {
-        let mut buf = String::new();
-        self.build(&mut buf).expect("It's guaranteed to never happen otherwise it's considered an stdlib error or impl error");
-        buf
+impl<R, G, D, C> fmt::Display for PeekableGrid<R, G, D, C>
+where
+    R: Records + PeekableRecords + ExactRecords,
+    D: Dimension,
+    C: Colors,
+    G: Borrow<SpannedConfig>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.build(f)
     }
 }
 
@@ -273,7 +272,7 @@ mod grid_basic {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -313,7 +312,7 @@ mod grid_basic {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let pad = ctx.cfg.get_padding(pos);
         let valignment = *ctx.cfg.get_alignment_vertical(pos);
@@ -334,7 +333,7 @@ mod grid_basic {
             cell_height = height;
         }
 
-        let indent = top_indent(&pad, valignment, cell_height, height);
+        let indent = top_indent(pad, valignment, cell_height, height);
         if indent > line {
             return repeat_char(f, pad.top.fill, width);
         }
@@ -404,9 +403,8 @@ mod grid_basic {
         let indent = calculate_indent(cfg.alignment, cell_width, available);
         print_text_padded(f, &line, cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        repeat_char(f, cfg.justification, rest_width)?;
 
         Ok(())
     }
@@ -692,7 +690,7 @@ mod grid_not_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -823,7 +821,7 @@ mod grid_not_spanned {
         C: Colors,
         D: Dimension,
     {
-        let width = ctx.dims.get_width(pos.col());
+        let width = ctx.dims.get_width(pos.col);
 
         let formatting = ctx.cfg.get_formatting(pos);
         let text_cfg = TextCfg {
@@ -851,7 +849,7 @@ mod grid_not_spanned {
             cell_height = height;
         }
 
-        let indent = top_indent(&pad, valignment, cell_height, height);
+        let indent = top_indent(pad, valignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
         }
@@ -907,7 +905,7 @@ mod grid_not_spanned {
         if cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), cfg.color);
-            return print_text_padded(f, text, cfg.justification, indent);
+            return print_text_padded(f, &text, &cfg.justification, indent);
         }
 
         let cell_width = if cfg.formatting.horizontal_trim {
@@ -922,19 +920,18 @@ mod grid_not_spanned {
 
         let indent = calculate_indent(cfg.alignment, cell_width, available);
         let text = Colored::new(line.as_ref(), cfg.color);
-        print_text_padded(f, text, cfg.justification, indent)?;
+        print_text_padded(f, &text, &cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        print_indent2(f, &cfg.justification, rest_width)?;
 
         Ok(())
     }
 
     fn print_text_padded<F, C, C1>(
         f: &mut F,
-        text: Colored<&str, C>,
-        justification: Colored<char, C1>,
+        text: &Colored<&str, C>,
+        justification: &Colored<char, C1>,
         indent: HIndent,
     ) -> fmt::Result
     where
@@ -942,19 +939,19 @@ mod grid_not_spanned {
         C: ANSIFmt,
         C1: ANSIFmt,
     {
-        print_indent2(f, &justification, indent.left)?;
+        print_indent2(f, justification, indent.left)?;
         print_text2(f, text)?;
-        print_indent2(f, &justification, indent.right)?;
+        print_indent2(f, justification, indent.right)?;
 
         Ok(())
     }
 
-    fn print_text2<F, C>(f: &mut F, text: Colored<&str, C>) -> fmt::Result
+    fn print_text2<F, C>(f: &mut F, text: &Colored<&str, C>) -> fmt::Result
     where
         F: Write,
         C: ANSIFmt,
     {
-        match text.color {
+        match &text.color {
             Some(color) => {
                 color.fmt_ansi_prefix(f)?;
                 f.write_str(text.data)?;
@@ -1059,7 +1056,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
         let color = cfg.get_margin_color();
-        let color = color.top.as_ref();
+        let color = color.top;
         print_indent_lines(f, indent, offset, color, width)
     }
 
@@ -1070,7 +1067,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
         let color = cfg.get_margin_color();
-        let color = color.bottom.as_ref();
+        let color = color.bottom;
         print_indent_lines(f, indent, offset, color, width)
     }
 
@@ -1086,7 +1083,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
         let color = cfg.get_margin_color();
-        let color = color.left.as_ref();
+        let color = color.left;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1102,7 +1099,7 @@ mod grid_not_spanned {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
         let color = cfg.get_margin_color();
-        let color = color.right.as_ref();
+        let color = color.right;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1122,7 +1119,7 @@ mod grid_not_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -1160,7 +1157,7 @@ mod grid_not_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (start, 0),
+            Offset::Start(start) => (start, 0),
             Offset::End(end) => (0, end),
         };
 
@@ -1331,6 +1328,13 @@ mod grid_spanned {
                     let pos = (row, col).into();
 
                     if ctx.cfg.is_cell_covered_by_both_spans(pos) {
+                        let is_last_column = col + 1 == shape.count_columns;
+                        if is_last_column {
+                            let pos = (row, col + 1).into();
+                            let count_columns = shape.count_columns;
+                            print_vertical_char(f, ctx.cfg, pos, i, count_lines, count_columns)?;
+                        }
+
                         continue;
                     }
 
@@ -1434,6 +1438,8 @@ mod grid_spanned {
             if ctx.cfg.is_cell_covered_by_row_span(pos) {
                 // means it's part of other a spanned cell
                 // so. we just need to use line from other cell.
+
+                prepare_coloring(f, None, &mut used_color)?;
 
                 let original_row = closest_visible_row(ctx.cfg, pos).unwrap();
 
@@ -1550,7 +1556,7 @@ mod grid_spanned {
         //
         // todo: Yes... this check very likely degrages performance a bit,
         //       Surely we need to rethink it.
-        if !cfg.has_vertical(pos.col(), shape.count_columns) {
+        if !cfg.has_vertical(pos.col, shape.count_columns) {
             return Ok(());
         }
 
@@ -1702,7 +1708,7 @@ mod grid_spanned {
         let pad = ctx.cfg.get_padding(pos);
         let pad_color = ctx.cfg.get_padding_color(pos);
         let alignment = ctx.cfg.get_alignment_vertical(pos);
-        let indent = top_indent(&pad, *alignment, cell_height, height);
+        let indent = top_indent(pad, *alignment, cell_height, height);
         if indent > line {
             return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
         }
@@ -1771,7 +1777,7 @@ mod grid_spanned {
         if text_cfg.formatting.allow_lines_alignment {
             let indent = calculate_indent(text_cfg.alignment, line_width, available);
             let text = Colored::new(line.as_ref(), text_cfg.color);
-            return print_text_with_pad(f, text, text_cfg.justification, indent);
+            return print_text_with_pad(f, &text, &text_cfg.justification, indent);
         }
 
         let cell_width = if text_cfg.formatting.horizontal_trim {
@@ -1785,20 +1791,24 @@ mod grid_spanned {
         };
 
         let indent = calculate_indent(text_cfg.alignment, cell_width, available);
-        let text = Colored::new(line.as_ref(), text_cfg.color);
-        print_text_with_pad(f, text, text_cfg.justification, indent)?;
+        let text = Colored::new(line.as_ref(), text_cfg.color.as_ref());
+        print_text_with_pad(f, &text, &text_cfg.justification, indent)?;
 
-        // todo: remove me?
         let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+        print_indent(
+            f,
+            text_cfg.justification.data,
+            rest_width,
+            text_cfg.justification.color.as_ref(),
+        )?;
 
         Ok(())
     }
 
     fn print_text_with_pad<F, C, C1>(
         f: &mut F,
-        text: Colored<&str, C>,
-        space: Colored<char, C1>,
+        text: &Colored<&str, C>,
+        space: &Colored<char, C1>,
         indent: HIndent,
     ) -> fmt::Result
     where
@@ -1807,7 +1817,7 @@ mod grid_spanned {
         C1: ANSIFmt,
     {
         print_indent(f, space.data, indent.left, space.color.as_ref())?;
-        print_text(f, text.data, text.color)?;
+        print_text(f, text.data, text.color.as_ref())?;
         print_indent(f, space.data, indent.right, space.color.as_ref())?;
         Ok(())
     }
@@ -1922,7 +1932,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().top;
         let offset = cfg.get_margin_offset().top;
         let color = cfg.get_margin_color();
-        let color = color.top.as_ref();
+        let color = color.top;
         print_indent_lines(f, &indent, &offset, color, width)
     }
 
@@ -1933,7 +1943,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().bottom;
         let offset = cfg.get_margin_offset().bottom;
         let color = cfg.get_margin_color();
-        let color = color.bottom.as_ref();
+        let color = color.bottom;
         print_indent_lines(f, &indent, &offset, color, width)
     }
 
@@ -1949,7 +1959,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().left;
         let offset = cfg.get_margin_offset().left;
         let color = cfg.get_margin_color();
-        let color = color.left.as_ref();
+        let color = color.left;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1965,7 +1975,7 @@ mod grid_spanned {
         let indent = cfg.get_margin().right;
         let offset = cfg.get_margin_offset().right;
         let color = cfg.get_margin_color();
-        let color = color.right.as_ref();
+        let color = color.right;
         print_margin_vertical(f, indent, offset, color, line, height)
     }
 
@@ -1985,7 +1995,7 @@ mod grid_spanned {
         }
 
         match offset {
-            Offset::Begin(offset) => {
+            Offset::Start(offset) => {
                 let offset = cmp::min(offset, height);
                 if line >= offset {
                     print_indent(f, indent.fill, indent.size, color)?;
@@ -2023,7 +2033,7 @@ mod grid_spanned {
         }
 
         let (start_offset, end_offset) = match offset {
-            Offset::Begin(start) => (*start, 0),
+            Offset::Start(start) => (*start, 0),
             Offset::End(end) => (0, *end),
         };
 
@@ -2077,11 +2087,11 @@ mod grid_spanned {
     {
         match cfg.get_column_span(pos) {
             Some(span) => {
-                let start = pos.col();
+                let start = pos.col;
                 let end = start + span;
                 range_width(dims, start, end) + count_verticals_range(cfg, start, end, max)
             }
-            None => dims.get_width(pos.col()),
+            None => dims.get_width(pos.col),
         }
     }
 
@@ -2104,11 +2114,11 @@ mod grid_spanned {
     {
         match cfg.get_row_span(pos) {
             Some(span) => {
-                let start = pos.row();
-                let end = pos.row() + span;
+                let start = pos.row;
+                let end = pos.row + span;
                 range_height(dims, start, end) + count_horizontals_range(cfg, start, end, max)
             }
-            None => dims.get_height(pos.row()),
+            None => dims.get_height(pos.row),
         }
     }
 
@@ -2128,10 +2138,10 @@ mod grid_spanned {
     fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
         loop {
             if cfg.is_cell_visible(pos) {
-                return Some(pos.row());
+                return Some(pos.row);
             }
 
-            if pos.row() == 0 {
+            if pos.row == 0 {
                 return None;
             }
 

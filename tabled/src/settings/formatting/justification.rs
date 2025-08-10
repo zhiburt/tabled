@@ -67,8 +67,8 @@ use crate::{
 /// };
 ///
 /// let mut table = Table::new(&[("Hello", ""), ("", "World")]);
-/// table.with(Modify::new(Columns::single(0)).with(Justification::new('#')));
-/// table.with(Modify::new(Columns::single(1)).with(Justification::new('@')));
+/// table.with(Modify::new(Columns::one(0)).with(Justification::new('#')));
+/// table.with(Modify::new(Columns::one(1)).with(Justification::new('@')));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -94,6 +94,14 @@ impl Justification {
         Self {
             c: Some(c),
             color: None,
+        }
+    }
+
+    /// Creates new [`Justification`] object.
+    pub fn colored(c: char, color: Color) -> Self {
+        Self {
+            c: Some(c),
+            color: Some(color.into()),
         }
     }
 

@@ -29,7 +29,7 @@ impl Cell {
 
 impl From<Position> for Cell {
     fn from(pos: Position) -> Self {
-        Self(pos.row(), pos.col())
+        Self(pos.row, pos.col)
     }
 }
 
@@ -57,7 +57,7 @@ impl<I> Object<I> for Position {
     type Iter = EntityOnce;
 
     fn cells(&self, _: &I) -> Self::Iter {
-        EntityOnce::new(Some(Entity::Cell(self.row(), self.col())))
+        EntityOnce::new(Some(Entity::Cell(self.row, self.col)))
     }
 }
 

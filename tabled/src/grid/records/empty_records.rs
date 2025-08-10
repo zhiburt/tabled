@@ -1,6 +1,6 @@
 //! An empty [`Records`] implementation.
 
-use core::iter::{repeat, Repeat, Take};
+use core::iter::{repeat_n, RepeatN};
 
 use crate::grid::records::ExactRecords;
 
@@ -27,10 +27,10 @@ impl From<(usize, usize)> for EmptyRecords {
 }
 
 impl Records for EmptyRecords {
-    type Iter = Take<Repeat<Take<Repeat<&'static str>>>>;
+    type Iter = RepeatN<RepeatN<&'static str>>;
 
     fn iter_rows(self) -> Self::Iter {
-        repeat(repeat("").take(self.cols)).take(self.rows)
+        repeat_n(repeat_n("", self.cols), self.rows)
     }
 
     fn count_columns(&self) -> usize {

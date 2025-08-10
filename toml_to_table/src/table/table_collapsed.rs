@@ -1,4 +1,6 @@
-use std::iter::repeat;
+use std::iter::repeat_n;
+
+use toml::{Table as TomlMap, Value};
 
 use tabled::{
     grid::{
@@ -8,8 +10,6 @@ use tabled::{
     },
     tables::{PoolTable, TableValue},
 };
-
-use toml::{Table as TomlMap, Value};
 
 use super::{Orientation, Settings};
 
@@ -136,9 +136,9 @@ fn increase_string_width(text: &str, by: usize, ah: AlignmentHorizontal) -> Stri
         let (left, right) = indent_horizontal(ah, width + by, width);
 
         let mut buf = String::new();
-        buf.extend(repeat(' ').take(left));
+        buf.extend(repeat_n(' ', left));
         buf.push_str(&line);
-        buf.extend(repeat(' ').take(right));
+        buf.extend(repeat_n(' ', right));
 
         out.push(buf);
     }
@@ -153,13 +153,13 @@ fn increase_string_height(text: &str, by: usize, av: AlignmentVertical) -> Strin
 
     let (top, bottom) = indent_vertical(av, count_lines + by, count_lines);
 
-    out.extend(repeat(String::new()).take(top));
+    out.extend(repeat_n(String::new(), top));
 
     for line in get_lines(text) {
         out.push(line.into_owned());
     }
 
-    out.extend(repeat(String::new()).take(bottom));
+    out.extend(repeat_n(String::new(), bottom));
 
     out.join("\n")
 }

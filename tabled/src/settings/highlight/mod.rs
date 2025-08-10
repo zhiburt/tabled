@@ -224,18 +224,18 @@ fn split_segments(
 }
 
 fn is_cell_connected(p1: Position, p2: Position) -> bool {
-    if p1.col() == p2.col() {
-        let up = p1.row() == p2.row() + 1;
-        let down = p2.row() > 0 && p1.row() == p2.row() - 1;
+    if p1.col == p2.col {
+        let up = p1.row == p2.row + 1;
+        let down = p2.row > 0 && p1.row == p2.row - 1;
 
         if up || down {
             return true;
         }
     }
 
-    if p1.row() == p2.row() {
-        let left = p2.col() > 0 && p1.col() == p2.col() - 1;
-        let right = p1.col() == p2.col() + 1;
+    if p1.row == p2.row {
+        let left = p2.col > 0 && p1.col == p2.col - 1;
+        let right = p1.col == p2.col + 1;
 
         if left || right {
             return true;
@@ -405,7 +405,7 @@ where
 }
 
 fn has_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
-    p.row() > 0 && sector.contains(&(p - (1, 0)))
+    p.row > 0 && sector.contains(&(p - (1, 0)))
 }
 
 fn has_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
@@ -413,7 +413,7 @@ fn has_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
 }
 
 fn has_left_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
-    p.col() > 0 && sector.contains(&(p - (0, 1)))
+    p.col > 0 && sector.contains(&(p - (0, 1)))
 }
 
 fn has_right_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
@@ -421,15 +421,15 @@ fn has_right_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
 }
 
 fn has_left_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
-    p.row() > 0 && p.col() > 0 && sector.contains(&(p - (1, 1)))
+    p.row > 0 && p.col > 0 && sector.contains(&(p - (1, 1)))
 }
 
 fn has_right_top_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
-    p.row() > 0 && sector.contains(&(p - (1, 0) + (0, 1)))
+    p.row > 0 && sector.contains(&(p - (1, 0) + (0, 1)))
 }
 
 fn has_left_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
-    p.col() > 0 && sector.contains(&(p + (1, 0) - (0, 1)))
+    p.col > 0 && sector.contains(&(p + (1, 0) - (0, 1)))
 }
 
 fn has_right_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
@@ -438,24 +438,22 @@ fn has_right_bottom_neighbor(sector: &HashSet<Position>, p: Position) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use papergrid::config::pos;
-
     use super::*;
 
     #[test]
     fn test_is_connected() {
-        assert!(is_cell_connected(pos(0, 0), pos(0, 1)));
-        assert!(is_cell_connected(pos(0, 0), pos(1, 0)));
-        assert!(!is_cell_connected(pos(0, 0), pos(1, 1)));
+        assert!(is_cell_connected(Position::new(0, 0), Position::new(0, 1)));
+        assert!(is_cell_connected(Position::new(0, 0), Position::new(1, 0)));
+        assert!(!is_cell_connected(Position::new(0, 0), Position::new(1, 1)));
 
-        assert!(is_cell_connected(pos(0, 1), pos(0, 0)));
-        assert!(is_cell_connected(pos(1, 0), pos(0, 0)));
-        assert!(!is_cell_connected(pos(1, 1), pos(0, 0)));
+        assert!(is_cell_connected(Position::new(0, 1), Position::new(0, 0)));
+        assert!(is_cell_connected(Position::new(1, 0), Position::new(0, 0)));
+        assert!(!is_cell_connected(Position::new(1, 1), Position::new(0, 0)));
 
-        assert!(is_cell_connected(pos(1, 1), pos(0, 1)));
-        assert!(is_cell_connected(pos(1, 1), pos(1, 0)));
-        assert!(is_cell_connected(pos(1, 1), pos(2, 1)));
-        assert!(is_cell_connected(pos(1, 1), pos(1, 2)));
-        assert!(!is_cell_connected(pos(1, 1), pos(1, 1)));
+        assert!(is_cell_connected(Position::new(1, 1), Position::new(0, 1)));
+        assert!(is_cell_connected(Position::new(1, 1), Position::new(1, 0)));
+        assert!(is_cell_connected(Position::new(1, 1), Position::new(2, 1)));
+        assert!(is_cell_connected(Position::new(1, 1), Position::new(1, 2)));
+        assert!(!is_cell_connected(Position::new(1, 1), Position::new(1, 1)));
     }
 }

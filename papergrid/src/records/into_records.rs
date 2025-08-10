@@ -1,10 +1,6 @@
-/// The representation of data, rows and columns of a [`Grid`].
-///
-/// [`Grid`]: crate::grid::iterable::Grid
+/// The representation of data, rows and columns of a grid.
 pub trait IntoRecords {
-    /// A string representation of a [`Grid`] cell.
-    ///
-    /// [`Grid`]: crate::grid::iterable::Grid
+    /// A string representation of a grid cell.
     type Cell;
 
     /// Cell iterator inside a row.

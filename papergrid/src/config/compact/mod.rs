@@ -8,7 +8,7 @@ use crate::config::{AlignmentHorizontal, Borders, Indent, Sides};
 /// This structure represents a settings of a grid.
 ///
 /// grid: crate::Grid.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CompactConfig {
     borders: Borders<char>,
     border_colors: Borders<ANSIStr<'static>>,

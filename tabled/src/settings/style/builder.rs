@@ -1447,6 +1447,10 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
         cfg_set_custom_lines(cfg, &self.horizontals, &self.verticals);
         cfg.set_borders(self.borders);
     }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        None
+    }
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
@@ -1455,6 +1459,10 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
         *cfg = cfg.set_borders(self.borders);
     }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        None
+    }
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
@@ -1462,6 +1470,10 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactMultilineConfig, _: &mut Dims) {
         cfg.set_borders(self.borders);
+    }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        None
     }
 }
 

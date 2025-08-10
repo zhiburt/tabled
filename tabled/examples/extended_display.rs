@@ -1,6 +1,3 @@
-//! This example demonstrates using [ExtendedTable], a [Table] alternative with
-//! limited flexibility but a greater emphasis on large data displays.
-
 use tabled::{tables::ExtendedTable, Tabled};
 
 #[derive(Tabled)]

@@ -81,7 +81,7 @@ fn move_columns_aside<R: Records + Resizable>(records: &mut R, column: usize) {
 
 fn move_column_spans(cfg: &mut SpannedConfig, target_column: usize) {
     for (p, span) in cfg.get_column_spans() {
-        if p.col() < target_column {
+        if p.col < target_column {
             continue;
         }
 
@@ -90,7 +90,7 @@ fn move_column_spans(cfg: &mut SpannedConfig, target_column: usize) {
     }
 
     for (p, span) in cfg.get_row_spans() {
-        if p.col() < target_column {
+        if p.col < target_column {
             continue;
         }
 

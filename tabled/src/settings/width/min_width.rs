@@ -2,11 +2,19 @@
 //!
 //! [`Table`]: crate::Table
 
+use std::iter::repeat_n;
+
+use papergrid::dimension::Estimate;
+
 use crate::{
-    grid::config::{ColoredConfig, Entity},
-    grid::dimension::CompleteDimensionVecRecords,
-    grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{get_lines, get_text_width},
+    grid::{
+        config::{ColoredConfig, Entity, Position},
+        dimension::CompleteDimension,
+        records::{
+            vec_records::Cell, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut,
+        },
+        util::string::{get_line_width, get_lines},
+    },
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -14,7 +22,7 @@ use crate::{
     },
 };
 
-use super::util::get_table_widths_with_total;
+use super::util::get_table_total_width;
 
 /// [`MinWidth`] changes a content in case if it's length is lower then the boundary.
 ///
@@ -99,7 +107,7 @@ impl<W, P> MinWidth<W, P> {
     }
 }
 
-impl<W, R> CellOption<R, ColoredConfig> for MinWidth<W>
+impl<W, R, P> CellOption<R, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -111,64 +119,65 @@ where
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 
-            let cell = records.get_text(pos);
-            let cell_width = get_text_width(cell);
+            let cell_width = records.get_width(pos);
             if cell_width >= width {
                 continue;
             }
 
+            let cell = records.get_text(pos);
             let content = increase_width(cell, width, self.fill);
             records.set(pos, content);
         }
     }
-
-    fn hint_change(&self) -> Option<Entity> {
-        Some(Entity::Column(0))
-    }
 }
 
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
-    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }
 
-        let necessary_width = self.width.measure(&*records, cfg);
+        let minwidth = self.width.measure(&*records, cfg);
 
-        let (widths, total_width) = get_table_widths_with_total(&*records, cfg);
-        if total_width >= necessary_width {
+        dims.estimate(&*records, cfg);
+        let widths = dims.get_widths().expect("must be present");
+
+        let total_width = get_table_total_width(widths, cfg);
+        if total_width >= minwidth {
             return;
         }
 
-        let widths = get_increase_list(widths, necessary_width, total_width, self.priority);
+        let widths = get_increase_list(widths, minwidth, total_width, self.priority);
         dims.set_widths(widths);
     }
 
     fn hint_change(&self) -> Option<Entity> {
-        Some(Entity::Column(0))
+        // NOTE:
+        // We set proper widths,
+        // While keeping height unchanged,
+        // So we can safely assume nothing needs reestimation.
+        None
     }
 }
 
+// todo:  Rename MinWidth?
+
 fn get_increase_list<F>(
-    mut widths: Vec<usize>,
+    widths: &[usize],
     need: usize,
     mut current: usize,
     mut peaker: F,
@@ -176,6 +185,8 @@ fn get_increase_list<F>(
 where
     F: Peaker,
 {
+    let mut widths = widths.to_vec();
+
     while need != current {
         let col = match peaker.peak(&[], &widths) {
             Some(col) => col,
@@ -190,22 +201,20 @@ where
 }
 
 fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    use crate::grid::util::string::get_line_width;
-    use std::{borrow::Cow, iter::repeat};
+    let mut buf = String::new();
+    for (i, line) in get_lines(s).enumerate() {
+        if i > 0 {
+            buf.push('\n');
+        }
 
-    get_lines(s)
-        .map(|line| {
-            let length = get_line_width(&line);
+        buf.push_str(&line);
 
-            if length < width {
-                let mut line = line.into_owned();
-                let remain = width - length;
-                line.extend(repeat(fill_with).take(remain));
-                Cow::Owned(line)
-            } else {
-                line
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+        let length = get_line_width(&line);
+        if length < width {
+            let remain = width - length;
+            buf.extend(repeat_n(fill_with, remain));
+        }
+    }
+
+    buf
 }

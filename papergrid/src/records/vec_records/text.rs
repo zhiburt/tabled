@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Text<S> {
     text: S,
     width: usize,
@@ -20,7 +20,7 @@ impl<S> Text<S> {
     where
         S: AsRef<str>,
     {
-        create_cell_info(text)
+        create_text(text)
     }
 
     /// Creates a new instance of the structure with a single line.
@@ -93,10 +93,10 @@ where
         let mut cell = Self {
             text: self.text.clone(),
             width: self.width,
-            lines: vec![StrWithWidth::default(); self.lines.len()],
+            lines: Vec::with_capacity(self.lines.len()),
         };
 
-        for (i, line) in self.lines.iter().enumerate() {
+        for line in self.lines.iter() {
             // We need to redirect pointers to the original string.
             //
             // # Safety
@@ -116,8 +116,8 @@ where
                 ))
             };
 
-            cell.lines[i].width = line.width;
-            cell.lines[i].text = Cow::Borrowed(text);
+            let newline = StrWithWidth::new(Cow::Borrowed(text), line.width);
+            cell.lines.push(newline);
         }
 
         cell
@@ -125,7 +125,7 @@ where
 }
 
 /// StrWithWidth is a structure is responsible for a string and it's width.
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct StrWithWidth<'a> {
     text: Cow<'a, str>,
     width: usize,
@@ -138,7 +138,8 @@ impl<'a> StrWithWidth<'a> {
     }
 }
 
-fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
+// TODO: compare with 'get_text_dimension'
+fn create_text<S: AsRef<str>>(text: S) -> Text<S> {
     let mut info = Text {
         text,
         lines: vec![],
@@ -149,7 +150,7 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
     // We check if there's only 1 line in which case we don't allocate lines Vec
     let count_lines = count_lines(info.text.as_ref());
     if count_lines < 2 {
-        info.width = string::get_text_width(info.text.as_ref());
+        info.width = string::get_line_width(info.text.as_ref());
         return info;
     }
 
@@ -169,11 +170,12 @@ fn create_cell_info<S: AsRef<str>>(text: S) -> Text<S> {
         ))
     };
 
-    info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
-    for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
-        i.width = get_line_width(&line);
-        i.text = line;
-        info.width = max(info.width, i.width);
+    info.lines = Vec::with_capacity(count_lines);
+    for line in get_lines(text) {
+        let line_width = get_line_width(&line);
+        let line = StrWithWidth::new(line, line_width);
+        info.width = max(info.width, line_width);
+        info.lines.push(line);
     }
 
     info

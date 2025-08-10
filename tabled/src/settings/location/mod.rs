@@ -2,14 +2,15 @@
 //!
 //! # Example
 //!
-#![cfg_attr(feature = "derive", doc = "```")]
-#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
+#![cfg_attr(all(feature = "derive", feature = "assert"), doc = "```")]
+#![cfg_attr(not(all(feature = "derive", feature = "assert")), doc = "```ignore")]
 //! use tabled::{
 //!     settings::{
 //!         location::Locator,
 //!         object::{Columns, Object},
 //!         Alignment, Modify, Padding,
 //!     },
+//!     assert::assert_table,
 //!     Table, Tabled,
 //! };
 //!
@@ -28,43 +29,39 @@
 //!
 //! let mut table = Table::new(data);
 //! table.with(Padding::zero());
-//! table.with(Modify::new(Locator::column("link")).with(Alignment::right()));
-//! table.with(Modify::new(Locator::content("todo")).with("todo,1"));
-//! table.with(
-//!     Modify::new(Columns::single(1).intersect(Locator::by(|text| text.contains("todo"))))
-//!         .with(Padding::new(4, 0, 0, 0)),
+//! table.modify(Locator::column("link"), Alignment::right());
+//! table.modify(Locator::content("todo"), "todo,1");
+//! table.modify(
+//!     Columns::one(1).intersect(Locator::by(|text| text.contains("todo"))),
+//!     Padding::new(4, 0, 0, 0),
 //! );
 //!
-//! let output = table.to_string();
-//!
-//! assert_eq!(
-//!     output,
-//!     concat!(
-//!         "+-----------------------------------------------------------------+----------+\n",
-//!         "|                                                             link|comment   |\n",
-//!         "+-----------------------------------------------------------------+----------+\n",
-//!         "|https://www.gnu.org/software/grub/manual/multiboot/multiboot.html|    todo,1|\n",
-//!         "+-----------------------------------------------------------------+----------+\n",
-//!         "|                                https://wiki.debian.org/initramfs|    todo,1|\n",
-//!         "+-----------------------------------------------------------------+----------+\n",
-//!         "|                        http://jdebp.uk/FGA/efi-boot-process.html|    todo,2|\n",
-//!         "+-----------------------------------------------------------------+----------+\n",
-//!         "|                                     https://wiki.debian.org/UEFI|    todo,2|\n",
-//!         "+-----------------------------------------------------------------+----------+",
-//!     ),
+//! assert_table!(
+//!     table,
+//!     "+-----------------------------------------------------------------+----------+"
+//!     "|                                                             link|comment   |"
+//!     "+-----------------------------------------------------------------+----------+"
+//!     "|https://www.gnu.org/software/grub/manual/multiboot/multiboot.html|    todo,1|"
+//!     "+-----------------------------------------------------------------+----------+"
+//!     "|                                https://wiki.debian.org/initramfs|    todo,1|"
+//!     "+-----------------------------------------------------------------+----------+"
+//!     "|                        http://jdebp.uk/FGA/efi-boot-process.html|    todo,2|"
+//!     "+-----------------------------------------------------------------+----------+"
+//!     "|                                     https://wiki.debian.org/UEFI|    todo,2|"
+//!     "+-----------------------------------------------------------------+----------+"
 //! );
 //! ```
-
-// todo: Add .modify method for Table
 
 mod by_column_name;
 mod by_condition;
 mod by_content;
+mod by_value;
 mod locator;
 
 pub use by_column_name::ByColumnName;
 pub use by_condition::ByCondition;
 pub use by_content::ByContent;
+pub use by_value::ByValue;
 pub use locator::Locator;
 
 use core::ops::Bound;

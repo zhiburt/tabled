@@ -7,25 +7,23 @@ use tabled::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
         peaker::{PriorityLeft, PriorityMax, PriorityMin, PriorityRight},
+        style::HorizontalLine,
         width::{Justify, MinWidth, SuffixLimit, Width},
         Alignment, Margin, Modify, Padding, Panel, Settings, Span, Style,
     },
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
-use ::{
-    ansi_str::AnsiStr,
-    tabled::settings::{style::HorizontalLine, Color},
-};
+use ::{ansi_str::AnsiStr, tabled::settings::Color};
 
 test_table!(
     max_width,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::truncate(1))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |    0     |    0     |    0     |"
@@ -38,7 +36,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(1..).not(Rows::single(0)))
+            Modify::new(Columns::new(1..).not(Rows::one(0)))
                 .with(Width::truncate(2).suffix("...")),
         ),
     "| N | column 0 | column 1 | column 2 |"
@@ -52,7 +50,7 @@ test_table!(
     max_width_doesnt_increase_width_if_it_is_smaller,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::truncate(50))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -64,7 +62,7 @@ test_table!(
     max_width_wrapped,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::wrap(2))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |    0-    |    0-    |    0-    |"
@@ -79,7 +77,7 @@ test_table!(
     max_width_wrapped_does_nothing_if_str_is_smaller,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100))),
+        .with(Modify::new(Columns::new(1..).not(Rows::one(0))).with(Width::wrap(100))),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -115,63 +113,29 @@ test_table!(
 
 test_table!(
     max_width_wrapped_keep_words_2,
-    {
-        let table = Matrix::iter(vec!["this is a long   sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
+    Matrix::iter(vec!["this is a long   sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
     "| &str              |"
     "|-------------------|"
     "| this is a long    |"
     "| sentence          |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_wrapped_keep_words_3,
-    {
-        let table = Matrix::iter(vec!["this is a long    sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
+    Matrix::iter(vec!["this is a long    sentence"])
+        .with(Style::markdown())
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+        .to_string(),
     // 'sentence' doesn't have a space ' sentence' because we use left alignment
     "| &str              |"
     "|-------------------|"
     "| this is a long    |"
     "|  sentence         |"
-);
-
-#[cfg(not(feature = "ansi"))]
-test_table!(
-    max_width_wrapped_keep_words_3,
-    {
-        let table = Matrix::iter(vec!["this is a long    sentence"])
-            .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
-            .to_string();
-
-        assert_width!(&table, 17 + 2 + 2);
-
-        table
-    },
-    // 'sentence' doesn't have a space ' sentence' because we use left alignment
-    "| &str              |"
-    "|-------------------|"
-    "| this is a long    |"
-    "| sentence          |"
 );
 
 test_table!(
@@ -189,6 +153,26 @@ test_table!(
     "| &str |"
     "|------|"
     "| this |"
+);
+
+test_table!(
+    max_width_wrapped_keep_words_5,
+    {
+        let table = Matrix::iter(vec!["this is a longlon sentence"])
+            .with(Style::markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words(true)))
+            .to_string();
+
+        assert_width!(&table, 17 + 2 + 2);
+
+        table
+    },
+    // 'sentence' doesn't have a space ' sentence' because we use left alignment
+    "| &str              |"
+    "|-------------------|"
+    "| this is a longlon |"
+    "|  sentence         |"
 );
 
 #[cfg(feature = "ansi")]
@@ -374,7 +358,6 @@ test_table!(
     "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_1,
     Matrix::iter(["asdf"])
@@ -388,7 +371,6 @@ test_table!(
     "+-----+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_2,
     Matrix::iter(["qweqw eqwe"])
@@ -402,7 +384,6 @@ test_table!(
     "+------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     max_width_keep_words_3,
     {
@@ -512,7 +493,7 @@ test_table!(
     min_width_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12)),
+        .modify(Rows::one(0), MinWidth::new(12)),
     "| N            | column 0     | column 1     | column 2     |"
     "|--------------|--------------|--------------|--------------|"
     "|      0       |     0-0      |     0-1      |     0-2      |"
@@ -524,7 +505,7 @@ test_table!(
     min_width_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12))
+        .modify(Rows::one(0), MinWidth::new(12))
         .modify(Segment::all(), TrimStrategy::None),
     "| N            | column 0     | column 1     | column 2     |"
     "|--------------|--------------|--------------|--------------|"
@@ -537,7 +518,7 @@ test_table!(
     min_width_with_filler,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(12).fill_with('.'))
+        .modify(Rows::one(0), MinWidth::new(12).fill_with('.'))
         .to_string(),
     "| N........... | column 0.... | column 1.... | column 2.... |"
     "|--------------|--------------|--------------|--------------|"
@@ -575,7 +556,7 @@ test_table!(
     min_width_on_smaller_content,
     Matrix::new(3, 3)
         .with(Style::markdown())
-        .modify(Rows::single(0), MinWidth::new(1))
+        .modify(Rows::one(0), MinWidth::new(1))
         .to_string(),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
@@ -588,8 +569,8 @@ test_table!(
     min_with_max_width_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3))),
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3))),
     "| N   | col | col | col |"
     "|-----|-----|-----|-----|"
     "|  0  | 0-0 | 0-1 | 0-2 |"
@@ -601,8 +582,8 @@ test_table!(
     min_with_max_width_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3)))
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3)))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
     "| N   | col | col | col |"
     "|-----|-----|-----|-----|"
@@ -615,8 +596,8 @@ test_table!(
     min_with_max_width_truncate_suffix_0,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("..."))),
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3).suffix("..."))),
     "| N   | ... | ... | ... |"
     "|-----|-----|-----|-----|"
     "|  0  | 0-0 | 0-1 | 0-2 |"
@@ -628,8 +609,8 @@ test_table!(
     min_with_max_width_truncate_suffix_1,
     Matrix::table(3, 3)
         .with(Style::markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")))
+        .with(Modify::new(Rows::one(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::one(0)).with(Width::truncate(3).suffix("...")))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None)),
     "| N   | ... | ... | ... |"
     "|-----|-----|-----|-----|"
@@ -643,7 +624,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("...")
                 .suffix_limit(SuffixLimit::Replace('x'))
@@ -661,7 +642,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("qwert")
                 .suffix_limit(SuffixLimit::Cut)
@@ -678,7 +659,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .modify(
-            Rows::single(0),
+            Rows::one(0),
             Width::truncate(3)
                 .suffix("qwert")
                 .suffix_limit(SuffixLimit::Ignore),
@@ -951,7 +932,6 @@ test_table!(
     "|  |  |  | 2 |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     total_width_wrapping_0,
     Matrix::new(3, 3)
@@ -972,7 +952,6 @@ test_table!(
     "|  | 0  | 1  |     |"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     total_width_wrapping_1,
     Matrix::new(3, 3)
@@ -1180,18 +1159,18 @@ test_table!(
             .with(TrimStrategy::Horizontal)
             .with(MinWidth::new(50))
     },
-    r#"|                          &str |"#
-    r#"|-------------------------------|"#
-    r#"|                               |"#
-    r#"|             {                 |"#
-    r#"|             "some": "random", |"#
-    r#"|             "json": [         |"#
-    r#"|             { "1": "2" },     |"#
-    r#"|             { "1": "2" },     |"#
-    r#"|             { "1": "2" }      |"#
-    r#"|             ]                 |"#
-    r#"|             }                 |"#
-    r#"|                               |"#
+    r#"|                                           &str |"#
+    r#"|------------------------------------------------|"#
+    r#"|                                                |"#
+    r#"|                              {                 |"#
+    r#"|                              "some": "random", |"#
+    r#"|                              "json": [         |"#
+    r#"|                              { "1": "2" },     |"#
+    r#"|                              { "1": "2" },     |"#
+    r#"|                              { "1": "2" }      |"#
+    r#"|                              ]                 |"#
+    r#"|                              }                 |"#
+    r#"|                                                |"#
 );
 
 test_table!(
@@ -1216,18 +1195,18 @@ test_table!(
             .with(TrimStrategy::Both)
             .with(MinWidth::new(50))
     },
-    r#"|                          &str |"#
-    r#"|-------------------------------|"#
-    r#"|             {                 |"#
-    r#"|             "some": "random", |"#
-    r#"|             "json": [         |"#
-    r#"|             { "1": "2" },     |"#
-    r#"|             { "1": "2" },     |"#
-    r#"|             { "1": "2" }      |"#
-    r#"|             ]                 |"#
-    r#"|             }                 |"#
-    r#"|                               |"#
-    r#"|                               |"#
+    r#"|                                           &str |"#
+    r#"|------------------------------------------------|"#
+    r#"|                              {                 |"#
+    r#"|                              "some": "random", |"#
+    r#"|                              "json": [         |"#
+    r#"|                              { "1": "2" },     |"#
+    r#"|                              { "1": "2" },     |"#
+    r#"|                              { "1": "2" }      |"#
+    r#"|                              ]                 |"#
+    r#"|                              }                 |"#
+    r#"|                                                |"#
+    r#"|                                                |"#
 );
 
 test_table!(
@@ -1894,7 +1873,7 @@ test_table!(
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .modify(
-            Columns::new(1..2).not(Rows::single(0)),
+            Columns::new(1..2).not(Rows::one(0)),
             Width::truncate(1).multiline(true),
         ),
     "| N | column 0 |  column 1   | column 2 |"
@@ -1915,7 +1894,7 @@ test_table!(
         .insert((3, 2).into(), "multi\nline string\n")
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(1..2).not(Rows::single(0)))
+            Modify::new(Columns::new(1..2).not(Rows::one(0)))
                 .with(Width::truncate(1).multiline(true).suffix(".")),
         ),
     "| N | column 0 |  column 1   | column 2 |"
@@ -2064,11 +2043,10 @@ test_table!(
     "+--+---+----------+----------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     wrap_issue_0,
     {
-        tabled::Table::new(vec![
+        Table::new(vec![
             ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
         ])
         .with(Width::wrap(40).keep_words(true))
@@ -2086,15 +2064,13 @@ test_table!(
     "+--------------------------------------+"
 );
 
-#[cfg(feature = "ansi")]
 test_table!(
     wrap_issue_1,
     {
-        tabled::Table::new(vec![
-            ("x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx"),
-        ])
-        .with(Width::wrap(40).keep_words(false))
-        .to_string()
+        let text = "x xxx xx xxxxxxx xxxxxxxx xx xxxx xxxxxxx. xx xxxxxxxx xxx ❤️ xx xxxxx xx xxxxxxx x xx xxxxxx x xxxxxx xxxxxxxxxxxx xx xxxxxx xxx xxx xxxxxx xxxxxxx. xx xxxxxxxx xx xx xxxxxxxxxx";
+        Table::new(vec![(text)])
+            .with(Width::wrap(40).keep_words(false))
+            .to_string()
     },
     "+--------------------------------------+"
     "| &str                                 |"
@@ -2157,7 +2133,7 @@ mod derived {
 
         let table = Matrix::iter(&data)
             .with(Style::markdown())
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Alignment::left())
             .with(Width::wrap(57).keep_words(true))
             .to_string();
 
@@ -2315,17 +2291,6 @@ mod derived {
     }
 
     #[cfg(feature = "ansi")]
-    fn format_osc8_hyperlink(url: &str, text: &str) -> String {
-        format!(
-            "{osc}8;;{url}{st}{text}{osc}8;;{st}",
-            url = url,
-            text = text,
-            osc = "\x1b]",
-            st = "\x1b\\"
-        )
-    }
-
-    #[cfg(feature = "ansi")]
     #[test]
     fn hyperlinks() {
         #[derive(Tabled)]
@@ -2339,7 +2304,7 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::new(data)
+            Table::new(data)
                 .with(
                     Modify::new(Segment::all())
                         .with(Width::wrap(5).keep_words(true))
@@ -2419,7 +2384,7 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::new(data)
+            Table::new(data)
                 .with(
                     Modify::new(Segment::all())
                         .with(Width::wrap(6).keep_words(true))
@@ -2483,5 +2448,150 @@ mod derived {
                 "+--------+--------+"
             )
         );
+    }
+
+    #[cfg(feature = "ansi")]
+    #[test]
+    fn hyperlinks_truncate() {
+        use testing_table::assert_table;
+
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let create_table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+
+            Table::new(data).with(Width::truncate(20)).to_string()
+        };
+
+        let text = format_osc8_hyperlink("https://www.debian.org/", "Debian");
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+-----+------------+"
+            "| nam | is_hyperli |"
+            "+-----+------------+"
+            "| \u{1b}]8;;https://www.debian.org/\u{1b}\\Deb\u{1b}]8;;\u{1b}\\ | true       |"
+            "+-----+------------+"
+        );
+
+        // if there's more text than a link it will be ignored
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+--------+---------+"
+            "| name   | is_hype |"
+            "+--------+---------+"
+            "| Debian | true    |"
+            "+--------+---------+"
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+            format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+---------------+--+"
+            "| name          |  |"
+            "+---------------+--+"
+            "| asd Debian 2  |  |"
+            "+---------------+--+"
+        );
+    }
+
+    #[cfg(feature = "ansi")]
+    #[test]
+    fn hyperlinks_colored_truncate() {
+        use testing_table::assert_table;
+
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let create_table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+
+            Table::new(data).with(Width::truncate(20)).to_string()
+        };
+
+        let text =
+            format_osc8_hyperlink("https://www.debian.org/", &Color::FG_RED.colorize("Debian"));
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+-----+------------+"
+            "| nam | is_hyperli |"
+            "+-----+------------+"
+            "| \u{1b}]8;;https://www.debian.org/\u{1b}\\\u{1b}[31mDeb\u{1b}[39m\u{1b}]8;;\u{1b}\\ | true       |"
+            "+-----+------------+"
+        );
+
+        // if there's more text than a link it will be ignored
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink(
+                "https://www.debian.org/",
+                Color::FG_RED.colorize("Debian").as_str()
+            ),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+--------+---------+"
+            "| name   | is_hype |"
+            "+--------+---------+"
+            "| \u{1b}[31mDebian\u{1b}[39m | true    |"
+            "+--------+---------+"
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink(
+                "https://www.debian.org/",
+                Color::FG_RED.colorize("Debian").as_str()
+            ),
+            format_osc8_hyperlink(
+                "https://www.wikipedia.org/",
+                Color::FG_RED.colorize("Wiki").as_str()
+            ),
+        );
+        let table = create_table(&text);
+        assert_table!(
+            table,
+            "+---------------+--+"
+            "| name          |  |"
+            "+---------------+--+"
+            "| asd \u{1b}[31mDebian\u{1b}[39m 2  |  |"
+            "+---------------+--+"
+        );
+    }
+
+    #[cfg(feature = "ansi")]
+    fn format_osc8_hyperlink(url: &str, text: &str) -> String {
+        format!(
+            "{osc}8;;{url}{st}{text}{osc}8;;{st}",
+            url = url,
+            text = text,
+            osc = "\x1b]",
+            st = "\x1b\\"
+        )
     }
 }

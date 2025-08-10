@@ -31,7 +31,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::new(&data);
-/// table.with(Dup::new(Rows::single(1), Rows::single(2)));
+/// table.with(Dup::new(Rows::one(1), Rows::one(2)));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -137,11 +137,11 @@ where
 }
 
 fn is_valid_cell(pos: Position, count_rows: usize, count_columns: usize) -> bool {
-    if pos.row() > count_rows {
+    if pos.row > count_rows {
         return false;
     }
 
-    if pos.col() > count_columns {
+    if pos.col > count_columns {
         return false;
     }
 

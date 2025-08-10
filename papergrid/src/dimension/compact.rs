@@ -5,19 +5,17 @@
 use core::cmp::max;
 
 use crate::{
+    config::compact::CompactConfig,
     dimension::{Dimension, Estimate},
     records::{IntoRecords, Records},
     util::string::{count_lines, get_text_width},
 };
-
-use crate::config::compact::CompactConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
 /// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct CompactGridDimension {
-    height: usize,
     width: Vec<usize>,
 }
 
@@ -46,7 +44,7 @@ impl CompactGridDimension {
         R: Records,
         <R::Iter as IntoRecords>::Cell: AsRef<str>,
     {
-        build_dims(records, cfg)
+        build_dimension(records, cfg)
     }
 }
 
@@ -56,7 +54,7 @@ impl Dimension for CompactGridDimension {
     }
 
     fn get_height(&self, _: usize) -> usize {
-        self.height
+        1
     }
 }
 
@@ -67,12 +65,10 @@ where
 {
     fn estimate(&mut self, records: R, cfg: &CompactConfig) {
         self.width = build_width(records, cfg);
-        let pad = cfg.get_padding();
-        self.height = 1 + pad.top.size + pad.bottom.size;
     }
 }
 
-fn build_dims<R>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>)
+fn build_dimension<R>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>)
 where
     R: Records,
     <R::Iter as IntoRecords>::Cell: AsRef<str>,

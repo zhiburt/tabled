@@ -43,8 +43,10 @@ you can find more examples in the **[examples](/tabled/examples/)** folder.
     - [Text on borders](#text-on-borders)
     - [Colorize borders](#colorize-borders)
     - [Theme](#theme)
+      - [Layout](#layout)
       - [Colorize content](#colorize-content)
       - [Column names](#colorize-content)
+      - [Border span correction](#border-span-correction)
   - [Alignment](#alignment)
   - [Format](#format)
   - [Padding](#padding)
@@ -116,15 +118,14 @@ you can find more examples in the **[examples](/tabled/examples/)** folder.
 To print a list of structs or enums as a table, there are 2 ways.
 
 * Using a builder pattern to build a table step by step.
-* Implement a `Tabled` trait for your type (or annotate your type with a derive macro) and use an iterator of this type.
+* Implement a `Tabled` trait for your type.
 
-A builder pattern gets handy when a data schema is unknown,
-while a typed struct is useful in cases where we know the data structure beforehand.
-
-Both methods are demonstrated below, starting with the derive method.
+A builder pattern gets handy when a data schema is unknown.\
+While a typed struct is useful in cases where we know the data structure beforehand.
 
 ```rust
 use tabled::{Tabled, Table};
+use tabled::assert::assert_table;
 
 #[derive(Tabled)]
 struct Language {
@@ -135,61 +136,50 @@ struct Language {
 
 let languages = vec![
     Language { name: "C",    designed_by: "Dennis Ritchie",  invented_year: 1972 },
-    Language { name: "Rust", designed_by: "Graydon Hoare",   invented_year: 2010 },
     Language { name: "Go",   designed_by: "Rob Pike",        invented_year: 2009 },
+    Language { name: "Rust", designed_by: "Graydon Hoare",   invented_year: 2010 },
 ];
 
-let table = Table::new(languages).to_string();
+let table = Table::new(languages);
 
-let expected = "+------+----------------+---------------+\n\
-                | name | designed_by    | invented_year |\n\
-                +------+----------------+---------------+\n\
-                | C    | Dennis Ritchie | 1972          |\n\
-                +------+----------------+---------------+\n\
-                | Go   | Rob Pike       | 2009          |\n\
-                +------+----------------+---------------+\n\
-                | Rust | Graydon Hoare  | 2010          |\n\
-                +------+----------------+---------------+";
-
-assert_eq!(table, expected);
+assert_table!(
+    table,
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "| C    | Dennis Ritchie | 1972          |"
+    "+------+----------------+---------------+"
+    "| Go   | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  | 2010          |"
+    "+------+----------------+---------------+"
+);
 ```
 
 The next example illustrates a builder pattern.
 
 ```rust
-use std::{collections::HashMap, ops::AddAssign};
 use tabled::{builder::Builder, settings::Style};
+use tabled::assert::assert_table;
 
-let lyrics = r#"
-    … So, so you think you can tell heaven from hell?
-    Blue skies from pain?
-    Can you tell a green field from a cold steel rail?
-    A smile from a veil?
-    Do you think you can tell?
-"#;
+let mut b = Builder::with_capacity(3, 0);
+b.push_record(["row=0 col=0", "row=0 col=1"]);
+b.push_column(["row=0 col=2", "row=1 col=2"]);
 
-let mut map: HashMap<&str, usize> = HashMap::new();
-for line in lyrics.lines() {
-    for word in line.split_whitespace() {
-        map.entry(word).or_default().add_assign(1);
-    }
-}
+let mut table = b.build();
+table.with(Style::modern());
 
-let mut table = Builder::from(map).build();
-table.with(Style::modern_rounded().remove_horizontal());
-
-let expected =  "╭────────┬───╮\n\
-                 │ you    │ 5 │\n\
-                 │ smile  │ 1 │\n\
-                 │ veil?  │ 1 │\n\
-                 │ tell?  │ 1 │\n\
-                 │ …      │ 1 │\n\
-                 │ tell   │ 2 │\n\
-                 │ think  │ 2 │\n\
-                 ╰────────┴───╯"
-
-assert_eq!(table.to_string(), expected);
+assert_table!(
+    table,
+    "┌─────────────┬─────────────┬─────────────┐"
+    "│ row=0 col=0 │ row=0 col=1 │ row=0 col=2 │"
+    "├─────────────┼─────────────┼─────────────┤"
+    "│             │             │ row=1 col=2 │"
+    "└─────────────┴─────────────┴─────────────┘"
+);
 ```
+
+> NOTICE: In case you got to perform table rendering fast with no footprint you might be worth looking at `IterTable` and `CompactTable`.
 
 ## Settings
 
@@ -444,7 +434,6 @@ use tabled::{
 let data = [["123", "456"], ["789", "000"]];
 
 let mut table = Table::new(data);
-table.with(Style::ascii());
 table.modify(
     Rows::first(),
     Border::inherit(Style::ascii())
@@ -467,44 +456,29 @@ assert_table!(
 
 #### Text on borders
 
-You can set a string to a horizontal border line.
+You can write text on **any** border horizontal and vertical.
+Just bellow you'll find a text set on first horizontal line and first vertical line. Example based on the first example in the readme.
 
 ```rust
-use tabled::{settings::style::LineText, Table};
-use tabled::settings::object::Rows;
-
-let mut table = Table::new(["Hello World"]);
-table.with(LineText::new(".table", Rows::first()).offset(2));
-
-assert_eq!(
-    table.to_string(),
-    "+-.table------+\n\
-     | &str        |\n\
-     +-------------+\n\
-     | Hello World |\n\
-     +-------------+"
-);
-```
-
-You can as well stick the text to a particular side using `Alignment`.
-
-```rust
-use tabled::settings::object::Rows;
-use tabled::{
-    settings::{style::LineText, Alignment},
-    Table,
+use tabled::settings::{
+    object::{Columns, Rows},
+    style::LineText, Alignment,
 };
 
-let mut table = Table::new(["Hello World"]);
-table.with(LineText::new("TABLE NAME", Rows::first()).align(Alignment::center()));
+table.with(LineText::new("Languages", Rows::first()).offset(2));
+table.with(LineText::new("name", Columns::first()).align(Alignment::center_vertical()));
 
-assert_eq!(
-    table.to_string(),
-    "+-.table------+\n\
-     | &str        |\n\
-     +-------------+\n\
-     | Hello World |\n\
-     +-------------+"
+assert_table!(
+    table,
+    "+-Languages-------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "n------+----------------+---------------+"
+    "a C    | Dennis Ritchie | 1972          |"
+    "m------+----------------+---------------+"
+    "e Go   | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  | 2010          |"
+    "+------+----------------+---------------+"
 );
 ```
 
@@ -514,76 +488,101 @@ But rather necessary to set a custom `char`acter.
 You can use `LineChar` to achieve this.
 
 ```rust
-use tabled::{
-    settings::{object::Columns, style::{LineChar, Offset, Style}},
-    Table,
+use tabled::settings::{
+    object::{Columns, Object, Rows},
+    style::LineChar,
+    Style,
 };
 
-let mut table = Table::new([["Hello", "World", "!"]]);
-table.with(Style::markdown());
-table.modify(Columns::new(..), LineChar::horizontal(':', Offset::Begin(0)));
-table.modify(Columns::new(..), LineChar::horizontal(':', Offset::End(0)));
-```
+table.with(Style::modern());
+table.modify(
+    Rows::first(),
+    (LineChar::horizontal('┴', 1), LineChar::horizontal('┴', -1)),
+);
+table.modify(
+    Columns::new(..).not(Columns::first()),
+    LineChar::vertical('┼', 0),
+);
 
-```text
-| 0     | 1     | 2 |
-|:-----:|:-----:|:-:|
-| Hello | World | ! |
+assert_table!(
+    table,
+    "┌─┴──┴─┬─┴────────────┴─┬─┴───────────┴─┐"
+    "│ name ┼ designed_by    ┼ invented_year │"
+    "├──────┼────────────────┼───────────────┤"
+    "│ C    ┼ Dennis Ritchie ┼ 1972          │"
+    "├──────┼────────────────┼───────────────┤"
+    "│ Go   ┼ Rob Pike       ┼ 2009          │"
+    "├──────┼────────────────┼───────────────┤"
+    "│ Rust ┼ Graydon Hoare  ┼ 2010          │"
+    "└──────┴────────────────┴───────────────┘"
+);
 ```
 
 #### Colorize borders
 
-You can set colors of borders using `Color` and `BorderColor`.
+You can set colors of borders using `BorderColor`.
 
-If you need to higlight a border of a set of cells check out [`Highlight`](#highlight)
+If you need to higlight a border of a specific set of cells check out [`Highlight`](#highlight)
 
 
 ```rust
 use tabled::settings::{style::BorderColor, Color};
 use tabled::settings::object::Columns;
 
-// Doing it this will set a frame of the table to green color.
+// Set a frame of the table to green color.
 table.with(BorderColor::filled(Color::FG_GREEN));
-
-// Doing it this will set borders of all cells in 2nd column green color.
-table.modify(Columns::single(2), BorderColor::filled(Color::FG_GREEN));
+// Set all borders of 1st column column to black color.
+table.modify(Columns::first(), BorderColor::filled(Color::FG_BLACK));
+// Set all borders of last column column to red color.
+table.modify(Columns::last(), BorderColor::filled(Color::FG_RED));
 ```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-border-color-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-border-color-light.png">
+</picture>
 
 #### Theme
 
-It was considered that having a few atomic settings is better rather then have one but feature full.
-
-But `tabled::settings::themes::*` diverges a bit from this idea.
-It contains a list of settings which do bigger changes to the table.
-
-The first one is `Theme` itself.
-You can change layout, set style, colorize, config borders and even reverse the table with it.
+`Theme` can be used in interchangebly to [`Style`](#style-customization).
+It's just more convinient to use if style must be changed dynamically.
 
 ```rust
-use tabled::settings::{
-    object::{Columns, Object},
-    Alignment, Style, Theme,
-};
+use tabled::settings::{Style, Theme};
 
-let mut style = Theme::from_style(Style::ascii_rounded());
-style.remove_border_horizontal();
-style.remove_border_vertical();
-style.set_footer(true);
+let mut theme = Theme::from_style(Style::ascii_rounded());
+theme.remove_borders_horizontal();
+theme.remove_borders_vertical();
 
-table.with(style);
-table.with(Alignment::center());
-table.modify(Columns::first(), Alignment::left());
-table.modify(Columns::last(), Alignment::right());
+table.with(theme);
 ```
-
 You'll see the following output when run against the first example.
 
 ```text
-.---------------------------------------------------------------------------.
-| name                  C             Go          Rust                 name |
-| designed_by     Dennis Ritchie   Rob Pike   Graydon Hoare     designed_by |
-| invented_year        1972          2009         2010        invented_year |
-'---------------------------------------------------------------------------'
+.---------------------------------------.
+| name   designed_by      invented_year |
+| C      Dennis Ritchie   1972          |
+| Go     Rob Pike         2009          |
+| Rust   Graydon Hoare    2010          |
+'---------------------------------------'
+```
+
+##### Layout
+
+You can change layout of `Table` after it being created using `Layout`
+
+```rust
+use tabled::settings::{
+    formatting::Justification, object::Rows, style::Style, themes::Colorization, Color,
+};
+
+table.with(Style::empty());
+table.with(Colorization::rows([
+    Color::BG_WHITE | Color::FG_BLACK,
+    Color::BG_BLACK | Color::FG_WHITE,
+]));
+table.modify(Rows::first(), Color::BG_BLUE);
+table.modify(Rows::first(), Justification::colored(' ', Color::BG_BLUE));
 ```
 
 ##### Colorize content
@@ -591,36 +590,22 @@ You'll see the following output when run against the first example.
 You can colorize the content by the pattern or a specific cell.
 
 ```rust
-use std::iter::FromIterator;
-
-use tabled::{
-    builder::Builder,
-    settings::{object::Rows, style::Style, themes::Colorization, Color},
+use tabled::settings::{
+    formatting::Justification, object::Rows, style::Style, themes::Colorization, Color,
 };
 
-let data = vec![
-    vec!["Word", "Translation", "Lang"],
-    vec!["World", "le monde", "FR"],
-    vec!["World", "Welt", "DE"],
-];
-
-let mut table = Builder::from_iter(data).build();
-table
-    .with(Style::empty())
-    .with(Colorization::columns([
-        Color::BG_GREEN | Color::FG_BLACK,
-        Color::BG_MAGENTA | Color::FG_BLACK,
-        Color::BG_YELLOW | Color::FG_BLACK,
-    ]))
-    .with(Colorization::exact([Color::BG_WHITE | Color::FG_BLACK], Rows::first()))
-    .modify(Rows::first(), Color::BG_BLUE | Color::FG_BLACK);
-
-println!("{table}");
+table.with(Style::empty());
+table.with(Colorization::rows([
+    Color::BG_WHITE | Color::FG_BLACK,
+    Color::BG_BLACK | Color::FG_WHITE,
+]));
+table.modify(Rows::first(), Color::BG_BLUE);
+table.modify(Rows::first(), Justification::colored(' ', Color::BG_BLUE));
 ```
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/5dcff779-0aa5-499e-bb08-4373459c9db6">
-  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/d6f9a936-9d33-4d0b-acfc-9ef875d59cc3">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colorization-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colorization-light.png">
 </picture>
 
 ##### Column names
@@ -628,63 +613,70 @@ println!("{table}");
 You can move the header right to the borders.
 
 ```rust
-use tabled::{
-    builder::Builder,
-    settings::{style::Style, themes::ColumnNames},
-};
+use tabled::settings::{themes::ColumnNames, Alignment};
 
-let data = vec![
-    vec![String::from("header 0"), String::from("header 1")],
-    vec![String::from("Hello"), String::from("World")],
-    vec![String::from("Bonjour"), String::from("le monde")],
-    vec![String::from("Hallo"), String::from("Welt")],
-];
-
-let mut table = Builder::from(data).build();
-table.with(Style::modern());
-table.with(ColumnNames::default());
-
-println!("{table}");
+table.with(ColumnNames::head().alignment(Alignment::center()));
 ```
 
 ```text
-┌header 0─┬header 1──┐
-│ Hello   │ World    │
-├─────────┼──────────┤
-│ Bonjour │ le monde │
-├─────────┼──────────┤
-│ Hallo   │ Welt     │
-└─────────┴──────────┘
++-name-+--designed_by---+invented_year+
+| C    | Dennis Ritchie | 1972        |
++------+----------------+-------------+
+| Go   | Rob Pike       | 2009        |
++------+----------------+-------------+
+| Rust | Graydon Hoare  | 2010        |
++------+----------------+-------------+
+```
+
+##### Border span correction
+
+When [`Span`](#span) is used it may break the [`Style`](#style) chosen.
+To fix it you can use `BorderCorrection`
+
+```rust
+use tabled::settings::{Panel, themes::BorderCorrection};
+
+table.with(Panel::header("LISTING"));
+table.with(BorderCorrection::span());
+
+assert_table!(
+    table,
+    "+---------------------------------------+"
+    "| LISTING                               |"
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "| C    | Dennis Ritchie | 1972          |"
+    "+------+----------------+---------------+"
+    "| Go   | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  | 2010          |"
+    "+------+----------------+---------------+"
+);
 ```
 
 ### Alignment
 
-You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`, `Rows`)\ using `Alignment`.
+You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`, `Rows`) using `Alignment`.
 
 ```rust
-use tabled::settings::{object::Segment, Alignment};
-use tabled::Table;
+use tabled::settings::{object::Columns, Alignment};
 
-let data = vec![
-    ("text", "Multiline\ntext"),
-    ("text", "text"),
-];
+table.modify(Columns::first(), Alignment::right());
+table.modify(Columns::last(), Alignment::center());
 
-let mut table = Table::new(data);
-table.modify(Segment::all(), (Alignment::right(), Alignment::bottom()));
-
-println!("{table}");
-```
-
-```text
-+------+-----------+
-| &str |      &str |
-+------+-----------+
-|      | Multiline |
-| Text | text      |
-+------+-----------+
-| text |      text |
-+------+-----------+
+assert_table!(
+    table,
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "|    C | Dennis Ritchie |     1972      |"
+    "+------+----------------+---------------+"
+    "|   Go | Rob Pike       |     2009      |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  |     2010      |"
+    "+------+----------------+---------------+"
+);
 ```
 
 ### Format
@@ -694,42 +686,28 @@ println!("{table}");
 ```rust
 use tabled::{
     settings::{format::Format, object::Rows},
+    assert::assert_table,
     Table,
 };
 
-let data = vec![[0; 10]; 9];
-
-let mut table = Table::new(data);
+let mut table = Table::new([[0; 4]; 3]);
 table.modify(
     Rows::new(..),
-    Format::positioned(|_, (row, col)| ((row + 1) * (col + 1)).to_string()),
+    Format::positioned(|_, p| ((p.row) * (p.col)).to_string()),
 );
 
-println!("{table}");
-```
-
-```text
-+----+----+----+----+----+----+----+----+----+-----+
-| 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  | 10  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 2  | 4  | 6  | 8  | 10 | 12 | 14 | 16 | 18 | 20  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 3  | 6  | 9  | 12 | 15 | 18 | 21 | 24 | 27 | 30  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 4  | 8  | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 5  | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 6  | 12 | 18 | 24 | 30 | 36 | 42 | 48 | 54 | 60  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 7  | 14 | 21 | 28 | 35 | 42 | 49 | 56 | 63 | 70  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 8  | 16 | 24 | 32 | 40 | 48 | 56 | 64 | 72 | 80  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 9  | 18 | 27 | 36 | 45 | 54 | 63 | 72 | 81 | 90  |
-+----+----+----+----+----+----+----+----+----+-----+
-| 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 |
-+----+----+----+----+----+----+----+----+----+-----+
+assert_table!(
+    table,
+    "+---+---+---+---+----+----+----+----+----+----+"
+    "| 0 | 0 | 0 | 0 | 0  | 0  | 0  | 0  | 0  | 0  |"
+    "+---+---+---+---+----+----+----+----+----+----+"
+    "| 0 | 1 | 2 | 3 | 4  | 5  | 6  | 7  | 8  | 9  |"
+    "+---+---+---+---+----+----+----+----+----+----+"
+    "| 0 | 2 | 4 | 6 | 8  | 10 | 12 | 14 | 16 | 18 |"
+    "+---+---+---+---+----+----+----+----+----+----+"
+    "| 0 | 3 | 6 | 9 | 12 | 15 | 18 | 21 | 24 | 27 |"
+    "+---+---+---+---+----+----+----+----+----+----+"
+);
 ```
 
 ### Padding
@@ -740,11 +718,8 @@ You can set indent size and color of the padding.
 ```rust
 use tabled::settings::{
     object::{Columns, Object, Rows},
-    Color, Padding,
+    Color, Padding, PaddingColor,
 };
-
-// Set a padding for first column
-table.modify(Columns::first(), Padding::new(0, 10, 0, 0));
 
 // Set a padding for a last column (except first row)
 table.modify(
@@ -753,7 +728,7 @@ table.modify(
 );
 
 // Set a padding and its color for a first row
-table.modify(Rows::first(), Padding::new(2, 2, 0, 2).fill(' ', ' ', ' ', ' '));
+table.modify(Rows::first(), Padding::new(2, 2, 0, 2));
 table.modify(Rows::first(), PaddingColor::filled(Color::BG_BLUE));
 ```
 
@@ -819,23 +794,22 @@ table.with(MarginColor::new(
 
 ```rust
 use tabled::{settings::{Style, Shadow}, Table};
+use tabled::assert::assert_table;
 
-let data = vec![["A", "B", "C"]];
-let table = Table::new(data)
+let table = Table::new(vec![["A", "B", "C"]])
     .with(Style::modern())
     .with(Shadow::new(1))
     .to_string();
 
-println!("{}", table);
-```
-
-```text
-┌───┬───┬───┐ 
-│ 0 │ 1 │ 2 │▒
-├───┼───┼───┤▒
-│ A │ B │ C │▒
-└───┴───┴───┘▒
- ▒▒▒▒▒▒▒▒▒▒▒▒▒
+assert_table!(
+    table,
+    "┌───┬───┬───┐ "
+    "│ 0 │ 1 │ 2 │▒"
+    "├───┼───┼───┤▒"
+    "│ A │ B │ C │▒"
+    "└───┴───┴───┘▒"
+    " ▒▒▒▒▒▒▒▒▒▒▒▒▒"
+);
 ```
 
 ### Width
@@ -1007,10 +981,8 @@ Below is an example of setting an exact table height and width.
 
 ```rust
 use std::iter::FromIterator;
-use tabled::{
-    settings::{Height, Settings, Width},
-    Table,
-};
+use tabled::Table;
+use tabled::settings::{peaker::Priority, Height};
 
 fn gen_data(width: usize, height: usize) -> Vec<Vec<String>> {
     let dims = format!("{}x{}", width, height);
@@ -1022,43 +994,37 @@ fn gen_data(width: usize, height: usize) -> Vec<Vec<String>> {
     ]
 }
 
-fn gen_table(data: Vec<Vec<String>>, width: usize, height: usize) -> String {
+fn gen_table(data: Vec<Vec<String>>, height: usize) -> String {
     let mut table = Table::from_iter(data);
     table.with((
-        Width::truncate(width),
-        Width::increase(width),
+        Height::limit(height).priority(Priority::max(true)),
         Height::increase(height),
-        Height::limit(height),
     ));
 
     table.to_string()
 }
 
-println!("{}", gen_table(gen_data(40, 10), 30, 8));
-println!("{}", gen_table(gen_data(40, 4), 80, 12));
+println!("{}", gen_table(gen_data(40, 10), 6));
+println!("{}", gen_table(gen_data(40, 4), 10));
 ```
 
 ```text
-+-------+--------------------+
-| N     | string             |
-|       |                    |
-|       |                    |
-+-------+--------------------+
-| 40x10 | xxxxxxxxxxxxxxxxxx |
-|       |                    |
-+-------+--------------------+
-+-----------------------------------+------------------------------------------+
-| N                                 | string                                   |
-|                                   |                                          |
-|                                   |                                          |
-+-----------------------------------+------------------------------------------+
-| 40x4                              | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
-|                                   | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
-|                                   | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
-|                                   | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
-|                                   |                                          |
-|                                   |                                          |
-+-----------------------------------+------------------------------------------+
++-------+------------------------------------------+
+| N     | string                                   |
++-------+------------------------------------------+
+| 40x10 | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+|       | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
++-------+------------------------------------------+
++------+------------------------------------------+
+| N    | string                                   |
+|      |                                          |
++------+------------------------------------------+
+| 40x4 | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+|      | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+|      | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+|      | xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+|      |                                          |
++------+------------------------------------------+
 ```
 
 #### Height increase
@@ -1113,16 +1079,17 @@ Now we will add the following modificator and the output will be rotated;
 use tabled::settings::Rotate;
 
 table.with(Rotate::Left);
-```
 
-```text
-┌──────────────┬────────────────────────┬───────────────────────────┬──────────────────────────┐
-│ link         │ https://getfedora.org/ │ https://www.opensuse.org/ │ https://endeavouros.com/ │
-├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
-│ distribution │ Fedora                 │ OpenSUSE                  │ Endeavouros              │
-├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
-│ id           │ 0                      │ 2                         │ 3                        │
-└──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
+assert_table!(
+    table,
+    "+---------------+----------------+----------+---------------+"
+    "| invented_year | 1972           | 2009     | 2010          |"
+    "+---------------+----------------+----------+---------------+"
+    "| designed_by   | Dennis Ritchie | Rob Pike | Graydon Hoare |"
+    "+---------------+----------------+----------+---------------+"
+    "| name          | C              | Go       | Rust          |"
+    "+---------------+----------------+----------+---------------+"
+);
 ```
 
 ### Remove
@@ -1133,7 +1100,7 @@ You can remove certain rows or columns from the table by `Remove`.
 use tabled::settings::{object::{Columns, Rows}, Remove};
 
 table.with(Remove::row(Rows::first()));
-table.with(Remove::column(Columns::single(2)));
+table.with(Remove::column(Columns::one(2)));
 ```
 
 If the above example be applied for a first example in a file it would look like this.
@@ -1156,20 +1123,15 @@ You can `Extract` data segments of a table to focus on it closely.
 use tabled::settings::Extract;
 
 table.with(Extract::segment(1..3, 1..));
-```
 
-```text
-+-------+-------------+-----------+
-|  i32  |    &str     |   bool    |
-+-------+-------------+-----------+         +-------------+-----------+
-| : 0 : | : Grodno :  | : true :  |         | : Grodno :  | : true :  |
-+-------+-------------+-----------+    =    +-------------+-----------+
-| : 1 : |  : Minsk :  | : true :  |         |  : Minsk :  | : true :  |
-+-------+-------------+-----------+         +-------------+-----------+
-| : 2 : | : Hamburg : | : false : |
-+-------+-------------+-----------+
-| : 3 : |  : Brest :  | : true :  |
-+-------+-------------+-----------+
+assert_table!(
+    table,
+    "+----------------+------+"
+    "| Dennis Ritchie | 1972 |"
+    "+----------------+------+"
+    "| Rob Pike       | 2009 |"
+    "+----------------+------+"
+)
 ```
 
 ### Header and Footer and Panel
@@ -1316,10 +1278,10 @@ let data = vec![["A", "B", "C"], ["D", "E", "F"]];
 
 let mut table = Table::new(data);
 table.with(Style::modern());
-table.with(Highlight::border(
-    Rows::first().and(Columns::single(2).and((1, 1))),
-    Border::filled('*'),
-));
+table.with(
+    Highlight::new(Rows::first().and(Columns::one(2)).and((1, 1)))
+        .border(Border::filled('*')),
+);
 
 println!("{}", table);
 ```
@@ -1338,7 +1300,9 @@ The resulting table would be the following.
 
 ### Span
 
-It's possible to set a horizontal(column) span and vertical(row) span to a cell. For certain look and feel, this might cause visual artifacts on  table borders (see #399). This can be fixed by using tabled::settings::style::BorderSpanCorrection.
+It's possible to set a horizontal(column) span and vertical(row) span to a cell.
+For certain look and feel, this might cause visual artifacts on  table borders (see #399).
+This can be fixed by using [`tabled::settings::themes::BorderCorrection`](#border-span-correction).
 
 #### Horizontal span
 
@@ -1382,7 +1346,6 @@ let data = vec![["A", "B", "C"], ["D", "E", "F"]];
 let mut table = Table::new(data);
 table
     .modify((0, 1), Span::row(3))
-    .with(Alignment::center())
     .with(Alignment::center_vertical());
 
 println!("{}", table);
@@ -1436,15 +1399,25 @@ The result of the running example will be as follows.
 
 #### Duplicate
 
-It's possible to duplicate a given set of cell to another set.
+It's possible to duplicate a given set of cells.
 
 ```rust
-use tabled::{Table, settings::{Dup, object::Rows}};
+use tabled::settings::{Dup, object::Rows};
 
-let mut table = Table::new(data);
-
-// copy lastfirst line to the last line (last line gets erased).
 table.with(Dup::new(Rows::last(), Rows::first()));
+
+assert_table!(
+    table,
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "| C    | Dennis Ritchie | 1972          |"
+    "+------+----------------+---------------+"
+    "| Go   | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+);
 ```
 
 ## Derive
@@ -1980,24 +1953,22 @@ You use formatting(`std::fmt::*`) options to apply certain settings.
 ```rust
 use tabled::Table;
 
-let numbers = [1, 2, 3];
+let numbers = [(1, 2, 3), (1, 2, 3)];
 let table = Table::new(numbers);
 
-println!("{:#^10}", table);
+println!("{:.^30}", table);
 ```
 
 The result will be as follows.
 
 ```text
-#+-----+##
-#| i32 |##
-#+-----+##
-#|  1  |##
-#+-----+##
-#|  2  |##
-#+-----+##
-#|  3  |##
-#+-----+##
+.....+-----+-----+-----+......
+.....| i32 | i32 | i32 |......
+.....+-----+-----+-----+......
+.....|  1  |  2  |  3  |......
+.....+-----+-----+-----+......
+.....|  1  |  2  |  3  |......
+.....+-----+-----+-----+......
 ```
 
 ### ANSI
@@ -2019,8 +1990,8 @@ use tabled::{format::Format, object::Columns, Style, Table};
 let mut table = Table::new(&data);
 table
     .with(Style::psql())
-    .modify(Columns::single(0), Color::FG_RED)
-    .modify(Columns::single(1), Color::FG_BLUE)
+    .modify(Columns::one(0), Color::FG_RED)
+    .modify(Columns::one(1), Color::FG_BLUE)
     .modify(Columns::new(2..), Color::FG_GREEN);
 ```
 
@@ -2033,6 +2004,7 @@ You also can combine objects which implement `Tabled` by means of tuples, you wi
 ```rust
 use tabled::{
     settings::{Alignment, Style},
+    assert::assert_table,
     Table, Tabled,
 };
 
@@ -2059,16 +2031,14 @@ let table = Table::new(data)
     .with(Alignment::center())
     .to_string();
 
-assert_eq!(
+assert_table!(
     table,
-    concat!(
-        "      name       | Security | Embedded | Frontend | Unknown \n",
-        "-----------------+----------+---------+----------+---------\n",
-        " Terri Kshlerin  |          |    +    |          |         \n",
-        " Catalina Dicki  |    +     |         |          |         \n",
-        " Jennie Schmeler |          |         |    +     |         \n",
-        "  Maxim Zhiburt  |          |         |          |    +    ",
-    )
+    "      name       | Security | Embedded | Frontend | Unknown "
+    "-----------------+----------+----------+----------+---------"
+    " Terri Kshlerin  |          |    +     |          |         "
+    " Catalina Dicki  |    +     |          |          |         "
+    " Jennie Schmeler |          |          |    +     |         "
+    "  Maxim Zhiburt  |          |          |          |    +    "
 );
 ```
 
@@ -2079,6 +2049,7 @@ You can concat together options, just like `Settings` does, but in a more ideoma
 ```rust
 use tabled::{
     settings::{Alignment, Style},
+    assert::assert_table,
     Table,
 };
 
@@ -2091,17 +2062,17 @@ let movies = vec![
 let mut table = Table::new(movies);
 table.with((Alignment::right(), Style::modern()));
 
-assert_eq!(
-    table.to_string(),
-    "┌───────────────────────┬──────┬─────┐\n\
-     │                  &str │  i32 │ f64 │\n\
-     ├───────────────────────┼──────┼─────┤\n\
-     │          The Fall Guy │ 2024 │ 6.9 │\n\
-     ├───────────────────────┼──────┼─────┤\n\
-     │                Barbie │ 2023 │ 6.8 │\n\
-     ├───────────────────────┼──────┼─────┤\n\
-     │ The Chase for Carrera │ 2023 │ 7.5 │\n\
-     └───────────────────────┴──────┴─────┘",
+assert_table!(
+    table,
+    "┌───────────────────────┬──────┬─────┐"
+    "│                  &str │  i32 │ f64 │"
+    "├───────────────────────┼──────┼─────┤"
+    "│          The Fall Guy │ 2024 │ 6.9 │"
+    "├───────────────────────┼──────┼─────┤"
+    "│                Barbie │ 2023 │ 6.8 │"
+    "├───────────────────────┼──────┼─────┤"
+    "│ The Chase for Carrera │ 2023 │ 7.5 │"
+    "└───────────────────────┴──────┴─────┘"
 );
 ```
 
@@ -2113,15 +2084,29 @@ You can apply settings to a subgroup of cells using `and` and `not` methods for 
 use tabled::settings::object::{Object, Segment, Cell, Rows, Columns};
 Segment::all().not(Rows::first()); // select all cells except header.
 Columns::first().and(Columns::last()); // select cells from first and last columns.
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
+Rows::first().and(Columns::one(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
 ```
 
 Also you can target a column via its name using `ByColumnName`.
 
 ```rust
-use tabled::{location::ByColumnName, Alignment, Modify};
+use tabled::settings::{location::ByColumnName, Alignment};
+use tabled::assert::assert_table;
 
-table.with(Modify::new(ByColumnName::new("name")).with(Alignment::center()));
+table.modify(ByColumnName::new("name"), Alignment::right());
+
+assert_table!(
+    table,
+    "+------+----------------+---------------+"
+    "| name | designed_by    | invented_year |"
+    "+------+----------------+---------------+"
+    "|    C | Dennis Ritchie | 1972          |"
+    "+------+----------------+---------------+"
+    "|   Go | Rob Pike       | 2009          |"
+    "+------+----------------+---------------+"
+    "| Rust | Graydon Hoare  | 2010          |"
+    "+------+----------------+---------------+"
+);
 ```
 
 ### Builder
@@ -2133,6 +2118,7 @@ which will stay on the left.
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
+use tabled::assert::assert_table;
 
 let mut builder = Builder::default();
 builder.push_record(["Index", "Language", "Status"]);
@@ -2144,41 +2130,36 @@ let builder = builder.index().column(1).name(None);
 let mut table = builder.build();
 table.with(Style::rounded());
 
-println!("{}", table);
-```
-
-```text
-╭─────────┬───────┬─────────────╮
-│         │ Index │ Status      │
-├─────────┼───────┼─────────────┤
-│ English │ 1     │ In progress │
-│ Deutsch │ 2     │ Not ready   │
-╰─────────┴───────┴─────────────╯
+assert_table!(
+    table,
+    "╭─────────┬───────┬─────────────╮"
+    "│         │ Index │ Status      │"
+    "├─────────┼───────┼─────────────┤"
+    "│ English │ 1     │ In progress │"
+    "│ Deutsch │ 2     │ Not ready   │"
+    "╰─────────┴───────┴─────────────╯"
+);
 ```
 
 For example you can use `transpose()` method to change the layout.
 
 ```rust
-// A dynamic table example
 // ...
+// Use previous example
 
-let mut builder = builder.index().transpose();
+let builder = builder.index()
+    .column(1)
+    .name(None)
+    .transpose();
 ```
 
 ```text
-.-------------------------------------------------.
-|   | 0      | 1      | 2      | 3        | 4     |
-| 0 | And    | Little | When   | I        | You   |
-| 1 | the    | boy    | you    | don't    | know  |
-| 2 | cat's  | blue   | comin' | know     | we'll |
-| 3 | in     | and    | home   | when,    | have  |
-| 4 | the    | the    | dad?   | but      | a     |
-| 5 | cradle | man    |        | we'll    | good  |
-| 6 | and    | on     |        | get      | time  |
-| 7 | the    | the    |        | together | then  |
-| 8 | silver | moon   |        | then     |       |
-| 9 | spoon  |        |        | son      |       |
-'-------------------------------------------------'
+╭────────┬─────────────┬───────────╮
+│        │ English     │ Deutsch   │
+├────────┼─────────────┼───────────┤
+│ Index  │ 1           │ 2         │
+│ Status │ In progress │ Not ready │
+╰────────┴─────────────┴───────────╯
 ```
 
 ### Macros
@@ -2193,7 +2174,7 @@ Utilities for dynamic `Table` displays.
 Combine `col!` and `row!` to create flexible table visualizations.
 
 ```rust
-use tabled::{col, row, settings::Style};
+use tabled::{col, row, assert::assert_table, settings::Style};
 
 let mut table = row![
     col!["table 0", "0", "1", "2"],
@@ -2202,23 +2183,20 @@ let mut table = row![
 ];
 table.with(Style::modern_rounded());
 
-println!("{table}");
-```
-
-The output you're going to see running it.
-
-```text
-╭─────────────┬─────────────┬─────────────╮
-│ +---------+ │ +---------+ │ +---------+ │
-│ | table 0 | │ | table 1 | │ | table 2 | │
-│ +---------+ │ +---------+ │ +---------+ │
-│ | 0       | │ | world   | │             │
-│ +---------+ │ +---------+ │             │
-│ | 1       | │             │             │
-│ +---------+ │             │             │
-│ | 2       | │             │             │
-│ +---------+ │             │             │
-╰─────────────┴─────────────┴─────────────╯
+assert_table!(
+    table,
+    "╭─────────────┬─────────────┬─────────────╮"
+    "│ +---------+ │ +---------+ │ +---------+ │"
+    "│ | table 0 | │ | table 1 | │ | table 2 | │"
+    "│ +---------+ │ +---------+ │ +---------+ │"
+    "│ | 0       | │ | world   | │             │"
+    "│ +---------+ │ +---------+ │             │"
+    "│ | 1       | │             │             │"
+    "│ +---------+ │             │             │"
+    "│ | 2       | │             │             │"
+    "│ +---------+ │             │             │"
+    "╰─────────────┴─────────────┴─────────────╯"
+);
 ```
 
 #### `static_table`
@@ -2231,7 +2209,7 @@ static_table = "*"
 ```
 
 ```rust
-let table = static_table::static_table!(
+const TABLE: &str = static_table::static_table!(
     [
         ["x", "y", "op", "result"],
         ["1", '2', '*', '2'],
@@ -2241,7 +2219,7 @@ let table = static_table::static_table!(
 );
 
 assert_eq!(
-    table,
+    TABLE,
     "╭───┬───┬────┬────────╮\n\
      │ x │ y │ op │ result │\n\
      ├───┼───┼────┼────────┤\n\
@@ -2278,10 +2256,11 @@ It will look as follows.
 
 The library has a list of features.
 
-- `std`     - Used by default. If not its considered `no_std` with a limited set of functionality.
-- `derive`  - Used by default. Adds support for `Tabled` derive macro.
-- `ansi`    - A support for ANSI sequences.
-- `macros`  - A support for `row!`, `col!` macro.
+- `std`     - (default) If not used its considered `no_std` with a limited set of functionality.
+- `derive`  - (default) Support for `Tabled` derive macro.
+- `macros`  - (default) Support for `row!`, `col!` macro.
+- `assert`  - (default) Support for `assert_table!` macro.
+- `ansi`    - Support for *ANSI* sequences.
 
 ## Formats
 

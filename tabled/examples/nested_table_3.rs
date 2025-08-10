@@ -1,25 +1,19 @@
-//! This example demonstrates creating a nested [`Table`] by instantiating a new
-//! [`Table`] from a collection of other [`Tables`](Table).
-//!
-//! * This third nested [`Table`] example showcases the [`Table::new()`] approach.
-
 use tabled::{
     settings::{
-        object::Rows,
-        style::{BorderSpanCorrection, Style},
-        Alignment, Extract, Highlight, Padding, Panel,
+        object::Rows, style::Style, themes::BorderCorrection, Alignment, Extract, Highlight,
+        Padding, Panel,
     },
     Table, Tabled,
 };
 
 #[derive(Tabled)]
-struct Contribution {
-    author: &'static str,
-    profile: &'static str,
+struct Contribution<'a> {
+    author: &'a str,
+    profile: &'a str,
 }
 
-impl Contribution {
-    fn new(author: &'static str, profile: &'static str) -> Self {
+impl<'a> Contribution<'a> {
+    fn new(author: &'a str, profile: &'a str) -> Self {
         Self { author, profile }
     }
 }
@@ -38,13 +32,13 @@ fn main() {
     let committers_table = Table::new(committers)
         .with(Panel::header("Contributors"))
         .with(Alignment::center())
-        .with(BorderSpanCorrection)
+        .with(BorderCorrection::span())
         .to_string();
 
     let issues_table = Table::new(issuers)
         .with(Panel::header("Issuers"))
         .with(Alignment::center())
-        .with(BorderSpanCorrection)
+        .with(BorderCorrection::span())
         .to_string();
 
     let mut welcome_table = Table::new([(committers_table, issues_table)]);

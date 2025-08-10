@@ -1,11 +1,3 @@
-//! This example demonstrates using colors to stylize [`Grid`] cells.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note that this example uses inline ANSI escape characters to style
-//!   grid cells. `Grid::new(_, _, _, NoColors)` indicates that a color
-//!   map is not provided. NOT that colors are ignored in the output.
-
 use std::{
     fmt,
     io::{self, Write},
@@ -13,7 +5,7 @@ use std::{
 
 use papergrid::{
     colors::NoColors, config::spanned::SpannedConfig, config::Borders,
-    dimension::spanned::SpannedGridDimension, dimension::Estimate, grid::iterable::Grid,
+    dimension::iterable::IterGridDimension, dimension::Estimate, grid::iterable::IterGrid,
     records::IterRecords,
 };
 
@@ -26,10 +18,10 @@ fn main() {
 
     let cfg = generate_table_config();
 
-    let mut dimension = SpannedGridDimension::default();
+    let mut dimension = IterGridDimension::default();
     dimension.estimate(&records, &cfg);
 
-    let grid = Grid::new(&records, &dimension, &cfg, NoColors);
+    let grid = IterGrid::new(&records, &cfg, &dimension, NoColors);
 
     grid.build(UTF8Stdout(io::stdout())).unwrap();
     println!();

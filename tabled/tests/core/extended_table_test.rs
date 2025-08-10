@@ -9,7 +9,7 @@ use tabled::{
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {
@@ -180,7 +180,7 @@ fn display_dynamic_header_template() {
     {
         build_tabled_type!(TestType, 3, ["22"], ["11111111111"]);
         assert_expanded_display!(
-            std::iter::repeat(TestType).take(11),
+            std::iter::repeat_n(TestType, 11),
             static_table!(
                 "-[ RECORD 0 ]---"
                 "11111111111 | 22"

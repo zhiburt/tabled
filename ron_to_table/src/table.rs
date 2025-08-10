@@ -1,9 +1,10 @@
 use std::{
     cmp,
-    iter::{repeat, FromIterator},
+    iter::{repeat_n, FromIterator},
 };
 
 use ron::{Number, Value};
+
 use tabled::{
     builder::Builder,
     grid::{
@@ -70,7 +71,7 @@ impl RonTable {
     /// Apply settings to the table.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<EmptyRecords, CompactMultilineConfig, CompleteDimension<'static>>,
+        O: TableOption<EmptyRecords, CompactMultilineConfig, CompleteDimension>,
     {
         let mut records = EmptyRecords::default();
         let mut dims = CompleteDimension::default();
@@ -162,6 +163,7 @@ fn convert_value_to_table_value(value: &Value, ctx: CollapseCtx) -> TableValue {
                 Number::U64(num) => num.to_string(),
                 Number::F32(num) => num.get().to_string(),
                 Number::F64(num) => num.get().to_string(),
+                _ => num.into_f64().to_string(),
             };
 
             TableValue::Cell(value)
@@ -321,9 +323,9 @@ fn increase_string_width(text: &str, by: usize, ah: AlignmentHorizontal) -> Stri
         let (left, right) = indent_horizontal(ah, w + by, w);
 
         let mut buf = String::new();
-        buf.extend(repeat(' ').take(left));
+        buf.extend(repeat_n(' ', left));
         buf.push_str(&line);
-        buf.extend(repeat(' ').take(right));
+        buf.extend(repeat_n(' ', right));
 
         out.push(buf);
     }
@@ -338,13 +340,13 @@ fn increase_string_height(text: &str, by: usize, av: AlignmentVertical) -> Strin
 
     let (top, bottom) = indent_vertical(av, count_lines + by, count_lines);
 
-    out.extend(repeat(String::new()).take(top));
+    out.extend(repeat_n(String::new(), top));
 
     for line in get_lines(text) {
         out.push(line.into_owned());
     }
 
-    out.extend(repeat(String::new()).take(bottom));
+    out.extend(repeat_n(String::new(), bottom));
 
     out.join("\n")
 }
@@ -414,6 +416,7 @@ fn _plain_table(value: &Value, cfg: &RonTable, outer: bool) -> String {
                 Number::U64(num) => num.to_string(),
                 Number::F32(num) => num.get().to_string(),
                 Number::F64(num) => num.get().to_string(),
+                _ => num.into_f64().to_string(),
             };
 
             string_table(value, config, outer)

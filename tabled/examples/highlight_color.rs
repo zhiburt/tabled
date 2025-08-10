@@ -1,12 +1,9 @@
-//! This example demonstrates using [`Highlight`] in combination with [`BorderColor`] to
-//! frame sections of a [`Table`] with a unique background [`Color`].
-//!
-//! * Note how [`Highlight::colored()`] is used to accept the necessary input instead of [`Highlight::new()`].
+use std::iter::FromIterator;
 
 use tabled::{
     settings::{
         object::{Columns, Object, Rows},
-        Color, Highlight, Style,
+        Color, Highlight,
     },
     Table,
 };
@@ -14,12 +11,11 @@ use tabled::{
 fn main() {
     let data = vec![["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]];
 
-    let target = Rows::first().and(Columns::single(1));
-    let color = Color::BG_BRIGHT_BLACK;
-
-    let mut table = Table::new(data);
-    table.with(Style::modern());
-    table.with(Highlight::colored(target, color));
+    let mut table = Table::from_iter(data);
+    table.with(Highlight::colored(
+        Rows::first().and(Columns::one(1)),
+        Color::FG_GREEN,
+    ));
 
     println!("{table}");
 }

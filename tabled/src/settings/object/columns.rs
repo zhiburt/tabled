@@ -36,7 +36,7 @@ impl Columns<()> {
     /// Returns a new instance of [`Columns`] for a single column.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn single(index: usize) -> Column {
+    pub fn one(index: usize) -> Column {
         Column(index)
     }
 
@@ -123,7 +123,15 @@ impl Sub<usize> for LastColumn {
     type Output = LastColumnOffset;
 
     fn sub(self, rhs: usize) -> Self::Output {
-        LastColumnOffset { offset: rhs }
+        LastColumnOffset::sub(rhs)
+    }
+}
+
+impl Add<usize> for LastColumn {
+    type Output = LastColumnOffset;
+
+    fn add(self, rhs: usize) -> Self::Output {
+        LastColumnOffset::add(rhs)
     }
 }
 
@@ -155,26 +163,47 @@ impl From<Column> for usize {
 #[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LastColumnOffset {
     offset: usize,
+    sign: bool,
+}
+
+impl LastColumnOffset {
+    fn sub(offset: usize) -> Self {
+        Self {
+            offset,
+            sign: false,
+        }
+    }
+
+    fn add(offset: usize) -> Self {
+        Self { offset, sign: true }
+    }
 }
 
 impl<I> Object<I> for LastColumnOffset
 where
-    I: Records + ExactRecords,
+    I: Records,
 {
     type Iter = EntityOnce;
 
     fn cells(&self, records: &I) -> Self::Iter {
-        if records.count_rows() == 0 || records.count_columns() == 0 {
+        let count_cols = records.count_columns();
+        if count_cols == 0 {
             return EntityOnce::new(None);
         }
 
-        let col = records.count_columns().saturating_sub(1);
-        if self.offset > col {
-            return EntityOnce::new(None);
-        }
+        let last_col = count_cols - 1;
 
-        let col = col - self.offset;
-        EntityOnce::new(Some(Entity::Column(col)))
+        if self.sign {
+            let col = last_col + self.offset;
+            EntityOnce::new(Some(Entity::Column(col)))
+        } else {
+            if self.offset > last_col {
+                return EntityOnce::new(None);
+            }
+
+            let col = last_col - self.offset;
+            EntityOnce::new(Some(Entity::Column(col)))
+        }
     }
 }
 

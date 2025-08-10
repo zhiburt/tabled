@@ -5,10 +5,13 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
+//! # use tabled::{settings::{Style, Padding, object::Rows}, Table};
 //! # let data: Vec<&'static str> = Vec::new();
-//! let table = Table::new(&data)
-//!     .with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
+//! let mut table = Table::new(&data);
+//! table.modify(
+//!     Rows::one(0),
+//!     Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V'),
+//! );
 //! ```
 //!
 //! [`Table`]: crate::Table
@@ -139,5 +142,17 @@ impl<R, D> TableOption<R, CompactConfig, D> for Padding {
 impl<R, D> TableOption<R, CompactMultilineConfig, D> for Padding {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         cfg.set_padding(self.indent);
+    }
+}
+
+impl From<Padding> for Sides<Indent> {
+    fn from(value: Padding) -> Self {
+        value.indent
+    }
+}
+
+impl From<Sides<Indent>> for Padding {
+    fn from(indent: Sides<Indent>) -> Self {
+        Self { indent }
     }
 }

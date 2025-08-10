@@ -9,7 +9,7 @@ use tabled::{
     tables::CompactTable,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     compact_new,

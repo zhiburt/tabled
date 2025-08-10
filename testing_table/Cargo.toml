@@ -1,6 +1,6 @@
 [package]
 name = "testing_table"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."

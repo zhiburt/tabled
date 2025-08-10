@@ -20,7 +20,11 @@ test_table!(
 
 test_table!(
     test_iter_width,
-    csv_to_table::iter::from_reader(csv1()).width(2),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.width(2);
+        table
+    },
     "+----+----+----+----+----+----+----+----+"
     "| Ye | In | In | Un | Va | Va | Va | Va |"
     "+----+----+----+----+----+----+----+----+"
@@ -38,7 +42,11 @@ test_table!(
 
 test_table!(
     test_iter_width_zero,
-    csv_to_table::iter::from_reader(csv1()).width(0),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.width(0);
+        table
+    },
     "+--+--+--+--+--+--+--+--+"
     "|  |  |  |  |  |  |  |  |"
     "+--+--+--+--+--+--+--+--+"
@@ -56,7 +64,11 @@ test_table!(
 
 test_table!(
     test_iter_width_and_cols,
-    csv_to_table::iter::from_reader(csv1()).width(2).columns(5),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.width(2).columns(5);
+        table
+    },
     "+----+----+----+----+----+"
     "| Ye | In | In | Un | Va |"
     "+----+----+----+----+----+"
@@ -74,7 +86,11 @@ test_table!(
 
 test_table!(
     test_iter_cols,
-    csv_to_table::iter::from_reader(csv1()).columns(5),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.columns(5);
+        table
+    },
     "+------+-----------------------------+----------------------+--------------------+---------------+"
     "| Year | Industry_aggregation_NZSIOC | Industry_name_NZSIOC | Units              | Variable_code |"
     "+------+-----------------------------+----------------------+--------------------+---------------+"
@@ -91,8 +107,34 @@ test_table!(
 );
 
 test_table!(
+    test_iter_cols_0,
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.columns(2);
+        table
+    },
+    "+------+-----------------------------+"
+    "| Year | Industry_aggregation_NZSIOC |"
+    "+------+-----------------------------+"
+    "| 2021 | Level 1                     |"
+    "+------+-----------------------------+"
+    "| 2021 | Level 1                     |"
+    "+------+-----------------------------+"
+    "| 2021 | Level 1                     |"
+    "+------+-----------------------------+"
+    "| 2021 | Level 1                     |"
+    "+------+-----------------------------+"
+    "| 2021 | Level 1                     |"
+    "+------+-----------------------------+"
+);
+
+test_table!(
     test_iter_height,
-    csv_to_table::iter::from_reader(csv1()).height(2),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.height(2);
+        table
+    },
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
     "| Year | Industry_aggregation_NZSIOC | Industry_name_NZSIOC | Units              | Variable_code | Variable_name                     | Variable_category     | Value   |"
     "|      |                             |                      |                    |               |                                   |                       |         |"
@@ -116,7 +158,11 @@ test_table!(
 
 test_table!(
     test_iter_rows,
-    csv_to_table::iter::from_reader(csv1()).rows(2),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.rows(2);
+        table
+    },
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
     "| Year | Industry_aggregation_NZSIOC | Industry_name_NZSIOC | Units              | Variable_code | Variable_name                     | Variable_category     | Value   |"
     "+------+-----------------------------+----------------------+--------------------+---------------+-----------------------------------+-----------------------+---------+"
@@ -126,7 +172,11 @@ test_table!(
 
 test_table!(
     test_iter_rows_cols,
-    csv_to_table::iter::from_reader(csv1()).rows(2).columns(2),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.rows(2).columns(2);
+        table
+    },
     "+------+-----------------------------+"
     "| Year | Industry_aggregation_NZSIOC |"
     "+------+-----------------------------+"
@@ -136,13 +186,21 @@ test_table!(
 
 test_table!(
     test_iter_rows_cols_zero,
-    csv_to_table::iter::from_reader(csv1()).rows(0).columns(0),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.rows(0).columns(0);
+        table
+    },
     ""
 );
 
 test_table!(
     test_iter_rows_zero,
-    csv_to_table::iter::from_reader(csv1()).rows(0),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv1());
+        table.rows(0);
+        table
+    },
     ""
 );
 
@@ -166,7 +224,11 @@ test_table!(
 
 test_table!(
     test_iter_sniff,
-    csv_to_table::iter::from_reader(csv2()).sniff(1),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv2());
+        table.sniff(1);
+        table
+    },
     "+------+-----------------------------+----------------------+-------+---------------+---------------+-------------------+-------+"
     "| Year | Industry_aggregation_NZSIOC | Industry_name_NZSIOC | Units | Variable_code | Variable_name | Variable_category | Value |"
     "+------+-----------------------------+----------------------+-------+---------------+---------------+-------------------+-------+"
@@ -184,13 +246,21 @@ test_table!(
 
 test_table!(
     test_iter_sniff_zero,
-    csv_to_table::iter::from_reader(csv2()).sniff(0),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv2());
+        table.sniff(0);
+        table
+    },
     ""
 );
 
 test_table!(
     test_iter_sniff_zero_cols,
-    csv_to_table::iter::from_reader(csv2()).sniff(0).columns(3),
+    {
+        let mut table = csv_to_table::iter::from_reader(csv2());
+        table.sniff(0).columns(3);
+        table
+    },
     "+--+--+--+"
     "|  |  |  |"
     "+--+--+--+"

@@ -6,7 +6,7 @@ use tabled::{
     settings::{themes::Theme, Style},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     theme_0,

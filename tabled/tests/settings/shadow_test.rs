@@ -6,7 +6,7 @@ use tabled::{
     settings::{Shadow, Style},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;

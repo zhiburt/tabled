@@ -237,7 +237,7 @@ impl<R, D> TableOption<R, CompactMultilineConfig, D> for CompactMultilineConfig 
 }
 
 mod print {
-    use std::{cmp::max, collections::HashMap, iter::repeat};
+    use std::{cmp::max, collections::HashMap, iter::repeat_n};
 
     use crate::{
         builder::Builder,
@@ -643,9 +643,9 @@ mod print {
                 }
 
                 print_chars(&mut buf, pad.left.fill, pad_color.left, pad.left.size);
-                buf.extend(repeat(' ').take(left));
+                buf.extend(repeat_n(' ', left));
                 buf.push_str(&line);
-                buf.extend(repeat(' ').take(right));
+                buf.extend(repeat_n(' ', right));
                 print_chars(&mut buf, pad.right.fill, pad_color.right, pad.right.size);
 
                 if border.has_right() {
@@ -675,9 +675,9 @@ mod print {
                 }
 
                 print_chars(&mut buf, pad.left.fill, pad_color.left, pad.left.size);
-                buf.extend(repeat(' ').take(left));
+                buf.extend(repeat_n(' ', left));
                 buf.push_str(&line);
-                buf.extend(repeat(' ').take(right));
+                buf.extend(repeat_n(' ', right));
                 print_chars(&mut buf, pad.right.fill, pad_color.right, pad.right.size);
 
                 if border.has_right() {
@@ -731,10 +731,10 @@ mod print {
         match color {
             Some(color) => {
                 buf.push_str(color.get_prefix());
-                buf.extend(repeat(c).take(width));
+                buf.extend(repeat_n(c, width));
                 buf.push_str(color.get_suffix());
             }
-            None => buf.extend(repeat(c).take(width)),
+            None => buf.extend(repeat_n(c, width)),
         }
     }
 
@@ -813,7 +813,7 @@ mod print {
 
         let c = border.top.unwrap_or(' ');
         if splits.is_empty() {
-            buf.extend(repeat(c).take(width));
+            buf.extend(repeat_n(c, width));
         } else {
             let mut splits = splits;
             for i in 0..width {
@@ -891,7 +891,7 @@ mod print {
         }
 
         let c = border.bottom.unwrap_or(' ');
-        buf.extend(repeat(c).take(width));
+        buf.extend(repeat_n(c, width));
 
         if border.has_right() {
             if let Some(color) = color.right_bottom_corner {

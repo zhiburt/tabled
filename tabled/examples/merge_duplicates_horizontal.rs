@@ -1,11 +1,3 @@
-//! This example demonstrates using the [`Merge`] [`TableOption`] to clarify
-//! redundancies in a [`Table`] display.
-//!
-//! * Note how a custom theme is applied to give the [`Merged`](Merge) cells
-//!   a unique look.
-//!
-//! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
-
 use tabled::{
     settings::{
         style::{HorizontalLine, Style, VerticalLine},
@@ -13,25 +5,6 @@ use tabled::{
     },
     Table, Tabled,
 };
-
-fn main() {
-    let data = [
-        Database::new("database_1", "database_1", "table_1", 10712),
-        Database::new("database_1", "database_1", "table_2", 57),
-        Database::new("database_1", "database_1", "table_3", 57),
-        Database::new("database_2", "", "table_1", 72),
-        Database::new("database_2", "", "table_2", 75),
-        Database::new("database_3", "database_3", "table_1", 20),
-        Database::new("database_3", "", "table_2", 21339),
-        Database::new("database_3", "", "table_3", 141723),
-    ];
-
-    let mut table = Table::builder(data).index().transpose().build();
-    config_theme(&mut table);
-    table.with(Merge::horizontal());
-
-    println!("{table}");
-}
 
 #[derive(Tabled)]
 struct Database {
@@ -54,13 +27,28 @@ impl Database {
     }
 }
 
-fn config_theme(table: &mut Table) {
-    let style = Style::modern()
-        .frame(Border::inherit(Style::rounded()))
-        .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
-        .verticals([(1, VerticalLine::inherit(Style::modern()))])
-        .remove_horizontal()
-        .remove_vertical();
+fn main() {
+    let data = [
+        Database::new("db_1", "db_1", "users", 10712),
+        Database::new("db_1", "db_1", "devices", 57),
+        Database::new("db_1", "db_1", "users", 57),
+        Database::new("db_2", "", "users", 72),
+        Database::new("db_2", "", "users", 75),
+        Database::new("db_3", "db_3", "users", 20),
+        Database::new("db_3", "", "devices", 21339),
+        Database::new("db_3", "", "io", 141723),
+    ];
 
-    table.with(style);
+    let mut table = Table::builder(data).index().transpose().build();
+    table.with(
+        Style::modern()
+            .frame(Border::inherit(Style::rounded()))
+            .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
+            .verticals([(1, VerticalLine::inherit(Style::modern()))])
+            .remove_horizontal()
+            .remove_vertical(),
+    );
+    table.with(Merge::horizontal());
+
+    println!("{table}");
 }

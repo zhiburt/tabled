@@ -22,13 +22,13 @@ where
 #[cfg(feature = "std")]
 impl RecordsMut<String> for VecRecords<Text<String>> {
     fn set(&mut self, pos: Position, text: String) {
-        self[pos.row()][pos.col()] = Text::new(text);
+        self[pos.row][pos.col] = Text::new(text);
     }
 }
 
 #[cfg(feature = "std")]
 impl RecordsMut<&str> for VecRecords<Text<String>> {
     fn set(&mut self, p: Position, text: &str) {
-        self[p.row()][p.col()] = Text::new(text.to_string());
+        self[p.row][p.col] = Text::new(text.to_string());
     }
 }

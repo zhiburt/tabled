@@ -8,7 +8,7 @@ use tabled::{
     settings::{format::Format, object::Segment, Alignment, Modify, Padding},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 test_table!(
     row_pair_test,

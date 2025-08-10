@@ -1,5 +1,5 @@
 /// Formatting represent a logic of formatting of a cell text.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Formatting {
     /// An setting to allow horizontal trim.
     pub horizontal_trim: bool,

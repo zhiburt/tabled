@@ -3,15 +3,13 @@
 #[cfg(feature = "std")]
 pub mod compact;
 #[cfg(feature = "std")]
-pub mod spanned;
+pub mod iterable;
 #[cfg(feature = "std")]
-pub mod spanned_vec_records;
+pub mod peekable;
 
-/// Dimension of a [`Grid`]
+/// Dimension of a grid.
 ///
 /// It's a friend trait of [`Estimate`].
-///
-/// [`Grid`]: crate::grid::iterable::Grid
 pub trait Dimension {
     /// Get a column width by index.
     fn get_width(&self, column: usize) -> usize;
@@ -33,12 +31,19 @@ where
     }
 }
 
-/// Dimension estimation of a [`Grid`]
+/// Dimension estimation of a grid.
 ///
 /// It's a friend trait of [`Dimension`].
-///
-/// [`Grid`]: crate::grid::iterable::Grid
 pub trait Estimate<R, C> {
     /// Estimates a metric.
     fn estimate(&mut self, records: R, config: &C);
+}
+
+impl<T, R, C> Estimate<R, C> for &mut T
+where
+    T: Estimate<R, C>,
+{
+    fn estimate(&mut self, records: R, config: &C) {
+        T::estimate(self, records, config)
+    }
 }

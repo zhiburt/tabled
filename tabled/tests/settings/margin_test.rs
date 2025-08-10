@@ -6,7 +6,7 @@ use tabled::{
     settings::{object::Cell, Highlight, Margin, MarginColor, Modify, Span, Style, Width},
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 #[cfg(feature = "ansi")]
 use tabled::settings::Color;

@@ -3,13 +3,17 @@
 //!
 //! [`Table`]: crate::Table
 
+use papergrid::dimension::{iterable::IterGridDimension, Estimate};
+
 use crate::{
     grid::{
-        config::SpannedConfig,
-        config::{ColoredConfig, Entity},
-        dimension::CompleteDimensionVecRecords,
-        records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
-        util::string::{get_char_width, get_text_width},
+        config::{ColoredConfig, Entity, Position, SpannedConfig},
+        dimension::CompleteDimension,
+        records::{
+            vec_records::Cell, EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records,
+            RecordsMut,
+        },
+        util::string::{get_char_width, get_string_width},
     },
     settings::{
         measurement::Measurement,
@@ -19,10 +23,7 @@ use crate::{
     },
 };
 
-#[cfg(not(feature = "ansi"))]
-use crate::grid::util::string::get_string_width;
-
-use super::util::{get_table_widths, get_table_widths_with_total};
+use super::util::get_table_total_width;
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -101,39 +102,47 @@ impl Wrap<(), ()> {
     }
 }
 
-impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Wrap<W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
-    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
 {
-    fn change(
-        self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'_>,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }
 
         let width = self.width.measure(&*records, cfg);
-        let (widths, total) = get_table_widths_with_total(&*records, cfg);
+
+        dims.estimate(&*records, cfg);
+        let widths = dims.get_widths().expect("must be found");
+
+        let total = get_table_total_width(widths, cfg);
         if width >= total {
             return;
         }
 
-        let priority = self.priority;
-        let keep_words = self.keep_words;
-        let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
+        let w = Wrap {
+            keep_words: self.keep_words,
+            priority: self.priority,
+            width,
+        };
+        let widths = wrap_total_width(records, cfg, widths, total, w);
 
         dims.set_widths(widths);
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        // NOTE: We need to recalculate heights
+        // TODO: It's actually could be fixed; we sort of already have new strings
+        Some(Entity::Row(0))
+    }
 }
 
-impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
+impl<W, R, P> CellOption<R, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -141,22 +150,23 @@ where
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let width = self.width.measure(&*records, cfg);
-
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
+        let max_pos = Position::new(count_rows, count_columns);
+
+        let width = self.width.measure(&*records, cfg);
 
         for pos in entity.iter(count_rows, count_columns) {
-            if !pos.is_covered((count_rows, count_columns).into()) {
+            if !max_pos.has_coverage(pos) {
                 continue;
             }
 
-            let text = records.get_text(pos);
-            let cell_width = get_text_width(text);
+            let cell_width = records.get_width(pos);
             if cell_width <= width {
                 continue;
             }
 
+            let text = records.get_text(pos);
             let wrapped = wrap_text(text, width, self.keep_words);
             records.set(pos, wrapped);
         }
@@ -166,11 +176,9 @@ where
 fn wrap_total_width<R, P>(
     records: &mut R,
     cfg: &mut ColoredConfig,
-    mut widths: Vec<usize>,
-    total_width: usize,
-    width: usize,
-    keep_words: bool,
-    priority: P,
+    widths: &[usize],
+    total: usize,
+    w: Wrap<usize, P>,
 ) -> Vec<usize>
 where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -178,23 +186,29 @@ where
     for<'a> &'a R: Records,
     for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
-    let shape = (records.count_rows(), records.count_columns());
-    let min_widths = get_table_widths(EmptyRecords::from(shape), cfg);
+    let count_rows = records.count_rows();
+    let count_columns = records.count_columns();
 
-    decrease_widths(&mut widths, &min_widths, total_width, width, priority);
+    // TODO: Could be optimized by calculating width and min_width together
+    //       I just don't like the boiler plate we will add :(
+    //       But the benefit is clear.
+    let min_widths = IterGridDimension::width(EmptyRecords::new(count_rows, count_columns), cfg);
 
-    let points = get_decrease_cell_list(cfg, &widths, &min_widths, shape);
+    let mut widths = widths.to_vec();
+    decrease_widths(&mut widths, &min_widths, total, w.width, w.priority);
 
-    for ((row, col), width) in points {
-        let mut wrap = Wrap::new(width);
-        wrap.keep_words = keep_words;
-        <Wrap as CellOption<_, _>>::change(wrap, records, cfg, (row, col).into());
+    let points = get_decrease_cell_list(cfg, &widths, &min_widths, count_rows, count_columns);
+
+    for (pos, width) in points {
+        let text = records.get_text(pos);
+        let wrapped = wrap_text(text, width, w.keep_words);
+        records.set(pos, wrapped);
     }
 
     widths
 }
 
-pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
+fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         return String::new();
     }
@@ -202,7 +216,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     #[cfg(not(feature = "ansi"))]
     {
         if keep_words {
-            wrap_text_keeping_words(text, width)
+            wrap_text_keeping_words_noansi(text, width)
         } else {
             wrap_text_basic(text, width)
         }
@@ -210,30 +224,16 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
 
     #[cfg(feature = "ansi")]
     {
-        use crate::util::string::strip_osc;
+        use crate::util::string::{build_link, strip_osc};
 
-        let (text, url): (String, Option<String>) = strip_osc(text);
-        let (prefix, suffix) = build_link_prefix_suffix(url);
+        let (text, url) = strip_osc(text);
+        let (prefix, suffix) = build_link(url);
 
         if keep_words {
             wrap_text_keeping_words(&text, width, &prefix, &suffix)
         } else {
             wrap_text_basic(&text, width, &prefix, &suffix)
         }
-    }
-}
-
-#[cfg(feature = "ansi")]
-fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
-    match url {
-        Some(url) => {
-            // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
-            let osc8 = "\x1b]8;;";
-            let st = "\x1b\\";
-
-            (format!("{osc8}{url}{st}"), format!("{osc8}{st}"))
-        }
-        None => ("".to_string(), "".to_string()),
     }
 }
 
@@ -265,7 +265,7 @@ fn wrap_text_basic(s: &str, width: usize) -> String {
             let is_char_small = char_width <= width;
             if !is_char_small {
                 let count_unknowns = width - current_width;
-                buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+                buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
                 current_width += count_unknowns;
             } else {
                 buf.push('\n');
@@ -311,14 +311,6 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
 
         let _ = write!(&mut buf, "{}", style.start());
 
-        // let text_width = get_text_width(text);
-        // if text_width + line_width <= width {
-        //     buf.push_str(text);
-        //     let _ = write!(&mut buf, "{}", style.end());
-        //     buf.push_str(line_suffix);
-        //     continue;
-        // }
-
         for c in text.chars() {
             if c == '\n' {
                 let _ = write!(&mut buf, "{}", style.end());
@@ -362,7 +354,7 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
             }
 
             let count_unknowns = width - line_width;
-            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf.extend(std::iter::repeat_n(REPLACEMENT, count_unknowns));
             line_width += count_unknowns;
         }
 
@@ -378,8 +370,7 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
     buf
 }
 
-#[cfg(not(feature = "ansi"))]
-fn wrap_text_keeping_words(text: &str, width: usize) -> String {
+fn wrap_text_keeping_words_noansi(text: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     if width == 0 || text.is_empty() {
@@ -389,11 +380,17 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
     let mut buf = String::with_capacity(width);
     let mut line_width = 0;
 
-    for word in text.split(' ') {
+    for (i, word) in text.split(' ').enumerate() {
         // restore space char
-        if line_width > 0 {
-            let line_has_space = line_width < width;
+        let line_has_space = line_width < width;
+        if i > 0 {
             if line_has_space {
+                buf.push(' ');
+                line_width += 1;
+            } else {
+                buf.push('\n');
+                line_width = 0;
+
                 buf.push(' ');
                 line_width += 1;
             }
@@ -436,7 +433,7 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
                     // For example:
                     // Emojie with width 2 but and wrap width 1
                     let available = width - line_width;
-                    buf.extend(std::iter::repeat(REPLACEMENT).take(available));
+                    buf.extend(std::iter::repeat_n(REPLACEMENT, available));
                     line_width = width;
                     continue;
                 }
@@ -455,332 +452,323 @@ fn wrap_text_keeping_words(text: &str, width: usize) -> String {
 
 #[cfg(feature = "ansi")]
 fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
-    if text.is_empty() || width == 0 {
-        return String::new();
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    struct Blocks<'a> {
+        iter: ansi_str::AnsiBlockIter<'a>,
+        last_block: Option<BlockSlice<'a>>,
     }
 
-    parsing::split_text(text, width, prefix, suffix)
-}
-
-#[cfg(feature = "ansi")]
-mod parsing {
-    use super::get_char_width;
-    use ansi_str::{get_blocks, AnsiBlock, AnsiBlockIter, Style};
-    use std::fmt::Write;
-
-    struct TextBlocks<'a> {
-        iter: AnsiBlockIter<'a>,
-        current: Option<RelativeBlock<'a>>,
-    }
-
-    impl<'a> TextBlocks<'a> {
-        fn new(text: &'a str) -> Self {
-            Self {
-                iter: get_blocks(text),
-                current: None,
-            }
-        }
-
-        fn next(&mut self) -> Option<RelativeBlock<'a>> {
-            self.current
-                .take()
-                .or_else(|| self.iter.next().map(RelativeBlock::new))
-        }
-    }
-
-    struct RelativeBlock<'a> {
-        block: AnsiBlock<'a>,
+    struct BlockSlice<'a> {
+        block: ansi_str::AnsiBlock<'a>,
         pos: usize,
     }
 
-    impl<'a> RelativeBlock<'a> {
-        fn new(block: AnsiBlock<'a>) -> Self {
-            Self { block, pos: 0 }
-        }
-
-        fn get_text(&self) -> &str {
-            &self.block.text()[self.pos..]
-        }
-
-        fn get_origin(&self) -> &str {
-            self.block.text()
-        }
-
-        fn get_style(&self) -> &Style {
-            self.block.style()
-        }
-    }
-
-    struct MultilineBuffer<'text, 'color> {
-        buf: String,
-        width_last: usize,
-        width: usize,
-        prefix: &'color str,
-        suffix: &'color str,
-        blocks: TextBlocks<'text>,
-    }
-
-    impl<'text, 'color> MultilineBuffer<'text, 'color> {
-        fn new(text: &'text str, width: usize, prefix: &'color str, suffix: &'color str) -> Self {
-            let blocks = TextBlocks::new(text);
-
+    impl<'a> Blocks<'a> {
+        fn new(text: &'a str) -> Self {
             Self {
-                buf: String::new(),
-                width_last: 0,
-                prefix,
-                suffix,
-                width,
-                blocks,
+                iter: ansi_str::get_blocks(text),
+                last_block: None,
             }
         }
 
-        fn into_string(self) -> String {
-            self.buf
-        }
+        fn read(&mut self, buf: &mut String, nbytes: usize) {
+            use std::fmt::Write;
 
-        fn max_width(&self) -> usize {
-            self.width
-        }
+            debug_assert_ne!(nbytes, 0);
 
-        fn available_width(&self) -> usize {
-            self.width - self.width_last
-        }
+            let mut size: usize = nbytes;
 
-        fn fill(&mut self, c: char) -> usize {
-            debug_assert_eq!(get_char_width(c), 1);
+            if let Some(mut b) = self.last_block.take() {
+                let text = b.block.text();
+                let slice = &text[b.pos..];
+                let slice_size = slice.len();
 
-            let rest_width = self.available_width();
-            for _ in 0..rest_width {
-                self.buf.push(c);
+                match slice_size.cmp(&size) {
+                    std::cmp::Ordering::Less => {
+                        buf.push_str(slice);
+                        let _ = write!(buf, "{}", b.block.style().end());
+                        size -= slice_size;
+                    }
+                    std::cmp::Ordering::Equal => {
+                        buf.push_str(slice);
+                        let _ = write!(buf, "{}", b.block.style().end());
+                        return;
+                    }
+                    std::cmp::Ordering::Greater => {
+                        let truncated = &slice[..size];
+                        buf.push_str(truncated);
+                        b.pos += size;
+                        self.last_block = Some(b);
+                        return;
+                    }
+                }
             }
 
-            rest_width
-        }
-
-        fn set_next_line(&mut self) {
-            if let Some(block) = &self.blocks.current {
-                let _ = self
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().end()));
-            }
-
-            self.buf.push_str(self.suffix);
-
-            self.buf.push('\n');
-            self.width_last = 0;
-
-            self.buf.push_str(self.prefix);
-
-            if let Some(block) = &self.blocks.current {
-                let _ = self
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().start()));
-            }
-        }
-
-        fn finish_line(&mut self) {
-            if let Some(block) = &self.blocks.current {
-                let _ = self
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().end()));
-            }
-
-            self.buf.push_str(self.suffix);
-            self.width_last = 0;
-        }
-
-        fn read_chars(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
-            let mut count_chars = 0;
-            let mut count_bytes = 0;
-            for c in block.get_text().chars() {
-                if count_chars == n {
-                    break;
+            for block in self.iter.by_ref() {
+                let text = block.text();
+                if text.is_empty() {
+                    continue;
                 }
 
-                count_chars += 1;
-                count_bytes += c.len_utf8();
+                let text_size = text.len();
 
-                let cwidth = std::cmp::max(1, get_char_width(c));
+                match text_size.cmp(&size) {
+                    std::cmp::Ordering::Less => {
+                        let _ = write!(buf, "{}", block.style().start());
+                        buf.push_str(text);
+                        let _ = write!(buf, "{}", block.style().end());
+                        size -= text_size;
+                    }
+                    std::cmp::Ordering::Equal => {
+                        let _ = write!(buf, "{}", block.style().start());
+                        buf.push_str(text);
+                        let _ = write!(buf, "{}", block.style().end());
+                        return;
+                    }
+                    std::cmp::Ordering::Greater => {
+                        let _ = write!(buf, "{}", block.style().start());
+                        let slice = &text[..size];
+                        buf.push_str(slice);
+                        self.last_block = Some(BlockSlice { block, pos: size });
 
-                let available_space = self.width - self.width_last;
-                if available_space == 0 {
-                    let _ = self
-                        .buf
-                        .write_fmt(format_args!("{}", block.get_style().end()));
-                    self.buf.push_str(self.suffix);
-                    self.buf.push('\n');
-                    self.buf.push_str(self.prefix);
-                    let _ = self
-                        .buf
-                        .write_fmt(format_args!("{}", block.get_style().start()));
-                    self.width_last = 0;
+                        return;
+                    }
                 }
+            }
+        }
 
-                let is_enough_space = self.width_last + cwidth <= self.width;
-                if !is_enough_space {
-                    // thereatically a cwidth can be 2 but buf_width is 1
-                    // but it handled here too;
+        fn read_char(&mut self, buf: &mut String) {
+            use std::fmt::Write;
 
-                    const REPLACEMENT: char = '\u{FFFD}';
-                    let _ = self.fill(REPLACEMENT);
-                    self.width_last = self.width;
+            if let Some(mut b) = self.last_block.take() {
+                let text = b.block.text();
+                let slice = &text[b.pos..];
+
+                let mut chars = slice.chars();
+                let ch = chars.next().expect("ok");
+                let ch_size = ch.len_utf8();
+
+                buf.push(ch);
+
+                if chars.next().is_none() {
+                    let _ = write!(buf, "{}", b.block.style().end());
+                    return;
                 } else {
-                    self.buf.push(c);
-                    self.width_last += cwidth;
+                    debug_assert_ne!(ch_size, 0);
+
+                    b.pos += ch_size;
+                    self.last_block = Some(b);
+
+                    return;
                 }
             }
 
-            (count_chars, count_bytes)
+            for block in self.iter.by_ref() {
+                let text = block.text();
+                if text.is_empty() {
+                    continue;
+                }
+
+                let mut chars = text.chars();
+                let ch = chars.next().expect("ok");
+                let ch_size = ch.len_utf8();
+
+                let _ = write!(buf, "{}", block.style().start());
+                buf.push(ch);
+
+                if chars.next().is_none() {
+                    let _ = write!(buf, "{}", block.style().end());
+                    return;
+                } else {
+                    debug_assert_ne!(ch_size, 0);
+
+                    self.last_block = Some(BlockSlice {
+                        block,
+                        pos: ch_size,
+                    });
+                    return;
+                }
+            }
         }
 
-        fn read_chars_unchecked(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
-            let mut count_chars = 0;
-            let mut count_bytes = 0;
-            for c in block.get_text().chars() {
-                if count_chars == n {
-                    break;
+        fn skip(&mut self, buf: &mut String, nbytes: usize) {
+            use std::fmt::Write;
+
+            debug_assert_ne!(nbytes, 0);
+
+            let mut size = nbytes;
+
+            if let Some(mut b) = self.last_block.take() {
+                let text = b.block.text();
+                let slice = &text[b.pos..];
+                let slice_size = slice.len();
+
+                match slice_size.cmp(&size) {
+                    std::cmp::Ordering::Less => {
+                        let _ = write!(buf, "{}", b.block.style().end());
+                        size -= slice_size;
+                    }
+                    std::cmp::Ordering::Equal => {
+                        let _ = write!(buf, "{}", b.block.style().end());
+                        return;
+                    }
+                    std::cmp::Ordering::Greater => {
+                        b.pos += size;
+                        self.last_block = Some(b);
+                        return;
+                    }
                 }
-
-                count_chars += 1;
-                count_bytes += c.len_utf8();
-
-                let cwidth = std::cmp::max(1, get_char_width(c));
-                self.width_last += cwidth;
-
-                self.buf.push(c);
             }
 
-            debug_assert!(self.width_last <= self.width);
+            for block in self.iter.by_ref() {
+                let text = block.text();
+                let text_size = text.len();
 
-            (count_chars, count_bytes)
+                if text.is_empty() {
+                    continue;
+                }
+
+                match text_size.cmp(&size) {
+                    std::cmp::Ordering::Less => {
+                        size -= text_size;
+                    }
+                    std::cmp::Ordering::Equal => {
+                        return;
+                    }
+                    std::cmp::Ordering::Greater => {
+                        let _ = write!(buf, "{}", block.style().start());
+                        self.last_block = Some(BlockSlice { block, pos: size });
+                        return;
+                    }
+                }
+            }
+        }
+
+        fn finish(&mut self, buf: &mut String) {
+            use std::fmt::Write;
+
+            if let Some(b) = &mut self.last_block {
+                let _ = write!(buf, "{}", b.block.style().end());
+            }
+        }
+
+        fn start(&mut self, buf: &mut String) {
+            use std::fmt::Write;
+
+            if let Some(b) = &mut self.last_block {
+                let _ = write!(buf, "{}", b.block.style().start());
+            }
         }
     }
 
-    fn read_chars(buf: &mut MultilineBuffer<'_, '_>, n: usize) {
-        let mut n = n;
-        while n > 0 {
-            let is_new_block = buf.blocks.current.is_none();
-            let mut block = buf.blocks.next().expect("Must never happen");
+    if width == 0 || text.is_empty() {
+        return String::new();
+    }
 
-            if is_new_block {
-                buf.buf.push_str(buf.prefix);
-                let _ = buf
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().start()));
-            }
+    let stripped = ansi_str::AnsiStr::ansi_strip(text);
+    let is_simple_text = stripped.len() == text.len() && prefix.is_empty() && suffix.is_empty();
+    if is_simple_text {
+        return wrap_text_keeping_words_noansi(text, width);
+    }
 
-            let (read_count, read_bytes) = buf.read_chars(&block, n);
+    let mut buf = String::with_capacity(width + prefix.len() + suffix.len());
+    let mut line_width = 0;
+    let mut blocks = Blocks::new(text);
 
-            if block.pos + read_bytes == block.get_origin().len() {
-                let _ = buf
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().end()));
+    buf.push_str(prefix);
+
+    for (i, word) in stripped.split(' ').enumerate() {
+        let word_width = get_string_width(word);
+        let word_size = word.len();
+
+        // restore space char if we can
+        if i > 0 {
+            let line_has_space = line_width < width;
+            if line_has_space {
+                blocks.read(&mut buf, 1);
+                line_width += 1;
             } else {
-                block.pos += read_bytes;
-                buf.blocks.current = Some(block);
+                blocks.finish(&mut buf);
+                buf.push_str(suffix);
+                buf.push('\n');
+                buf.push_str(prefix);
+                blocks.start(&mut buf);
+                blocks.read(&mut buf, 1);
+                line_width = 1;
+            }
+        }
+
+        if word_width == 0 {
+            continue;
+        }
+
+        let line_has_space = line_width + word_width <= width;
+        if line_has_space {
+            blocks.read(&mut buf, word_size);
+            line_width += word_width;
+            continue;
+        }
+
+        let is_small_word = word_width <= width;
+        if is_small_word {
+            blocks.finish(&mut buf);
+            buf.push_str(suffix);
+            buf.push('\n');
+            buf.push_str(prefix);
+            blocks.start(&mut buf);
+            blocks.read(&mut buf, word_size);
+            line_width = word_width;
+            continue;
+        }
+
+        // take 1 char by 1 and just push it
+        for c in word.chars() {
+            let char_width = std::cmp::max(1, get_char_width(c));
+            let char_size = c.len_utf8();
+
+            let line_has_space = line_width + char_width <= width;
+            if line_has_space {
+                blocks.read_char(&mut buf);
+                line_width += char_width;
+                continue;
             }
 
-            n -= read_count;
+            let is_char_small = char_width <= width;
+            if is_char_small {
+                blocks.finish(&mut buf);
+                buf.push_str(suffix);
+                buf.push('\n');
+                buf.push_str(prefix);
+                blocks.start(&mut buf);
+                blocks.read_char(&mut buf);
+                line_width = char_width;
+                continue;
+            }
+
+            if line_width == width {
+                blocks.finish(&mut buf);
+                buf.push_str(suffix);
+                buf.push('\n');
+                buf.push_str(prefix);
+                blocks.start(&mut buf);
+                line_width = 0;
+            }
+
+            // NOTE:
+            // Practically it only can happen if we wrap some late UTF8 symbol.
+            // For example:
+            // Emojie with width 2 but and wrap width 1
+            let available = width - line_width;
+            buf.extend(std::iter::repeat_n(REPLACEMENT, available));
+            line_width = width;
+            blocks.skip(&mut buf, char_size);
         }
     }
 
-    fn read_chars_unchecked(buf: &mut MultilineBuffer<'_, '_>, n: usize) {
-        let mut n = n;
-        while n > 0 {
-            let is_new_block = buf.blocks.current.is_none();
-            let mut block = buf.blocks.next().expect("Must never happen");
+    buf.push_str(suffix);
 
-            if is_new_block {
-                buf.buf.push_str(buf.prefix);
-                let _ = buf
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().start()));
-            }
-
-            let (read_count, read_bytes) = buf.read_chars_unchecked(&block, n);
-
-            if block.pos + read_bytes == block.get_origin().len() {
-                let _ = buf
-                    .buf
-                    .write_fmt(format_args!("{}", block.get_style().end()));
-            } else {
-                block.pos += read_bytes;
-                buf.blocks.current = Some(block);
-            }
-
-            n -= read_count;
-        }
-    }
-
-    fn handle_word(
-        buf: &mut MultilineBuffer<'_, '_>,
-        word_chars: usize,
-        word_width: usize,
-        additional_read: usize,
-    ) {
-        if word_chars > 0 {
-            let has_line_space = word_width <= buf.available_width();
-            let is_word_too_big = word_width > buf.max_width();
-
-            if is_word_too_big {
-                read_chars(buf, word_chars + additional_read);
-            } else if has_line_space {
-                read_chars_unchecked(buf, word_chars);
-                if additional_read > 0 {
-                    read_chars(buf, additional_read);
-                }
-            } else {
-                buf.set_next_line();
-                read_chars_unchecked(buf, word_chars);
-                if additional_read > 0 {
-                    read_chars(buf, additional_read);
-                }
-            }
-
-            return;
-        }
-
-        let has_current_line_space = additional_read <= buf.available_width();
-        if has_current_line_space {
-            read_chars_unchecked(buf, additional_read);
-        } else {
-            buf.set_next_line();
-            read_chars_unchecked(buf, additional_read);
-        }
-    }
-
-    pub(super) fn split_text(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
-        let mut word_width = 0;
-        let mut word_chars = 0;
-        let mut buf = MultilineBuffer::new(text, width, prefix, suffix);
-
-        let stripped_text = ansi_str::AnsiStr::ansi_strip(text);
-        for c in stripped_text.chars() {
-            match c {
-                ' ' => {
-                    handle_word(&mut buf, word_chars, word_width, 1);
-                    word_chars = 0;
-                    word_width = 0;
-                }
-                '\n' => {
-                    handle_word(&mut buf, word_chars, word_width, 1);
-                    word_chars = 0;
-                    word_width = 0;
-                }
-                _ => {
-                    word_width += std::cmp::max(1, get_char_width(c));
-                    word_chars += 1;
-                }
-            }
-        }
-
-        if word_chars > 0 {
-            handle_word(&mut buf, word_chars, word_width, 0);
-            buf.finish_line();
-        }
-
-        buf.into_string()
-    }
+    buf
 }
 
 fn decrease_widths<F>(
@@ -827,31 +815,35 @@ fn get_decrease_cell_list(
     cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
-    shape: (usize, usize),
-) -> Vec<((usize, usize), usize)> {
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<(Position, usize)> {
     let mut points = Vec::new();
-    (0..shape.1).for_each(|col| {
-        (0..shape.0)
-            .filter(|&row| cfg.is_cell_visible((row, col).into()))
-            .for_each(|row| {
-                let (width, width_min) = match cfg.get_column_span((row, col).into()) {
-                    Some(span) => {
-                        let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                        let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                        let count_borders = count_borders(cfg, col, col + span, shape.1);
-                        (width + count_borders, min_width + count_borders)
-                    }
-                    None => (widths[col], min_widths[col]),
-                };
+    for col in 0..count_columns {
+        for row in 0..count_rows {
+            let pos = Position::new(row, col);
+            if !cfg.is_cell_visible(pos) {
+                continue;
+            }
 
-                if width >= width_min {
-                    let padding = cfg.get_padding((row, col).into());
-                    let width = width.saturating_sub(padding.left.size + padding.right.size);
-
-                    points.push(((row, col), width));
+            let (width, width_min) = match cfg.get_column_span(pos) {
+                Some(span) => {
+                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                    let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                    let count_borders = count_borders(cfg, col, col + span, count_columns);
+                    (width + count_borders, min_width + count_borders)
                 }
-            });
-    });
+                None => (widths[col], min_widths[col]),
+            };
+
+            if width >= width_min {
+                let padding = cfg.get_padding(pos);
+                let width = width.saturating_sub(padding.left.size + padding.right.size);
+
+                points.push((pos, width));
+            }
+        }
+    }
 
     points
 }
@@ -925,23 +917,10 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_by_line_keeping_words_test() {
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
-
-        assert_eq!(split_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
-        assert_eq!(split_keeping_words("123456", 2), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2), "12\n34\n5");
-
-        assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
-
-        assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
-    }
-
-    #[cfg(feature = "ansi")]
-    #[test]
-    fn split_by_line_keeping_words_test() {
+        #[cfg(not(feature = "ansi"))]
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
         #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
@@ -957,14 +936,9 @@ mod tests {
     #[cfg(feature = "ansi")]
     #[test]
     fn split_by_line_keeping_words_color_test() {
-        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
 
-        #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
-
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
-
         assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
@@ -974,11 +948,7 @@ mod tests {
     fn split_by_line_keeping_words_color_2_test() {
         use ansi_str::AnsiStr;
 
-        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
-
-        #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
 
@@ -1128,7 +1098,7 @@ mod tests {
                 "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",
                 3,
             ),
-            "\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m",
+            "\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m",
         );
         assert_eq!(
             split("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
@@ -1148,22 +1118,12 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "ansi"))]
     #[test]
     fn split_keeping_words_4_test() {
-        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width);
-
-        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
-        assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
-    }
-
-    #[cfg(feature = "ansi")]
-    #[test]
-    fn split_keeping_words_4_test() {
+        #[cfg(feature = "ansi")]
         let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
-
         #[cfg(not(feature = "ansi"))]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
         assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78");
         assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
@@ -1449,13 +1409,30 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "ansi"))]
+    #[test]
+    fn chunks_wrap_5_keeping_words() {
+        #[cfg(feature = "ansi")]
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
+        #[cfg(not(feature = "ansi"))]
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
+
+        let text = "修复 zlib 软件包中 CMake 配置不一致的问题，该问题先前导致部分软件无法正常构建";
+        assert_eq!(
+            split_keeping_words(text, 44),
+            "修复 zlib 软件包中 CMake 配置不一致的问题，\n该问题先前导致部分软件无法正常构建"
+        );
+    }
+
     #[test]
     fn chunks_chinese_0() {
-        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
+        #[cfg(feature = "ansi")]
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
+        #[cfg(not(feature = "ansi"))]
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
+        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
         assert_eq!(
-            wrap_text_basic(text, 40),
+            split_keeping_words(text, 40),
             concat!(
                 "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
                 "成立时间:\"1998年11月\"}",
@@ -1463,13 +1440,16 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "ansi"))]
     #[test]
     fn chunks_keeping_chinese_0() {
-        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
+        #[cfg(feature = "ansi")]
+        let split_keeping_words = |text, width| wrap_text_keeping_words(text, width, "", "");
+        #[cfg(not(feature = "ansi"))]
+        let split_keeping_words = |text, width| wrap_text_keeping_words_noansi(text, width);
 
+        let text = "(公司{ 名称:\"腾讯科技（深圳）有限公司\",成立时间:\"1998年11月\"}";
         assert_eq!(
-            wrap_text_keeping_words(text, 40),
+            split_keeping_words(text, 40),
             concat!(
                 "(公司{ 名称:\"腾讯科技（深圳）有限公司\",\n",
                 "成立时间:\"1998年11月\"}",

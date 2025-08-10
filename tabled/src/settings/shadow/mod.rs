@@ -149,20 +149,20 @@ fn set_margin(cfg: &mut ColoredConfig, size: usize, c: char, direction: &Sides<b
 }
 
 fn set_margin_offset(cfg: &mut ColoredConfig, size: usize, direction: &Sides<bool>) {
-    let mut margin = Sides::filled(Offset::Begin(0));
+    let mut margin = Sides::filled(Offset::Start(0));
     if direction.right && direction.bottom {
-        margin.bottom = Offset::Begin(size);
-        margin.right = Offset::Begin(size);
+        margin.bottom = Offset::Start(size);
+        margin.right = Offset::Start(size);
     }
 
     if direction.right && direction.top {
-        margin.top = Offset::Begin(size);
+        margin.top = Offset::Start(size);
         margin.right = Offset::End(size);
     }
 
     if direction.left && direction.bottom {
         margin.bottom = Offset::End(size);
-        margin.left = Offset::Begin(size);
+        margin.left = Offset::Start(size);
     }
 
     if direction.left && direction.top {

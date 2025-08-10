@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.18.0"
+version = "0.20.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -16,9 +16,49 @@ readme = "README.md"
 coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
 maintenance = { status = "actively-developed" }
 
+[features]
+default = ["derive", "macros", "assert"]
+std = ["papergrid/std", "testing_table?/std"]
+derive = ["tabled_derive", "std"]
+ansi = ["papergrid/ansi", "testing_table?/ansi", "ansi-str", "ansitok", "std"]
+macros = ["std"]
+assert = ["testing_table"]
+
+[dependencies]
+papergrid = { path = "../papergrid", default-features = false }
+tabled_derive = { version = "0.11", optional = true }
+testing_table = { version = "0.3", default-features = false, optional = true }
+ansi-str = { version = "0.9", optional = true }
+ansitok = { version = "0.3", optional = true }
+
+# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
+#
+# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
+[package.metadata.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu"]
+rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = ["--cfg", "docsrs"]
+
 [[example]]
-name = "color"
+name = "text_color"
 required-features = ["ansi", "derive"]
+
+[[example]]
+name = "text_on_border"
+required-features = ["std"]
+
+[[example]]
+name = "layout"
+required-features = ["derive"]
+
+[[example]]
+name = "formatting"
+required-features = ["macros"]
+
+[[example]]
+name = "cowsay"
+required-features = ["macros"]
 
 [[example]]
 name = "colored_borders"
@@ -189,11 +229,6 @@ path = "examples/highlight_color.rs"
 required-features = ["std"]
 
 [[example]]
-name = "border_text"
-path = "examples/border_text.rs"
-required-features = ["std"]
-
-[[example]]
 name = "span"
 path = "examples/span.rs"
 required-features = ["std"]
@@ -249,28 +284,13 @@ path = "examples/matrix.rs"
 required-features = ["std"]
 
 [[example]]
-name = "formatting_settings"
-path = "examples/formatting_settings.rs"
-required-features = ["std"]
-
-[[example]]
 name = "settings_list"
 path = "examples/settings_list.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "grid_colors"
-path = "examples/grid_colors.rs"
-required-features = ["derive"]
-
-[[example]]
 name = "compact_table"
 path = "examples/compact_table.rs"
-required-features = []
-
-[[example]]
-name = "compact_table_2"
-path = "examples/compact_table_2.rs"
 required-features = []
 
 [[example]]
@@ -324,11 +344,6 @@ path = "examples/reverse.rs"
 required-features = ["std"]
 
 [[example]]
-name = "theme"
-path = "examples/theme.rs"
-required-features = ["derive", "std"]
-
-[[example]]
 name = "interactive"
 path = "examples/interactive.rs"
 required-features = ["derive"]
@@ -343,27 +358,3 @@ name = "no_std"
 path = "examples/no_std.rs"
 required-features = ["assert"]
 no-default-features = true
-
-[features]
-default = ["derive", "macros", "assert"]
-std = ["papergrid/std", "testing_table/std"]
-derive = ["tabled_derive", "std"]
-ansi = ["papergrid/ansi", "testing_table/ansi", "ansi-str", "ansitok", "std"]
-macros = ["std"]
-assert = ["testing_table"]
-
-[dependencies]
-papergrid = { path = "../papergrid", default-features = false }
-tabled_derive = { path = "../tabled_derive", optional = true }
-ansi-str = { version = "0.9", optional = true }
-ansitok = { version = "0.3", optional = true }
-testing_table = { path = "../testing_table", default-features = false, optional = true }
-
-# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
-#
-# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
-[package.metadata.docs.rs]
-all-features = true
-targets = ["x86_64-unknown-linux-gnu"]
-rustdoc-args = ["--cfg", "docsrs"]
-rustc-args = ["--cfg", "docsrs"]

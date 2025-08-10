@@ -1,6 +1,6 @@
 [package]
 name = "papergrid"
-version = "0.14.0"
+version = "0.17.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a core library to print a table"
@@ -9,15 +9,15 @@ license = "MIT"
 
 [features]
 default = ["std"]
-std = ["ahash"]
+std = ["fnv"]
 ansi = ["ansi-str", "ansitok"]
 
 [dependencies]
 unicode-width = "0.2"
 bytecount = "0.6"
-ahash = { version = "0.8", optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true  }
+fnv = { version = "1.0", optional = true }
 
 [dev-dependencies]
 testing_table = { version = "0.2", features = ["ansi"] }
@@ -27,31 +27,38 @@ name = "papergrid_color"
 required-features = ["std", "ansi"]
 
 [[example]]
+name = "peekable_grid"
+required-features = ["std"]
+
+[[example]]
+name = "iter_grid"
+required-features = ["std"]
+
+[[example]]
+name = "writable_grid"
+required-features = ["std"]
+
+[[example]]
 name = "color_map"
-path = "examples/color_map.rs"
 required-features = ["std"]
 
 [[example]]
 name = "colored_border"
-path = "examples/colored_border.rs"
 required-features = ["std"]
 
 [[example]]
-name = "common_grid"
-path = "examples/common_grid.rs"
+name = "compact_grid"
 required-features = ["std"]
 
 [[example]]
 name = "span_usage"
-path = "examples/span_usage.rs"
 required-features = ["std"]
 
 [[example]]
-name = "common_grid_no_std"
-path = "examples/common_grid_no_std.rs"
+name = "no_std"
 required-features = []
 
 [[example]]
 name = "hello_world"
-path = "examples/hello_world.rs"
 required-features = ["std"]
+

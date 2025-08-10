@@ -1,10 +1,6 @@
-//! This example demonstrates using [`papergrid`] without [The Rust Standard Library](std).
-//!
-//! * Note the missing, pre-built [`Dimension`] implementations requiring manual design.
-
 use papergrid::{
-    config::compact::CompactConfig,
-    config::{AlignmentHorizontal, Borders, Indent, Sides},
+    colors::NoColors,
+    config::{compact::CompactConfig, AlignmentHorizontal, Borders, Indent, Sides},
     dimension::Dimension,
     grid::compact::CompactGrid,
     records::IterRecords,
@@ -22,10 +18,10 @@ fn main() {
     ];
 
     let records = IterRecords::new(data, 4, None);
-    let dim = ConstDims(&[20, 15, 40, 3], 4);
+    let dim = ConstDims(&[20, 15, 40, 3], 1);
     let cfg = generate_table_config();
 
-    let grid = CompactGrid::new(records, &dim, &cfg);
+    let grid = CompactGrid::new(records, &cfg, &dim, NoColors);
 
     println!("{grid}");
 }

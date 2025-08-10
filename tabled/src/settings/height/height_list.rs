@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 
 use crate::{
-    grid::dimension::CompleteDimensionVecRecords,
+    grid::dimension::CompleteDimension,
     grid::records::{ExactRecords, Records},
     settings::TableOption,
 };
@@ -33,15 +33,20 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, C, CompleteDimensionVecRecords<'_>> for HeightList
+impl<R, C> TableOption<R, C, CompleteDimension> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimensionVecRecords<'_>) {
+    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimension) {
         if self.list.len() < records.count_rows() {
             return;
         }
 
         dims.set_heights(self.list);
+    }
+
+    fn hint_change(&self) -> Option<papergrid::config::Entity> {
+        // NOTE: is this correct?
+        None
     }
 }

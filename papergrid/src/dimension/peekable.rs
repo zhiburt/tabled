@@ -1,6 +1,4 @@
-//! The module contains a [`SpannedVecRecordsDimension`] for [`Grid`] height/width estimation.
-//!
-//! [`Grid`]: crate::grid::iterable::Grid
+//! The module contains a [`PeekableGridDimension`].
 
 use std::{
     cmp::{max, Ordering},
@@ -8,39 +6,48 @@ use std::{
 };
 
 use crate::{
-    config::Position,
+    config::{spanned::SpannedConfig, Position},
     dimension::{Dimension, Estimate},
-    records::{
-        vec_records::{Cell, VecRecords},
-        Records,
-    },
+    records::{vec_records::Cell, IntoRecords, Records},
 };
 
-use crate::config::spanned::SpannedConfig;
-
-/// A [`Dimension`] implementation which calculates exact column/row width/height for [`VecRecords`].
+/// A [`Dimension`] implementation which calculates exact column/row width/height for [`Records`] which used [`Cell`] cells.
 ///
-/// It is a specialization of [`SpannedGridDimension`] for [`VecRecords`].
+/// It is a specialization of [`IterGridDimension`].
 ///
-/// [`SpannedGridDimension`]: crate::dimension::spanned::SpannedGridDimension
+/// [`IterGridDimension`]: crate::dimension::iterable::IterGridDimension
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct SpannedVecRecordsDimension {
+pub struct PeekableGridDimension {
     height: Vec<usize>,
     width: Vec<usize>,
 }
 
-impl SpannedVecRecordsDimension {
+impl PeekableGridDimension {
     /// Calculates height of rows.
-    pub fn height<T: Cell + AsRef<str>>(
-        records: &VecRecords<T>,
-        cfg: &SpannedConfig,
-    ) -> Vec<usize> {
+    pub fn height<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: Cell,
+    {
         build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize> {
+    pub fn width<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: Cell,
+    {
         build_width(records, cfg)
+    }
+
+    /// Calculates width of columns.
+    pub fn dimension<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>)
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: Cell,
+    {
+        build_dimensions(records, cfg)
     }
 
     /// Return width and height lists.
@@ -49,7 +56,7 @@ impl SpannedVecRecordsDimension {
     }
 }
 
-impl Dimension for SpannedVecRecordsDimension {
+impl Dimension for PeekableGridDimension {
     fn get_width(&self, column: usize) -> usize {
         self.width[column]
     }
@@ -59,32 +66,83 @@ impl Dimension for SpannedVecRecordsDimension {
     }
 }
 
-impl<T> Estimate<&VecRecords<T>, SpannedConfig> for SpannedVecRecordsDimension
+impl<R> Estimate<R, SpannedConfig> for PeekableGridDimension
 where
-    T: Cell + AsRef<str>,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
 {
-    fn estimate(&mut self, records: &VecRecords<T>, cfg: &SpannedConfig) {
+    fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
         self.height = height;
     }
 }
 
-fn build_dimensions<T: Cell + AsRef<str>>(
-    records: &VecRecords<T>,
-    cfg: &SpannedConfig,
-) -> (Vec<usize>, Vec<usize>) {
+fn build_dimensions<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>)
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    if cfg.has_column_spans() || cfg.has_row_spans() {
+        build_dimensions_spanned(records, cfg)
+    } else {
+        build_dimensions_basic(records, cfg)
+    }
+}
+
+fn build_dimensions_basic<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>)
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
     let mut heights = vec![];
+    if let Some(count_rows) = records.hint_count_rows() {
+        heights.reserve(count_rows);
+    }
+
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+        let mut row_height = 0;
+        for (col, cell) in columns.into_iter().enumerate() {
+            let pos = (row, col).into();
+
+            let width = cell.width();
+            let height = cell.count_lines();
+            let pad = cfg.get_padding(pos);
+            let width = width + pad.left.size + pad.right.size;
+            let height = height + pad.top.size + pad.bottom.size;
+
+            widths[col] = max(widths[col], width);
+            row_height = max(row_height, height);
+        }
+
+        heights.push(row_height);
+    }
+
+    (widths, heights)
+}
+
+fn build_dimensions_spanned<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>)
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    let count_columns = records.count_columns();
+
+    let mut widths = vec![0; count_columns];
+    let mut heights = vec![];
+    if let Some(count_rows) = records.hint_count_rows() {
+        heights.reserve(count_rows);
+    }
 
     let mut vspans = HashMap::new();
     let mut hspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().enumerate() {
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
         let mut row_height = 0;
-        for (col, cell) in columns.iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
@@ -139,7 +197,7 @@ fn adjust_hspans(
     });
 
     for (pos, (span, height)) in spans_ordered {
-        adjust_row_range(cfg, height, len, pos.row(), pos.row() + span, heights);
+        adjust_row_range(cfg, height, len, pos.row, pos.row + span, heights);
     }
 }
 
@@ -219,7 +277,7 @@ fn adjust_vspans(
     });
 
     for (pos, (span, width)) in spans_ordered {
-        adjust_column_range(cfg, width, len, pos.col(), pos.col() + span, widths);
+        adjust_column_range(cfg, width, len, pos.col, pos.col + span, widths);
     }
 }
 
@@ -237,16 +295,6 @@ fn adjust_column_range(
     }
 
     inc_range(widths, max_span_width - range_width, start, end);
-}
-
-fn get_cell_padding_horizontal(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos);
-    padding.left.size + padding.right.size
-}
-
-fn get_cell_vertical_padding(cfg: &SpannedConfig, pos: Position) -> usize {
-    let padding = cfg.get_padding(pos);
-    padding.top.size + padding.bottom.size
 }
 
 fn range_width(
@@ -268,19 +316,64 @@ fn count_vertical_borders(cfg: &SpannedConfig, len: usize, start: usize, end: us
         .count()
 }
 
-fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize> {
-    let mut heights = vec![];
-    let mut hspans = HashMap::new();
+fn build_height<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    if cfg.has_column_spans() || cfg.has_row_spans() {
+        build_height_spanned(records, cfg)
+    } else {
+        build_height_basic(records, cfg)
+    }
+}
 
-    for (row, columns) in records.iter_rows().enumerate() {
+fn build_height_basic<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    let mut heights = vec![];
+    if let Some(count_rows) = records.hint_count_rows() {
+        heights.reserve(count_rows);
+    }
+
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
         let mut row_height = 0;
-        for (col, cell) in columns.iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
+            let pos = (row, col).into();
+            let pad = cfg.get_padding(pos);
+            let height = cell.count_lines() + pad.bottom.size + pad.top.size;
+            row_height = max(row_height, height);
+        }
+
+        heights.push(row_height);
+    }
+
+    heights
+}
+
+fn build_height_spanned<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    let mut hspans = HashMap::new();
+    let mut heights = vec![];
+    if let Some(count_rows) = records.hint_count_rows() {
+        heights.reserve(count_rows);
+    }
+
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+        let mut row_height = 0;
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let height = cell.count_lines() + get_cell_vertical_padding(cfg, pos);
+            let pad = cfg.get_padding(pos);
+            let height = cell.count_lines() + pad.bottom.size + pad.top.size;
             match cfg.get_row_span(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
@@ -297,23 +390,57 @@ fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConf
     heights
 }
 
-fn build_width<T>(records: &VecRecords<T>, cfg: &SpannedConfig) -> Vec<usize>
+fn build_width<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
 where
-    T: Cell + AsRef<str>,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    if cfg.has_column_spans() || cfg.has_row_spans() {
+        build_width_spanned(records, cfg)
+    } else {
+        build_width_basic(records, cfg)
+    }
+}
+
+fn build_width_basic<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
+{
+    let count_columns = records.count_columns();
+    let mut widths = vec![0; count_columns];
+
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
+            let pos = (row, col).into();
+            let pad = cfg.get_padding(pos);
+            let width = cell.width() + pad.left.size + pad.right.size;
+            widths[col] = max(widths[col], width);
+        }
+    }
+
+    widths
+}
+
+fn build_width_spanned<R>(records: R, cfg: &SpannedConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: Cell,
 {
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().enumerate() {
-        for (col, cell) in columns.iter().enumerate() {
+    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+        for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col).into();
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let width = cell.width() + get_cell_padding_horizontal(cfg, pos);
+            let pad = cfg.get_padding(pos);
+            let width = cell.width() + pad.left.size + pad.right.size;
             match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));

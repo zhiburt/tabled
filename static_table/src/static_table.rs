@@ -13,7 +13,7 @@ use syn::{
 };
 use tabled::{
     builder::Builder,
-    settings::{style::BorderSpanCorrection, Alignment, Margin, Modify, Padding, Span, Style},
+    settings::{themes::BorderCorrection, Alignment, Margin, Modify, Padding, Span, Style},
     Table,
 };
 
@@ -366,7 +366,7 @@ fn collect_row(elems: &MatrixRowElements) -> Result<Vec<String>> {
         MatrixRowElements::Static { elem, len, .. } => {
             let len = len.base10_parse::<usize>()?;
             let elem = expr_val_to_list(elem)?;
-            let iter = std::iter::repeat(elem).take(len).flatten();
+            let iter = std::iter::repeat_n(elem, len).flatten();
 
             row.extend(iter);
         }
@@ -643,7 +643,7 @@ pub(crate) fn build_table(table_st: &TableStruct) -> Result<String> {
 
     let has_spans = table.get_config().has_column_spans() || table.get_config().has_row_spans();
     if has_spans {
-        table.with(BorderSpanCorrection);
+        table.with(BorderCorrection::span());
     }
 
     Ok(table.to_string())

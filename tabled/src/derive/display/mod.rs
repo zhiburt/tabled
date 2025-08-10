@@ -12,7 +12,7 @@ use core::fmt::Debug;
 /// # Example
 ///
 /// ```
-/// use tabled::{Tabled, assert::assert_table, derive::display};
+/// use tabled::{Tabled, Table, assert::assert_table, derive::display};
 ///
 /// #[derive(Tabled)]
 /// #[tabled(display(bool, "display::bool", "Got", 0))]
@@ -28,7 +28,7 @@ use core::fmt::Debug;
 ///     State { name: "closed", working: false, closed: true },
 /// ];
 ///
-/// let table = tabled::Table::new(data);
+/// let table = Table::new(data);
 ///
 /// assert_table!(
 ///     table,
@@ -63,7 +63,7 @@ where
 /// # Example
 ///
 /// ```
-/// use tabled::{Tabled, derive::display};
+/// use tabled::{Tabled, Table, derive::display};
 /// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
@@ -79,7 +79,7 @@ where
 ///     ZKP { application: "Privacy-Preserving Transactions", state: None },
 /// ];
 ///
-/// let table = tabled::Table::new(data);
+/// let table = Table::new(data);
 ///
 /// assert_table!(
 ///     table,
@@ -111,7 +111,7 @@ where
 /// So rather then [`std::fmt::Display`] usage we will be using a debug implementation.
 ///
 /// ```
-/// use tabled::{Tabled, derive::display};
+/// use tabled::{Tabled, Table, derive::display};
 /// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
@@ -127,7 +127,7 @@ where
 ///     ZKP { application: "Privacy-Preserving Transactions", state: None },
 /// ];
 ///
-/// let table = tabled::Table::new(data);
+/// let table = Table::new(data);
 ///
 /// assert_table!(
 ///     table,
@@ -155,7 +155,7 @@ where
 /// It just returns an empty string.
 ///
 /// ```
-/// use tabled::{Tabled, derive::display};
+/// use tabled::{Tabled, Table, derive::display};
 /// use tabled::assert::assert_table;
 ///
 /// #[derive(Tabled)]
@@ -171,7 +171,7 @@ where
 ///     ZKP { application: "Privacy-Preserving Transactions", state: None },
 /// ];
 ///
-/// let table = tabled::Table::new(data);
+/// let table = Table::new(data);
 ///
 /// assert_table!(
 ///     table,
@@ -188,4 +188,98 @@ where
 /// ```
 pub fn empty<T>(_value: &T) -> String {
     String::new()
+}
+
+/// A function which truncates value to the given width.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Tabled, Table, derive::display};
+/// use tabled::assert::assert_table;
+///
+/// #[derive(Tabled)]
+/// pub struct ZKP<'a> {
+///     #[tabled(display("display::truncate", 5))]
+///     application: &'a str,
+///     state: &'a str,
+/// }
+///
+/// let data = vec![
+///     ZKP { application: "Decentralized Identity", state: "Proved" },
+///     ZKP { application: "Voting Systems", state: "Investigation" },
+///     ZKP { application: "Privacy-Preserving Transactions", state: "" },
+/// ];
+///
+/// let table = Table::new(data);
+///
+/// assert_table!(
+///     table,
+///     "+-------------+---------------+"
+///     "| application | state         |"
+///     "+-------------+---------------+"
+///     "| Decen       | Proved        |"
+///     "+-------------+---------------+"
+///     "| Votin       | Investigation |"
+///     "+-------------+---------------+"
+///     "| Priva       |               |"
+///     "+-------------+---------------+"
+/// );
+/// ```
+#[cfg(feature = "std")]
+pub fn truncate<T>(value: &T, limit: usize) -> String
+where
+    T: ToString,
+{
+    let text = value.to_string();
+    let text = crate::settings::width::Truncate::truncate(&text, limit);
+    text.into_owned()
+}
+
+/// A function which wraps value to the given width.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Tabled, Table, derive::display};
+/// use tabled::assert::assert_table;
+///
+/// #[derive(Tabled)]
+/// pub struct ZKP<'a> {
+///     application: &'a str,
+///     #[tabled(display("display::wrap", 5))]
+///     state: &'a str,
+/// }
+///
+/// let data = vec![
+///     ZKP { application: "Decentralized Identity", state: "Proved" },
+///     ZKP { application: "Voting Systems", state: "Investigation" },
+///     ZKP { application: "Privacy-Preserving Transactions", state: "" },
+/// ];
+///
+/// let table = Table::new(data);
+///
+/// assert_table!(
+///     table,
+///     "+---------------------------------+-------+"
+///     "| application                     | state |"
+///     "+---------------------------------+-------+"
+///     "| Decentralized Identity          | Prove |"
+///     "|                                 | d     |"
+///     "+---------------------------------+-------+"
+///     "| Voting Systems                  | Inves |"
+///     "|                                 | tigat |"
+///     "|                                 | ion   |"
+///     "+---------------------------------+-------+"
+///     "| Privacy-Preserving Transactions |       |"
+///     "+---------------------------------+-------+"
+/// );
+/// ```
+#[cfg(feature = "std")]
+pub fn wrap<T>(value: &T, limit: usize) -> String
+where
+    T: ToString,
+{
+    let text = value.to_string();
+    crate::settings::width::Wrap::wrap(&text, limit, false)
 }

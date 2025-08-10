@@ -1,18 +1,9 @@
-//! This example demonstrates using the [`Padding::colorize()`] function in several ways
-//! to give a [`Table`] display a vibrant aesthetic.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
-//!   reusable themes for text, backgrounds, padded whitespace, and borders.
-//!
-//! * Note how a unique color can be set for each direction.
-
+/// data source: https://www.britannica.com/science/physical-constant
 use tabled::{
     settings::{
         object::{Columns, Object, Rows, Segment},
         style::BorderColor,
-        Alignment, Color, Format, Margin, MarginColor, Modify, Padding, PaddingColor, Style,
+        Alignment, Color, Format, Margin, MarginColor, Padding, PaddingColor, Settings, Style,
     },
     Table, Tabled,
 };
@@ -20,39 +11,29 @@ use tabled::{
 #[derive(Tabled)]
 #[tabled(rename_all = "PascalCase")]
 struct Fundamental {
-    quantity: String,
-    value: String,
-    unit: String,
+    quantity: &'static str,
+    value: &'static str,
+    unit: &'static str,
     symbol: char,
 }
 
-impl Fundamental {
-    fn new(quantity: &str, symbol: char, value: &str, unit: &str) -> Self {
-        Self {
-            symbol,
-            quantity: quantity.to_string(),
-            value: value.to_string(),
-            unit: unit.to_string(),
-        }
-    }
-}
-
 fn main() {
-    // data source: https://www.britannica.com/science/physical-constant
     #[rustfmt::skip]
     let data = [
-        Fundamental::new("constant of gravitation", 'G', "6.67384 × 10⁻¹¹", "cubic metre per second squared per kilogram"),
-        Fundamental::new("speed of light (in a vacuum)", 'c', "2.99792458 × 10⁻⁸", "metres per second"),
-        Fundamental::new("Planck's constant", 'h', "6.626070040 × 10⁻³⁴", "joule second"),
-        Fundamental::new("Boltzmann constant", 'k', "1.38064852 × 10⁻²³", "joule per kelvin"),
-        Fundamental::new("Faraday constant",    'F',    "9.648533289 × 10⁴",    "coulombs per mole"),
+        Fundamental { quantity: "Constant of gravitation",      symbol: 'G', value: "6.67384 × 10⁻¹¹",      unit: "cubic metre per second squared per kilogram" },
+        Fundamental { quantity: "Speed of light (in a vacuum)", symbol: 'c', value: "2.99792458 × 10⁻⁸",    unit: "metres per second" },
+        Fundamental { quantity: "Planck's constant",            symbol: 'h', value: "6.626070040 × 10⁻³⁴",  unit: "joule second" },
+        Fundamental { quantity: "Boltzmann constant",           symbol: 'k', value: "1.38064852 × 10⁻²³",   unit: "joule per kelvin" },
+        Fundamental { quantity: "Faraday constant",             symbol: 'F', value: "9.648533289 × 10⁴",    unit: "coulombs per mole" },
     ];
+
+    let mut table = Table::new(data);
 
     let pane_color = Color::rgb_bg(220, 220, 220);
     let border_color = Color::rgb_bg(200, 200, 220);
     let data_color = Color::rgb_bg(200, 200, 220);
 
-    let header_settings = Modify::new(Rows::first())
+    let header_settings = Settings::empty()
         .with(Padding::new(1, 1, 2, 2))
         .with(PaddingColor::new(
             Color::BG_GREEN,
@@ -62,32 +43,27 @@ fn main() {
         ))
         .with(Alignment::center())
         .with(Padding::expand(true))
-        .with(Format::content(|s| {
-            (Color::FG_WHITE | Color::BG_BLACK).colorize(s)
-        }));
+        .with(Color::BG_BRIGHT_RED | Color::FG_BRIGHT_WHITE);
 
-    let data_settings = Modify::new(Rows::first().inverse())
-        .with(Alignment::center())
+    let data_settings = Settings::empty()
+        .with(Alignment::right())
         .with(Padding::expand(true))
-        .with(PaddingColor::filled(data_color.clone()));
+        .with(PaddingColor::filled(data_color.clone()))
+        .with(Color::FG_BLACK | data_color);
 
-    let symbol_settings = Modify::new(Columns::single(1).not(Rows::first()))
-        .with(Format::content(|s| Color::BOLD.colorize(s)));
+    let value_settings = Settings::empty().with(Format::content(|s| Color::BOLD.colorize(s)));
 
-    let unit_settings = Modify::new(Columns::single(3).not(Rows::first()))
-        .with(Format::content(|s| Color::UNDERLINE.colorize(s)));
+    let unit_settings = Settings::empty().with(Format::content(|s| Color::UNDERLINE.colorize(s)));
 
-    let table = Table::new(data)
-        .with(Style::rounded())
-        .with(Margin::new(1, 2, 1, 1))
+    table
+        .with(Style::blank())
+        .with(Margin::new(10, 1, 1, 1))
         .with(MarginColor::filled(pane_color))
-        .with(BorderColor::filled(border_color))
-        .with(Modify::new(Segment::all()).with(data_color))
-        .with(header_settings)
-        .with(data_settings)
-        .with(symbol_settings)
-        .with(unit_settings)
-        .to_string();
+        .modify(Segment::all(), BorderColor::filled(border_color))
+        .modify(Rows::first(), header_settings)
+        .modify(Rows::first().inverse(), data_settings)
+        .modify(Columns::one(1).not(Rows::first()), value_settings)
+        .modify(Columns::one(3).not(Rows::first()), unit_settings);
 
-    println!("\n\n{table}\n\n");
+    println!("{table}");
 }

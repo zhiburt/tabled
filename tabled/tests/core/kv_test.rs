@@ -5,13 +5,11 @@ use std::iter::FromIterator;
 use tabled::{
     assert::test_table,
     builder::Builder,
-    settings::{
-        formatting::Charset, Height, Highlight, Modify, Padding, Settings, Shadow, Style, Width,
-    },
+    settings::{formatting::Charset, Height, Highlight, Modify, Padding, Shadow, Style, Width},
     Table,
 };
 
-use crate::matrix::Matrix;
+use crate::util::Matrix;
 
 mod default_types {
     use super::*;
@@ -870,7 +868,8 @@ test_table!(
     {
         Builder::from_iter(vec![vec![""]]).build()
             .with(Style::modern())
-            .with(Settings::new(Height::limit(0), Width::increase(10)))
+            .with(Width::increase(10))
+            .with(Height::limit(0))
     },
     "┌────────┐"
     "└────────┘"
@@ -891,12 +890,12 @@ test_table!(
 );
 
 test_table!(
-    table_2x2_empty_height_list_together_with_width_list_dont_work_0,
+    table_2x2_empty_height_list_together_with_width_list_work_0,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
             .with(Style::modern())
             .with(Padding::zero())
-            .with(Height::list([1, 0]))
+            .with(Height::list([1, 1]))
             .with(Width::list([1, 0]))
     },
     "┌─┬┐"
@@ -907,7 +906,7 @@ test_table!(
 );
 
 test_table!(
-    table_2x2_empty_height_list_together_with_width_list_dont_work_1,
+    table_2x2_empty_height_list_together_with_width_list_work_1,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
             .with(Style::modern())
@@ -915,10 +914,10 @@ test_table!(
             .with(Width::list([1, 0]))
             .with(Height::list([1, 0]))
     },
-    "┌┬┐"
-    "│││"
-    "├┼┤"
-    "└┴┘"
+    "┌─┬┐"
+    "│ ││"
+    "├─┼┤"
+    "└─┴┘"
 );
 
 test_table!(

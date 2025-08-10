@@ -1,10 +1,10 @@
 use papergrid::{
     colors::NoColors,
     config::{
-        pos, spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity,
-        Indent, Sides,
+        spanned::SpannedConfig, AlignmentHorizontal, AlignmentVertical, Borders, Entity, Indent,
+        Sides,
     },
-    dimension::{spanned::SpannedGridDimension, Estimate},
+    dimension::{peekable::PeekableGridDimension, Estimate},
     grid::peekable::PeekableGrid,
     records::vec_records::{Text, VecRecords},
 };
@@ -28,8 +28,8 @@ fn main() {
         right: Some('|'),
         intersection: Some('+'),
     });
-    cfg.set_column_span(pos(1, 1), 3);
-    cfg.set_row_span(pos(0, 0), 2);
+    cfg.set_column_span((1, 1).into(), 3);
+    cfg.set_row_span((0, 0).into(), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Entity::Global, AlignmentVertical::Center);
     cfg.set_padding(
@@ -54,7 +54,7 @@ fn main() {
 
     let records = VecRecords::new(data);
 
-    let mut dims = SpannedGridDimension::default();
+    let mut dims = PeekableGridDimension::default();
     dims.estimate(&records, &cfg);
 
     let grid = PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string();

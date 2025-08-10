@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ahash::AHashMap;
+use fnv::FnvHashMap;
 
 use crate::config::{Entity, Position};
 
@@ -10,9 +10,9 @@ pub struct EntityMap<T> {
     // we have a global type to allocate in on stack.
     // because most of the time no changes are made to the [`EntityMap`].
     global: T,
-    columns: AHashMap<usize, T>,
-    rows: AHashMap<usize, T>,
-    cells: AHashMap<Position, T>,
+    columns: FnvHashMap<usize, T>,
+    rows: FnvHashMap<usize, T>,
+    cells: FnvHashMap<Position, T>,
 }
 
 impl<T> EntityMap<T> {
@@ -52,8 +52,8 @@ impl<T> EntityMap<T> {
 
         self.cells
             .get(&pos)
-            .or_else(|| self.columns.get(&pos.col()))
-            .or_else(|| self.rows.get(&pos.row()))
+            .or_else(|| self.columns.get(&pos.col))
+            .or_else(|| self.rows.get(&pos.row))
             .unwrap_or(&self.global)
     }
 
@@ -65,8 +65,8 @@ impl<T> EntityMap<T> {
                 self.rows.clear();
                 self.columns.clear();
             }
-            Entity::Column(col) => self.cells.retain(|pos, _| pos.col() != col),
-            Entity::Row(row) => self.cells.retain(|pos, _| pos.row() != row),
+            Entity::Column(col) => self.cells.retain(|pos, _| pos.col != col),
+            Entity::Row(row) => self.cells.retain(|pos, _| pos.row != row),
             Entity::Cell(row, col) => {
                 self.cells.remove(&Position::new(row, col));
             }
