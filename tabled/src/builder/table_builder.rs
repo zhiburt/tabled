@@ -537,8 +537,7 @@ fn remove_empty_rows(data: &mut Vec<Vec<Text<String>>>, count_columns: usize) {
         let row = row - deleted;
 
         let mut is_empty_row = true;
-        for col in 0..count_columns {
-            let cell = &data[row][col];
+        for cell in data[row].iter().take(count_columns) {
             if !cell.as_ref().is_empty() {
                 is_empty_row = false;
                 break;
