@@ -1596,7 +1596,7 @@ pub struct Motorcycle {
 
 In the above example, the cc field will be formatted using the specified format string "{} cc", where {} is replaced with the value of cc.
 
-Just like with `display_with` attribute, you can pass arguments for more complex formatting scenarios:
+Just like with `display` attribute, you can pass arguments for more complex formatting scenarios:
 
 ```rust
 use tabled::Tabled;
