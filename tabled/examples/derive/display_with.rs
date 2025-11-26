@@ -1,11 +1,11 @@
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
-//! [`display_with`] to seamlessly augment field representations in a [`Table`] display.
+//! [`display`] to seamlessly augment field representations in a [`Table`] display.
 //!
-//! * [`display_with`] functions act as transformers during [`Table`] instantiation.
+//! * [`display`] functions act as transformers during [`Table`] instantiation.
 //!
-//! * Note how [`display_with`] works with [std] and custom functions alike.
+//! * Note how [`display`] works with [std] and custom functions alike.
 //!
-//! * [`display_with`] attributes can be constructed in two ways (shown below).
+//! * [`display`] attributes can be constructed in two ways (shown below).
 //!
 //! * Attribute arguments can be directly overridden with static values, effectively ignoring the
 //!   augmented fields natural value entirely. Even an entire object can be passed as context with `self`.
