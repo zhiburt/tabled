@@ -1604,7 +1604,7 @@ use tabled::Tabled;
 #[derive(Tabled)]
 pub struct Motorcycle {
     weight: usize,
-    #[tabled(format = "{}/{} cc/kg", self.cc, self.weight)]
+    #[tabled(format("{}/{} cc/kg", self.cc, self.weight))]
     cc: usize,
 }
 ```
