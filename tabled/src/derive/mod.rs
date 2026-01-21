@@ -4,7 +4,8 @@ pub mod display;
 
 /// A derive macro to implement a [`Tabled`] trait.
 ///
-/// The macro available only when `derive` feature in turned on (and it is by default).
+/// The macro available only when `derive` feature in turned on (and it is by
+/// default).
 ///
 /// ```
 /// use tabled::Tabled;
@@ -17,7 +18,7 @@ pub mod display;
 /// }
 /// ```
 ///
-/// To be able to use the derive each field must implement `std::fmt::Display`.\
+/// To be able to use the derive each field must implement `std::fmt::Display`.
 /// The following example will cause an error because of that.
 ///
 /// ```,compile_fail
@@ -49,7 +50,8 @@ pub mod display;
 ///
 /// ## Hide a column
 ///
-/// You can mark fields as hidden in which case they fill be ignored and not be present on a sheet.
+/// You can mark fields as hidden in which case they fill be ignored and not be
+/// present on a sheet.
 ///
 /// ```
 /// use tabled::Tabled;
@@ -82,30 +84,33 @@ pub mod display;
 ///
 /// ## Format fields
 ///
-/// Using `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.\
-/// However, this may be not convinient for example when a field uses the `Option` type.\
-/// There's 2 common ways how to solve this:
+/// Using `#[derive(Tabled)]` is possible only when all fields implement a
+/// `Display` trait. However, this may be not convinient for example when a
+/// field uses the `Option` type. There's 2 common ways how to solve this:
 ///
 /// - Implement `Tabled` trait manually for a type.
-/// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
+/// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and
+///   implement a Display trait for it.
 ///
 /// But, it's not quite convient either.
 ///
 /// So alternatively, we provide the next solutions.
 ///
-/// - Use the `#[tabled(display = "func")]` - attribute to set a display function.
+/// - Use the `#[tabled(display = "func")]` - attribute to set a display
+///   function.
 /// - Use the `#[tabled(format = "{}")]` - attribute to format field.
 ///
 /// ### `#[tabled(display)]`
 ///
-/// A poverfull helper, the set function must have a first argument as a reference to a field.\
-/// It supports custom arguments as well (including `self`).
+/// A poverfull helper, the set function must have a first argument as a
+/// reference to a field. It supports custom arguments as well (including
+/// `self`).
 ///
-/// You can set it right on the whole type,\
-/// In which case all fields which are matching a set type will be using the given function.
+/// You can set it right on the whole type, In which case all fields which are
+/// matching a set type will be using the given function.
 ///
-/// We also provide a set of commonly used function for your types.\
-/// You can find them in [`tabled::derive::display`].
+/// We also provide a set of commonly used function for your types. You can find
+/// them in [`tabled::derive::display`].
 ///
 /// ```
 /// use tabled::Tabled;
@@ -132,7 +137,7 @@ pub mod display;
 ///
 /// ### `#[tabled(format)]`
 ///
-/// An analogue to [`format!`], which can be used right on the field.\
+/// An analogue to [`format!`], which can be used right on the field.
 ///
 /// ```
 /// use tabled::Tabled;
@@ -148,8 +153,8 @@ pub mod display;
 ///
 /// ## Format headers
 ///
-/// Beside `#[tabled(rename = "")]` you can change a format of a column name using\
-/// `#[tabled(rename_all = "UPPERCASE")]`.
+/// Beside `#[tabled(rename = "")]` you can change a format of a column name
+/// using `#[tabled(rename_all = "UPPERCASE")]`.
 ///
 /// ```
 /// use tabled::Tabled;
@@ -167,10 +172,9 @@ pub mod display;
 ///
 /// ## Embeding a field
 ///
-/// You can inline a field or a variant if it implements `Tabled` trait\
-/// using `#[tabled(inline)]`.
-/// You can also set a prefix for inlined elements by given it as a argument\
-/// `#[tabled(inline("::::"))]`.
+/// You can inline a field or a variant if it implements `Tabled` trait using
+/// `#[tabled(inline)]`. You can also set a prefix for inlined elements by given
+/// it as a argument `#[tabled(inline("::::"))]`.
 ///
 /// ```
 /// use tabled::Tabled;
