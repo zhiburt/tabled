@@ -85,16 +85,16 @@ pub mod display;
 /// ## Format fields
 ///
 /// Using `#[derive(Tabled)]` is possible only when all fields implement a
-/// `Display` trait. However, this may be not convinient for example when a
-/// field uses the `Option` type. There's 2 common ways how to solve this:
+/// `Display` trait. However, this may be not convenient for example when a
+/// field uses the `Option` type. There are 2 common ways how to solve this:
 ///
 /// - Implement `Tabled` trait manually for a type.
 /// - Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and
 ///   implement a Display trait for it.
 ///
-/// But, it's not quite convient either.
+/// But, that's not quite convient either.
 ///
-/// So alternatively, we provide the next solutions.
+/// So alternatively, we provide the following solutions:
 ///
 /// - Use the `#[tabled(display = "func")]` - attribute to set a display
 ///   function.
@@ -102,11 +102,11 @@ pub mod display;
 ///
 /// ### `#[tabled(display)]`
 ///
-/// A poverfull helper, the set function must have a first argument as a
+/// A poverful helper, the set function must have as a first argument a
 /// reference to a field. It supports custom arguments as well (including
 /// `self`).
 ///
-/// You can set it right on the whole type, In which case all fields which are
+/// You can set it right on the whole type, in which case all fields which are
 /// matching a set type will be using the given function.
 ///
 /// We also provide a set of commonly used function for your types. You can find
