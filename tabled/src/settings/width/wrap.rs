@@ -700,6 +700,10 @@ fn wrap_text_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str)
         }
 
         if word_width == 0 {
+            if word_size != 0 {
+                blocks.skip(&mut buf, word_size);
+            }
+
             continue;
         }
 
