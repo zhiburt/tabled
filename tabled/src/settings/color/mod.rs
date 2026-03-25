@@ -205,6 +205,11 @@ impl Color {
         Self::new_static("", "")
     }
 
+    /// Returns true if the color has no ANSI sequences.
+    pub fn is_empty(&self) -> bool {
+        self.get_prefix().is_empty() && self.get_suffix().is_empty()
+    }
+
     /// Return a prefix.
     pub fn get_prefix(&self) -> &str {
         match &self.inner {
@@ -513,5 +518,14 @@ mod tests {
                 "\u{1b}[49m\u{1b}[39m"
             )
         )
+    }
+
+    #[test]
+    fn test_is_empty() {
+        assert!(Color::empty().is_empty());
+        assert!(!Color::FG_BLACK.is_empty());
+        assert!(!Color::BG_RED.is_empty());
+        assert!(!Color::new("a", "b").is_empty());
+        assert!(Color::new("", "").is_empty());
     }
 }
