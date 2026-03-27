@@ -48,6 +48,7 @@ pub struct LineText<Line> {
     offset: Offset,
     color: Option<ANSIBuf>,
     alignment: Option<Alignment>,
+    limit: Option<usize>,
     line: Line,
 }
 
@@ -85,6 +86,7 @@ impl<Line> LineText<Line> {
             offset: Offset::Start(0),
             color: None,
             alignment: None,
+            limit: None,
         }
     }
 
@@ -153,6 +155,30 @@ impl<Line> LineText<Line> {
     /// ```
     pub fn color(mut self, color: Color) -> Self {
         self.color = Some(color.into());
+        self
+    }
+
+    /// Set a limit on the number of characters displayed.
+    ///
+    /// If the text is longer than the limit, it will be truncated.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::style::LineText, settings::object::Rows};
+    ///
+    /// let mut table = Table::new(["Hello World"]);
+    /// table.with(LineText::new("+-.table", Rows::first()).limit(3));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+-.-----------+\n\
+    ///      | &str        |\n\
+    ///      +-------------+\n\
+    ///      | Hello World |\n\
+    ///      +-------------+"
+    /// );
+    /// ```
+    pub fn limit(mut self, n: usize) -> Self {
+        self.limit = Some(n);
         self
     }
 }
@@ -597,11 +623,17 @@ fn change_vertical_chars<R, D>(
 }
 
 fn create_line<T>(orig: LineText<T>, line: usize) -> LineText<usize> {
+    let text = match orig.limit {
+        Some(n) => orig.text.chars().take(n).collect(),
+        None => orig.text,
+    };
+
     LineText {
-        text: orig.text,
+        text,
         offset: orig.offset,
         color: orig.color,
         alignment: orig.alignment,
+        limit: orig.limit,
         line,
     }
 }
