@@ -1,13 +1,10 @@
-use crate::{
-    grid::config::Entity,
-    settings::{
-        modify::{Modify, ModifyList},
-        TableOption,
-    },
-};
+use crate::{grid::config::Entity, settings::TableOption};
 
 #[cfg(feature = "std")]
-use crate::settings::CellOption;
+use crate::settings::{
+    modify::{Modify, ModifyList},
+    CellOption,
+};
 
 /// Settings is a combinator of [`TableOption`]s.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -36,7 +33,11 @@ impl<A, B> Settings<A, B> {
     pub const fn with<C>(self, settings: C) -> Settings<Self, C> {
         Settings(self, settings)
     }
+}
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl<A, B> Settings<A, B> {
     /// Add a [`Modify`] step to the combinator, applying a [`CellOption`] to the cells
     /// selected by `obj`.
     ///
