@@ -583,7 +583,7 @@ impl Table {
         builder.push_record(T::headers());
 
         for row in iter {
-            builder.push_record(row.fields().into_iter());
+            builder.push_record(row.fields());
         }
 
         builder
