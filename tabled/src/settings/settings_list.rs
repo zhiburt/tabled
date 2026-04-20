@@ -1,7 +1,10 @@
 use crate::{grid::config::Entity, settings::TableOption};
 
 #[cfg(feature = "std")]
-use crate::settings::CellOption;
+use crate::settings::{
+    modify::{Modify, ModifyList},
+    CellOption,
+};
 
 /// Settings is a combinator of [`TableOption`]s.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -29,6 +32,34 @@ impl<A, B> Settings<A, B> {
     /// Add an option to a combinator.
     pub const fn with<C>(self, settings: C) -> Settings<Self, C> {
         Settings(self, settings)
+    }
+}
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl<A, B> Settings<A, B> {
+    /// Add a [`Modify`] step to the combinator, applying a [`CellOption`] to the cells
+    /// selected by `obj`.
+    ///
+    /// This mirrors [`Table::modify`] for [`Settings`]: it composes an `obj`/`option` pair
+    /// into a [`ModifyList`] and appends it to the combinator chain. The effect is
+    /// equivalent to `.with(Modify::new(obj).with(option))`, but keeps the call-site `const`.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{object::Rows, Padding, Settings}};
+    ///
+    /// let table_config = Settings::default()
+    ///     .modify(Rows::first(), Padding::new(2, 2, 1, 1));
+    ///
+    /// let table = Table::new([["Year", "2021"]])
+    ///     .with(table_config)
+    ///     .to_string();
+    /// # let _ = table;
+    /// ```
+    ///
+    /// [`Table::modify`]: crate::Table::modify
+    pub const fn modify<O, M>(self, obj: O, option: M) -> Settings<Self, ModifyList<O, M>> {
+        Settings(self, Modify::list(obj, option))
     }
 }
 
