@@ -1,8 +1,11 @@
 #![cfg(feature = "std")]
 #![cfg(feature = "assert")]
 
+use std::iter::FromIterator;
+
 use tabled::{
     assert::{assert_width, test_table},
+    builder::Builder,
     settings::{
         formatting::{TabSize, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
@@ -2082,6 +2085,77 @@ test_table!(
     "| xxxx. xx xxxxxxxx xx xx xxxxxxxxxx   |"
     "+--------------------------------------+"
 );
+
+#[test]
+fn wrap_is_ok_true_when_wrap_needed() {
+    // 3x3 markdown table is wider than 5 columns total.
+    let mut table = Matrix::new(3, 3).with(Style::markdown());
+    let mut wrap = Width::wrap(5);
+    table.with(&mut wrap);
+    assert!(
+        wrap.is_ok(),
+        "expected wrap to report success when wrapping was needed"
+    );
+}
+
+#[test]
+fn wrap_is_ok_false_when_table_already_fits() {
+    let mut table = Matrix::new(3, 3).with(Style::markdown());
+    let mut wrap = Width::wrap(500);
+    table.with(&mut wrap);
+    assert!(
+        !wrap.is_ok(),
+        "expected wrap to NOT report success when table already fits"
+    );
+}
+
+#[test]
+fn truncate_is_ok_true_when_truncate_needed() {
+    let mut table = Matrix::new(3, 3).with(Style::markdown());
+    let mut truncate = Width::truncate(5);
+    table.with(&mut truncate);
+    assert!(truncate.is_ok());
+}
+
+#[test]
+fn truncate_is_ok_false_when_table_already_fits() {
+    let mut table = Matrix::new(3, 3).with(Style::markdown());
+    let mut truncate = Width::truncate(500);
+    table.with(&mut truncate);
+    assert!(!truncate.is_ok());
+}
+
+#[test]
+fn wrap_is_ok_false_when_request_below_minimum_borders_padding() {
+    // A request below the table's minimum (determined by borders/padding,
+    // not cell content) shouldn't report success because no cell content
+    // is actually wrapped. The request width 1 is less than the rendered
+    // width but the column widths are already at their floor.
+    let mut table = Builder::from_iter([[""]])
+        .build()
+        .with(Style::modern())
+        .clone();
+    let mut wrap = Width::wrap(1);
+    table.with(&mut wrap);
+    assert!(
+        !wrap.is_ok(),
+        "wrap should not report success when no cell content actually changes"
+    );
+}
+
+#[test]
+fn truncate_is_ok_false_when_request_below_minimum_borders_padding() {
+    let mut table = Builder::from_iter([[""]])
+        .build()
+        .with(Style::modern())
+        .clone();
+    let mut truncate = Width::truncate(1);
+    table.with(&mut truncate);
+    assert!(
+        !truncate.is_ok(),
+        "truncate should not report success when no cell content actually changes"
+    );
+}
 
 #[cfg(feature = "derive")]
 mod derived {
