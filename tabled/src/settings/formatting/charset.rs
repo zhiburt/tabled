@@ -38,7 +38,7 @@ impl Charset {
     ///
     /// [`TabSize`]: crate::settings::formatting::TabSize
     pub fn clean() -> CleanCharset {
-        CleanCharset
+        CleanCharset { tab_size: None }
     }
 }
 
@@ -72,9 +72,34 @@ impl Charset {
 /// )
 /// ```
 #[derive(Debug, Default, Clone)]
-pub struct CleanCharset;
+pub struct CleanCharset {
+    tab_size: Option<usize>,
+}
 
 impl CleanCharset {
+    /// Replace `\t` with `size` spaces in the same pass that strips other control characters.
+    ///
+    /// By default, `\t` is dropped (no replacement). Setting a tab size makes a single
+    /// `Charset::clean().tab_size(N)` call equivalent to `TabSize::new(N)` followed by
+    /// `Charset::clean()`, but with one allocation and one pass per cell.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, settings::formatting::Charset};
+    ///
+    /// let text = "Some\ttext\r";
+    ///
+    /// let mut table = Table::new([text]);
+    /// table.with(Charset::clean().tab_size(4));
+    ///
+    /// assert!(table.to_string().contains("Some    text"));
+    /// ```
+    pub fn tab_size(mut self, size: usize) -> Self {
+        self.tab_size = Some(size);
+        self
+    }
+
     /// Removes all symbols which may break the layout such as `\t`, `\r` and more.
     ///
     /// Notice that tab is just removed rather then being replaced with spaces.
@@ -90,7 +115,7 @@ impl CleanCharset {
     /// )
     /// ```
     pub fn clean(s: &str) -> Cow<'_, str> {
-        Cow::Owned(clean_charset(s))
+        Cow::Owned(clean_charset(s, None))
     }
 }
 
@@ -105,7 +130,7 @@ where
             for col in 0..records.count_columns() {
                 let pos = Position::new(row, col);
                 let text = records.get_text(pos);
-                let text = clean_charset(text);
+                let text = clean_charset(text, self.tab_size);
                 records.set(pos, text);
             }
         }
@@ -121,14 +146,29 @@ where
         let count_cols = records.count_columns();
         for pos in entity.iter(count_rows, count_cols) {
             let text = records.get_text(pos);
-            let text = clean_charset(text);
+            let text = clean_charset(text, self.tab_size);
             records.set(pos, text);
         }
     }
 }
 
-fn clean_charset(text: &str) -> String {
+fn clean_charset(text: &str, tab_size: Option<usize>) -> String {
     // It's enough for covering '\t' and '\r'
     // as well as a list of other unwanted escapes.
-    text.replace(|c| c != '\n' && c < ' ', "")
+    let mut out = String::with_capacity(text.len());
+    for c in text.chars() {
+        match c {
+            '\t' => {
+                if let Some(n) = tab_size {
+                    for _ in 0..n {
+                        out.push(' ');
+                    }
+                }
+            }
+            '\n' => out.push(c),
+            c if c < ' ' => {}
+            _ => out.push(c),
+        }
+    }
+    out
 }
