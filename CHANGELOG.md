@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed not properly working caching logic of `TableOption::hint`.
 
 
-## [0.19.0] - 2025-24-04
+## [0.19.0] - 2025-04-24
 
 ### Added
 
@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed wrap emojie issue (releated to int overlap).
 - Fixed `LineText<LastColumn>`.
 
-## [0.18.0] - 2025-07-02
+## [0.18.0] - 2025-02-07
 
 ### Added
 
@@ -93,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `clippy` issues (by [@joshtriplett](https://github.com/joshtriplett)).
 
-## [0.17.0] - 2024-23-11
+## [0.17.0] - 2024-11-23
 
 ### Added
 
