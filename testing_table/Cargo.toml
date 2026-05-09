@@ -17,5 +17,5 @@ std = []
 ansi = ["ansitok"]
 
 [dependencies]
-ansitok = { version = "0.3", optional = true }
+ansitok = { git = "https://gitlab.com/zhiburt/ansitok/", rev = "099ebf7960bd298f0154d793720741f8cd1e898b", optional = true }
 unicode-width = "0.2"
