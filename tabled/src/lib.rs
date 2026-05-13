@@ -6,7 +6,7 @@
 //! 2. When it's unknown.
 //!
 //! Here you can work with both.\
-//! For first approach you shall find [`derive::Tabled`] macros being very helpfull.\
+//! For first approach you shall find [`derive::Tabled`] macros being very helpful.\
 //! For a later one you shall take a look at [`Builder`].
 //!
 //! There are a number of [`settings`] you can use\
@@ -61,8 +61,8 @@
 //!
 //! ## Building table step by step
 //!
-//! When you data scheme is not known at compile time.\
-//! You most likely will not able to relay on [`Table`].\
+//! When your data scheme is not known at compile time.\
+//! You most likely will not able to rely on [`Table`].\
 //! One option would be is to use [`Builder`].
 //!
 #![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
@@ -104,7 +104,7 @@
 //!
 //! ## Hints
 //!
-//! [`Table`] can be build from vast majority of Rust's standard types.\
+//! [`Table`] can be built from a vast majority of Rust's standard types.\
 //! This allows you to run the following code.
 //!
 #![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
@@ -127,8 +127,8 @@
 //! );
 //! ```
 //!
-//! You can compine types, and settings together using a tupples.\
-//! And achive magical results.
+//! You can combine types, and settings together using a tuples.\
+//! And achieve magical results.
 //!
 #![cfg_attr(all(feature = "std", feature = "assert"), doc = "```")]
 #![cfg_attr(not(all(feature = "std", feature = "assert")), doc = "```ignore")]
@@ -167,7 +167,7 @@
 //! );
 //! ```
 //!
-//! Be ware you don't obligated to `collect` your data before building.
+//! Be aware that you aren't obligated to `collect` your data before building.
 //!
 #![cfg_attr(
     all(feature = "derive", feature = "std", feature = "assert"),
@@ -235,7 +235,7 @@
 //!
 //! # Features
 //!
-//! - `std`     - Used by default. If not its considered `no_std` with a limited set of functionality.
+//! - `std`     - Used by default. If not, it's considered `no_std` with a limited set of functionality.
 //! - `derive`  - Used by default. A support for `Tabled` derive macro.
 //! - `ansi`    - A support for ANSI sequences.
 //! - `macros`  - A support for `row!`, `col!` macro.
