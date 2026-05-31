@@ -3,11 +3,35 @@
 
 use tabled::{
     assert::test_table,
-    settings::{formatting::Justification, object::Columns, Color, Modify},
+    settings::{
+        formatting::{Charset, Justification},
+        object::Columns,
+        Color, Modify,
+    },
     Table,
 };
 
 use crate::util::Matrix;
+
+test_table!(
+    charset_clean_with_tab_size,
+    Table::new(["Some\ttext\r"]).with(Charset::clean().tab_size(4)),
+    "+--------------+"
+    "| &str         |"
+    "+--------------+"
+    "| Some    text |"
+    "+--------------+"
+);
+
+test_table!(
+    charset_clean_without_tab_size_unchanged,
+    Table::new(["Some\ttext\r"]).with(Charset::clean()),
+    "+----------+"
+    "| &str     |"
+    "+----------+"
+    "| Sometext |"
+    "+----------+"
+);
 
 test_table!(
     justification,
