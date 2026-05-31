@@ -287,7 +287,7 @@ test_table!(
 test_table!(
     multiline_table_test_0,
     Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
-        .with(Charset::clean())
+        .with(Charset::new().clean())
         .with(Style::modern()),
     r#"┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐"#
     r#"│ 0                                                                                                                                                                                                                                                                    │"#
@@ -302,7 +302,7 @@ test_table!(
 test_table!(
     multiline_table_test_1,
     Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
-        .with(Charset::clean())
+        .with(Charset::new().clean())
         .with(Style::modern())
         .with(Width::wrap(100)),
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
@@ -321,7 +321,7 @@ test_table!(
 test_table!(
     multiline_table_test_2,
     Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
-        .with(Modify::new((1, 0)).with(Charset::clean()))
+        .with(Modify::new((1, 0)).with(Charset::new().clean()))
         .with(Style::modern())
         .with(Width::wrap(100)),
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"

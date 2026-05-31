@@ -4,7 +4,7 @@
 use tabled::{
     assert::{assert_width, test_table},
     settings::{
-        formatting::{TabSize, TrimStrategy},
+        formatting::{Charset, TrimStrategy},
         object::{Columns, Object, Rows, Segment},
         peaker::{PriorityLeft, PriorityMax, PriorityMin, PriorityRight},
         style::HorizontalLine,
@@ -1411,7 +1411,7 @@ test_table!(
     max_width_when_cell_has_tabs,
     Matrix::new(3, 3)
         .insert((2, 1).into(), "\tHello\tWorld\t")
-        .with(TabSize::new(4))
+        .with(Charset::new().tab_size(4))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..)).with(Width::truncate(1))),
     "| N | c | c | c |"
@@ -1425,7 +1425,7 @@ test_table!(
     max_width_table_when_cell_has_tabs,
     Matrix::new(3, 3)
         .insert((2, 1).into(), "\tHello\tWorld\t")
-        .with(TabSize::new(4))
+        .with(Charset::new().tab_size(4))
         .with(Style::markdown())
         .with(Width::truncate(15)),
     "|  | co |  |  |"
@@ -1816,7 +1816,7 @@ test_table!(
 test_table!(
     max_width_tab_0,
     Matrix::iter(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
-            .with(TabSize::new(4))
+            .with(Charset::new().tab_size(4))
             .with(Style::markdown())
             .with(Width::wrap(60)),
     "|                           &str                           |"
