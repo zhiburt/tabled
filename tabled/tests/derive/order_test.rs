@@ -75,4 +75,7 @@ fn test_order_skip_usage() {
 
     assert_eq!(Example::headers(), vec!["details", "name"],);
     assert_eq!(Example::default().fields(), vec!["", ""]);
+
+    assert_eq!(Example2::headers(), vec!["name", "details"],);
+    assert_eq!(Example2::default().fields(), vec!["", ""]);
 }
