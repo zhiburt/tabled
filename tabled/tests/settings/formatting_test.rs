@@ -15,7 +15,7 @@ use crate::util::Matrix;
 
 test_table!(
     charset_clean_with_tab_size,
-    Table::new(["Some\ttext\r"]).with(Charset::clean().tab_size(4)),
+    Table::new(["Some\ttext"]).with(Charset::new().tab_size(4)),
     "+--------------+"
     "| &str         |"
     "+--------------+"
@@ -25,7 +25,7 @@ test_table!(
 
 test_table!(
     charset_clean_without_tab_size_unchanged,
-    Table::new(["Some\ttext\r"]).with(Charset::clean()),
+    Table::new(["Some\ttext\r"]).with(Charset::new().clean()),
     "+----------+"
     "| &str     |"
     "+----------+"

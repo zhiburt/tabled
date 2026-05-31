@@ -4,7 +4,7 @@
 use tabled::{
     assert::test_table,
     settings::{
-        formatting::{AlignmentStrategy, TabSize, TrimStrategy},
+        formatting::{AlignmentStrategy, Charset, TrimStrategy},
         object::Segment,
         Alignment, Modify, Span, Style,
     },
@@ -97,7 +97,7 @@ test_table!(
 
 test_table!(
     tab_size_test_0,
-    Matrix::iter(tab_data1()).with(Style::psql()).with(TabSize::new(4)),
+    Matrix::iter(tab_data1()).with(Style::psql()).with(Charset::new().tab_size(4)),
     "          N           | column 0 |   column 1   | column 2 "
     "----------------------+----------+--------------+----------"
     "          0           |   0-0    |     0-1      |   0-2    "
@@ -112,7 +112,7 @@ test_table!(
 
 test_table!(
     tab_size_test_1,
-    Matrix::iter(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize::new(2)),
+    Matrix::iter(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(Charset::new().tab_size(2)),
     "                N | column 0 |   column 1 | column 2 "
     "------------------+----------+------------+----------"
     "                0 |      0-0 |        0-1 |      0-2 "
@@ -127,7 +127,7 @@ test_table!(
 
 test_table!(
     tab_size_test_2,
-    Matrix::iter(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize::new(0)),
+    Matrix::iter(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(Charset::new().tab_size(0)),
     "            N | column 0 | column 1 | column 2 "
     "--------------+----------+----------+----------"
     "            0 |      0-0 |      0-1 |      0-2 "
@@ -143,7 +143,7 @@ test_table!(
 test_table!(
     tab_size_span_test,
     Matrix::iter(tab_data2())
-        .with(TabSize::new(4))
+        .with(Charset::new().tab_size(4))
         .with(Style::psql())
         .with(Modify::new((0, 0)).with(Span::column(3)))
         .with(Modify::new((1, 0)).with(Span::column(2)))
