@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.21.0] - 2026-06-01
+
+### Added
+
+- Added `Color::is_empty` function (by [@mvanhorn](https://github.com/mvanhorn)).
+- Added `Settings::modify` function (by [@mvanhorn](https://github.com/mvanhorn)).
+- Added qc test for wrap (by [@mvanhorn](https://github.com/mvanhorn)).
+- Added `LineText::limit` function (by [@mvanhorn](https://github.com/mvanhorn)).
+- Added `ColumnNames::padding`.
+
+### Changed
+
+- Reworked `Charset` (by [@mvanhorn](https://github.com/mvanhorn)).
+- Removed `TabSize` in favor of `Charset::tab_size()`.
+- Changed `ColumnNames` interface - splited it into `ColumnNames` and `RowNames`.
+
+### Fixed
+
+- Fixed `Wrap` strings with 0 width (by [@ymcx](https://github.com/ymcx)).
+- Improved examples (by [@alexanderkjall](https://github.com/alexanderkjall)).
+- Remove broken LICENSE symlink (by [@mvanhorn](https://github.com/mvanhorn)).
+- Fixed CHANGELOG.md (by [@mvanhorn](https://github.com/mvanhorn)).
+- Fixed clippy issue (by [@akiomik](https://github.com/akiomik)).
+- Fixed documentation (by [@akiomik](https://github.com/akiomik)).
+- Fixed documentation (by [@darko-mesaros](https://github.com/darko-mesaros)).
+- Fixed documentation (by [@brownjohnf](https://github.com/brownjohnf)).
+- Fixed documentation (by [@spiritualhost](https://github.com/spiritualhost)).
+- Fixed wrong render of vertical char in case of `Span` (corner case).
+- Fixed `BorderCorrection::span` when `Span::column` and `Span::row` is used for same cell (corner case).
+
 ## [0.20.0] - 2025-05-06
 
 ### Added
