@@ -15,4 +15,3 @@ syn = { version = "2", features = ["full", "visit-mut", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 heck = "0.5"
-proc-macro-error2 = "2.0.1"

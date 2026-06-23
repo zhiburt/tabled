@@ -52,18 +52,17 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-pub fn abort(err: Error) -> ! {
-    match err {
-        Error::Syn(err) => {
-            proc_macro_error2::abort! {err.span(), "{}", err}
+impl Error {
+    pub fn into_syn(self) -> syn::Error {
+        match self {
+            Error::Syn(err) => err,
+            Error::Custom { span, error, help } => {
+                let mut err = syn::Error::new(span, error);
+                if let Some(help) = help {
+                    err.combine(syn::Error::new(span, format!("help: {help}")));
+                }
+                err
+            }
         }
-        Error::Custom { span, error, help } => match help {
-            Some(help) => {
-                proc_macro_error2::abort! {span, "{}",  error; help="{}", help}
-            }
-            None => {
-                proc_macro_error2::abort! {span, "{}",  error}
-            }
-        },
     }
 }

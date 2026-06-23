@@ -12,7 +12,6 @@ mod parse;
 
 use attributes::FormatArg;
 use proc_macro2::TokenStream;
-use proc_macro_error2::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
 use syn::spanned::Spanned;
@@ -28,26 +27,20 @@ use crate::error::Error;
 type FieldNameFn = fn(usize, &Field) -> TokenStream;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
-#[proc_macro_error]
 pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    let ast = impl_tabled(&input);
-    proc_macro::TokenStream::from(ast)
+    impl_tabled(&input)
+        .unwrap_or_else(|e| e.into_syn().into_compile_error())
+        .into()
 }
 
-fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attrs = TypeAttributes::parse(&ast.attrs)
-        .map_err(error::abort)
-        .unwrap();
+fn impl_tabled(ast: &DeriveInput) -> Result<TokenStream, Error> {
+    let attrs = TypeAttributes::parse(&ast.attrs)?;
 
-    let tabled_trait_path = get_crate_name_expr(&attrs).map_err(error::abort).unwrap();
+    let tabled_trait_path = get_crate_name_expr(&attrs)?;
 
-    let length = get_tabled_length(ast, &attrs, &tabled_trait_path)
-        .map_err(error::abort)
-        .unwrap();
-    let info = collect_info(ast, &attrs, &tabled_trait_path)
-        .map_err(error::abort)
-        .unwrap();
+    let length = get_tabled_length(ast, &attrs, &tabled_trait_path)?;
+    let info = collect_info(ast, &attrs, &tabled_trait_path)?;
     let fields = info.values;
     let headers = info.headers;
 
@@ -68,7 +61,7 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         }
     };
 
-    expanded
+    Ok(expanded)
 }
 
 fn get_tabled_length(
