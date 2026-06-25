@@ -237,6 +237,27 @@ fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     }
 }
 
+/// Returns `true` for a nonspacing combining mark: a zero-width char that attaches to
+/// the preceding base character without adding a display column of its own and without
+/// changing the base character's width.
+///
+/// Variation selectors (`U+FE00..=U+FE0F`) and the combining enclosing keycap
+/// (`U+20E3`) are deliberately excluded: although their own width is zero, they change
+/// the *display width* of the base character (e.g. `❤\u{FE0F}` renders two columns
+/// wide), so the wrapping logic must keep accounting their width through the base char.
+fn is_combining_mark(c: char) -> bool {
+    matches!(c,
+        '\u{0300}'..='\u{036F}'   // Combining Diacritical Marks
+        | '\u{1AB0}'..='\u{1AFF}' // Combining Diacritical Marks Extended
+        | '\u{1DC0}'..='\u{1DFF}' // Combining Diacritical Marks Supplement
+        | '\u{20D0}'..='\u{20DC}' // Combining Diacritical Marks for Symbols (excl. keycap)
+        | '\u{20E1}'
+        | '\u{20E5}'..='\u{20F0}'
+        | '\u{FE20}'..='\u{FE2F}' // Combining Half Marks
+        | '\u{200B}'              // Zero Width Space
+    ) && get_char_width(c) == 0
+}
+
 #[cfg(not(feature = "ansi"))]
 fn wrap_text_basic(s: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
@@ -251,6 +272,18 @@ fn wrap_text_basic(s: &str, width: usize) -> String {
         if c == '\n' {
             buf.push('\n');
             current_width = 0;
+            continue;
+        }
+
+        // A nonspacing combining mark modifies the preceding char and occupies no
+        // display column on its own, so it must stay on the current line rather than
+        // being wrapped onto a new one (which would orphan it from its base char).
+        //
+        // Note: this intentionally excludes variation selectors and the combining
+        // enclosing keycap, which instead change the *display width* of the base char
+        // (e.g. `❤\u{FE0F}` is two columns wide) and so must keep contributing width.
+        if is_combining_mark(c) {
+            buf.push(c);
             continue;
         }
 
@@ -319,6 +352,16 @@ fn wrap_text_basic(text: &str, width: usize, line_prefix: &str, line_suffix: &st
                 line_width = 0;
                 buf.push_str(line_prefix);
                 let _ = write!(&mut buf, "{}", style.start());
+                continue;
+            }
+
+            // A nonspacing combining mark modifies the preceding char and occupies no
+            // display column on its own, so keep it on the current line instead of
+            // wrapping it onto a new one (which would orphan it from its base char).
+            // (Variation selectors / keycap enclosers are excluded: they change the
+            // base char's display width and so must keep contributing width.)
+            if is_combining_mark(c) {
+                buf.push(c);
                 continue;
             }
 
@@ -887,6 +930,34 @@ mod tests {
 
         assert_eq!(split("😳123😳", 1), "�\n1\n2\n3\n�");
         assert_eq!(split("😳12😳3", 1), "�\n1\n2\n�\n3");
+    }
+
+    #[test]
+    fn split_zero_width_test() {
+        // A zero-width combining mark (U+0301) attached to a base char is a single
+        // grapheme that occupies one display column. Wrapping must keep the mark on the
+        // same line as the base character it modifies, never push it to a new line.
+        #[cfg(not(feature = "ansi"))]
+        let split = |text, width| wrap_text_basic(text, width);
+        #[cfg(feature = "ansi")]
+        let split = |text, width| wrap_text_basic(text, width, "", "");
+
+        // `e` + combining acute = "é" -> stays as one line at width 1.
+        assert_eq!(split("e\u{0301}", 1), "e\u{0301}");
+        // multiple combining marks all attach to the base, no extra lines.
+        assert_eq!(
+            split("a\u{0301}\u{0302}\u{0303}", 1),
+            "a\u{0301}\u{0302}\u{0303}"
+        );
+        // a leading combining mark (no base) is still zero width and must not force a wrap.
+        assert_eq!(split("\u{0301}ab", 1), "\u{0301}a\nb");
+        // zero-width content alone never wraps.
+        assert_eq!(
+            split("\u{200B}\u{200B}\u{200B}", 1),
+            "\u{200B}\u{200B}\u{200B}"
+        );
+        // combining mark between full lines attaches to the preceding char, not the next line.
+        assert_eq!(split("ab\u{0301}c", 1), "a\nb\u{0301}\nc");
     }
 
     #[test]
