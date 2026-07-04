@@ -237,3 +237,79 @@ test_table!(
     "|is a library     |is a library|is a library    |is a library|"
     "+-----------------+------------+----------------+------------+"
 );
+
+#[test]
+fn does_not_panic_when_dimension_width_is_less_than_content_width() {
+    // Regression test for https://github.com/zhiburt/tabled/issues/567
+    //
+    // A custom `Dimension` implementation is allowed to report a column
+    // width smaller than the actual content width (e.g. a heuristic that
+    // estimates width ahead of a resize). `calculate_indent` used to do an
+    // unchecked `available - width` subtraction, which panics with
+    // "attempt to subtract with overflow" in that case.
+    let data = [["hello world"]];
+    let data = data
+        .iter()
+        .map(|row| row.iter().map(Text::new).collect())
+        .collect();
+
+    let records = VecRecords::new(data);
+    let cfg = SpannedConfig::default();
+
+    let dims = Dims {
+        width: vec![1],
+        height: vec![1],
+    };
+
+    let _ = PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string();
+}
+
+#[test]
+fn does_not_panic_when_dimension_width_is_less_than_content_width_not_spanned_path() {
+    // Regression test for https://github.com/zhiburt/tabled/issues/567
+    //
+    // Same root cause as `does_not_panic_when_dimension_width_is_less_than_content_width`,
+    // but forces the `grid_not_spanned` code path (the exact module/line the
+    // issue's backtrace pointed at) by setting a justification, which makes
+    // `is_basic` false in `print_grid`.
+    let data = [["hello world"]];
+    let data = data
+        .iter()
+        .map(|row| row.iter().map(Text::new).collect())
+        .collect();
+
+    let records = VecRecords::new(data);
+    let mut cfg = SpannedConfig::default();
+    cfg.set_justification((0, 0).into(), '.');
+
+    let dims = Dims {
+        width: vec![1],
+        height: vec![1],
+    };
+
+    let _ = PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string();
+}
+
+#[test]
+fn does_not_panic_when_dimension_width_is_less_than_content_width_spanned_path() {
+    // Regression test for https://github.com/zhiburt/tabled/issues/567
+    //
+    // Same root cause, forcing the `grid_spanned` code path by setting a
+    // column span so `has_column_spans()` is true.
+    let data = [["hello world", "b"]];
+    let data = data
+        .iter()
+        .map(|row| row.iter().map(Text::new).collect())
+        .collect();
+
+    let records = VecRecords::new(data);
+    let mut cfg = SpannedConfig::default();
+    cfg.set_column_span((0, 0).into(), 2);
+
+    let dims = Dims {
+        width: vec![1, 1],
+        height: vec![1],
+    };
+
+    let _ = PeekableGrid::new(&records, &cfg, &dims, NoColors).to_string();
+}

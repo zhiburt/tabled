@@ -441,7 +441,7 @@ mod grid_basic {
     }
 
     fn calculate_indent(alignment: AlignmentHorizontal, width: usize, available: usize) -> HIndent {
-        let diff = available - width;
+        let diff = available.saturating_sub(width);
 
         let (left, right) = match alignment {
             AlignmentHorizontal::Left => (0, diff),
@@ -982,7 +982,7 @@ mod grid_not_spanned {
     }
 
     fn calculate_indent(alignment: AlignmentHorizontal, width: usize, available: usize) -> HIndent {
-        let diff = available - width;
+        let diff = available.saturating_sub(width);
 
         let (left, right) = match alignment {
             AlignmentHorizontal::Left => (0, diff),
@@ -1858,7 +1858,7 @@ mod grid_spanned {
     }
 
     fn calculate_indent(alignment: AlignmentHorizontal, width: usize, available: usize) -> HIndent {
-        let diff = available - width;
+        let diff = available.saturating_sub(width);
 
         let (left, right) = match alignment {
             AlignmentHorizontal::Left => (0, diff),
