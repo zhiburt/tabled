@@ -48,6 +48,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     suffix: Option<TruncateSuffix<'a>>,
     multiline: bool,
     priority: P,
+    success: bool,
 }
 
 #[cfg(feature = "ansi")]
@@ -98,6 +99,7 @@ where
             multiline: false,
             suffix: None,
             priority: PriorityNone::new(),
+            success: false,
         }
     }
 }
@@ -120,6 +122,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             multiline: self.multiline,
             priority: self.priority,
             suffix: Some(suff),
+            success: false,
         }
     }
 
@@ -133,6 +136,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             multiline: self.multiline,
             priority: self.priority,
             suffix: Some(suff),
+            success: false,
         }
     }
 
@@ -143,6 +147,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             multiline: on,
             suffix: self.suffix,
             priority: self.priority,
+            success: false,
         }
     }
 
@@ -157,6 +162,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             multiline: self.multiline,
             priority: self.priority,
             suffix: Some(suff),
+            success: false,
         }
     }
 }
@@ -176,7 +182,16 @@ impl<'a, W, P> Truncate<'a, W, P> {
             multiline: self.multiline,
             suffix: self.suffix,
             priority,
+            success: false,
         }
+    }
+
+    /// Returns whether the most recent application of this `Truncate`
+    /// actually performed any truncation. Always `false` until the
+    /// `Truncate` has been applied via the `&mut Self` implementation
+    /// of [`TableOption`].
+    pub fn is_ok(&self) -> bool {
+        self.success
     }
 }
 
@@ -258,6 +273,7 @@ where
             priority: self.priority,
             suffix: self.suffix,
             width,
+            success: false,
         };
 
         let widths = truncate_total_width(records, cfg, widths, total, t);
@@ -268,6 +284,58 @@ where
 
     fn hint_change(&self) -> Option<Entity> {
         // NOTE: We properly set widths and heights so nothign got need reastimation
+        None
+    }
+}
+
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension> for &mut Truncate<'_, W, P>
+where
+    W: Measurement<Width> + Clone,
+    P: Peaker + Clone,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+    for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
+        self.success = false;
+
+        if records.count_rows() == 0 || records.count_columns() == 0 {
+            return;
+        }
+
+        let width = self.width.clone().measure(&*records, cfg);
+
+        dims.estimate(&*records, cfg);
+        let widths = dims.get_widths().expect("must be present");
+
+        let total = get_table_total_width(widths, cfg);
+        if total <= width {
+            return;
+        }
+
+        let original_widths: Vec<usize> = widths.to_vec();
+        let t = Truncate {
+            multiline: self.multiline,
+            priority: self.priority.clone(),
+            suffix: self.suffix.clone(),
+            width,
+            success: false,
+        };
+
+        let new_widths = truncate_total_width(records, cfg, widths, total, t);
+
+        // Only report success if cell column widths actually changed.
+        // The `total <= width` short-circuit above eliminates the obvious
+        // no-op case, but a request that's below `total` but at or below
+        // the minimum determined by borders/padding can still leave
+        // cell content untouched -- in which case `is_ok()` should stay
+        // false so callers can trust the API.
+        self.success = new_widths != original_widths;
+        dims.set_widths(new_widths);
+        dims.clear_height(); // TODO: Can be optimized -- we must know the proper height already since we did wrap
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
         None
     }
 }
