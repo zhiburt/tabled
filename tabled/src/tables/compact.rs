@@ -8,7 +8,7 @@ use crate::{
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides},
         dimension::{ConstDimension, ConstSize, Dimension},
         records::{
-            into_records::{LimitColumns, LimitRows},
+            into_records::{LimitColumns, LimitRows, SkipRows},
             IntoRecords, IterRecords,
         },
         util::string::get_line_width,
@@ -91,6 +91,7 @@ pub struct CompactTable<I, D> {
     dims: D,
     count_columns: usize,
     count_rows: Option<usize>,
+    skip_rows: usize,
 }
 
 impl<I> CompactTable<I, ConstDimension<0, 0>> {
@@ -104,6 +105,7 @@ impl<I> CompactTable<I, ConstDimension<0, 0>> {
             cfg: create_config(),
             count_columns: 0,
             count_rows: None,
+            skip_rows: 0,
             dims: ConstDimension::new(ConstSize::Value(2), ConstSize::Value(1)),
         }
     }
@@ -122,6 +124,7 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstDimension<COL
             cfg: self.cfg,
             count_columns: self.count_columns,
             count_rows: self.count_rows,
+            skip_rows: self.skip_rows,
         }
     }
 
@@ -137,6 +140,7 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstDimension<COL
             cfg: self.cfg,
             count_columns: self.count_columns,
             count_rows: self.count_rows,
+            skip_rows: self.skip_rows,
         }
     }
 }
@@ -157,6 +161,7 @@ impl<I, D> CompactTable<I, D> {
             cfg: create_config(),
             count_columns: 0,
             count_rows: None,
+            skip_rows: 0,
         }
     }
 
@@ -180,6 +185,39 @@ impl<I, D> CompactTable<I, D> {
     /// Limit a number of columns.
     pub const fn columns(mut self, count: usize) -> Self {
         self.count_columns = count;
+        self
+    }
+
+    /// Skip a number of rows from the top.
+    ///
+    /// It's applied before [`CompactTable::rows`], so the row limit counts the
+    /// remaining rows.
+    ///
+    #[cfg_attr(feature = "std", doc = "```")]
+    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
+    /// use tabled::{settings::Style, tables::CompactTable};
+    ///
+    /// let data = [
+    ///     ["FreeBSD", "1993"],
+    ///     ["OpenBSD", "1995"],
+    ///     ["HardenedBSD", "2014"],
+    /// ];
+    ///
+    /// let table = CompactTable::from(data)
+    ///     .skip(1)
+    ///     .with(Style::psql())
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         " OpenBSD     | 1995 \n",
+    ///         " HardenedBSD | 2014 ",
+    ///     )
+    /// );
+    /// ```
+    pub const fn skip(mut self, count: usize) -> Self {
+        self.skip_rows = count;
         self
     }
 
@@ -208,6 +246,7 @@ impl<I, D> CompactTable<I, D> {
             self.cfg,
             self.count_columns,
             self.count_rows,
+            self.skip_rows,
         )
     }
 
@@ -277,6 +316,7 @@ fn build_grid<W, I, D>(
     config: CompactConfig,
     cols: usize,
     rows: Option<usize>,
+    skip: usize,
 ) -> fmt::Result
 where
     W: fmt::Write,
@@ -284,6 +324,8 @@ where
     I::Cell: AsRef<str>,
     D: Dimension,
 {
+    let records = SkipRows::new(records, skip);
+
     match rows {
         Some(limit) => {
             let records = LimitRows::new(records, limit);
