@@ -179,7 +179,35 @@ impl Color {
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
+    pub const BLINK:             Self = Self::new_static("\u{1b}[5m", "\u{1b}[25m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
     pub const BOLD:              Self = Self::new_static("\u{1b}[1m", "\u{1b}[22m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const DIMMED:            Self = Self::new_static("\u{1b}[2m", "\u{1b}[22m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const HIDDEN:            Self = Self::new_static("\u{1b}[8m", "\u{1b}[28m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const INVERT:            Self = Self::new_static("\u{1b}[7m", "\u{1b}[27m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const ITALIC:            Self = Self::new_static("\u{1b}[3m", "\u{1b}[23m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const RESET:             Self = Self::new_static("\u{1b}[0m", "\u{1b}[0m");
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const STRIKETHROUGH:     Self = Self::new_static("\u{1b}[9m", "\u{1b}[29m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
@@ -527,5 +555,26 @@ mod tests {
         assert!(!Color::BG_RED.is_empty());
         assert!(!Color::new("a", "b").is_empty());
         assert!(Color::new("", "").is_empty());
+    }
+
+    #[test]
+    fn test_text_attribute_constants() {
+        let cases = [
+            (Color::BLINK, "\u{1b}[5m", "\u{1b}[25m"),
+            (Color::BOLD, "\u{1b}[1m", "\u{1b}[22m"),
+            (Color::DIMMED, "\u{1b}[2m", "\u{1b}[22m"),
+            (Color::HIDDEN, "\u{1b}[8m", "\u{1b}[28m"),
+            (Color::INVERT, "\u{1b}[7m", "\u{1b}[27m"),
+            (Color::ITALIC, "\u{1b}[3m", "\u{1b}[23m"),
+            (Color::RESET, "\u{1b}[0m", "\u{1b}[0m"),
+            (Color::STRIKETHROUGH, "\u{1b}[9m", "\u{1b}[29m"),
+            (Color::UNDERLINE, "\u{1b}[4m", "\u{1b}[24m"),
+        ];
+
+        for (color, prefix, suffix) in cases {
+            assert_eq!(color.get_prefix(), prefix);
+            assert_eq!(color.get_suffix(), suffix);
+            assert!(!color.is_empty());
+        }
     }
 }
