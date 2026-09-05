@@ -314,29 +314,27 @@ fn build_margin(pad: Pad<LitInt>) -> syn::Result<Margin> {
     Ok(Margin::new(left, right, top, bottom))
 }
 
-fn panic_not_supported_theme(ident: &LitStr) {
-    proc_macro_error2::abort!(
-        ident,
-        "The given settings is not supported";
-        note="custom themes are yet not supported";
-        help = r#"Supported themes are [EMPTY, BLANK, ASCII, ASCII_ROUNDED, DOTS, MODERN, SHARP, ROUNDED, EXTENDED, RE_STRUCTURED_TEXT, MARKDOWN, PSQL]"#
+fn not_supported_theme(ident: &LitStr) -> syn::Error {
+    syn::Error::new(
+        ident.span(),
+        "The given settings is not supported \
+        Supported themes are [EMPTY, BLANK, ASCII, ASCII_ROUNDED, DOTS, MODERN, SHARP, ROUNDED, EXTENDED, RE_STRUCTURED_TEXT, MARKDOWN, PSQL]"
     )
 }
 
-fn panic_not_supported_alignment(ident: &LitStr) {
-    proc_macro_error2::abort!(
-        ident,
-        "The given settings is not supported";
-        note="custom themes are yet not supported";
-        help = r#"Supported alignment are [LEFT, RIGHT, CENTER, CENTER_VERTICAL, TOP, BOTTOM]"#
+fn not_supported_alignment(ident: &LitStr) -> syn::Error {
+    syn::Error::new(
+        ident.span(),
+        "The given settings is not supported \
+        Supported alignment are [LEFT, RIGHT, CENTER, CENTER_VERTICAL, TOP, BOTTOM]",
     )
 }
 
-fn panic_not_supported_settings(ident: &Ident) {
-    proc_macro_error2::abort!(
-        ident,
-        "The given settings is not supported";
-        help = r#"Supported list is [THEME, PADDING, MARGIN]"#
+fn not_supported_settings(ident: &Ident) -> syn::Error {
+    syn::Error::new(
+        ident.span(),
+        "The given settings is not supported \
+        Supported list is [THEME, PADDING, MARGIN]",
     )
 }
 
@@ -384,7 +382,7 @@ fn config_table(table: &mut PoolTable, kv: &KeyValue<LitStr>) -> Result<()> {
     if kv.key == "THEME" {
         let theme = kv.value.value();
         if !is_supported_theme(&theme) {
-            panic_not_supported_theme(&kv.value);
+            return Err(not_supported_theme(&kv.value));
         }
 
         apply_theme(table, &theme);
@@ -397,12 +395,12 @@ fn config_table(table: &mut PoolTable, kv: &KeyValue<LitStr>) -> Result<()> {
     } else if kv.key == "ALIGNMENT" {
         let alignment = kv.value.value();
         if !is_supported_alignment(&alignment) {
-            panic_not_supported_alignment(&kv.value);
+            return Err(not_supported_alignment(&kv.value));
         }
 
         apply_alignment(table, &alignment);
     } else {
-        panic_not_supported_settings(&kv.key);
+        return Err(not_supported_settings(&kv.key));
     }
 
     Ok(())
