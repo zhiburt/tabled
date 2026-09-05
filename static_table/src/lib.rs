@@ -332,7 +332,7 @@ pub fn pool_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     match table {
         Ok(table) => {
             let table = syn::LitStr::new(&table, proc_macro2::Span::call_site());
-            quote! { #table }.into()
+            proc_macro::TokenStream::from(quote! { #table })
         }
         Err(err) => proc_macro::TokenStream::from(err.into_compile_error()),
     }
