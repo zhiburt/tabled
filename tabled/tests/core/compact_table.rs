@@ -117,3 +117,61 @@ test_table!(
     "| 2-0 | 2-1 | 2-2 |"
     "+--+--+--+--+--+"
 );
+
+test_table!(
+    compact_skip,
+    CompactTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(3)
+        .skip(1)
+        .to_string(),
+    "+--+--+--+"
+    "| 1-0 | 1-1 | 1-2 |"
+    "|--+--+--|"
+    "| 2-0 | 2-1 | 2-2 |"
+    "+--+--+--+"
+);
+
+test_table!(
+    compact_skip_zero,
+    CompactTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(3)
+        .skip(0)
+        .to_string(),
+    "+--+--+--+"
+    "| 0-0 | 0-1 | 0-2 |"
+    "|--+--+--|"
+    "| 1-0 | 1-1 | 1-2 |"
+    "|--+--+--|"
+    "| 2-0 | 2-1 | 2-2 |"
+    "+--+--+--+"
+);
+
+test_table!(
+    compact_skip_all,
+    CompactTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(3)
+        .skip(3)
+        .to_string(),
+    ""
+);
+
+test_table!(
+    compact_skip_more_than_rows,
+    CompactTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(3)
+        .skip(5)
+        .to_string(),
+    ""
+);
+
+test_table!(
+    compact_skip_then_rows_limit,
+    CompactTable::new(Matrix::with_no_frame(3, 3).to_vec())
+        .columns(3)
+        .skip(1)
+        .rows(1)
+        .to_string(),
+    "+--+--+--+"
+    "| 1-0 | 1-1 | 1-2 |"
+    "+--+--+--+"
+);
