@@ -167,7 +167,6 @@
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
 
-use proc_macro_error2::proc_macro_error;
 use quote::quote;
 use syn::parse_macro_input;
 
@@ -251,7 +250,6 @@ mod static_table;
 /// - PADDING
 /// - MARGIN
 #[proc_macro]
-#[proc_macro_error]
 pub fn static_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     use crate::static_table::{build_table, TableStruct};
 
@@ -326,14 +324,16 @@ pub fn static_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// - PADDING
 /// - MARGIN
 #[proc_macro]
-#[proc_macro_error]
 pub fn pool_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     use crate::pool_table::{build_table, TableStruct};
 
     let table = parse_macro_input!(input as TableStruct);
     let table = build_table(&table);
     match table {
-        Ok(table) => proc_macro::TokenStream::from(quote! { #table }),
+        Ok(table) => {
+            let table = syn::LitStr::new(&table, proc_macro2::Span::call_site());
+            proc_macro::TokenStream::from(quote! { #table })
+        }
         Err(err) => proc_macro::TokenStream::from(err.into_compile_error()),
     }
 }
