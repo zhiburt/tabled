@@ -1,3 +1,5 @@
+#![allow(clippy::single_range_in_vec_init)]
+
 use std::iter::FromIterator;
 
 use tabled::Table;
