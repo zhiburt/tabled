@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `CompactTable::skip` function (by [@ChrisJr404](https://github.com/ChrisJr404)).
 - Added `Color` text-attribute constants `BLINK`, `DIMMED`, `HIDDEN`, `INVERT`, `ITALIC`, `RESET` and `STRIKETHROUGH` (by [@ChrisJr404](https://github.com/ChrisJr404)).
 
+### Changed
+
+- Replaced proc-macro-error2 with syn::Error in static_table (by [@hex22a](https://github.com/hex22a))
+- Replaced proc-macro-error2 with syn::Error in tabled_derive (by [@shrey4796](https://github.com/shrey4796))
+
+### Fixed
+
+- Fixed docs.rs build (by [@amorison](https://github.com/amorison))
+
 ## [0.21.0] - 2026-06-01
 
 ### Added
