@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.22.0] - 2026-09-05
+
 ### Added
 
 - Added `Color` text-attribute constants `BLINK`, `DIMMED`, `HIDDEN`, `INVERT`, `ITALIC`, `RESET` and `STRIKETHROUGH` (by [@ChrisJr404](https://github.com/ChrisJr404)).

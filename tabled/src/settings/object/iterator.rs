@@ -217,13 +217,9 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            match self.iter.next() {
-                Some(item) => {
-                    if (self.f)(item) {
-                        return Some(item);
-                    }
-                }
-                None => return None,
+            let item = self.iter.next()?;
+            if (self.f)(item) {
+                return Some(item);
             }
         }
     }
