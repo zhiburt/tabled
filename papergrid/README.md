@@ -1,9 +1,9 @@
 # papergrid
 
-This is library for pretty tables.
+This is a library for pretty-printing tables.
 
-It has relatively low level API.
-If you're interested in a more friendly one take a look at [`tabled`](https://github.com/zhiburt/tabled).
+It has a relatively low-level API.
+If you're interested in a more friendly one, take a look at [`tabled`](https://github.com/zhiburt/tabled).
 
 ## Usage
 
@@ -53,7 +53,7 @@ fn main() {
     );
 
     let data = [
-        ["Papergrid", "is a library", "for print tables", "!"],
+        ["Papergrid", "is a library", "for printing tables", "!"],
         ["", "Just like this", "", ""],
     ];
 
@@ -73,12 +73,12 @@ fn main() {
 }
 ```
 
-Running the example you must see.
+This will produce the following table:
 
 ```text
-+-----------------+------------+----------------+-+
-|                 |is a library|for print tables|!|
-+    Papergrid    +------------+----------------+-+
-|                 |Just like this                 |
-+-----------------+------------+----------------+-+
++-----------------+------------+-------------------+-+
+|                 |is a library|for printing tables|!|
++    Papergrid    +------------+-------------------+-+
+|                 |Just like this                    |
++-----------------+------------+-------------------+-+
 ```
