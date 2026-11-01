@@ -258,6 +258,10 @@ where
             }
         }
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 fn colorize_columns(colors: &[Color], count_columns: usize, cfg: &mut ColoredConfig) {
@@ -380,5 +384,9 @@ where
             let color = color_peek.next().unwrap();
             colorize_entity(color, pos, cfg);
         }
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }

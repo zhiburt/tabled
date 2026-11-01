@@ -1,12 +1,15 @@
 #![cfg(feature = "std")]
 #![cfg(feature = "assert")]
 
+use std::iter::FromIterator;
+
 use tabled::{
     assert::test_table,
+    builder::Builder,
     settings::{
-        object::{Cell, Object},
-        themes::Colorization,
-        Color,
+        object::{Cell, Object, Rows},
+        themes::{Colorization, ColumnNames},
+        Border, Color, Style,
     },
 };
 
@@ -53,6 +56,41 @@ test_table!(
     Matrix::new(2, 3).with(Colorization::exact([color1(), color2(), color3()], Cell::new(0, 0).and(Cell::new(1, 1)).and(Cell::new(2, 2)))),
     "+---+----------+----------+----------+\n|\u{1b}[41m \u{1b}[49m\u{1b}[41mN\u{1b}[49m\u{1b}[41m \u{1b}[49m| column 0 | column 1 | column 2 |\n+---+----------+----------+----------+\n| 0 |\u{1b}[106m \u{1b}[49m\u{1b}[106m  \u{1b}[49m\u{1b}[106m0-0\u{1b}[49m\u{1b}[106m   \u{1b}[49m\u{1b}[106m \u{1b}[49m|   0-1    |   0-2    |\n+---+----------+----------+----------+\n| 1 |   1-0    |\u{1b}[1m \u{1b}[22m\u{1b}[1m  \u{1b}[22m\u{1b}[1m1-1\u{1b}[22m\u{1b}[1m   \u{1b}[22m\u{1b}[1m \u{1b}[22m|   1-2    |\n+---+----------+----------+----------+"
 );
+
+#[test]
+fn colorization_preserves_column_names_width() {
+    let mut table = Builder::from_iter([
+        ["ID", "Age", "Description"],
+        ["1", "10min", "1"],
+        ["2", "20min", "2"],
+    ])
+    .build();
+    table
+        .with(Style::empty())
+        .modify(Rows::first(), Border::new().top('─'))
+        .with(ColumnNames::head());
+
+    let expected = table.to_string();
+    assert!(expected.starts_with("ID─Age────Description\n"));
+
+    for colorization in [
+        Colorization::rows([Color::default()]),
+        Colorization::columns([Color::default()]),
+        Colorization::by_row([Color::default()]),
+        Colorization::by_column([Color::default()]),
+        Colorization::chess(Color::default(), Color::default()),
+        Colorization::rows([] as [Color; 0]),
+    ] {
+        assert_eq!(table.clone().with(colorization).to_string(), expected);
+    }
+
+    assert_eq!(
+        table
+            .with(Colorization::exact([Color::default()], Rows::first()))
+            .to_string(),
+        expected
+    );
+}
 
 fn color1() -> Color {
     Color::BG_RED
