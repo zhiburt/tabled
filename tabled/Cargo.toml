@@ -358,3 +358,8 @@ name = "no_std"
 path = "examples/no_std.rs"
 required-features = ["assert"]
 no-default-features = true
+
+[[example]]
+name = "markdown_alignment"
+path = "examples/markdown_alignment.rs"
+required-features = ["std", "derive"]
