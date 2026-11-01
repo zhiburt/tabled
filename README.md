@@ -202,7 +202,7 @@ Any `Style` can be customized.
 As well as a custom `Style` can be created from scratch.
 
 ```rust
-use tabled::{Table, Style};
+use tabled::{Table, settings::Style};
 
 let mut table = Table::new(&data);
 table.with(Style::psql());
