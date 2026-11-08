@@ -13,8 +13,8 @@ pub struct FieldAttributes {
     pub inline_prefix: Option<String>,
     pub rename: Option<String>,
     pub rename_all: Option<CasingStyle>,
-    pub display_with: Option<String>,
-    pub display_with_args: Option<Vec<FormatArg>>,
+    /// Display functions with their arguments in declaration order.
+    pub display_with: Vec<(String, Vec<FormatArg>)>,
     pub format: Option<String>,
     pub format_with_args: Option<Vec<FormatArg>>,
     pub map: Option<String>,
@@ -71,12 +71,9 @@ impl FieldAttributes {
             FieldAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
             }
-            FieldAttrKind::DisplayWith(path, comma, args) => {
-                self.display_with = Some(path.value());
-                if comma.is_some() {
-                    let args = args.into_iter().map(FormatArg::new).collect();
-                    self.display_with_args = Some(args);
-                }
+            FieldAttrKind::DisplayWith(path, _, args) => {
+                let args = args.into_iter().map(FormatArg::new).collect();
+                self.display_with.push((path.value(), args));
             }
             FieldAttrKind::FormatWith(format, comma, args) => {
                 self.format = Some(format.value());

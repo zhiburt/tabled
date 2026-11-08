@@ -26,7 +26,7 @@ assert = ["testing_table"]
 
 [dependencies]
 papergrid = { version = "0.18.0", default-features = false }
-tabled_derive = { version = "0.12", optional = true }
+tabled_derive = { version = "0.12", optional = true, path = "../tabled_derive" }
 testing_table = { version = "0.3", default-features = false, optional = true }
 ansi-str = { version = "0.9", optional = true }
 ansitok = { version = "0.3", optional = true }

@@ -751,6 +751,118 @@ test_struct!(
     assert_fields: { ["123", "456", ""] }
 );
 
+#[test]
+fn display_chain_empty_wrap() {
+    #[derive(Tabled)]
+    struct Test {
+        #[tabled(rename = "Description")]
+        #[tabled(display = "tabled::derive::display::empty")]
+        #[tabled(display("tabled::derive::display::wrap", 15))]
+        description: Option<String>,
+    }
+
+    assert_eq!(Test::headers(), ["Description"]);
+    let value = Test {
+        description: Some(String::from("some long description text")),
+    };
+    assert_eq!(value.fields(), [""]);
+    assert_eq!(Test { description: None }.fields(), [""]);
+}
+
+#[test]
+fn display_chain_option_wrap() {
+    #[derive(Tabled)]
+    struct Test {
+        #[tabled(display("tabled::derive::display::option", ""))]
+        #[tabled(display("tabled::derive::display::wrap", 3))]
+        f1: Option<sstr>,
+    }
+
+    assert_eq!(Test::headers(), ["f1"]);
+    assert_eq!(Test { f1: Some("abcdef") }.fields(), ["abc\ndef"]);
+    assert_eq!(Test { f1: Some("") }.fields(), [""]);
+    assert_eq!(Test { f1: None }.fields(), [""]);
+}
+
+test_tuple!(
+    display_chain_order_and_args,
+    declare: {
+        {
+            u8
+            #[tabled(display("append", "a"), display = "upper")]
+            #[tabled(display("append", self.0))]
+            sstr
+        }
+    }
+    init: {
+        fn append<T: Display, A: Display>(value: &T, arg: A) -> String {
+            format!("{value}-{arg}")
+        }
+
+        fn upper(value: &String) -> String {
+            value.to_uppercase()
+        }
+    }
+    define: { 7 "x" }
+    assert_headers: { ["0", "1"] }
+    assert_fields: { ["7", "X-A-7"] }
+);
+
+test_struct!(
+    display_chain_borrowed_result,
+    declare: {
+        {
+            #[tabled(display = "upper", display = "head")]
+            f1: sstr,
+        }
+    }
+    init: {
+        fn upper<T: Display>(value: &T) -> String {
+            value.to_string().to_uppercase()
+        }
+
+        fn head(value: &String) -> &str {
+            &value[..2]
+        }
+    }
+    define: { f1: "abcd" }
+    assert_headers: { ["f1"] }
+    assert_fields: { ["AB"] }
+);
+
+test_enum!(
+    enum_display_chain,
+    declare: {
+        {
+            #[tabled(inline)]
+            A(
+                #[tabled(display = "first", display = "second")]
+                sstr
+            )
+            #[tabled(display = "variant", display("second"))]
+            B
+        }
+    }
+    init: {
+        fn first(value: &sstr) -> String {
+            format!("1{value}")
+        }
+
+        fn second<T: Display>(value: &T) -> String {
+            format!("{value}2")
+        }
+
+        fn variant(_: &Test) -> &'static str {
+            "B"
+        }
+    }
+    assert_headers: { ["0", "B"] }
+    assert: {
+        A("a") => ["1a2", ""],
+        B => ["", "B2"],
+    }
+);
+
 // TODO: Shall we support a 'display_type' for #inlined structs??
 // Seems like we have to?
 // But there's a small issue currently - we treat enum variants as field currently in a parsing stage.
