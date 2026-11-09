@@ -830,6 +830,40 @@ test_struct!(
     assert_fields: { ["AB"] }
 );
 
+#[test]
+fn display_chain_borrows_from_mapped_value() {
+    #[derive(Tabled)]
+    struct Test {
+        #[tabled(map = "to_owned_string", display = "trim", display = "upper")]
+        f1: sstr,
+        #[tabled(map = "to_owned_string", display = "trim", display = "head")]
+        f2: sstr,
+    }
+
+    fn to_owned_string(value: &sstr) -> String {
+        value.to_string()
+    }
+
+    fn trim(value: &String) -> &str {
+        value.trim()
+    }
+
+    fn upper(value: &String) -> String {
+        value.to_uppercase()
+    }
+
+    fn head(value: &String) -> &str {
+        &value[..2]
+    }
+
+    let value = Test {
+        f1: "  abc  ",
+        f2: " xyz ",
+    };
+    assert_eq!(Test::headers(), ["f1", "f2"]);
+    assert_eq!(value.fields(), ["ABC", "xy"]);
+}
+
 test_enum!(
     enum_display_chain,
     declare: {

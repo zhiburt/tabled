@@ -71,8 +71,11 @@ impl FieldAttributes {
             FieldAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
             }
-            FieldAttrKind::DisplayWith(path, _, args) => {
-                let args = args.into_iter().map(FormatArg::new).collect();
+            FieldAttrKind::DisplayWith(path, comma, args) => {
+                let args = match comma {
+                    Some(_) => args.into_iter().map(FormatArg::new).collect(),
+                    None => Vec::new(),
+                };
                 self.display_with.push((path.value(), args));
             }
             FieldAttrKind::FormatWith(format, comma, args) => {

@@ -433,7 +433,12 @@ fn info_from_variant(
 
     let variant_name = variant_name(variant, attr);
     let value = if !attr.display_with.is_empty() {
-        use_display_chain(&attr.display_with, &Fields::Unit, &quote!(self), struct_field_name)
+        use_display_chain(
+            &attr.display_with,
+            &Fields::Unit,
+            &quote!(self),
+            struct_field_name,
+        )
     } else if let Some(fmt) = &attr.format {
         let args = attr
             .format_with_args
@@ -563,12 +568,12 @@ fn use_display_chain(
     }
 
     let value = quote!(__tabled_display_value);
+    // The conversion stays in one statement so temporaries in `result`, such as a
+    // mapped field, live until the borrowed result has been copied into a String.
     let into_owned = |result: TokenStream| {
         quote! {
-            let #value: ::std::string::String = {
-                let value: ::std::borrow::Cow<'_, str> = ::std::borrow::Cow::from(#result);
-                value.into_owned()
-            };
+            let #value: ::std::string::String =
+                ::std::borrow::Cow::<'_, str>::from(#result).into_owned();
         }
     };
 
