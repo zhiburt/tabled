@@ -1,10 +1,14 @@
 #![cfg(all(feature = "derive", feature = "assert"))]
 
 use std::fmt::Display;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use tabled::{assert::test_table, Table, Tabled};
 
 use super::{sstr, test_enum, test_struct, test_tuple};
+
+static DISPLAY_CHAIN_FIRST_CALLS: AtomicUsize = AtomicUsize::new(0);
+static DISPLAY_CHAIN_SECOND_CALLS: AtomicUsize = AtomicUsize::new(0);
 
 test_tuple!(
     display_option,
@@ -767,6 +771,34 @@ fn display_chain_empty_wrap() {
     };
     assert_eq!(value.fields(), [""]);
     assert_eq!(Test { description: None }.fields(), [""]);
+}
+
+#[test]
+fn display_chain_precedes_format_and_calls_each_stage_once() {
+    #[derive(Tabled)]
+    struct Test {
+        #[tabled(display = "first", display = "second", format = "formatted: {}")]
+        value: sstr,
+    }
+
+    fn first(value: &sstr) -> String {
+        DISPLAY_CHAIN_FIRST_CALLS.fetch_add(1, Ordering::SeqCst);
+        format!("{value}!")
+    }
+
+    fn second(value: &String) -> String {
+        DISPLAY_CHAIN_SECOND_CALLS.fetch_add(1, Ordering::SeqCst);
+        format!("{value}?")
+    }
+
+    DISPLAY_CHAIN_FIRST_CALLS.store(0, Ordering::SeqCst);
+    DISPLAY_CHAIN_SECOND_CALLS.store(0, Ordering::SeqCst);
+
+    let fields = Test { value: "chain" }.fields();
+
+    assert_eq!(fields, ["chain!?"]);
+    assert_eq!(DISPLAY_CHAIN_FIRST_CALLS.load(Ordering::SeqCst), 1);
+    assert_eq!(DISPLAY_CHAIN_SECOND_CALLS.load(Ordering::SeqCst), 1);
 }
 
 #[test]
