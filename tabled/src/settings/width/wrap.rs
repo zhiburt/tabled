@@ -216,7 +216,11 @@ fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     #[cfg(not(feature = "ansi"))]
     {
         if keep_words {
-            wrap_text_keeping_words_noansi(text, width)
+            // Words never span lines, so every line must start with a fresh line width.
+            text.split('\n')
+                .map(|line| wrap_text_keeping_words_noansi(line, width))
+                .collect::<Vec<_>>()
+                .join("\n")
         } else {
             wrap_text_basic(text, width)
         }
@@ -230,7 +234,11 @@ fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
         let (prefix, suffix) = build_link(url);
 
         if keep_words {
-            wrap_text_keeping_words(&text, width, &prefix, &suffix)
+            // Words never span lines, so every line must start with a fresh line width.
+            ansi_str::AnsiStr::ansi_split(text.as_str(), "\n")
+                .map(|line| wrap_text_keeping_words(&line, width, &prefix, &suffix))
+                .collect::<Vec<_>>()
+                .join("\n")
         } else {
             wrap_text_basic(&text, width, &prefix, &suffix)
         }
@@ -935,6 +943,16 @@ mod tests {
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
 
         assert_eq!(split_keeping_words("111 234 1", 4), "111 \n234 \n1");
+    }
+
+    #[test]
+    fn split_by_line_keeping_words_resets_width_on_newline() {
+        assert_eq!(wrap_text("aaaa\nbbbb cccc", 10, true), "aaaa\nbbbb cccc");
+        assert_eq!(
+            wrap_text("aaaa bbbb\ncccc dddd", 10, true),
+            "aaaa bbbb\ncccc dddd"
+        );
+        assert_eq!(wrap_text("aaaa\nbbbb cccc", 6, true), "aaaa\nbbbb \ncccc");
     }
 
     #[cfg(feature = "ansi")]
