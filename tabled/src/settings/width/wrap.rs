@@ -48,6 +48,10 @@ pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
     keep_words: bool,
     priority: P,
+    /// Set to `true` after a wrap call that actually had to wrap content
+    /// (i.e. the requested width was below the current table total width).
+    /// Use [`Wrap::is_ok`] to query.
+    success: bool,
 }
 
 impl<W> Wrap<W> {
@@ -60,6 +64,7 @@ impl<W> Wrap<W> {
             width,
             keep_words: false,
             priority: PriorityNone::new(),
+            success: false,
         }
     }
 }
@@ -82,6 +87,7 @@ impl<W, P> Wrap<W, P> {
             width: self.width,
             keep_words: self.keep_words,
             priority,
+            success: false,
         }
     }
 
@@ -92,6 +98,21 @@ impl<W, P> Wrap<W, P> {
     pub fn keep_words(mut self, on: bool) -> Self {
         self.keep_words = on;
         self
+    }
+
+    /// Returns whether the most recent application of this `Wrap` actually
+    /// performed any wrapping. Always `false` until the `Wrap` has been
+    /// applied via the `&mut Self` implementation of [`TableOption`].
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let mut wrap = Width::wrap(80);
+    /// table.with(&mut wrap);
+    /// assert!(wrap.is_ok()); // true if the table was actually wrapped
+    /// ```
+    pub fn is_ok(&self) -> bool {
+        self.success
     }
 }
 
@@ -129,6 +150,7 @@ where
             keep_words: self.keep_words,
             priority: self.priority,
             width,
+            success: false,
         };
         let widths = wrap_total_width(records, cfg, widths, total, w);
 
@@ -138,6 +160,55 @@ where
     fn hint_change(&self) -> Option<Entity> {
         // NOTE: We need to recalculate heights
         // TODO: It's actually could be fixed; we sort of already have new strings
+        Some(Entity::Row(0))
+    }
+}
+
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimension> for &mut Wrap<W, P>
+where
+    W: Measurement<Width> + Clone,
+    P: Peaker + Clone,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+    for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: Cell + AsRef<str>,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut CompleteDimension) {
+        self.success = false;
+
+        if records.count_rows() == 0 || records.count_columns() == 0 {
+            return;
+        }
+
+        let width = self.width.clone().measure(&*records, cfg);
+
+        dims.estimate(&*records, cfg);
+        let widths = dims.get_widths().expect("must be found");
+
+        let total = get_table_total_width(widths, cfg);
+        if width >= total {
+            return;
+        }
+
+        let original_widths: Vec<usize> = widths.to_vec();
+        let w = Wrap {
+            keep_words: self.keep_words,
+            priority: self.priority.clone(),
+            width,
+            success: false,
+        };
+        let new_widths = wrap_total_width(records, cfg, widths, total, w);
+
+        // Only report success if cell column widths actually changed.
+        // The `width >= total` short-circuit above eliminates the obvious
+        // no-op case, but a request that's below `total` but at or below
+        // the minimum determined by borders/padding can still leave
+        // cell content untouched -- in which case `is_ok()` should stay
+        // false so callers can trust the API.
+        self.success = new_widths != original_widths;
+        dims.set_widths(new_widths);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
         Some(Entity::Row(0))
     }
 }
