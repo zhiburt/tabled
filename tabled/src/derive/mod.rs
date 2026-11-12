@@ -135,6 +135,32 @@ pub mod display;
 /// }
 /// ```
 ///
+/// The attribute can be set multiple times on a field or a variant, in which
+/// case the functions are applied in declaration order (including across
+/// separate `#[tabled(...)]` attributes). The first function receives a
+/// reference to the field (or a mapped value when `map` is set), and each next
+/// function receives a reference to the [`String`] produced by the previous
+/// one. Every function gets only its own arguments, and `self` keeps referring
+/// to the record.
+///
+/// ```
+/// use tabled::Tabled;
+/// use tabled::derive::display;
+///
+/// #[derive(Tabled)]
+/// pub struct Task {
+///     #[tabled(display("display::option", ""))]
+///     #[tabled(display("display::wrap", 3))]
+///     pub description: Option<String>,
+/// }
+///
+/// let task = Task { description: Some(String::from("abcdef")) };
+/// assert_eq!(task.fields(), ["abc\ndef"]);
+///
+/// let task = Task { description: None };
+/// assert_eq!(task.fields(), [""]);
+/// ```
+///
 /// ### `#[tabled(format)]`
 ///
 /// An analogue to [`format!`], which can be used right on the field.

@@ -432,17 +432,13 @@ fn info_from_variant(
     }
 
     let variant_name = variant_name(variant, attr);
-    let value = if let Some(func) = &attr.display_with {
-        let args = match &attr.display_with_args {
-            Some(args) => {
-                args_to_tokens_with(&Fields::Unit, &quote!(self), struct_field_name, args)
-            }
-            None => quote!(&self),
-        };
-
-        let result = use_function(&args, func);
-
-        quote! { ::std::borrow::Cow::from(#result) }
+    let value = if !attr.display_with.is_empty() {
+        use_display_chain(
+            &attr.display_with,
+            &Fields::Unit,
+            &quote!(self),
+            struct_field_name,
+        )
     } else if let Some(fmt) = &attr.format {
         let args = attr
             .format_with_args
@@ -526,15 +522,10 @@ fn get_field_fields(
         return quote! { #field.fields() };
     }
 
-    if let Some(func) = &attr.display_with {
-        let args = match &attr.display_with_args {
-            Some(args) => args_to_tokens_with(fields, &field, field_name, args),
-            None => quote!(&#field),
-        };
+    if !attr.display_with.is_empty() {
+        let value = use_display_chain(&attr.display_with, fields, &field, field_name);
 
-        let result = use_function(&args, func);
-
-        return quote!(vec![::std::borrow::Cow::from(#result)]);
+        return quote!(vec![#value]);
     } else if let Some(fmt) = &attr.format {
         let args = attr
             .format_with_args
@@ -558,6 +549,47 @@ fn get_field_fields(
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
+}
+
+// Builds a `Cow<str>` expression from display functions applied in declaration order.
+// The first function receives the field; each next one receives the previous string result.
+fn use_display_chain(
+    display_with: &[(String, Vec<FormatArg>)],
+    fields: &Fields,
+    field: &TokenStream,
+    field_name: FieldNameFn,
+) -> TokenStream {
+    let (func, args) = &display_with[0];
+    let args = args_to_tokens_with(fields, field, field_name, args);
+    let result = use_function(&args, func);
+
+    if display_with.len() == 1 {
+        return quote!(::std::borrow::Cow::from(#result));
+    }
+
+    let value = quote!(__tabled_display_value);
+    // The conversion stays in one statement so temporaries in `result`, such as a
+    // mapped field, live until the borrowed result has been copied into a String.
+    let into_owned = |result: TokenStream| {
+        quote! {
+            let #value: ::std::string::String =
+                ::std::borrow::Cow::<'_, str>::from(#result).into_owned();
+        }
+    };
+
+    let mut stages = vec![into_owned(result)];
+    for (func, args) in &display_with[1..] {
+        let args = args_to_tokens_with(fields, &value, field_name, args);
+        let result = use_function(&args, func);
+        stages.push(into_owned(result));
+    }
+
+    quote! {
+        {
+            #(#stages)*
+            ::std::borrow::Cow::Owned(#value)
+        }
+    }
 }
 
 fn args_to_tokens(
