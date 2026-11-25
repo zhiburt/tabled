@@ -224,6 +224,11 @@ path = "examples/highlight.rs"
 required-features = ["std"]
 
 [[example]]
+name = "highlight_reverse"
+path = "examples/highlight_reverse.rs"
+required-features = ["std"]
+
+[[example]]
 name = "highlight_color"
 path = "examples/highlight_color.rs"
 required-features = ["std"]
