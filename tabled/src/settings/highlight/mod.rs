@@ -380,7 +380,8 @@ fn vertex_unselected_quadrants(
     row: usize,
     col: usize,
 ) -> (bool, bool, bool, bool) {
-    let nw = row > 0 && col > 0 && is_unselected(selected, row - 1, col - 1, count_rows, count_cols);
+    let nw =
+        row > 0 && col > 0 && is_unselected(selected, row - 1, col - 1, count_rows, count_cols);
     let ne = row > 0 && is_unselected(selected, row - 1, col, count_rows, count_cols);
     let sw = col > 0 && is_unselected(selected, row, col - 1, count_rows, count_cols);
     let se = is_unselected(selected, row, col, count_rows, count_cols);
@@ -436,15 +437,15 @@ fn refine_reverse_vertex_char(
     border: &Border<char>,
     default: Option<char>,
 ) -> Option<char> {
-    if default.is_none() {
-        return None;
-    }
+    let _ = default?;
 
     let table = cfg.get_borders();
-    let matches_h =
-        |c: Option<char>| c.is_some() && (c == table.horizontal || c == table.top || c == table.bottom);
-    let matches_v =
-        |c: Option<char>| c.is_some() && (c == table.vertical || c == table.left || c == table.right);
+    let matches_h = |c: Option<char>| {
+        c.is_some() && (c == table.horizontal || c == table.top || c == table.bottom)
+    };
+    let matches_v = |c: Option<char>| {
+        c.is_some() && (c == table.vertical || c == table.left || c == table.right)
+    };
 
     match vertex_unselected_quadrants(selected, shape, row, col) {
         (true, true, false, false) => {
