@@ -16,7 +16,7 @@ use crate::{
     },
     dimension::Dimension,
     records::{IntoRecords, Records},
-    util::string::{count_lines, get_line_width, get_lines, get_text_width, Lines},
+    util::string::{count_lines, get_line_width, get_lines, get_text_width},
 };
 
 /// Grid provides a set of methods for building a text-based table.
@@ -334,6 +334,7 @@ fn print_columns_lines<T, F, C>(
 ) -> fmt::Result
 where
     F: Write,
+    T: AsRef<str>,
     C: ANSIFmt,
 {
     let count_columns = buf.len();
@@ -522,6 +523,7 @@ fn print_split_line_spanned<S, F, D, C>(
 where
     F: Write,
     D: Dimension,
+    S: AsRef<str>,
     C: ANSIFmt,
 {
     let mut used_color = None;
@@ -825,7 +827,7 @@ impl<'a, T, C> Cell<'a, T, C> {
 
         let mut lines = LinesIter::new(text);
         for _ in 0..skip {
-            let _ = lines.lines.next();
+            let _ = lines.next();
         }
 
         Self {
@@ -848,6 +850,7 @@ impl<'a, T, C> Cell<'a, T, C> {
     fn display<F>(&mut self, f: &mut F) -> fmt::Result
     where
         F: Write,
+        T: AsRef<str>,
         C: ANSIFmt,
     {
         if self.indent_top > 0 {
@@ -856,7 +859,7 @@ impl<'a, T, C> Cell<'a, T, C> {
             return Ok(());
         }
 
-        let line = match self.lines.lines.next() {
+        let line = match self.lines.next() {
             Some(line) => line,
             None => {
                 let color = self.pad_color.bottom.as_ref();
@@ -894,39 +897,67 @@ impl<'a, T, C> Cell<'a, T, C> {
 }
 
 struct LinesIter<C> {
-    _cell: C,
-    /// SAFETY: IT'S NOT SAFE TO KEEP THE 'static REFERENCES AROUND AS THEY ARE NOT 'static in reality AND WILL BE DROPPED
-    _text: &'static str,
-    /// SAFETY: IT'S NOT SAFE TO KEEP THE 'static REFERENCES AROUND AS THEY ARE NOT 'static in reality AND WILL BE DROPPED
-    lines: Lines<'static>,
+    #[cfg(not(feature = "ansi"))]
+    cell: C,
+    #[cfg(not(feature = "ansi"))]
+    offset: usize,
+    #[cfg(not(feature = "ansi"))]
+    finished: bool,
+    #[cfg(feature = "ansi")]
+    _cell_type: std::marker::PhantomData<fn() -> C>,
+    #[cfg(feature = "ansi")]
+    lines: std::vec::IntoIter<String>,
 }
 
-impl<C> LinesIter<C> {
-    fn new(cell: C) -> Self
-    where
-        C: AsRef<str>,
-    {
-        // We want to not allocate a String/Vec.
-        // It's currently not possible due to a lifetime issues. (It's known as self-referential struct)
-        //
-        // Here we change the lifetime of text.
-        //
-        // # Safety
-        //
-        // It must be safe because the referenced string and the references are dropped at the same time.
-        // And the referenced String is guaranteed to not be changed.
-        let text = cell.as_ref();
-        let text = unsafe {
-            std::str::from_utf8_unchecked(std::slice::from_raw_parts(text.as_ptr(), text.len()))
-        };
-
-        let lines = get_lines(text);
-
-        Self {
-            _cell: cell,
-            _text: text,
-            lines,
+impl<C: AsRef<str>> LinesIter<C> {
+    fn new(cell: C) -> Self {
+        #[cfg(not(feature = "ansi"))]
+        {
+            Self {
+                cell,
+                offset: 0,
+                finished: false,
+            }
         }
+
+        #[cfg(feature = "ansi")]
+        {
+            // ANSI-aware splitting can carry formatting state across lines, so
+            // own its output instead of rebuilding the iterator for each line.
+            let lines = get_lines(cell.as_ref())
+                .map(std::borrow::Cow::into_owned)
+                .collect::<Vec<_>>()
+                .into_iter();
+
+            Self {
+                _cell_type: std::marker::PhantomData,
+                lines,
+            }
+        }
+    }
+
+    #[cfg(not(feature = "ansi"))]
+    fn next(&mut self) -> Option<std::borrow::Cow<'_, str>> {
+        if self.finished {
+            return None;
+        }
+
+        let text = self.cell.as_ref();
+        let remaining = &text[self.offset..];
+        let line = get_lines(remaining).next()?;
+
+        if let Some(newline) = remaining.find('\n') {
+            self.offset += newline + 1;
+        } else {
+            self.finished = true;
+        }
+
+        Some(line)
+    }
+
+    #[cfg(feature = "ansi")]
+    fn next(&mut self) -> Option<std::borrow::Cow<'_, str>> {
+        self.lines.next().map(std::borrow::Cow::Owned)
     }
 }
 
