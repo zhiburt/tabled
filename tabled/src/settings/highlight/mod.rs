@@ -66,6 +66,7 @@ pub struct Highlight<O> {
     target: O,
     border: Option<Border<char>>,
     color: Option<Border<ANSIBuf>>,
+    reverse: bool,
 }
 
 impl<O> Highlight<O> {
@@ -100,6 +101,7 @@ impl<O> Highlight<O> {
             target: self.target,
             border: Some(border),
             color: self.color,
+            reverse: self.reverse,
         }
     }
 
@@ -112,7 +114,65 @@ impl<O> Highlight<O> {
             target: self.target,
             border: self.border,
             color: Some(border),
+            reverse: self.reverse,
         }
+    }
+
+    /// Reverse the highlight direction so that borders are drawn from the surrounding
+    /// unselected cells' side along the boundary shared with the target segment.
+    ///
+    /// Exterior edges of the target segment that are not adjacent to any unselected cell
+    /// are left unchanged, and the distant outer perimeter of the table is not modified.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{
+    ///     Table,
+    ///     settings::{
+    ///         Border, Highlight, Span, Style,
+    ///         object::Segment,
+    ///         themes::BorderCorrection,
+    ///     },
+    /// };
+    ///
+    /// let data = [
+    ///     ["0", "1", "2", "3"],
+    ///     ["4", "5", "6", "7"],
+    ///     ["8", "9", "x", ""],
+    ///     ["c", "d", "", ""],
+    /// ];
+    ///
+    /// let mut table = Table::nohead(data);
+    /// table
+    ///     .with(Style::modern())
+    ///     .modify((2, 2), (Span::column(2), Span::row(2)))
+    ///     .with(BorderCorrection::span())
+    ///     .modify(Segment::new(2.., 2..), Border::filled(' '))
+    ///     .with(
+    ///         Highlight::new(Segment::new(2.., 2..))
+    ///             .border(Border::inherit(Style::modern()))
+    ///             .reverse(),
+    ///     );
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     concat!(
+    ///         "┌───┬───┬───┬───┐\n",
+    ///         "│ 0 │ 1 │ 2 │ 3 │\n",
+    ///         "├───┼───┼───┼───┤\n",
+    ///         "│ 4 │ 5 │ 6 │ 7 │\n",
+    ///         "├───┼───┼───┴───┘\n",
+    ///         "│ 8 │ 9 │ x      \n",
+    ///         "├───┼───┤        \n",
+    ///         "│ c │ d │        \n",
+    ///         "└───┴───┘        ",
+    ///     ),
+    /// );
+    /// ```
+    pub const fn reverse(mut self) -> Self {
+        self.reverse = true;
+        self
     }
 
     /// Build a new instance of [`Highlight`]
@@ -123,6 +183,7 @@ impl<O> Highlight<O> {
             target,
             border,
             color,
+            reverse: false,
         }
     }
 }
@@ -135,6 +196,32 @@ where
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
+
+        if self.reverse {
+            let selected = collect_cells(self.target.cells(records), count_rows, count_cols);
+            if selected.is_empty() {
+                return;
+            }
+
+            let shape = (count_rows, count_cols);
+            match (self.border, self.color) {
+                (None, Some(color)) => {
+                    set_reverse_border_color(cfg, &selected, shape, &color);
+                }
+                (Some(border), None) => {
+                    set_reverse_border(cfg, &selected, shape, border);
+                }
+                (Some(border), Some(color)) => {
+                    set_reverse_border(cfg, &selected, shape, border);
+                    set_reverse_border_color(cfg, &selected, shape, &color);
+                }
+                (None, None) => {
+                    // noop
+                }
+            }
+
+            return;
+        }
 
         let cells = self.target.cells(records);
         let segments = split_segments(cells, count_rows, count_cols);
@@ -165,6 +252,363 @@ where
     fn hint_change(&self) -> Option<Entity> {
         None
     }
+}
+
+fn collect_cells(
+    cells: impl Iterator<Item = Entity>,
+    count_rows: usize,
+    count_cols: usize,
+) -> HashSet<Position> {
+    let mut selected = HashSet::new();
+    for entity in cells {
+        for cell in entity.iter(count_rows, count_cols) {
+            if cell.row < count_rows && cell.col < count_cols {
+                let _ = selected.insert(cell);
+            }
+        }
+    }
+    selected
+}
+
+fn set_reverse_border(
+    cfg: &mut SpannedConfig,
+    selected: &HashSet<Position>,
+    shape: (usize, usize),
+    border: Border<char>,
+) {
+    if selected.is_empty() {
+        return;
+    }
+
+    for &pos in selected {
+        let mut b = build_reverse_cell_border(selected, shape, pos, &border);
+        b.left_top_corner = refine_reverse_vertex_char(
+            cfg,
+            selected,
+            shape,
+            pos.row,
+            pos.col,
+            &border,
+            b.left_top_corner,
+        );
+        b.right_top_corner = refine_reverse_vertex_char(
+            cfg,
+            selected,
+            shape,
+            pos.row,
+            pos.col + 1,
+            &border,
+            b.right_top_corner,
+        );
+        b.left_bottom_corner = refine_reverse_vertex_char(
+            cfg,
+            selected,
+            shape,
+            pos.row + 1,
+            pos.col,
+            &border,
+            b.left_bottom_corner,
+        );
+        b.right_bottom_corner = refine_reverse_vertex_char(
+            cfg,
+            selected,
+            shape,
+            pos.row + 1,
+            pos.col + 1,
+            &border,
+            b.right_bottom_corner,
+        );
+        cfg.set_border(pos, b);
+    }
+}
+
+fn set_reverse_border_color(
+    cfg: &mut SpannedConfig,
+    selected: &HashSet<Position>,
+    shape: (usize, usize),
+    border: &Border<ANSIBuf>,
+) {
+    if selected.is_empty() {
+        return;
+    }
+
+    for &pos in selected {
+        let b = build_reverse_cell_border(selected, shape, pos, border);
+        cfg.set_border_color(pos, b);
+    }
+}
+
+fn build_reverse_cell_border<T>(
+    selected: &HashSet<Position>,
+    shape: (usize, usize),
+    p: Position,
+    border: &Border<T>,
+) -> Border<T>
+where
+    T: Default + Clone,
+{
+    let (count_rows, count_cols) = shape;
+    let mut b = Border::default();
+
+    if p.row > 0 && is_unselected(selected, p.row - 1, p.col, count_rows, count_cols) {
+        b.top = border.bottom.clone();
+    }
+
+    if is_unselected(selected, p.row + 1, p.col, count_rows, count_cols) {
+        b.bottom = border.top.clone();
+    }
+
+    if p.col > 0 && is_unselected(selected, p.row, p.col - 1, count_rows, count_cols) {
+        b.left = border.right.clone();
+    }
+
+    if is_unselected(selected, p.row, p.col + 1, count_rows, count_cols) {
+        b.right = border.left.clone();
+    }
+
+    b.left_top_corner = build_reverse_vertex(selected, shape, p.row, p.col, border);
+    b.right_top_corner = build_reverse_vertex(selected, shape, p.row, p.col + 1, border);
+    b.left_bottom_corner = build_reverse_vertex(selected, shape, p.row + 1, p.col, border);
+    b.right_bottom_corner = build_reverse_vertex(selected, shape, p.row + 1, p.col + 1, border);
+
+    b
+}
+
+fn vertex_unselected_quadrants(
+    selected: &HashSet<Position>,
+    (count_rows, count_cols): (usize, usize),
+    row: usize,
+    col: usize,
+) -> (bool, bool, bool, bool) {
+    let nw = row > 0 && col > 0 && is_unselected(selected, row - 1, col - 1, count_rows, count_cols);
+    let ne = row > 0 && is_unselected(selected, row - 1, col, count_rows, count_cols);
+    let sw = col > 0 && is_unselected(selected, row, col - 1, count_rows, count_cols);
+    let se = is_unselected(selected, row, col, count_rows, count_cols);
+
+    (nw, ne, sw, se)
+}
+
+fn build_reverse_vertex<T>(
+    selected: &HashSet<Position>,
+    shape: (usize, usize),
+    row: usize,
+    col: usize,
+    border: &Border<T>,
+) -> Option<T>
+where
+    T: Clone,
+{
+    match vertex_unselected_quadrants(selected, shape, row, col) {
+        (false, false, false, false) | (true, true, true, true) => None,
+
+        (true, false, false, false) => border.right_bottom_corner.clone(),
+        (false, true, false, false) => border.left_bottom_corner.clone(),
+        (false, false, true, false) => border.right_top_corner.clone(),
+        (false, false, false, true) => border.left_top_corner.clone(),
+
+        (true, true, false, false) => border.bottom.clone(),
+        (false, false, true, true) => border.top.clone(),
+        (true, false, true, false) => border.right.clone(),
+        (false, true, false, true) => border.left.clone(),
+
+        (true, true, true, false) => border.left_top_corner.clone(),
+        (true, true, false, true) => border.right_top_corner.clone(),
+        (true, false, true, true) => border.left_bottom_corner.clone(),
+        (false, true, true, true) => border.right_bottom_corner.clone(),
+
+        (true, false, false, true) => border
+            .left_top_corner
+            .clone()
+            .or_else(|| border.right_bottom_corner.clone()),
+        (false, true, true, false) => border
+            .right_top_corner
+            .clone()
+            .or_else(|| border.left_bottom_corner.clone()),
+    }
+}
+
+fn refine_reverse_vertex_char(
+    cfg: &SpannedConfig,
+    selected: &HashSet<Position>,
+    shape: (usize, usize),
+    row: usize,
+    col: usize,
+    border: &Border<char>,
+    default: Option<char>,
+) -> Option<char> {
+    if default.is_none() {
+        return None;
+    }
+
+    let table = cfg.get_borders();
+    let matches_h =
+        |c: Option<char>| c.is_some() && (c == table.horizontal || c == table.top || c == table.bottom);
+    let matches_v =
+        |c: Option<char>| c.is_some() && (c == table.vertical || c == table.left || c == table.right);
+
+    match vertex_unselected_quadrants(selected, shape, row, col) {
+        (true, true, false, false) => {
+            if matches_h(border.bottom) && has_vertical_divider(cfg, shape, row - 1, col) {
+                table.bottom_intersection.or(default)
+            } else {
+                default
+            }
+        }
+        (false, false, true, true) => {
+            if matches_h(border.top) && has_vertical_divider(cfg, shape, row, col) {
+                table.top_intersection.or(default)
+            } else {
+                default
+            }
+        }
+        (true, false, true, false) => {
+            if matches_v(border.right) && has_horizontal_divider(cfg, shape, row, col - 1) {
+                table.right_intersection.or(default)
+            } else {
+                default
+            }
+        }
+        (false, true, false, true) => {
+            if matches_v(border.left) && has_horizontal_divider(cfg, shape, row, col) {
+                table.left_intersection.or(default)
+            } else {
+                default
+            }
+        }
+        (true, true, true, false) => {
+            if matches_h(border.bottom)
+                && matches_v(border.right)
+                && border.left_top_corner == table.top_left
+            {
+                let up = has_vertical_divider(cfg, shape, row - 1, col);
+                let left = has_horizontal_divider(cfg, shape, row, col - 1);
+                match (up, left) {
+                    (true, true) => table.intersection.or(default),
+                    (true, false) => table.left_intersection.or(default),
+                    (false, true) => table.top_intersection.or(default),
+                    (false, false) => default,
+                }
+            } else {
+                default
+            }
+        }
+        (true, true, false, true) => {
+            if matches_h(border.bottom)
+                && matches_v(border.left)
+                && border.right_top_corner == table.top_right
+            {
+                let up = has_vertical_divider(cfg, shape, row - 1, col);
+                let right = has_horizontal_divider(cfg, shape, row, col);
+                match (up, right) {
+                    (true, true) => table.intersection.or(default),
+                    (true, false) => table.right_intersection.or(default),
+                    (false, true) => table.top_intersection.or(default),
+                    (false, false) => default,
+                }
+            } else {
+                default
+            }
+        }
+        (true, false, true, true) => {
+            if matches_h(border.top)
+                && matches_v(border.right)
+                && border.left_bottom_corner == table.bottom_left
+            {
+                let down = has_vertical_divider(cfg, shape, row, col);
+                let left = has_horizontal_divider(cfg, shape, row, col - 1);
+                match (down, left) {
+                    (true, true) => table.intersection.or(default),
+                    (true, false) => table.left_intersection.or(default),
+                    (false, true) => table.bottom_intersection.or(default),
+                    (false, false) => default,
+                }
+            } else {
+                default
+            }
+        }
+        (false, true, true, true) => {
+            if matches_h(border.top)
+                && matches_v(border.left)
+                && border.right_bottom_corner == table.bottom_right
+            {
+                let down = has_vertical_divider(cfg, shape, row, col);
+                let right = has_horizontal_divider(cfg, shape, row, col);
+                match (down, right) {
+                    (true, true) => table.intersection.or(default),
+                    (true, false) => table.right_intersection.or(default),
+                    (false, true) => table.bottom_intersection.or(default),
+                    (false, false) => default,
+                }
+            } else {
+                default
+            }
+        }
+        (true, false, false, true) => {
+            if matches_h(border.top)
+                && matches_h(border.bottom)
+                && matches_v(border.left)
+                && matches_v(border.right)
+                && (border.left_top_corner == table.top_left
+                    || border.right_bottom_corner == table.bottom_right)
+            {
+                table.intersection.or(default)
+            } else {
+                default
+            }
+        }
+        (false, true, true, false) => {
+            if matches_h(border.top)
+                && matches_h(border.bottom)
+                && matches_v(border.left)
+                && matches_v(border.right)
+                && (border.right_top_corner == table.top_right
+                    || border.left_bottom_corner == table.bottom_left)
+            {
+                table.intersection.or(default)
+            } else {
+                default
+            }
+        }
+        _ => default,
+    }
+}
+
+fn is_unselected(
+    selected: &HashSet<Position>,
+    row: usize,
+    col: usize,
+    count_rows: usize,
+    count_cols: usize,
+) -> bool {
+    row < count_rows && col < count_cols && !selected.contains(&Position::new(row, col))
+}
+
+fn has_vertical_divider(
+    cfg: &SpannedConfig,
+    shape: (usize, usize),
+    row: usize,
+    col: usize,
+) -> bool {
+    let pos = Position::new(row, col);
+    if cfg.is_cell_covered_by_column_span(pos) || cfg.is_cell_covered_by_both_spans(pos) {
+        return false;
+    }
+
+    matches!(cfg.get_border(pos, shape).left, Some(c) if c != ' ')
+}
+
+fn has_horizontal_divider(
+    cfg: &SpannedConfig,
+    shape: (usize, usize),
+    row: usize,
+    col: usize,
+) -> bool {
+    let pos = Position::new(row, col);
+    if cfg.is_cell_covered_by_row_span(pos) || cfg.is_cell_covered_by_both_spans(pos) {
+        return false;
+    }
+
+    matches!(cfg.get_border(pos, shape).top, Some(c) if c != ' ')
 }
 
 fn set_border_color(cfg: &mut SpannedConfig, sector: &HashSet<Position>, border: &Border<ANSIBuf>) {
